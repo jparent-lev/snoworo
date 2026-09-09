@@ -3,8 +3,11 @@ import { functions } from "./firebase";
 
 const mettreAJourAdresseCallable = httpsCallable(functions, "mettreAJourAdresseUtilisateur");
 
-// `geohash` : position du déneigeur, obtenue via navigator.geolocation côté appelant.
 // La ville est dérivée côté serveur (géocodage) — jamais fournie ici directement.
-export function mettreAJourAdresse(geohash) {
+export function mettreAJourAdresseParPosition(geohash) {
   return mettreAJourAdresseCallable({ geohash });
+}
+
+export function mettreAJourAdresseParTexte(adresse) {
+  return mettreAJourAdresseCallable({ adresse });
 }

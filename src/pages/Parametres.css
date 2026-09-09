@@ -85,3 +85,26 @@
   opacity: 0.6;
   cursor: default;
 }
+
+.parametres__adresse-manuelle {
+  display: flex;
+  align-items: flex-end;
+  gap: var(--space-6);
+  margin-top: calc(-1 * var(--space-4));
+}
+
+.parametres__adresse-manuelle .auth-form__champ input {
+  width: 100%;
+}
+
+.parametres__adresse-manuelle .auth-form__bouton {
+  flex: none;
+  white-space: nowrap;
+}
+
+@media (max-width: 560px) {
+  .parametres__adresse-manuelle {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}

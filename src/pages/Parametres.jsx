@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useAuth } from "../context/AuthContext";
 import { grantConsent, revokeConsent } from "../lib/consents";
-import { mettreAJourAdresse } from "../lib/adresse";
+import { mettreAJourAdresseParPosition, mettreAJourAdresseParTexte } from "../lib/adresse";
 import { encoderGeohash } from "../lib/geo";
 import "./Parametres.css";
 
@@ -28,6 +28,7 @@ export default function Parametres() {
   const [enCours, setEnCours] = useState(null);
   const [erreurAdresse, setErreurAdresse] = useState(null);
   const [majAdresseEnCours, setMajAdresseEnCours] = useState(false);
+  const [adresseTexte, setAdresseTexte] = useState("");
 
   async function basculer(type, accorde) {
     setEnCours(type);
@@ -39,7 +40,7 @@ export default function Parametres() {
     }
   }
 
-  function mettreAJourMonAdresse() {
+  function mettreAJourParPosition() {
     if (!navigator.geolocation) {
       setErreurAdresse("La géolocalisation n'est pas disponible sur cet appareil.");
       return;
@@ -50,18 +51,34 @@ export default function Parametres() {
       async (pos) => {
         try {
           const hash = encoderGeohash(pos.coords.latitude, pos.coords.longitude);
-          await mettreAJourAdresse(hash);
+          await mettreAJourAdresseParPosition(hash);
         } catch {
-          setErreurAdresse("Impossible de déterminer ta ville à partir de cette position. Réessaie.");
+          setErreurAdresse("Impossible de déterminer ta ville à partir de cette position. Réessaie, ou entre ton adresse manuellement.");
         } finally {
           setMajAdresseEnCours(false);
         }
       },
       () => {
-        setErreurAdresse("Localisation refusée — impossible de déterminer ta ville de service.");
+        setErreurAdresse("Localisation refusée ou indisponible — entre ton adresse manuellement ci-dessous.");
         setMajAdresseEnCours(false);
       },
+      { timeout: 10000 },
     );
+  }
+
+  async function mettreAJourParTexte(e) {
+    e.preventDefault();
+    if (!adresseTexte.trim()) return;
+    setErreurAdresse(null);
+    setMajAdresseEnCours(true);
+    try {
+      await mettreAJourAdresseParTexte(adresseTexte.trim());
+      setAdresseTexte("");
+    } catch {
+      setErreurAdresse("Adresse introuvable — vérifie l'orthographe et réessaie.");
+    } finally {
+      setMajAdresseEnCours(false);
+    }
   }
 
   if (!profile) return null;
@@ -87,13 +104,29 @@ export default function Parametres() {
         <button
           type="button"
           className="auth-form__bouton"
-          onClick={mettreAJourMonAdresse}
+          onClick={mettreAJourParPosition}
           disabled={majAdresseEnCours}
           style={{ flex: "none" }}
         >
           {majAdresseEnCours ? "Localisation…" : profile.ville ? "Mettre à jour" : "Utiliser ma position"}
         </button>
       </div>
+
+      <form className="parametres__adresse-manuelle" onSubmit={mettreAJourParTexte}>
+        <label className="auth-form__champ" style={{ flex: 1 }}>
+          Ou entre ton adresse
+          <input
+            type="text"
+            value={adresseTexte}
+            onChange={(e) => setAdresseTexte(e.target.value)}
+            placeholder="123 rue des Érables, Lévis"
+            disabled={majAdresseEnCours}
+          />
+        </label>
+        <button type="submit" className="auth-form__bouton" disabled={majAdresseEnCours || !adresseTexte.trim()}>
+          {majAdresseEnCours ? "Recherche…" : "Utiliser cette adresse"}
+        </button>
+      </form>
 
       <h1>Tes consentements</h1>
       <p className="parametres__intro">
