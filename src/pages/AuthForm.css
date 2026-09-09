@@ -93,7 +93,7 @@
 .auth-form__lien {
   font-family: var(--font-corps);
   font-size: 13.5px;
-  color: var(--color-texte-tertiaire);
+  color: var(--color-texte-secondaire);
   text-align: center;
   margin: 0;
 }

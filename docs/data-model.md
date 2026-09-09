@@ -109,15 +109,36 @@ Aucune référence à un `userId` ou `demandeId` dans les deux cas.
 ## `config/frais`
 
 ```
-fraisFixe: number    // en $, ex. 2 — valeurs non finalisées, voir le classeur financier
-fraisPct: number      // décimal, ex. 0.08 pour 8 %
+fraisFixe: number   // en $, ex. 2 — valeurs non finalisées, voir le classeur financier
+fraisPct: number     // points de pourcentage, ex. 8 pour 8 % (pas 0.08)
 ```
 
-Document unique, lu uniquement côté serveur (Admin SDK) par la Cloud Function
-de match — jamais exposé au client (`allow read, write: if false` dans
-`firestore.rules`). Existe pour ajuster la structure de frais sans
-redéploiement de code, voir `docs/architecture.md` § Paiement. **Pas encore
-créé** : à seeder une fois la Cloud Function de paiement construite.
+Document unique. **Lecture publique** (`allow read: if true`) — ce ne sont pas
+des données sensibles, et le calculateur de frais du site vitrine
+(`src/pages/landing/FeeCalculator.jsx`) doit afficher exactement les mêmes
+chiffres que l'app, voir `design_handoff_snowro_site/README.md` § Frais.
+Écriture jamais côté client (`allow write: if false`) — ajusté uniquement par
+la future Cloud Function de paiement ou la console Firebase, voir
+`docs/architecture.md` § Paiement. **Pas encore créé** : tant que le document
+n'existe pas, `src/lib/config.js` sert des valeurs de secours (`fraisFixe: 2,
+fraisPct: 8`, identiques aux valeurs par défaut de la maquette).
+
+## `listeAttente/{courriel}`
+
+```
+courriel, codePostal, role: "client" | "deneigeur"
+ville, villeGeoId       // dérivés par géocodage serveur du codePostal
+createdAt
+```
+
+Site vitrine de pré-lancement (`design_handoff_snowro_site`) — collecte
+d'inscriptions à la liste d'attente. Le document est identifié par le
+courriel normalisé (une réinscription met à jour l'entrée plutôt que d'en
+créer une deuxième). Écrit uniquement par la Cloud Function callable
+publique `rejoindreListeAttente` (`functions/src/listeAttente.js`), qui
+valide le format du courriel/code postal, filtre les soumissions de bots
+(honeypot) et géocode le code postal — jamais lu ni écrit directement par le
+client (`allow read, write: if false`).
 
 ## `offresCiblees/{offreId}`
 

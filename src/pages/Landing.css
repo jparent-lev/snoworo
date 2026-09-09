@@ -1,194 +1,977 @@
+/* Site vitrine de pré-lancement — voir design_handoff_snowro_site/README.md.
+   Valeurs de mise en page (paddings, rayons, tailles) reproduites fidèlement ;
+   points de rupture adaptés aux conventions du projet (grilles auto-fit déjà
+   fluides, comme demandé). */
+
 .landing {
   display: flex;
   flex-direction: column;
   min-height: 100svh;
+  overflow-x: hidden;
 }
 
+.landing__conteneur,
+.landing__hero,
+.landing__section {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding-left: 24px;
+  padding-right: 24px;
+}
+
+/* ---- En-tête sticky ---- */
+
 .landing__entete {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  background: rgba(247, 241, 230, 0.94);
+  backdrop-filter: blur(8px);
+  border-bottom: 1px solid var(--color-bordure);
+}
+
+.landing__entete-inner {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 14px 24px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: var(--space-6) var(--space-8);
-  border-bottom: 1px solid var(--color-bordure);
-  background: var(--color-surface-carte);
+  gap: 20px;
+}
+
+.landing__logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+  color: var(--color-terre);
+}
+
+.landing__logo-texte {
+  font-family: var(--font-titrage);
+  font-weight: 600;
+  font-size: 21px;
+  letter-spacing: -0.012em;
 }
 
 .landing__nav {
   display: flex;
   align-items: center;
-  gap: var(--space-8);
-  font-family: var(--font-corps);
-  font-weight: 700;
-  font-size: 14px;
+  gap: 26px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
 }
 
 .landing__nav a {
-  color: var(--color-texte-secondaire);
+  font-size: 15px;
   text-decoration: none;
+  color: var(--color-texte-secondaire);
+  transition: color 120ms ease-out;
 }
 
 .landing__nav a:hover {
-  color: var(--color-argile);
+  color: var(--color-terre);
 }
+
+.landing__nav-cta {
+  font-weight: 700 !important;
+  color: var(--color-surface-carte) !important;
+  background: var(--color-argile);
+  padding: 10px 18px;
+  border-radius: 10px;
+}
+
+.landing__nav-cta:hover {
+  background: var(--color-argile-foncee) !important;
+}
+
+/* ---- Héros ---- */
 
 .landing__hero {
-  max-width: 640px;
-  margin: 0 auto;
-  padding: var(--space-12) var(--space-8) var(--space-10);
-  text-align: center;
-  display: flex;
-  flex-direction: column;
+  padding-top: 72px;
+  padding-bottom: 24px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+  gap: 56px;
   align-items: center;
-  gap: var(--space-8);
-}
-
-.landing__hero h1 {
-  font-size: 40px;
-  line-height: 1.1;
 }
 
 .landing__hero-texte {
-  font-family: var(--font-corps);
-  font-size: 17px;
-  line-height: 1.55;
-  color: var(--color-texte-secondaire);
-  max-width: 480px;
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+  min-width: 0;
 }
 
-.landing__cta {
+.landing__hero-eyebrow {
+  color: var(--color-ardoise);
+}
+
+.landing__hero-titre {
+  font-size: clamp(38px, 5.6vw, 62px);
+  line-height: 1.02;
+  letter-spacing: -0.02em;
+}
+
+.landing__hero-chapeau {
+  margin: 0;
+  font-size: 19px;
+  line-height: 1.55;
+  color: var(--color-texte-secondaire);
+  max-width: 520px;
+}
+
+.landing__hero-cta {
   display: flex;
-  gap: var(--space-6);
+  gap: 12px;
   flex-wrap: wrap;
-  justify-content: center;
+  margin-top: 4px;
 }
 
 .landing__bouton-primaire,
-.landing__bouton-secondaire {
-  font-family: var(--font-corps);
+.landing__bouton-fantome,
+.landing__bouton-ocre,
+.landing__bouton-ardoise {
+  text-decoration: none;
   font-weight: 700;
   font-size: 16px;
   padding: 15px 26px;
   border-radius: var(--radius-bouton);
-  text-decoration: none;
-  transition: var(--ease-out-rapide);
+  display: inline-block;
+  transition: var(--ease-out-rapide), border-color 120ms ease-out;
 }
 
 .landing__bouton-primaire {
-  background: var(--color-argile);
   color: var(--color-surface-carte);
+  background: var(--color-argile);
 }
 
 .landing__bouton-primaire:hover {
   background: var(--color-argile-foncee);
 }
 
-.landing__bouton-secondaire {
-  background: var(--color-surface-secondaire);
+.landing__bouton-fantome {
   color: var(--color-terre);
-  border: 1px solid var(--color-bordure);
+  background: transparent;
+  border: 1.5px solid var(--color-bordure-bouton-fantome);
 }
 
-.landing__bouton-secondaire:hover {
-  border-color: var(--color-ardoise);
+.landing__bouton-fantome:hover {
+  border-color: var(--color-terre);
+}
+
+.landing__bouton-ocre {
+  color: var(--color-terre);
+  background: var(--color-ocre);
+}
+
+.landing__bouton-ocre:hover {
+  background: var(--color-lin);
+}
+
+.landing__bouton-ardoise {
+  color: var(--color-surface-carte);
+  background: var(--color-ardoise);
+}
+
+.landing__bouton-ardoise:hover {
+  background: var(--color-ardoise-survol);
+}
+
+.landing__hero-mention {
+  margin: 2px 0 0;
+  font-size: 14px;
+  color: var(--color-texte-secondaire);
+}
+
+/* ---- Mockup de téléphone (héros) ---- */
+
+.landing__hero-phone-wrap {
+  display: flex;
+  justify-content: center;
+  min-width: 0;
+}
+
+.landing__hero-phone {
+  width: 100%;
+  max-width: 330px;
+  background: var(--color-terre);
+  border-radius: 34px;
+  padding: 12px;
+}
+
+.landing__hero-phone-ecran {
+  background: var(--color-bg-page);
+  border-radius: 24px;
+  overflow: hidden;
+}
+
+.landing__hero-phone-entete {
+  padding: 14px 18px 10px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.landing__hero-phone-logo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-titrage);
+  font-weight: 600;
+  font-size: 16px;
+  letter-spacing: -0.01em;
+}
+
+.landing__hero-phone-x {
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  color: var(--color-argile-foncee);
+}
+
+.landing__hero-phone-corps {
+  padding: 0 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 11px;
+}
+
+.landing__hero-phone-carte {
+  background: var(--color-surface-carte);
+  border: 1px solid var(--color-bordure);
+  border-radius: var(--radius-panneau);
+  padding: 15px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.landing__hero-phone-carte--sourdine {
+  opacity: 0.75;
+  gap: 7px;
+}
+
+.landing__hero-phone-surtitre {
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.13em;
   color: var(--color-ardoise);
 }
 
-.landing__apercu {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: var(--space-6);
-  padding: 0 var(--space-8) var(--space-12);
-}
-
-.landing__apercu-titre {
-  color: var(--color-texte-tertiaire);
-}
-
-.landing__etapes {
-  background: var(--color-surface-secondaire);
-  padding: var(--space-12) var(--space-8);
-}
-
-.landing__etapes h2,
-.landing__pro h2 {
-  text-align: center;
-  font-size: 28px;
-  margin-bottom: var(--space-10);
-}
-
-.landing__etapes-grille {
-  max-width: 900px;
-  margin: 0 auto;
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: var(--space-10);
-}
-
-.landing__etape {
-  background: var(--color-surface-carte);
-  border: 1px solid var(--color-bordure);
-  border-radius: var(--radius-carte);
-  padding: var(--space-8);
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-3);
-}
-
-.landing__etape-numero {
+.landing__hero-phone-titre {
   font-family: var(--font-titrage);
   font-weight: 600;
+  font-size: 19px;
+  line-height: 1.15;
+  letter-spacing: -0.01em;
+}
+
+.landing__hero-phone-desc {
+  font-size: 13.5px;
+  line-height: 1.45;
+  color: var(--color-texte-secondaire);
+}
+
+.landing__hero-phone-prix-ligne {
+  display: flex;
+  align-items: baseline;
+  gap: 7px;
+  margin-top: 2px;
+}
+
+.landing__hero-phone-prix {
+  font-family: var(--font-titrage);
+  font-weight: 600;
+  font-size: 27px;
+  line-height: 1;
+}
+
+.landing__hero-phone-prix--petit {
+  font-size: 22px;
+}
+
+.landing__hero-phone-par {
+  font-size: 12.5px;
+  color: var(--color-texte-secondaire);
+}
+
+.landing__hero-phone-bouton {
+  border: none;
+  background: var(--color-argile);
+  color: var(--color-surface-carte);
+  font-family: var(--font-corps);
+  font-weight: 700;
+  font-size: 15.5px;
+  padding: 14px;
+  border-radius: var(--radius-bouton);
+  width: 100%;
+  cursor: default;
+}
+
+.landing__hero-phone-note {
+  font-size: 11.5px;
+  color: var(--color-texte-secondaire);
+  text-align: center;
+}
+
+/* ---- Sections génériques ---- */
+
+.landing__section {
+  padding-top: 80px;
+  padding-bottom: 24px;
+}
+
+.landing__h2 {
+  font-size: clamp(30px, 3.6vw, 42px);
+  line-height: 1.08;
+  letter-spacing: -0.015em;
+  margin: 0 0 12px;
+}
+
+.landing__h2--petit {
+  font-size: clamp(27px, 3.2vw, 38px);
+  line-height: 1.1;
+  margin: 12px 0 16px;
+}
+
+.landing__h3 {
+  font-size: 22px;
+  margin: 0;
+  letter-spacing: -0.01em;
+}
+
+.landing__h3-carte {
+  font-family: var(--font-titrage);
+  font-weight: 600;
+  font-size: 25px;
+  margin: 0;
+  letter-spacing: -0.01em;
+  color: var(--color-terre);
+}
+
+.landing__chapeau {
+  margin: 0 0 36px;
+  font-size: 17.5px;
+  line-height: 1.55;
+  color: var(--color-texte-secondaire);
+  max-width: 560px;
+}
+
+.landing__p {
+  margin: 0;
+  font-size: 15.5px;
+  line-height: 1.55;
+  color: var(--color-texte-secondaire);
+}
+
+.landing__p--legende {
+  font-size: 14px;
+  line-height: 1.45;
+  margin-top: 14px;
+}
+
+.landing__p-sur-lin {
+  margin: 0;
+  font-size: 16px;
+  line-height: 1.55;
+  color: var(--color-texte-sur-lin);
+}
+
+.landing__p-sur-lin strong {
+  font-weight: 700;
+  color: var(--color-terre);
+}
+
+.landing__deux-colonnes {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 44px;
+  align-items: start;
+}
+
+.landing__deux-cartes {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 22px;
+}
+
+/* ---- Étapes (Comment ça marche) ---- */
+
+.landing__etapes-grille {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 22px;
+}
+
+.landing__etape-carte {
+  background: var(--color-surface-carte);
+  border: 1px solid var(--color-bordure);
+  border-radius: 18px;
+  padding: 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 0;
+}
+
+.landing__etape-pastille {
+  width: 52px;
+  height: 52px;
+  flex: none;
+  border-radius: 999px;
+  background: var(--color-ocre);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-titrage);
+  font-weight: 900;
   font-size: 26px;
+  line-height: 1;
+  color: var(--color-terre);
+}
+
+/* ---- Bloc paiement (Stripe Connect) ---- */
+
+.landing__bloc-paiement {
+  background: var(--color-ardoise);
+  border-radius: 22px;
+  padding: clamp(28px, 4vw, 48px);
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 40px;
+  align-items: center;
+}
+
+.landing__bloc-paiement-eyebrow {
+  color: var(--color-surface-carte);
+}
+
+.landing__h2--sur-ardoise {
+  color: var(--color-surface-carte);
+  margin: 12px 0 14px;
+  font-size: clamp(27px, 3.2vw, 38px);
+  line-height: 1.1;
+}
+
+.landing__p--sur-ardoise {
+  color: var(--color-lin);
+  font-size: 17px;
+  max-width: 460px;
+}
+
+.landing__bloc-paiement-cartes {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 0;
+}
+
+.landing__mini-carte {
+  background: var(--color-surface-carte);
+  border-radius: var(--radius-panneau);
+  padding: 18px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.landing__mini-carte-titre {
+  font-family: var(--font-titrage);
+  font-weight: 600;
+  font-size: 18px;
+  letter-spacing: -0.01em;
+  color: var(--color-terre);
+}
+
+.landing__mini-carte-texte {
+  font-size: 14.5px;
+  line-height: 1.45;
+  color: var(--color-texte-secondaire);
+}
+
+/* ---- Objection Facebook / villes ---- */
+
+.landing__carte-lin,
+.landing__carte-claire {
+  border-radius: 18px;
+  padding: 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  min-width: 0;
+}
+
+.landing__carte-lin {
+  background: var(--color-lin);
+}
+
+.landing__carte-claire {
+  background: var(--color-surface-carte);
+  border: 1px solid var(--color-bordure);
+  gap: 16px;
+}
+
+.landing__arguments {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+  margin-top: 4px;
+}
+
+.landing__arguments--espace {
+  gap: 13px;
+  margin: 0 0 24px;
+}
+
+.landing__jetons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 9px;
+  margin-top: 2px;
+  align-items: center;
+}
+
+.landing__jeton {
+  font-size: 14.5px;
+  font-weight: 700;
+  background: var(--color-lin);
+  color: var(--color-terre);
+  padding: 9px 15px;
+  border-radius: 999px;
+}
+
+.landing__jeton-texte {
+  font-size: 14.5px;
+  color: var(--color-texte-secondaire);
+  padding: 9px 4px;
+}
+
+/* ---- Devenir déneigeur ---- */
+
+.landing__section-pleine-largeur {
+  margin-top: 72px;
+}
+
+.landing__section-terre {
+  background: var(--color-terre);
+  padding-top: 72px;
+  padding-bottom: 72px;
+}
+
+.landing__section-terre .landing__deux-colonnes {
+  gap: 48px;
+}
+
+.landing__eyebrow-sur-terre {
   color: var(--color-ocre);
 }
 
-.landing__etape h3 {
-  font-size: 19px;
+.landing__h2--sur-terre {
+  color: var(--color-surface-carte);
+  margin: 12px 0 16px;
 }
 
-.landing__etape p {
-  font-family: var(--font-corps);
+.landing__chapeau--sur-terre {
+  color: var(--color-texte-sur-sombre);
+  margin-bottom: 24px;
+  max-width: 480px;
+}
+
+.landing__profils {
+  display: flex;
+  flex-direction: column;
+  gap: 11px;
+  margin-bottom: 26px;
+}
+
+.landing__profils span {
+  font-size: 16px;
+  line-height: 1.45;
+  color: var(--color-lin);
+}
+
+.landing__carte-revenus-wrap {
+  display: flex;
+  justify-content: center;
+  min-width: 0;
+}
+
+.landing__carte-revenus {
+  width: 100%;
+  max-width: 340px;
+  background: var(--color-lin);
+  border-radius: 18px;
+  padding: 26px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.landing__carte-revenus-eyebrow {
+  color: var(--color-ardoise);
+}
+
+.landing__revenus-lignes {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.landing__revenu-ligne {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
+  border-bottom: 1px solid var(--color-bordure-sur-lin);
+  padding-bottom: 11px;
+  font-size: 15.5px;
+  color: var(--color-texte-sur-lin);
+}
+
+.landing__revenu-ligne--dernier {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.landing__revenu-montant {
+  font-family: var(--font-titrage);
+  font-weight: 600;
+  font-size: 20px;
+  color: var(--color-terre);
+}
+
+.landing__revenu-total {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
+  background: var(--color-surface-carte);
+  border-radius: 12px;
+  padding: 15px 18px;
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: var(--color-texte-secondaire);
+  text-transform: uppercase;
+}
+
+.landing__revenu-total-montant {
+  font-family: var(--font-titrage);
+  font-weight: 600;
+  font-size: 26px;
+  color: var(--color-argile);
+  letter-spacing: normal;
+  text-transform: none;
+}
+
+.landing__revenu-note {
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--color-texte-sur-lin);
+}
+
+/* ---- Snowro Pro ---- */
+
+.landing__pro-entete {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 16px;
+}
+
+.landing__pro-lockup-texte {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.landing__pro-lockup-nom {
+  font-family: var(--font-titrage);
+  font-weight: 600;
+  font-size: 22px;
+  line-height: 1;
+  letter-spacing: -0.01em;
+}
+
+.landing__pro-lockup-qualifiant {
+  color: var(--color-ardoise);
+}
+
+.landing__dashboard {
+  background: var(--color-surface-carte);
+  border: 1px solid var(--color-bordure);
+  border-radius: 18px;
+  padding: 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  min-width: 0;
+}
+
+.landing__dashboard-entete {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.landing__dashboard-eyebrow {
+  color: var(--color-ardoise);
+}
+
+.landing__dashboard-ville {
+  font-size: 13px;
+  color: var(--color-texte-secondaire);
+}
+
+.landing__dashboard-barres {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.landing__dashboard-barre-ligne {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.landing__dashboard-barre-legende {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 15px;
+}
+
+.landing__dashboard-barre-n {
+  color: var(--color-texte-secondaire);
+}
+
+.landing__dashboard-piste {
+  height: 10px;
+  background: var(--color-lin);
+  border-radius: 5px;
+  overflow: hidden;
+}
+
+.landing__dashboard-remplissage {
+  height: 100%;
+}
+
+.landing__dashboard-remplissage--argile {
+  background: var(--color-argile);
+}
+
+.landing__dashboard-remplissage--ocre {
+  background: var(--color-ocre);
+}
+
+.landing__dashboard-stats {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  border-top: 1px solid var(--color-lin);
+  padding-top: 16px;
+}
+
+.landing__dashboard-stat--droite {
+  text-align: right;
+}
+
+.landing__dashboard-stat-valeur {
+  display: block;
+  font-family: var(--font-titrage);
+  font-weight: 600;
+  font-size: 24px;
+  line-height: 1;
+}
+
+.landing__dashboard-stat-label {
+  display: block;
+  font-size: 13px;
+  color: var(--color-texte-secondaire);
+  margin-top: 3px;
+}
+
+.landing__dashboard-mention {
+  font-size: 12.5px;
+  color: var(--color-texte-secondaire);
+}
+
+/* ---- Témoignages ---- */
+
+.landing__temoignages {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 22px;
+}
+
+.landing__temoignage {
+  margin: 0;
+  background: var(--color-surface-carte);
+  border: 1px solid var(--color-bordure);
+  border-radius: 18px;
+  padding: 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-width: 0;
+}
+
+.landing__temoignage-citation {
+  margin: 0;
+  font-family: var(--font-titrage);
+  font-weight: 400;
+  font-size: 19px;
+  line-height: 1.4;
+}
+
+.landing__temoignage-auteur {
   font-size: 14.5px;
   color: var(--color-texte-secondaire);
 }
 
-.landing__pro {
-  max-width: 560px;
-  margin: 0 auto;
-  padding: var(--space-12) var(--space-8);
-  text-align: center;
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-4);
+/* ---- Liste d'attente ---- */
+
+.landing__bloc-liste {
+  background: var(--color-argile);
+  border-radius: 22px;
+  padding: clamp(30px, 4.5vw, 56px);
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 44px;
+  align-items: center;
 }
 
-.landing__pro p {
-  font-family: var(--font-corps);
-  color: var(--color-texte-secondaire);
+.landing__h2--sur-argile {
+  color: var(--color-surface-carte);
+  font-size: clamp(30px, 3.8vw, 44px);
+  line-height: 1.06;
+  letter-spacing: -0.018em;
+  margin: 0 0 14px;
 }
+
+.landing__p--sur-argile-clair {
+  color: var(--color-surface-carte);
+  font-size: 17.5px;
+  max-width: 440px;
+}
+
+/* ---- À propos ---- */
+
+.landing__bloc-apropos {
+  background: var(--color-lin);
+  border-radius: 22px;
+  padding: clamp(28px, 4vw, 48px);
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 44px;
+  align-items: center;
+}
+
+.landing__eyebrow-ardoise {
+  color: var(--color-ardoise);
+}
+
+.landing__apropos-symbole {
+  display: flex;
+  justify-content: center;
+  min-width: 0;
+}
+
+/* ---- Pied de page ---- */
 
 .landing__pied {
-  margin-top: auto;
+  background: var(--color-terre);
+  margin-top: 80px;
+}
+
+.landing__pied-colonnes {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 52px 24px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 36px;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.landing__pied-colonne {
   display: flex;
   flex-direction: column;
+  gap: 11px;
+  min-width: 200px;
+}
+
+.landing__pied-colonne a {
+  font-size: 15px;
+  color: var(--color-texte-sur-sombre);
+  text-decoration: none;
+}
+
+.landing__pied-colonne a:hover {
+  color: var(--color-lin);
+}
+
+.landing__pied-logo {
+  display: flex;
   align-items: center;
-  gap: var(--space-3);
-  padding: var(--space-10) var(--space-8);
-  border-top: 1px solid var(--color-bordure);
+  gap: 10px;
 }
 
-.landing__pied p {
-  font-family: var(--font-corps);
-  font-size: 13px;
-  color: var(--color-texte-discret);
+.landing__pied-logo-texte {
+  font-family: var(--font-titrage);
+  font-weight: 600;
+  font-size: 20px;
+  color: var(--color-lin);
+  letter-spacing: -0.012em;
 }
 
-@media (max-width: 720px) {
-  .landing__etapes-grille {
-    grid-template-columns: 1fr;
+.landing__pied-slogan {
+  font-size: 14.5px;
+  line-height: 1.5;
+  color: var(--color-texte-sur-sombre);
+  max-width: 260px;
+}
+
+.landing__pied-titre {
+  color: var(--color-ocre);
+}
+
+.landing__pied-barre {
+  border-top: 1px solid var(--color-bordure-sur-terre);
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 20px 24px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  justify-content: space-between;
+  font-size: 13.5px;
+  color: var(--color-texte-sur-sombre);
+}
+
+.landing__pied-version {
+  border-top: 1px solid var(--color-bordure-sur-terre);
+  padding: 14px 24px 20px;
+  text-align: center;
+}
+
+.landing__pied-version p {
+  color: var(--color-texte-sur-sombre) !important;
+}
+
+@media (max-width: 480px) {
+  .landing__hero-cta {
+    flex-direction: column;
+    align-items: stretch;
   }
 
-  .landing__hero h1 {
-    font-size: 30px;
+  .landing__bouton-primaire,
+  .landing__bouton-fantome {
+    text-align: center;
   }
 }

@@ -1,6 +1,7 @@
 /*
  * Design tokens — Snowro
- * Source : design_handoff_snowro_brand/README.md (livraison Claude Design, hi-fi)
+ * Source : design_handoff_snowro_brand/README.md (première livraison) et
+ * design_handoff_snowro_site/README.md (site vitrine — audit de contraste).
  * Ne pas modifier les valeurs sans repasser par le design system.
  */
 
@@ -20,10 +21,17 @@
   --color-surface-carte: #FFFDF8;
   --color-surface-secondaire: #FAF5EA;
   --color-bordure: #E4D7C0;
+  --color-bordure-sur-lin: #D9CBB2;
+  --color-bordure-sur-terre: #4E392C;
+  --color-bordure-bouton-fantome: #C9B99C;
+  /* Texte secondaire : #6B5445 sur toute surface claire (#FFFDF8/#F7F1E6/#FAF5EA).
+     #5C4636 spécifiquement sur lin (#EDE0CC), #C8B49C sur terre (#3B2A1F).
+     Contrainte non négociable de l'audit de contraste (design_handoff_snowro_site) :
+     ne jamais réintroduire #8A7361 ni #A08E7A comme couleur de texte. */
   --color-texte-secondaire: #6B5445;
-  --color-texte-tertiaire: #8A7361;
-  --color-texte-discret: #A08E7A;
+  --color-texte-sur-lin: #5C4636;
   --color-texte-sur-sombre: #C8B49C;
+  --color-ardoise-survol: #3F565C;
 
   /* Typographie */
   --font-titrage: "Fraunces", serif;

@@ -32,7 +32,7 @@
 .layout__deconnexion {
   background: none;
   border: none;
-  color: var(--color-texte-tertiaire);
+  color: var(--color-texte-secondaire);
   font-family: var(--font-corps);
   font-weight: 700;
   font-size: 14px;

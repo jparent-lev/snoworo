@@ -1,7 +1,25 @@
 # Architecture — Snowro
 
-Voir aussi [`data-model.md`](./data-model.md) et le handoff design
-(`design_handoff_snowro_brand/README.md`, fourni séparément) pour les tokens visuels.
+Voir aussi [`data-model.md`](./data-model.md) et les handoffs design fournis
+séparément : `design_handoff_snowro_brand/README.md` (symbole, tokens de base)
+et `design_handoff_snowro_site/README.md` (site vitrine de pré-lancement —
+audit de contraste qui a retiré `#8A7361`/`#A08E7A` comme couleurs de texte
+dans toute l'app, voir `src/styles/tokens.css`).
+
+## Site vitrine de pré-lancement (`/`)
+
+La racine du site est une page unique à ancres (`src/pages/Landing.jsx` +
+`src/pages/landing/*`) dont l'unique objectif est la collecte de liste
+d'attente (courriel + code postal + rôle) — **pas** un point d'entrée vers
+l'app fonctionnelle (`/connexion`, `/inscription` restent accessibles
+directement, mais ne sont plus liées depuis la page publique). Copie et
+structure figées par `design_handoff_snowro_site`.
+
+- Calculateur de frais interactif : lit `config/frais` (lecture publique) en
+  temps réel, aucune valeur codée en dur — voir `src/lib/config.js`.
+- Inscription à la liste : `rejoindreListeAttente` (callable publique, sans
+  authentification), qui valide et géocode le code postal avant d'écrire dans
+  `listeAttente/{courriel}` — voir `data-model.md`.
 
 ## Stack
 

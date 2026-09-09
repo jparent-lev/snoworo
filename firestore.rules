@@ -69,11 +69,27 @@ service cloud.firestore {
       allow delete: if estProprietaire(resource.data.donneurOuvrageId);
     }
 
-    // ---- config (paramètres internes, jamais exposés au client) ----
-    // config/frais : { fraisFixe, fraisPct } lus uniquement par la Cloud Function
-    // de calcul du paiement au moment du match — voir
-    // snowro-changements-claude-code.md § 2 (pas de valeurs codées en dur).
+    // ---- config (paramètres internes) ----
+    // config/frais : { fraisFixe, fraisPct }. Lecture publique — ce ne sont pas
+    // des données sensibles, et le calculateur de frais du site vitrine doit
+    // afficher exactement les mêmes chiffres que l'app (voir
+    // design_handoff_snowro_site/README.md § Frais). Écriture jamais côté
+    // client : ajustée uniquement via la Cloud Function de paiement (à venir)
+    // ou la console Firebase — voir snowro-changements-claude-code.md § 2.
+    match /config/frais {
+      allow read: if true;
+      allow write: if false;
+    }
+    // Tout autre document sous config/ reste fermé par défaut.
     match /config/{document} {
+      allow read, write: if false;
+    }
+
+    // ---- listeAttente (site vitrine de pré-lancement) ----
+    // Jamais de lecture/écriture directe côté client : rejoindreListeAttente
+    // (callable, public, sans authentification) valide et géocode avant
+    // d'écrire via l'Admin SDK. Voir design_handoff_snowro_site/README.md.
+    match /listeAttente/{document} {
       allow read, write: if false;
     }
 

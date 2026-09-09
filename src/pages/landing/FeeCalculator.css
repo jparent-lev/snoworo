@@ -1,0 +1,66 @@
+.fee-calc {
+  background: var(--color-surface-carte);
+  border: 1px solid var(--color-bordure);
+  border-radius: var(--radius-carte);
+  padding: 30px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  min-width: 0;
+}
+
+.fee-calc__ligne-haut {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.fee-calc__eyebrow {
+  color: var(--color-ardoise);
+}
+
+.fee-calc__montant {
+  font-family: var(--font-titrage);
+  font-weight: 600;
+  font-size: 36px;
+  line-height: 1;
+}
+
+.fee-calc__curseur {
+  width: 100%;
+  accent-color: var(--color-argile);
+  cursor: pointer;
+}
+
+.fee-calc__detail {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  border-top: 1px solid var(--color-lin);
+  padding-top: 18px;
+}
+
+.fee-calc__rangee {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 15.5px;
+  color: var(--color-texte-secondaire);
+}
+
+.fee-calc__valeur {
+  font-weight: 700;
+  color: var(--color-terre);
+}
+
+.fee-calc__valeur--net {
+  color: var(--color-argile);
+}
+
+.fee-calc__mention {
+  margin: 0;
+  font-size: 13.5px;
+  line-height: 1.45;
+  color: var(--color-texte-secondaire);
+}

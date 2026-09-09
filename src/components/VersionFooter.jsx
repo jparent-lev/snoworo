@@ -11,7 +11,7 @@ export default function VersionFooter({ className }) {
   const dateLisible = Number.isNaN(date.getTime()) ? __SNOWRO_BUILD_TIME__ : formatteurDate.format(date);
 
   return (
-    <p className={className} style={{ fontFamily: "var(--font-corps)", fontSize: "11px", color: "var(--color-texte-discret)", margin: 0 }}>
+    <p className={className} style={{ fontFamily: "var(--font-corps)", fontSize: "11px", color: "var(--color-texte-secondaire)", margin: 0 }}>
       Snowro · {__SNOWRO_VERSION__} · déployé le {dateLisible}
     </p>
   );

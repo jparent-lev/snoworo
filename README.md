@@ -51,6 +51,9 @@ firebase emulators:start
   Firestore rules), état "déjà prise".
 - Design system appliqué (tokens, symbole, verrouillage horizontal) — voir
   `src/styles/tokens.css` et `src/components/brand/`.
+- Site vitrine de pré-lancement à la racine (`/`) : calculateur de frais,
+  FAQ, liste d'attente (courriel + code postal → ville dérivée par
+  géocodage). Voir `docs/architecture.md` § *Site vitrine*.
 
 Pas encore implémenté : paiement Stripe Connect (onboarding, webhook,
 PaymentIntent — voir `docs/architecture.md` § *Paiement*, priorité avant tout

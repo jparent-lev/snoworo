@@ -32,7 +32,7 @@
 
 .demandes-x__vide {
   font-family: var(--font-corps);
-  color: var(--color-texte-tertiaire);
+  color: var(--color-texte-secondaire);
 }
 
 .demandes-x__grille {

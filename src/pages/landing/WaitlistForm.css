@@ -1,0 +1,134 @@
+.waitlist-form {
+  background: var(--color-surface-carte);
+  border-radius: var(--radius-carte);
+  padding: 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  min-width: 0;
+}
+
+.waitlist-form__champ {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+}
+
+.waitlist-form__eyebrow {
+  color: var(--color-ardoise);
+}
+
+.waitlist-form__role {
+  display: flex;
+  gap: 9px;
+  flex-wrap: wrap;
+}
+
+.waitlist-form__role-bouton {
+  flex: 1;
+  min-width: 120px;
+  cursor: pointer;
+  font-family: var(--font-corps);
+  font-weight: 700;
+  font-size: 15px;
+  padding: 13px;
+  border-radius: 11px;
+  border: 1.5px solid var(--color-bordure);
+  background: var(--color-surface-secondaire);
+  color: var(--color-texte-secondaire);
+  transition: var(--ease-out-rapide), border-color 120ms ease-out, color 120ms ease-out;
+}
+
+.waitlist-form__role-bouton--actif {
+  background: var(--color-argile);
+  color: var(--color-surface-carte);
+  border-color: var(--color-argile);
+}
+
+.waitlist-form__label {
+  display: block;
+}
+
+.waitlist-form__input {
+  font-family: var(--font-corps);
+  font-size: 16px;
+  padding: 14px 16px;
+  border-radius: 11px;
+  border: 1.5px solid var(--color-bordure);
+  background: var(--color-surface-secondaire);
+  color: var(--color-terre);
+  width: 100%;
+}
+
+.waitlist-form__input:focus {
+  border-color: var(--color-argile);
+  outline: none;
+}
+
+.waitlist-form__honeypot {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+.waitlist-form__erreur {
+  margin: 0;
+  font-size: 13.5px;
+  color: var(--color-terre);
+  background: var(--color-surface-secondaire);
+  border: 1px solid var(--color-ardoise);
+  border-radius: var(--radius-panneau);
+  padding: 12px 14px;
+}
+
+.waitlist-form__bouton {
+  border: none;
+  background: var(--color-argile);
+  color: var(--color-surface-carte);
+  font-family: var(--font-corps);
+  font-weight: 700;
+  font-size: 16.5px;
+  padding: 16px;
+  border-radius: var(--radius-bouton);
+  cursor: pointer;
+  width: 100%;
+  transition: var(--ease-out-rapide);
+}
+
+.waitlist-form__bouton:hover:not(:disabled) {
+  background: var(--color-argile-foncee);
+}
+
+.waitlist-form__bouton:disabled {
+  opacity: 0.75;
+  cursor: default;
+}
+
+.waitlist-form__mention {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--color-texte-secondaire);
+  text-align: center;
+}
+
+.waitlist-form--succes {
+  gap: 10px;
+  padding: 8px 0;
+}
+
+.waitlist-form__succes-titre {
+  font-family: var(--font-titrage);
+  font-weight: 600;
+  font-size: 24px;
+  letter-spacing: -0.01em;
+}
+
+.waitlist-form__succes-texte {
+  font-size: 16px;
+  line-height: 1.5;
+  color: var(--color-texte-secondaire);
+}

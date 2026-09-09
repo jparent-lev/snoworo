@@ -44,7 +44,7 @@
 .parametres__meta {
   font-family: var(--font-corps);
   font-size: 12px;
-  color: var(--color-texte-discret);
+  color: var(--color-texte-secondaire);
   margin-top: var(--space-2) !important;
 }
 
