@@ -69,4 +69,5 @@ ne sont jamais insérées automatiquement dans `contenu`.
 Voir `firestore.indexes.json` :
 - `demandes` : (`statut`, `postalCodePrefix`, `dateHeureSouhaitee`)
 - `demandes` : (`donneurOuvrageId`, `createdAt`)
+- `demandes` : (`statut`, `createdAt`) — utilisé par `ecouterDemandesOuvertes` (liste temps réel de l'écran X)
 - `offresCiblees` : (`utilisateurCibleId`, `statut`)

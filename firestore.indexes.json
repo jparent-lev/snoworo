@@ -18,6 +18,14 @@
       ]
     },
     {
+      "collectionGroup": "demandes",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "statut", "order": "ASCENDING" },
+        { "fieldPath": "createdAt", "order": "DESCENDING" }
+      ]
+    },
+    {
       "collectionGroup": "offresCiblees",
       "queryScope": "COLLECTION",
       "fields": [
