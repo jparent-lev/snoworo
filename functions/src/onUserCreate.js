@@ -19,6 +19,8 @@ export const onUserCreate = region("northamerica-northeast1").auth.user().onCrea
     email: user.email ?? "",
     addressGeohash: null,
     postalCodePrefix: null,
+    ville: null,
+    villeGeoId: null,
     ratingAvg: 0,
     ratingCount: 0,
     createdAt: FieldValue.serverTimestamp(),

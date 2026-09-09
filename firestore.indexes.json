@@ -21,6 +21,7 @@
       "collectionGroup": "demandes",
       "queryScope": "COLLECTION",
       "fields": [
+        { "fieldPath": "villeGeoId", "order": "ASCENDING" },
         { "fieldPath": "statut", "order": "ASCENDING" },
         { "fieldPath": "createdAt", "order": "DESCENDING" }
       ]

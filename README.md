@@ -24,6 +24,11 @@ firebase login
 firebase use --add              # associer au projet Firebase
 
 firebase deploy --only firestore:rules,firestore:indexes
+
+# Requis avant de déployer functions/ : clé Geocoding API (voir
+# docs/architecture.md § Intégrité du matching géographique)
+firebase functions:secrets:set GOOGLE_GEOCODING_API_KEY
+
 cd functions && npm install && cd ..
 firebase deploy --only functions
 ```
@@ -38,9 +43,12 @@ firebase emulators:start
 
 - Auth (email/mot de passe) + création automatique de `users/{uid}` avec le
   squelette de consentements (Loi 25) dès l'inscription.
-- Page Paramètres pour accorder/retirer chaque consentement individuellement.
-- Snowro X : publication de demande, liste triée par distance, acceptation
-  (premier arrivé, premier servi côté Firestore rules), état "déjà prise".
+- Page Paramètres pour accorder/retirer chaque consentement individuellement,
+  et pour qu'un déneigeur enregistre son adresse de service (géolocalisation
+  → géocodage serveur → `ville`/`villeGeoId`, jamais saisis directement).
+- Snowro X : publication de demande, liste filtrée par ville (exclusion dure)
+  puis triée par distance, acceptation (premier arrivé, premier servi côté
+  Firestore rules), état "déjà prise".
 - Design system appliqué (tokens, symbole, verrouillage horizontal) — voir
   `src/styles/tokens.css` et `src/components/brand/`.
 

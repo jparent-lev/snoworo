@@ -42,9 +42,15 @@ export function publierDemande({
   });
 }
 
-export function ecouterDemandesOuvertes(onChange) {
+// Le filtre par villeGeoId est une exclusion dure, jamais un critère de tri —
+// voir l'addendum "intégrité du matching géographique" : un déneigeur ne doit
+// jamais voir une demande hors de sa ville de service, même proche à vol
+// d'oiseau. Le tri par distance ne s'applique qu'à l'intérieur de ce sous-ensemble
+// (voir DemandesX.jsx, qui trie ensuite par distanceM).
+export function ecouterDemandesOuvertes(villeGeoId, onChange) {
   const q = query(
     collection(db, "demandes"),
+    where("villeGeoId", "==", villeGeoId),
     where("statut", "==", "ouverte"),
     orderBy("createdAt", "desc"),
   );

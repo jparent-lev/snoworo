@@ -7,11 +7,15 @@ import DemandeCard from "../components/DemandeCard";
 import "./DemandesX.css";
 
 export default function DemandesX() {
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
   const [demandes, setDemandes] = useState([]);
   const [position, setPosition] = useState(null);
+  const villeGeoId = profile?.villeGeoId;
 
-  useEffect(() => ecouterDemandesOuvertes(setDemandes), []);
+  useEffect(() => {
+    if (!villeGeoId) return;
+    return ecouterDemandesOuvertes(villeGeoId, setDemandes);
+  }, [villeGeoId]);
 
   useEffect(() => {
     if (!navigator.geolocation) return;
@@ -47,7 +51,15 @@ export default function DemandesX() {
         </Link>
       </header>
 
-      {demandesAvecDistance.length === 0 ? (
+      {!villeGeoId ? (
+        <p className="demandes-x__vide">
+          Ajoute ton adresse de service dans{" "}
+          <Link to="/parametres" className="demandes-x__lien-publier">
+            Paramètres
+          </Link>{" "}
+          pour voir les demandes de ta ville.
+        </p>
+      ) : demandesAvecDistance.length === 0 ? (
         <p className="demandes-x__vide">Aucune demande ouverte pour l'instant.</p>
       ) : (
         <div className="demandes-x__grille">

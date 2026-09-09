@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { useAuth } from "../context/AuthContext";
 import { grantConsent, revokeConsent } from "../lib/consents";
+import { mettreAJourAdresse } from "../lib/adresse";
+import { encoderGeohash } from "../lib/geo";
 import "./Parametres.css";
 
 const CONSENTS = [
@@ -24,6 +26,8 @@ const CONSENTS = [
 export default function Parametres() {
   const { profile } = useAuth();
   const [enCours, setEnCours] = useState(null);
+  const [erreurAdresse, setErreurAdresse] = useState(null);
+  const [majAdresseEnCours, setMajAdresseEnCours] = useState(false);
 
   async function basculer(type, accorde) {
     setEnCours(type);
@@ -35,10 +39,62 @@ export default function Parametres() {
     }
   }
 
+  function mettreAJourMonAdresse() {
+    if (!navigator.geolocation) {
+      setErreurAdresse("La géolocalisation n'est pas disponible sur cet appareil.");
+      return;
+    }
+    setErreurAdresse(null);
+    setMajAdresseEnCours(true);
+    navigator.geolocation.getCurrentPosition(
+      async (pos) => {
+        try {
+          const hash = encoderGeohash(pos.coords.latitude, pos.coords.longitude);
+          await mettreAJourAdresse(hash);
+        } catch {
+          setErreurAdresse("Impossible de déterminer ta ville à partir de cette position. Réessaie.");
+        } finally {
+          setMajAdresseEnCours(false);
+        }
+      },
+      () => {
+        setErreurAdresse("Localisation refusée — impossible de déterminer ta ville de service.");
+        setMajAdresseEnCours(false);
+      },
+    );
+  }
+
   if (!profile) return null;
 
   return (
     <div className="parametres__page">
+      <h1>Ton adresse de service</h1>
+      <p className="parametres__intro">
+        Détermine les demandes que tu peux voir : jamais hors de ta ville, même si la distance semble
+        raisonnable.
+      </p>
+
+      <div className="parametres__item">
+        <div className="parametres__item-texte">
+          <h3>{profile.ville ? profile.ville : "Aucune adresse enregistrée"}</h3>
+          <p>
+            {profile.ville
+              ? "Tu vois les demandes ouvertes dans cette ville."
+              : "Ajoute ton adresse pour voir les demandes près de chez toi."}
+          </p>
+          {erreurAdresse && <p className="parametres__meta">{erreurAdresse}</p>}
+        </div>
+        <button
+          type="button"
+          className="auth-form__bouton"
+          onClick={mettreAJourMonAdresse}
+          disabled={majAdresseEnCours}
+          style={{ flex: "none" }}
+        >
+          {majAdresseEnCours ? "Localisation…" : profile.ville ? "Mettre à jour" : "Utiliser ma position"}
+        </button>
+      </div>
+
       <h1>Tes consentements</h1>
       <p className="parametres__intro">
         Chacun de ces consentements est indépendant, daté, et retirable en tout temps — le retrait est aussi
