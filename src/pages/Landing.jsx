@@ -2,6 +2,7 @@ import { Link, Navigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import SnowroLockup from "../components/brand/SnowroLockup";
 import DemandeCard from "../components/DemandeCard";
+import VersionFooter from "../components/VersionFooter";
 import "./Landing.css";
 
 const ETAPES = [
@@ -93,6 +94,7 @@ export default function Landing() {
       <footer className="landing__pied">
         <SnowroLockup qualifiant="X" size={22} />
         <p>Déneigement de voisinage, Québec.</p>
+        <VersionFooter />
       </footer>
     </div>
   );

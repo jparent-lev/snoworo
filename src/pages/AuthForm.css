@@ -1,9 +1,18 @@
 .auth-form__page {
+  position: relative;
   min-height: 100svh;
   display: flex;
   align-items: center;
   justify-content: center;
   padding: var(--space-8);
+}
+
+.auth-form__version {
+  position: absolute;
+  bottom: var(--space-6);
+  left: 0;
+  right: 0;
+  text-align: center;
 }
 
 .auth-form__carte {

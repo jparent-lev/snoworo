@@ -3,6 +3,7 @@ import { signOut } from "firebase/auth";
 import { auth } from "../lib/firebase";
 import { useAuth } from "../context/AuthContext";
 import SnowroLockup from "./brand/SnowroLockup";
+import VersionFooter from "./VersionFooter";
 import "./Layout.css";
 
 export default function Layout() {
@@ -26,6 +27,9 @@ export default function Layout() {
       <main>
         <Outlet />
       </main>
+      <footer className="layout__pied">
+        <VersionFooter />
+      </footer>
     </div>
   );
 }

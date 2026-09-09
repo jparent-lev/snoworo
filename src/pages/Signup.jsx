@@ -2,6 +2,7 @@ import { useState } from "react";
 import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
 import { useNavigate, Link } from "react-router-dom";
 import { auth } from "../lib/firebase";
+import VersionFooter from "../components/VersionFooter";
 import "./AuthForm.css";
 
 export default function Signup() {
@@ -57,6 +58,7 @@ export default function Signup() {
           Déjà un compte ? <Link to="/connexion">Se connecter</Link>
         </p>
       </form>
+      <VersionFooter className="auth-form__version" />
     </div>
   );
 }
