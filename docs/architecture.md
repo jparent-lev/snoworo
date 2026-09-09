@@ -10,18 +10,54 @@ Voir aussi [`data-model.md`](./data-model.md) et le handoff design
 | Frontend | React 19 (Vite), React Router |
 | Hébergement frontend | Netlify |
 | Backend/DB/Auth | Firebase (Firestore + Auth + Cloud Functions v2) |
-| Paiements Snowro X | Stripe standard (frais de mise en relation) — pas encore implémenté |
+| Paiements Snowro X | Stripe Connect (comptes Express) — pas encore implémenté, voir ci-dessous |
 | Paiements Snowro Pro | Stripe Billing (abonnement) — pas encore implémenté |
 | Cartes / zones | Géolocalisation navigateur + geohash (`ngeohash`) pour le MVP ; Google Maps API à intégrer pour la carte visuelle |
 | Notifications | Twilio (SMS) + FCM — pas encore implémenté |
 
-## Pourquoi pas de Stripe Connect en v1
+## Paiement — Stripe Connect (décision révisée)
 
-Décision explicite : le paiement du service de déneigement reste hors plateforme
-(Interac/comptant entre particuliers). Snowro ne facture que des frais de mise en
-relation fixes via Stripe standard. Ne pas réintroduire Stripe Connect / un split
-de paiement sans discussion — voir le handoff pour le contexte (expérience négative
-sur un projet précédent, VouchGuard).
+**⚠️ Cette décision annule et remplace la précédente.** La v1 du handoff excluait
+explicitement Stripe Connect (le paiement du service restait hors plateforme,
+Snowro ne facturant qu'un frais de mise en relation fixe). Ce n'est plus le cas
+— voir `snowro-changements-claude-code.md` § 1 pour la décision complète.
+
+**Modèle actuel** : Snowro encaisse le paiement complet du contrat par carte
+(donneur d'ouvrage) et le redistribue au déneigeur via **Stripe Connect
+(comptes Express)**, moins la commission de Snowro. Raison du changement : un
+frais d'affichage seul n'était pas un argument assez fort contre les groupes
+Facebook de quartier — sécuriser toute la transaction (protection en cas de
+no-show, reçu automatique) l'est davantage.
+
+Implications :
+- Un déneigeur doit compléter l'onboarding Stripe Connect Express avant de
+  pouvoir accepter une demande — vérification d'identité gérée par Stripe.
+- `users/{userId}.connectStatus` ("non_demarre" | "en_attente" | "actif" |
+  "restreint") — un déneigeur dont le statut n'est pas "actif" ne doit
+  **jamais** apparaître dans les résultats de matching (exclusion dure, pas un
+  badge UI). **Pas encore appliqué** : voir le TODO dans `firestore.rules` et
+  `src/lib/demandes.js` — l'onboarding Connect doit exister avant d'activer ce
+  filtre, sinon plus aucun déneigeur ne peut rien voir.
+- `demandes/{demandeId}.paiement` (remplace l'ancien `fraisMiseEnRelation`) :
+  `{ montantTotal, fraisSnowro, montantDeneigeur, statutPaiement, stripePaymentIntentId, stripeTransferId }`.
+- Structure de frais **fixe + %** (remplace l'ancien frais fixe unique), lue
+  depuis `config/frais` (`fraisFixe`, `fraisPct`) — jamais codée en dur, pour
+  pouvoir l'ajuster sans redéploiement. Montants exacts non finalisés (voir le
+  classeur financier) : ne jamais afficher un montant précis dans le code ou la
+  copie tant que ce n'est pas confirmé.
+- Frais Stripe standard (2,9 % + 0,30 $) s'appliquent maintenant sur le montant
+  **total du contrat**, pas seulement sur la commission Snowro — impact direct
+  sur la marge.
+- `connectStatus` n'est modifiable que par une Cloud Function qui reçoit la
+  confirmation Stripe (webhook), jamais en écriture directe côté client — voir
+  `champsProteges()` dans `firestore.rules`.
+
+**Pas encore construit** : onboarding Connect (génération du lien
+d'inscription Express, page de retour), webhook Stripe (`account.updated` →
+`connectStatus`), création du PaymentIntent au moment du match (destination
+charge vers le compte Connect du déneigeur, `application_fee_amount` = frais
+calculé), document `config/frais`. Nécessite une clé secrète Stripe (comme
+`GOOGLE_GEOCODING_API_KEY`, à stocker via `firebase functions:secrets:set`).
 
 ## Cloud Functions (`functions/`)
 
@@ -111,7 +147,9 @@ firebase functions:secrets:set GOOGLE_GEOCODING_API_KEY
 Voir l'ordre de construction du handoff. Après ce scaffold (auth + modèle de
 données + Snowro X minimal — publication, liste, match) :
 
-1. Frais de mise en relation (Stripe standard) au moment du match.
+1. Paiement Stripe Connect complet : onboarding Express, webhook, PaymentIntent
+   au moment du match, `config/frais`, filtre `connectStatus == 'actif'`
+   (voir § Paiement ci-dessus — priorité avant tout lancement public).
 2. Messagerie in-app post-match (collection `messages`, déjà couverte par les
    Firestore rules mais pas d'UI).
 3. Snowro Pro : abonnement Stripe Billing, tableau de bord `zonesStats`.

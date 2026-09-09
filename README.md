@@ -52,7 +52,8 @@ firebase emulators:start
 - Design system appliqué (tokens, symbole, verrouillage horizontal) — voir
   `src/styles/tokens.css` et `src/components/brand/`.
 
-Pas encore implémenté : frais de mise en relation (Stripe), messagerie
-post-match, Snowro Pro (abonnement, tableau de bord zones, offres ciblées),
-notifications SMS/push, intégration Google Maps. Voir
-`docs/architecture.md` § *Ce qui reste à construire*.
+Pas encore implémenté : paiement Stripe Connect (onboarding, webhook,
+PaymentIntent — voir `docs/architecture.md` § *Paiement*, priorité avant tout
+lancement public), messagerie post-match, Snowro Pro (abonnement, tableau de
+bord zones, offres ciblées), notifications SMS/push, intégration Google Maps.
+Voir `docs/architecture.md` § *Ce qui reste à construire*.

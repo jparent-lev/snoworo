@@ -12,6 +12,9 @@ createdAt
 
 proSubscription: { stripeCustomerId, status, plan, currentPeriodEnd } | null
 
+stripeConnectAccountId: string | null   // 🔒 compte Stripe Connect Express du déneigeur
+connectStatus: "non_demarre" | "en_attente" | "actif" | "restreint"   // 🔒 voir plus bas
+
 consents: {                 // 🔒 écrit uniquement via grantConsent/revokeConsent
   zonesAgregees:    { granted, grantedAt, version, revokedAt? },
   offresCiblees:    { granted, grantedAt, version, revokedAt? },
@@ -36,6 +39,19 @@ directe côté client bloquée, au même titre que `consents`. Un géocodage qui
 trouve pas de localité fait échouer l'appel plutôt que d'écrire une ville
 incertaine (voir `functions/src/geocoding.js`).
 
+### `stripeConnectAccountId` / `connectStatus` — paiement Stripe Connect
+
+Voir `docs/architecture.md` § Paiement pour la décision complète
+(`snowro-changements-claude-code.md` § 1). `connectStatus` vaut `"non_demarre"`
+à la création du compte, et n'est ensuite modifié que par une Cloud Function
+recevant la confirmation Stripe (webhook `account.updated`) — jamais par le
+client, même titre que `consents`/`ville`. Un déneigeur dont `connectStatus`
+n'est pas `"actif"` ne doit jamais apparaître dans le matching. **Pas encore
+appliqué** dans les requêtes/règles actuelles : voir le TODO dans
+`firestore.rules` et `src/lib/demandes.js` — l'onboarding Stripe Connect n'est
+pas encore construit, activer ce filtre avant qu'il existe bloquerait tout
+matching.
+
 ## `demandes/{demandeId}`
 
 ```
@@ -47,8 +63,20 @@ titre, description                     // copie affichée sur la carte de demand
 dateHeureSouhaitee, typeService, remunerationOfferte, createdAt
 
 deneigeurId, matchedAt
-fraisMiseEnRelation: { montant, statutPaiement, stripePaymentIntentId } | null   // pas encore implémenté
+
+paiement: {              // 🔒 calculé par la Cloud Function de match — pas encore implémenté
+  montantTotal: number,          // valeur du contrat (== remunerationOfferte au moment du match)
+  fraisSnowro: number,           // config/frais : fraisFixe + fraisPct * montantTotal
+  montantDeneigeur: number,      // montantTotal - fraisSnowro
+  statutPaiement: "en_attente" | "paye" | "echoue" | "rembourse",
+  stripePaymentIntentId: string,
+  stripeTransferId: string | null,
+} | null
 ```
+
+`paiement` remplace l'ancien `fraisMiseEnRelation` (frais de mise en relation
+fixe, modèle abandonné — voir `docs/architecture.md` § Paiement). Renommé pour
+éviter toute confusion entre les deux modèles.
 
 `donneurPrenom`, `quartier`, `titre`, `description` sont des ajouts au schéma du
 handoff d'origine, nécessaires pour reproduire l'écran X (carte de demande) tel
@@ -77,6 +105,19 @@ nbDemandesOuvertes, nbDemandesCompletees, remunerationMoyenne
 ```
 
 Aucune référence à un `userId` ou `demandeId` dans les deux cas.
+
+## `config/frais`
+
+```
+fraisFixe: number    // en $, ex. 2 — valeurs non finalisées, voir le classeur financier
+fraisPct: number      // décimal, ex. 0.08 pour 8 %
+```
+
+Document unique, lu uniquement côté serveur (Admin SDK) par la Cloud Function
+de match — jamais exposé au client (`allow read, write: if false` dans
+`firestore.rules`). Existe pour ajuster la structure de frais sans
+redéploiement de code, voir `docs/architecture.md` § Paiement. **Pas encore
+créé** : à seeder une fois la Cloud Function de paiement construite.
 
 ## `offresCiblees/{offreId}`
 

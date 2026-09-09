@@ -12,19 +12,22 @@ service cloud.firestore {
     }
 
     function champsProteges() {
-      // consents, proSubscription, ville, villeGeoId : jamais en écriture directe
-      // côté client. ville/villeGeoId sont dérivés par géocodage serveur (Cloud
-      // Function) — voir l'addendum "intégrité du matching géographique" :
-      // une donnée qui détermine le matching ne doit jamais être manipulable
-      // par le client, au même titre que les consentements.
-      return ['consents', 'proSubscription', 'ville', 'villeGeoId'];
+      // consents, proSubscription, ville, villeGeoId, stripeConnectAccountId,
+      // connectStatus : jamais en écriture directe côté client. ville/villeGeoId
+      // sont dérivés par géocodage serveur ; connectStatus n'est confirmé que
+      // par la Cloud Function qui reçoit le webhook Stripe — voir
+      // snowro-changements-claude-code.md § 1 : une donnée qui détermine un
+      // comportement de sécurité/matching/paiement ne doit jamais être
+      // manipulable par le client, au même titre que les consentements.
+      return ['consents', 'proSubscription', 'ville', 'villeGeoId', 'stripeConnectAccountId', 'connectStatus'];
     }
 
     function champsProtegesDemande() {
       // Même principe que champsProteges() ci-dessus, pour les demandes :
-      // ville/villeGeoId sont calculés par calculerVilleDemande (trigger Firestore),
-      // jamais fournis ni modifiés par le client.
-      return ['ville', 'villeGeoId'];
+      // ville/villeGeoId sont calculés par calculerVilleDemande (trigger Firestore) ;
+      // paiement est calculé par la Cloud Function de match (frais fixe + %,
+      // lus depuis config/frais) — jamais fournis ni modifiés par le client.
+      return ['ville', 'villeGeoId', 'paiement'];
     }
 
     function abonneProActif() {
@@ -43,6 +46,12 @@ service cloud.firestore {
     }
 
     // ---- demandes ----
+    // TODO (bloquant avant lancement, voir snowro-changements-claude-code.md § 1) :
+    // une fois l'onboarding Stripe Connect construit, un déneigeur avec
+    // connectStatus != 'actif' ne doit jamais pouvoir déclencher la transition
+    // ouverte -> matchee ci-dessous (exclusion dure, pas juste un badge UI).
+    // Pas encore appliqué : aucun déneigeur n'a de connectStatus 'actif' tant
+    // que l'onboarding n'existe pas, ce qui bloquerait tout matching aujourd'hui.
     match /demandes/{demandeId} {
       allow read: if estConnecte();
       allow create: if estConnecte() &&
@@ -58,6 +67,14 @@ service cloud.firestore {
         request.resource.data.donneurOuvrageId == resource.data.donneurOuvrageId &&
         !request.resource.data.diff(resource.data).affectedKeys().hasAny(champsProtegesDemande());
       allow delete: if estProprietaire(resource.data.donneurOuvrageId);
+    }
+
+    // ---- config (paramètres internes, jamais exposés au client) ----
+    // config/frais : { fraisFixe, fraisPct } lus uniquement par la Cloud Function
+    // de calcul du paiement au moment du match — voir
+    // snowro-changements-claude-code.md § 2 (pas de valeurs codées en dur).
+    match /config/{document} {
+      allow read, write: if false;
     }
 
     // ---- zonesStats / zonesStatsParVille (agrégats anonymisés, Snowro Pro) ----

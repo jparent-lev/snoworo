@@ -15,8 +15,8 @@ const ETAPES = [
     texte: "Le premier déneigeur disponible près de chez toi prend la job. Pas d'attente, pas d'enchère.",
   },
   {
-    titre: "Tu payes après",
-    texte: "3 $ de mise en relation, seulement si ça se conclut. Le reste, tu le donnes directement à ton déneigeur.",
+    titre: "Tu payes à la confirmation",
+    texte: "Par carte, en un clic, une fois le match confirmé. Ton déneigeur est payé automatiquement — Snowro retient une petite commission au passage.",
   },
 ];
 
@@ -38,9 +38,9 @@ export default function Landing() {
       <section className="landing__hero">
         <h1>Un voisin pour pelleter, pas une flotte de camions.</h1>
         <p className="landing__hero-texte">
-          Publie ta demande de déneigement, un déneigeur proche de chez toi l'accepte, et tu payes le
-          service directement avec lui — carte, Interac, comptant. Snowro ne charge qu'un petit frais de
-          mise en relation, et seulement si ça se conclut.
+          Publie ta demande de déneigement, un déneigeur proche de chez toi l'accepte, et tu payes par
+          carte au moment de la confirmation. Ton déneigeur est payé automatiquement — Snowro retient une
+          petite commission au passage, jamais plus.
         </p>
         <div className="landing__cta">
           <Link to="/inscription" className="landing__bouton-primaire">

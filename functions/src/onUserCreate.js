@@ -25,6 +25,12 @@ export const onUserCreate = region("northamerica-northeast1").auth.user().onCrea
     ratingCount: 0,
     createdAt: FieldValue.serverTimestamp(),
     proSubscription: null,
+    // Paiement Stripe Connect (voir snowro-changements-claude-code.md § 1) —
+    // un déneigeur ne peut accepter aucune demande tant que connectStatus
+    // n'est pas "actif". Renseigné uniquement par la Cloud Function qui
+    // reçoit la confirmation Stripe (webhook), jamais par le client.
+    stripeConnectAccountId: null,
+    connectStatus: "non_demarre",
     consents,
   });
 });

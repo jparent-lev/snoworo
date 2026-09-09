@@ -38,7 +38,10 @@ export function publierDemande({
     createdAt: serverTimestamp(),
     deneigeurId: null,
     matchedAt: null,
-    fraisMiseEnRelation: null,
+    // Calculé par la Cloud Function de match (Stripe Connect, frais fixe + %) —
+    // voir snowro-changements-claude-code.md § 1-2. Jamais posé par le client
+    // (bloqué par champsProtegesDemande() dans firestore.rules).
+    paiement: null,
   });
 }
 
@@ -63,6 +66,9 @@ export function ecouterDemandesOuvertes(villeGeoId, onChange) {
 // n'autorisent la transition que depuis "ouverte" — si un autre a déjà
 // accepté, cette écriture est rejetée (permission-denied) et l'appelant doit
 // afficher "déjà prise" plutôt qu'une erreur générique.
+// TODO (bloquant avant lancement) : une fois l'onboarding Stripe Connect
+// construit, empêcher ici (et dans firestore.rules) un déneigeur dont
+// connectStatus != "actif" d'accepter une demande.
 export function accepterDemande(demandeId, deneigeurId, donneurOuvrageId) {
   return updateDoc(doc(db, "demandes", demandeId), {
     statut: "matchee",

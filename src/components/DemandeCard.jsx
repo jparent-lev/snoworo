@@ -7,11 +7,16 @@ import "./DemandeCard.css";
 const formatMontant = (montant) =>
   new Intl.NumberFormat("fr-CA", { style: "currency", currency: "CAD", maximumFractionDigits: 0 }).format(montant);
 
-// Écran X — carte de demande. Layout, copie et états figés dans
-// design_handoff_snowro_brand/README.md (§ 2. Écran X — carte de demande).
+// Écran X — carte de demande. Layout et états figés dans
+// design_handoff_snowro_brand/README.md (§ 2. Écran X — carte de demande) ;
+// la mention de bas de carte a été réécrite pour le paiement Stripe Connect
+// (voir snowro-changements-claude-code.md § 1) — le donneur paie le contrat
+// complet par carte, le déneigeur est payé automatiquement, Snowro retient
+// une commission au passage. Le montant exact de cette commission n'est pas
+// encore finalisé (config/frais) : ne jamais l'afficher en dur ici.
 // `apercu` : mode vitrine (landing page) — le bouton renvoie vers l'inscription
 // au lieu d'appeler Firestore, pour montrer la carte sans compte ni données réelles.
-export default function DemandeCard({ demande, deneigeurId, feeCents = 300, apercu = false }) {
+export default function DemandeCard({ demande, deneigeurId, apercu = false }) {
   const [statut, setStatut] = useState(demande.statut === "ouverte" ? "ouverte" : "deja_prise");
   const navigate = useNavigate();
 
@@ -65,7 +70,8 @@ export default function DemandeCard({ demande, deneigeurId, feeCents = 300, aper
           </button>
 
           <p className="demande-card__mention">
-            Tu paies {(feeCents / 100).toFixed(0)} $ de mise en relation, seulement si ça se conclut.
+            Le client paie {formatMontant(demande.montant)} par carte au moment du match. Tu es payé
+            automatiquement, une fois la commission Snowro retenue.
           </p>
         </>
       )}
