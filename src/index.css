@@ -1,0 +1,62 @@
+@import "./styles/tokens.css";
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background: var(--color-bg-page);
+  color: var(--color-terre);
+  font-family: var(--font-corps);
+  font-size: 15.5px;
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+#root {
+  min-height: 100svh;
+}
+
+h1,
+h2,
+h3 {
+  font-family: var(--font-titrage);
+  font-weight: 600;
+  letter-spacing: -0.015em;
+  line-height: 1.06;
+  margin: 0;
+  color: var(--color-terre);
+}
+
+p {
+  margin: 0;
+  text-wrap: pretty;
+}
+
+button {
+  font-family: var(--font-corps);
+}
+
+a {
+  color: var(--color-argile-foncee);
+  text-decoration: underline;
+}
+
+a:hover {
+  color: var(--color-argile);
+}
+
+.eyebrow {
+  font-family: var(--font-corps);
+  font-weight: 700;
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}

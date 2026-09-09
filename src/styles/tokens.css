@@ -1,0 +1,57 @@
+/*
+ * Design tokens — Snowro
+ * Source : design_handoff_snowro_brand/README.md (livraison Claude Design, hi-fi)
+ * Ne pas modifier les valeurs sans repasser par le design system.
+ */
+
+@import url("https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,900&family=Karla:wght@400;500;700&display=swap");
+
+:root {
+  /* Couleurs de marque */
+  --color-argile: #C1652F;
+  --color-argile-foncee: #9E4E23;
+  --color-ocre: #D9A544;
+  --color-ardoise: #4F6B72;
+  --color-lin: #EDE0CC;
+  --color-terre: #3B2A1F;
+
+  /* Neutres de support */
+  --color-bg-page: #F7F1E6;
+  --color-surface-carte: #FFFDF8;
+  --color-surface-secondaire: #FAF5EA;
+  --color-bordure: #E4D7C0;
+  --color-texte-secondaire: #6B5445;
+  --color-texte-tertiaire: #8A7361;
+  --color-texte-discret: #A08E7A;
+  --color-texte-sur-sombre: #C8B49C;
+
+  /* Typographie */
+  --font-titrage: "Fraunces", serif;
+  --font-corps: "Karla", sans-serif;
+
+  /* Échelle d'espacement */
+  --space-1: 4px;
+  --space-2: 6px;
+  --space-3: 10px;
+  --space-4: 12px;
+  --space-5: 14px;
+  --space-6: 18px;
+  --space-7: 22px;
+  --space-8: 24px;
+  --space-9: 26px;
+  --space-10: 32px;
+  --space-11: 34px;
+  --space-12: 56px;
+
+  /* Rayons */
+  --radius-badge: 6px;
+  --radius-tuile: 8px;
+  --radius-bouton: 12px;
+  --radius-panneau: 14px;
+  --radius-carte: 20px;
+  --radius-cadre-ecran: 22px;
+
+  /* Transitions */
+  --ease-out-rapide: background-color 120ms ease-out;
+  --ease-out-standard: 160ms ease-out;
+}

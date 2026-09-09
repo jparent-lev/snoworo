@@ -1,0 +1,42 @@
+.demandes-x__page {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: var(--space-10) var(--space-8);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-10);
+}
+
+.demandes-x__entete {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-6);
+}
+
+.demandes-x__entete h1 {
+  font-size: 28px;
+}
+
+.demandes-x__lien-publier {
+  font-family: var(--font-corps);
+  font-weight: 700;
+  font-size: 14px;
+  color: var(--color-argile);
+  text-decoration: none;
+}
+
+.demandes-x__lien-publier:hover {
+  color: var(--color-argile-foncee);
+}
+
+.demandes-x__vide {
+  font-family: var(--font-corps);
+  color: var(--color-texte-tertiaire);
+}
+
+.demandes-x__grille {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-10);
+}

@@ -1,0 +1,30 @@
+{
+  "indexes": [
+    {
+      "collectionGroup": "demandes",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "statut", "order": "ASCENDING" },
+        { "fieldPath": "postalCodePrefix", "order": "ASCENDING" },
+        { "fieldPath": "dateHeureSouhaitee", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "demandes",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "donneurOuvrageId", "order": "ASCENDING" },
+        { "fieldPath": "createdAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "offresCiblees",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "utilisateurCibleId", "order": "ASCENDING" },
+        { "fieldPath": "statut", "order": "ASCENDING" }
+      ]
+    }
+  ],
+  "fieldOverrides": []
+}

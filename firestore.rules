@@ -1,0 +1,80 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function estConnecte() {
+      return request.auth != null;
+    }
+
+    function estProprietaire(userId) {
+      return estConnecte() && request.auth.uid == userId;
+    }
+
+    function champsProteges() {
+      // consents et proSubscription : jamais en écriture directe côté client.
+      // Modifiables uniquement via Cloud Functions (Admin SDK, qui ignore ces règles).
+      return ['consents', 'proSubscription'];
+    }
+
+    function abonneProActif() {
+      return estConnecte() &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.proSubscription.status == 'active';
+    }
+
+    // ---- users ----
+    match /users/{userId} {
+      allow read: if estConnecte();
+      allow create: if estProprietaire(userId) &&
+        !request.resource.data.keys().hasAny(champsProteges());
+      allow update: if estProprietaire(userId) &&
+        !request.resource.data.diff(resource.data).affectedKeys().hasAny(champsProteges());
+      allow delete: if false;
+    }
+
+    // ---- demandes ----
+    match /demandes/{demandeId} {
+      allow read: if estConnecte();
+      allow create: if estConnecte() &&
+        request.resource.data.donneurOuvrageId == request.auth.uid &&
+        request.resource.data.statut == 'ouverte';
+      // Le match : un déneigeur connecté peut faire passer ouverte -> matchee, rien d'autre.
+      allow update: if estConnecte() &&
+        resource.data.statut == 'ouverte' &&
+        request.resource.data.statut == 'matchee' &&
+        request.resource.data.deneigeurId == request.auth.uid &&
+        request.resource.data.donneurOuvrageId == resource.data.donneurOuvrageId;
+      allow delete: if estProprietaire(resource.data.donneurOuvrageId);
+    }
+
+    // ---- zonesStats (agrégat anonymisé, Snowro Pro) ----
+    match /zonesStats/{statId} {
+      allow read: if abonneProActif();
+      allow write: if false; // uniquement via Cloud Function planifiée (Admin SDK)
+    }
+
+    // ---- offresCiblees (Snowro Pro) ----
+    match /offresCiblees/{offreId} {
+      allow read: if estConnecte() &&
+        (request.auth.uid == resource.data.deneigeurProId ||
+         request.auth.uid == resource.data.utilisateurCibleId);
+      allow write: if false; // création forcée via Cloud Function (valide le consentement avant écriture)
+    }
+
+    // ---- messages ----
+    // conversationId == demandeId : la conversation n'existe qu'après un match confirmé,
+    // et n'est visible qu'aux deux parties du match (jamais avant, jamais à un tiers).
+    function participantAuMatch(demandeId) {
+      let demande = get(/databases/$(database)/documents/demandes/$(demandeId)).data;
+      return demande.statut == 'matchee' &&
+        (request.auth.uid == demande.donneurOuvrageId || request.auth.uid == demande.deneigeurId);
+    }
+
+    match /messages/{conversationId}/messages/{messageId} {
+      allow read: if estConnecte() && participantAuMatch(conversationId);
+      allow create: if estConnecte() && participantAuMatch(conversationId) &&
+        request.resource.data.expediteurId == request.auth.uid;
+      allow update, delete: if false;
+    }
+  }
+}

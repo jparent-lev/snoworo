@@ -1,0 +1,45 @@
+.layout__entete {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-6) var(--space-8);
+  border-bottom: 1px solid var(--color-bordure);
+  background: var(--color-surface-carte);
+}
+
+.layout__logo {
+  text-decoration: none;
+}
+
+.layout__nav {
+  display: flex;
+  align-items: center;
+  gap: var(--space-8);
+  font-family: var(--font-corps);
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.layout__nav a {
+  color: var(--color-texte-secondaire);
+  text-decoration: none;
+}
+
+.layout__nav a:hover {
+  color: var(--color-argile);
+}
+
+.layout__deconnexion {
+  background: none;
+  border: none;
+  color: var(--color-texte-tertiaire);
+  font-family: var(--font-corps);
+  font-weight: 700;
+  font-size: 14px;
+  cursor: pointer;
+  padding: 0;
+}
+
+.layout__deconnexion:hover {
+  color: var(--color-argile);
+}

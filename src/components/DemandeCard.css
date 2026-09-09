@@ -1,0 +1,115 @@
+.demande-card__cadre {
+  width: 288px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+  background: var(--color-bg-page);
+  border: 1px solid var(--color-bordure);
+  border-radius: var(--radius-cadre-ecran);
+  padding: var(--space-6);
+}
+
+.demande-card__entete {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.demande-card__carte {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  background: var(--color-surface-carte);
+  border: 1px solid var(--color-bordure);
+  border-radius: var(--radius-panneau);
+  padding: var(--space-6);
+}
+
+.demande-card__surtitre {
+  color: var(--color-ardoise);
+  margin: 0;
+}
+
+.demande-card__titre {
+  font-size: 21px;
+  line-height: 1.15;
+}
+
+.demande-card__corps {
+  font-family: var(--font-corps);
+  font-size: 14px;
+  line-height: 1.45;
+  color: var(--color-texte-secondaire);
+}
+
+.demande-card__prix-ligne {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-3);
+}
+
+.demande-card__prix {
+  font-family: var(--font-titrage);
+  font-weight: 600;
+  font-size: 30px;
+  color: var(--color-terre);
+}
+
+.demande-card__offert-par {
+  font-family: var(--font-corps);
+  font-size: 13px;
+  color: var(--color-texte-tertiaire);
+}
+
+.demande-card__bouton {
+  width: 100%;
+  background: var(--color-argile);
+  color: var(--color-surface-carte);
+  font-family: var(--font-corps);
+  font-weight: 700;
+  font-size: 16px;
+  padding: 15px;
+  border: none;
+  border-radius: var(--radius-bouton);
+  cursor: pointer;
+  transition: var(--ease-out-rapide);
+}
+
+.demande-card__bouton:hover:not(:disabled) {
+  background: var(--color-argile-foncee);
+}
+
+.demande-card__bouton:active:not(:disabled) {
+  background: var(--color-argile-foncee);
+  transform: scale(0.99);
+}
+
+.demande-card__bouton:disabled {
+  background: var(--color-argile-foncee);
+  cursor: default;
+  opacity: 0.85;
+}
+
+.demande-card__mention {
+  font-family: var(--font-corps);
+  font-size: 12px;
+  color: var(--color-texte-tertiaire);
+  text-align: center;
+  margin: 0;
+}
+
+.demande-card__deja-prise {
+  background: var(--color-surface-carte);
+  border: 1px solid var(--color-ardoise);
+  border-radius: var(--radius-panneau);
+  padding: var(--space-6);
+  text-align: center;
+  color: var(--color-terre);
+  font-family: var(--font-corps);
+}
+
+@media (max-width: 480px) {
+  .demande-card__cadre {
+    width: 100%;
+  }
+}
