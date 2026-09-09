@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import SnowroLockup from "./brand/SnowroLockup";
 import { accepterDemande } from "../lib/demandes";
 import "./DemandeCard.css";
@@ -8,10 +9,17 @@ const formatMontant = (montant) =>
 
 // Écran X — carte de demande. Layout, copie et états figés dans
 // design_handoff_snowro_brand/README.md (§ 2. Écran X — carte de demande).
-export default function DemandeCard({ demande, deneigeurId, feeCents = 300 }) {
+// `apercu` : mode vitrine (landing page) — le bouton renvoie vers l'inscription
+// au lieu d'appeler Firestore, pour montrer la carte sans compte ni données réelles.
+export default function DemandeCard({ demande, deneigeurId, feeCents = 300, apercu = false }) {
   const [statut, setStatut] = useState(demande.statut === "ouverte" ? "ouverte" : "deja_prise");
+  const navigate = useNavigate();
 
   async function accepter() {
+    if (apercu) {
+      navigate("/inscription");
+      return;
+    }
     setStatut("en_cours_acceptation");
     try {
       await accepterDemande(demande.id, deneigeurId, demande.donneurOuvrageId);

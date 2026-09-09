@@ -1,0 +1,194 @@
+.landing {
+  display: flex;
+  flex-direction: column;
+  min-height: 100svh;
+}
+
+.landing__entete {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-6) var(--space-8);
+  border-bottom: 1px solid var(--color-bordure);
+  background: var(--color-surface-carte);
+}
+
+.landing__nav {
+  display: flex;
+  align-items: center;
+  gap: var(--space-8);
+  font-family: var(--font-corps);
+  font-weight: 700;
+  font-size: 14px;
+}
+
+.landing__nav a {
+  color: var(--color-texte-secondaire);
+  text-decoration: none;
+}
+
+.landing__nav a:hover {
+  color: var(--color-argile);
+}
+
+.landing__hero {
+  max-width: 640px;
+  margin: 0 auto;
+  padding: var(--space-12) var(--space-8) var(--space-10);
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-8);
+}
+
+.landing__hero h1 {
+  font-size: 40px;
+  line-height: 1.1;
+}
+
+.landing__hero-texte {
+  font-family: var(--font-corps);
+  font-size: 17px;
+  line-height: 1.55;
+  color: var(--color-texte-secondaire);
+  max-width: 480px;
+}
+
+.landing__cta {
+  display: flex;
+  gap: var(--space-6);
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.landing__bouton-primaire,
+.landing__bouton-secondaire {
+  font-family: var(--font-corps);
+  font-weight: 700;
+  font-size: 16px;
+  padding: 15px 26px;
+  border-radius: var(--radius-bouton);
+  text-decoration: none;
+  transition: var(--ease-out-rapide);
+}
+
+.landing__bouton-primaire {
+  background: var(--color-argile);
+  color: var(--color-surface-carte);
+}
+
+.landing__bouton-primaire:hover {
+  background: var(--color-argile-foncee);
+}
+
+.landing__bouton-secondaire {
+  background: var(--color-surface-secondaire);
+  color: var(--color-terre);
+  border: 1px solid var(--color-bordure);
+}
+
+.landing__bouton-secondaire:hover {
+  border-color: var(--color-ardoise);
+  color: var(--color-ardoise);
+}
+
+.landing__apercu {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-6);
+  padding: 0 var(--space-8) var(--space-12);
+}
+
+.landing__apercu-titre {
+  color: var(--color-texte-tertiaire);
+}
+
+.landing__etapes {
+  background: var(--color-surface-secondaire);
+  padding: var(--space-12) var(--space-8);
+}
+
+.landing__etapes h2,
+.landing__pro h2 {
+  text-align: center;
+  font-size: 28px;
+  margin-bottom: var(--space-10);
+}
+
+.landing__etapes-grille {
+  max-width: 900px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-10);
+}
+
+.landing__etape {
+  background: var(--color-surface-carte);
+  border: 1px solid var(--color-bordure);
+  border-radius: var(--radius-carte);
+  padding: var(--space-8);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.landing__etape-numero {
+  font-family: var(--font-titrage);
+  font-weight: 600;
+  font-size: 26px;
+  color: var(--color-ocre);
+}
+
+.landing__etape h3 {
+  font-size: 19px;
+}
+
+.landing__etape p {
+  font-family: var(--font-corps);
+  font-size: 14.5px;
+  color: var(--color-texte-secondaire);
+}
+
+.landing__pro {
+  max-width: 560px;
+  margin: 0 auto;
+  padding: var(--space-12) var(--space-8);
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.landing__pro p {
+  font-family: var(--font-corps);
+  color: var(--color-texte-secondaire);
+}
+
+.landing__pied {
+  margin-top: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-10) var(--space-8);
+  border-top: 1px solid var(--color-bordure);
+}
+
+.landing__pied p {
+  font-family: var(--font-corps);
+  font-size: 13px;
+  color: var(--color-texte-discret);
+}
+
+@media (max-width: 720px) {
+  .landing__etapes-grille {
+    grid-template-columns: 1fr;
+  }
+
+  .landing__hero h1 {
+    font-size: 30px;
+  }
+}
