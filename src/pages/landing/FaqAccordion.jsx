@@ -13,7 +13,7 @@ const QUESTIONS = [
   },
   {
     q: "Est-ce que je peux choisir mon déneigeur ?",
-    r: "Pas dans la première version : c'est le premier qui accepte qui prend la job, pour que ça aille vite quand il tombe 30 cm. Par contre, tu peux marquer quelqu'un comme favori après coup, et il pourra t'offrir ses services directement — seulement si tu as dit oui.",
+    r: "Pas dans la première version : c'est le premier qui accepte qui prend la job, pour que ça aille vite quand il tombe 30 cm. On laisse aussi la chance à chaque déneigeur de faire quelques jobs et de bâtir sa note avant d'ouvrir des façons de choisir selon la réputation — ça s'en vient.",
   },
   {
     q: "Ça fonctionne dans ma ville ?",
