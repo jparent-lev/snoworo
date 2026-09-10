@@ -793,105 +793,15 @@
   color: var(--color-ardoise);
 }
 
-.landing__dashboard {
-  background: var(--color-surface-carte);
-  border: 1px solid var(--color-bordure);
-  border-radius: 18px;
-  padding: 28px;
+.landing__pro-simple {
+  max-width: 620px;
   display: flex;
   flex-direction: column;
-  gap: 20px;
-  min-width: 0;
+  align-items: flex-start;
 }
 
-.landing__dashboard-entete {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 12px;
-}
-
-.landing__dashboard-eyebrow {
-  color: var(--color-ardoise);
-}
-
-.landing__dashboard-ville {
-  font-size: 13px;
-  color: var(--color-texte-secondaire);
-}
-
-.landing__dashboard-barres {
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-}
-
-.landing__dashboard-barre-ligne {
-  display: flex;
-  flex-direction: column;
-  gap: 7px;
-}
-
-.landing__dashboard-barre-legende {
-  display: flex;
-  justify-content: space-between;
-  gap: 12px;
-  font-size: 15px;
-}
-
-.landing__dashboard-barre-n {
-  color: var(--color-texte-secondaire);
-}
-
-.landing__dashboard-piste {
-  height: 10px;
-  background: var(--color-lin);
-  border-radius: 5px;
-  overflow: hidden;
-}
-
-.landing__dashboard-remplissage {
-  height: 100%;
-}
-
-.landing__dashboard-remplissage--argile {
-  background: var(--color-argile);
-}
-
-.landing__dashboard-remplissage--ocre {
-  background: var(--color-ocre);
-}
-
-.landing__dashboard-stats {
-  display: flex;
-  justify-content: space-between;
-  gap: 12px;
-  border-top: 1px solid var(--color-lin);
-  padding-top: 16px;
-}
-
-.landing__dashboard-stat--droite {
-  text-align: right;
-}
-
-.landing__dashboard-stat-valeur {
-  display: block;
-  font-family: var(--font-titrage);
-  font-weight: 600;
-  font-size: 24px;
-  line-height: 1;
-}
-
-.landing__dashboard-stat-label {
-  display: block;
-  font-size: 13px;
-  color: var(--color-texte-secondaire);
-  margin-top: 3px;
-}
-
-.landing__dashboard-mention {
-  font-size: 12.5px;
-  color: var(--color-texte-secondaire);
+.landing__pro-simple .landing__chapeau {
+  margin-bottom: 22px;
 }
 
 /* ---- Témoignages ---- */

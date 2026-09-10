@@ -58,8 +58,9 @@ export default function Landing() {
           <span className="eyebrow landing__hero-eyebrow">Déneigement à la demande · Québec</span>
           <h1 className="landing__hero-titre">Un voisin qui vient pelleter chez un autre voisin.</h1>
           <p className="landing__hero-chapeau">
-            Tu publies ta demande, tu offres un montant. Le premier déneigeur du coin qui accepte s'en
-            occupe. Le paiement passe par nous, alors personne ne se fait planter.
+            Tu publies ta demande — l'adresse, le prix, le moment qui te convient. Les déneigeurs
+            disponibles dans ton secteur sont avertis tout de suite, et le premier qui accepte s'en occupe.
+            Pas d'appels à faire, pas d'attente.
           </p>
           <div className="landing__hero-cta">
             <a href="#liste" className="landing__bouton-primaire">
@@ -117,11 +118,11 @@ export default function Landing() {
           {[
             {
               titre: "Tu publies",
-              texte: "Ton adresse, ce qu'il y a à pelleter, quand tu le veux, combien tu offres. Deux minutes sur le bord de la fenêtre.",
+              texte: "Ton adresse, ce qu'il y a à pelleter, les outils fournis ou non, quand tu le veux, combien tu offres. Deux minutes sur le bord de la fenêtre.",
             },
             {
               titre: "Le quartier reçoit l'appel",
-              texte: "Les déneigeurs de ta ville, les plus proches en premier, sont notifiés. Le premier qui accepte, c'est le tien.",
+              texte: "Tous les déneigeurs disponibles dans ton secteur sont avertis en même temps. Le premier qui accepte, c'est le tien — pas besoin de magasiner.",
             },
             {
               titre: "C'est pelleté, c'est payé",
@@ -137,22 +138,23 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* 3. Bloc paiement Stripe Connect */}
+      {/* 3. Ce qui protège la relation (fiabilité, entente claire, paiement) */}
       <section className="landing__section">
         <div className="landing__bloc-paiement">
           <div>
-            <span className="eyebrow landing__bloc-paiement-eyebrow">L'argent passe par nous</span>
-            <h2 className="landing__h2 landing__h2--sur-ardoise">Personne se fait planter</h2>
+            <span className="eyebrow landing__bloc-paiement-eyebrow">Ce qui te protège</span>
+            <h2 className="landing__h2 landing__h2--sur-ardoise">Tu sais avec qui tu traites, pis à quoi t'attendre</h2>
             <p className="landing__p landing__p--sur-ardoise">
-              Ton paiement est retenu quand tu réserves, pas quand tu espères. Le déneigeur sait qu'il va
-              être payé, toi tu sais que ton argent revient s'il se présente pas.
+              Aller vite, c'est bien, mais Snowro ajoute trois affaires que le groupe Facebook du quartier
+              t'offre pas : une note publique sur chaque déneigeur, une entente écrite avant que ça
+              commence, et un paiement qui reste sécurisé jusqu'à ce que la job soit faite.
             </p>
           </div>
           <div className="landing__bloc-paiement-cartes">
             {[
-              { titre: "Paiement retenu jusqu'à la fin", texte: "Traité par Stripe. Snowro touche jamais à ta carte." },
-              { titre: "Il vient pas ? Tu es remboursé", texte: "Pas de chicane, pas de virement Interac à courir après." },
-              { titre: "Reçu automatique", texte: "Pratique pour les impôts si tu déneiges régulièrement." },
+              { titre: "Des déneigeurs notés", texte: "Chaque job donne lieu à une appréciation. Un travail bâclé, ça se sait — et ça ferme des portes." },
+              { titre: "Une entente claire dès le départ", texte: "Prix, heure souhaitée, outils fournis ou non : tout est écrit avant que quelqu'un accepte." },
+              { titre: "Paiement sécurisé", texte: "Traité par Stripe, retenu jusqu'à ce que la job soit confirmée faite." },
             ].map((c) => (
               <div key={c.titre} className="landing__mini-carte">
                 <span className="landing__mini-carte-titre">{c.titre}</span>
@@ -192,14 +194,15 @@ export default function Landing() {
             <div className="landing__arguments">
               <span className="landing__p-sur-lin">
                 <strong>Tu attends pas après une réponse.</strong> Ta demande sonne chez tous les déneigeurs
-                disponibles en même temps.
+                disponibles du secteur en même temps.
               </span>
               <span className="landing__p-sur-lin">
-                <strong>L'argent est sécurisé.</strong> Pas de « je te paye demain » qui devient jamais.
+                <strong>Tu sais à qui tu as affaire.</strong> Une note publique, bâtie job après job — pas
+                un profil anonyme dans un fil de commentaires.
               </span>
               <span className="landing__p-sur-lin">
-                <strong>Le déneigeur est vérifié.</strong> Identité confirmée par Stripe avant qu'il puisse
-                accepter quoi que ce soit.
+                <strong>L'entente est claire avant que ça commence.</strong> Prix, heure, outils fournis ou
+                non : écrit d'avance, pas négocié sur le perron.
               </span>
             </div>
           </div>
@@ -270,7 +273,7 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* 7. Snowro Pro */}
+      {/* 7. Snowro Pro — détails de l'offre à préciser, section volontairement sobre pour l'instant */}
       <section id="pro" className="landing__section">
         <div className="landing__pro-entete">
           <SnowroSymbol variant="pro" size={40} />
@@ -279,71 +282,16 @@ export default function Landing() {
             <span className="eyebrow landing__pro-lockup-qualifiant">PRO</span>
           </div>
         </div>
-        <div className="landing__deux-colonnes">
-          <div>
-            <h2 className="landing__h2">Pour ceux qui déneigent pour vivre</h2>
-            <p className="landing__chapeau">
-              Un abonnement mensuel qui te montre où la demande se trouve dans tes villes : quels secteurs
-              appellent, à quelle heure, pour quels montants. Des chiffres agrégés et anonymes — jamais
-              l'adresse de quelqu'un.
-            </p>
-            <div className="landing__arguments landing__arguments--espace">
-              <span className="landing__p">
-                <strong>Carte de la demande</strong> — par secteur et par ville, mise à jour après chaque
-                bordée.
-              </span>
-              <span className="landing__p">
-                <strong>Offres ciblées</strong> — écris aux clients qui ont déjà fait affaire avec toi,
-                seulement s'ils ont dit oui.
-              </span>
-              <span className="landing__p">
-                <strong>Plusieurs villes</strong> — tes stats suivent ta tournée, pas juste ton code postal.
-              </span>
-            </div>
-            <a href="#liste" className="landing__bouton-ardoise">
-              Être averti pour Pro
-            </a>
-          </div>
-          <div className="landing__dashboard" role="img" aria-label="Aperçu d'un tableau de bord Snowro Pro affichant le nombre de demandes des sept derniers jours par secteur de Québec (Limoilou 64, Saint-Sauveur 41, Sainte-Foy 28, Beauport 17), l'heure la plus demandée (6 h à 9 h) et le montant offert médian (42 $). Données d'illustration.">
-            <div className="landing__dashboard-entete">
-              <span className="eyebrow landing__dashboard-eyebrow">Demande — 7 derniers jours</span>
-              <span className="landing__dashboard-ville">Québec</span>
-            </div>
-            <div className="landing__dashboard-barres">
-              {[
-                { secteur: "Limoilou", n: 64, pct: 88, couleur: "argile" },
-                { secteur: "Saint-Sauveur", n: 41, pct: 57, couleur: "argile" },
-                { secteur: "Sainte-Foy", n: 28, pct: 39, couleur: "ocre" },
-                { secteur: "Beauport", n: 17, pct: 24, couleur: "ocre" },
-              ].map((b) => (
-                <div key={b.secteur} className="landing__dashboard-barre-ligne">
-                  <div className="landing__dashboard-barre-legende">
-                    <span>{b.secteur}</span>
-                    <span className="landing__dashboard-barre-n">{b.n} demandes</span>
-                  </div>
-                  <div className="landing__dashboard-piste">
-                    <div
-                      className={`landing__dashboard-remplissage landing__dashboard-remplissage--${b.couleur}`}
-                      style={{ width: `${b.pct}%` }}
-                    />
-                  </div>
-                </div>
-              ))}
-            </div>
-            <div className="landing__dashboard-stats">
-              <div>
-                <span className="landing__dashboard-stat-valeur">6 h – 9 h</span>
-                <span className="landing__dashboard-stat-label">heure la plus demandée</span>
-              </div>
-              <div className="landing__dashboard-stat--droite">
-                <span className="landing__dashboard-stat-valeur">42 $</span>
-                <span className="landing__dashboard-stat-label">montant offert médian</span>
-              </div>
-            </div>
-            <span className="landing__dashboard-mention">
-              Données d'illustration — le tableau de bord réel sera alimenté par les vraies demandes.
-            </span>
-          </div>
+        <div className="landing__pro-simple">
+          <h2 className="landing__h2">Pour ceux qui déneigent pour vivre</h2>
+          <p className="landing__chapeau">
+            On prépare une offre pour les entreprises de déneigement qui veulent voir où la demande se
+            trouve dans leurs secteurs. Les détails s'en viennent — inscris-toi pour être averti en
+            premier.
+          </p>
+          <a href="#liste" className="landing__bouton-ardoise">
+            Être averti pour Pro
+          </a>
         </div>
       </section>
 

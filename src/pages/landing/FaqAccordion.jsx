@@ -25,7 +25,7 @@ const QUESTIONS = [
   },
   {
     q: "C'est quoi la différence avec Snowro Pro ?",
-    r: "Snowro X, c'est le service : publier ou prendre des jobs, gratuit à installer. Snowro Pro, c'est un abonnement pour les entreprises de déneigement qui veulent voir où la demande se trouve dans leurs villes et relancer leurs clients existants.",
+    r: "Snowro X, c'est le service : publier ou prendre des jobs, gratuit à installer. Snowro Pro est une offre en préparation pour les entreprises de déneigement — les détails s'en viennent.",
   },
 ];
 
