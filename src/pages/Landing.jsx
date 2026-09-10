@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Navigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import SnowroSymbol from "../components/brand/SnowroSymbol";
@@ -9,26 +10,42 @@ import "./Landing.css";
 
 // Site vitrine de pré-lancement — collecte de liste d'attente uniquement,
 // aucun compte ni paiement réel déclenché ici. Copie et structure figées par
-// design_handoff_snowro_site/README.md (à reprendre telle quelle).
+// design_handoff_snowro_site/README.md (à reprendre telle quelle) ; le menu
+// hamburger mobile est un ajout hors maquette (le prototype ne couvrait pas
+// ce cas — le nav en flex-wrap se cassait en plusieurs lignes désordonnées
+// sous ~900px).
 export default function Landing() {
   const { user, loading } = useAuth();
+  const [menuOuvert, setMenuOuvert] = useState(false);
 
   if (!loading && user) return <Navigate to="/demandes" replace />;
+
+  const fermerMenu = () => setMenuOuvert(false);
 
   return (
     <div className="landing">
       <header className="landing__entete">
         <div className="landing__entete-inner">
-          <a href="#haut" className="landing__logo">
+          <a href="#haut" className="landing__logo" onClick={fermerMenu}>
             <SnowroSymbol variant="x" size={34} />
             <span className="landing__logo-texte">snowro</span>
           </a>
-          <nav className="landing__nav">
-            <a href="#comment">Comment ça marche</a>
-            <a href="#frais">Frais</a>
-            <a href="#deneigeur">Déneiger</a>
-            <a href="#pro">Pro</a>
-            <a href="#liste" className="landing__nav-cta">
+          <button
+            type="button"
+            className="landing__menu-bouton"
+            aria-expanded={menuOuvert}
+            aria-controls="landing-nav"
+            aria-label={menuOuvert ? "Fermer le menu" : "Ouvrir le menu"}
+            onClick={() => setMenuOuvert((v) => !v)}
+          >
+            <span className={`landing__menu-icone ${menuOuvert ? "landing__menu-icone--ouvert" : ""}`} />
+          </button>
+          <nav id="landing-nav" className={`landing__nav ${menuOuvert ? "landing__nav--ouvert" : ""}`}>
+            <a href="#comment" onClick={fermerMenu}>Comment ça marche</a>
+            <a href="#frais" onClick={fermerMenu}>Frais</a>
+            <a href="#deneigeur" onClick={fermerMenu}>Déneiger</a>
+            <a href="#pro" onClick={fermerMenu}>Pro</a>
+            <a href="#liste" className="landing__nav-cta" onClick={fermerMenu}>
               Rejoindre la liste
             </a>
           </nav>

@@ -31,6 +31,7 @@
 }
 
 .landing__entete-inner {
+  position: relative;
   max-width: 1180px;
   margin: 0 auto;
   padding: 14px 24px;
@@ -80,6 +81,99 @@
   background: var(--color-argile);
   padding: 10px 18px;
   border-radius: 10px;
+}
+
+/* ---- Menu hamburger (mobile) ---- */
+
+.landing__menu-bouton {
+  display: none;
+  width: 40px;
+  height: 40px;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+}
+
+.landing__menu-icone,
+.landing__menu-icone::before,
+.landing__menu-icone::after {
+  content: "";
+  display: block;
+  width: 22px;
+  height: 2px;
+  border-radius: 2px;
+  background: var(--color-terre);
+  transition: transform 160ms ease-out, opacity 120ms ease-out, top 160ms ease-out;
+}
+
+.landing__menu-icone {
+  position: relative;
+}
+
+.landing__menu-icone::before,
+.landing__menu-icone::after {
+  position: absolute;
+  left: 0;
+}
+
+.landing__menu-icone::before {
+  top: -7px;
+}
+
+.landing__menu-icone::after {
+  top: 7px;
+}
+
+.landing__menu-icone--ouvert {
+  background: transparent;
+}
+
+.landing__menu-icone--ouvert::before {
+  top: 0;
+  transform: rotate(45deg);
+}
+
+.landing__menu-icone--ouvert::after {
+  top: 0;
+  transform: rotate(-45deg);
+}
+
+@media (max-width: 900px) {
+  .landing__menu-bouton {
+    display: flex;
+  }
+
+  .landing__nav {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 2px;
+    background: var(--color-surface-carte);
+    border-bottom: 1px solid var(--color-bordure);
+    padding: 6px 24px 20px;
+  }
+
+  .landing__nav--ouvert {
+    display: flex;
+  }
+
+  .landing__nav a {
+    padding: 13px 2px;
+    font-size: 16px;
+  }
+
+  .landing__nav-cta {
+    margin-top: 10px;
+    text-align: center;
+  }
 }
 
 .landing__nav-cta:hover {
