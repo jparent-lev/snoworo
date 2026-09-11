@@ -45,7 +45,7 @@ export default function Landing() {
             <a href="#frais" onClick={fermerMenu}>Frais</a>
             <a href="#deneigeur" onClick={fermerMenu}>Déneiger</a>
             <a href="#pro" onClick={fermerMenu}>Pro</a>
-            <a href="#liste" className="landing__nav-cta landing__bouton-neige" onClick={fermerMenu}>
+            <a href="#liste" className="landing__nav-cta landing__bouton-neige landing__bouton-neige--a" onClick={fermerMenu}>
               Rejoindre la liste
             </a>
           </nav>
@@ -63,7 +63,7 @@ export default function Landing() {
             Pas d'appels à faire, pas d'attente.
           </p>
           <div className="landing__hero-cta">
-            <a href="#liste" className="landing__bouton-primaire landing__bouton-neige">
+            <a href="#liste" className="landing__bouton-primaire landing__bouton-neige landing__bouton-neige--b">
               Je veux faire déneiger
             </a>
             <a href="#deneigeur" className="landing__bouton-fantome">
@@ -100,7 +100,7 @@ export default function Landing() {
                   <span className="landing__hero-phone-titre">Petit stationnement</span>
                   <span className="landing__hero-phone-prix landing__hero-phone-prix--petit">30 $</span>
                 </div>
-                <button type="button" className="landing__hero-phone-bouton landing__bouton-neige" tabIndex={-1}>
+                <button type="button" className="landing__hero-phone-bouton landing__bouton-neige landing__bouton-neige--c" tabIndex={-1}>
                   Je prends la job
                 </button>
                 <span className="landing__hero-phone-note">Paiement gardé par Snowro jusqu'à ce que ce soit fait.</span>
@@ -242,7 +242,7 @@ export default function Landing() {
               <span>Gars du coin avec une souffleuse qui dort dans le garage</span>
               <span>Un pro du déneigement qui veut remplir les trous dans sa tournée</span>
             </div>
-            <a href="#liste" className="landing__bouton-ocre landing__bouton-neige">
+            <a href="#liste" className="landing__bouton-ocre landing__bouton-neige landing__bouton-neige--d">
               M'inscrire comme déneigeur citoyen
             </a>
           </div>
@@ -289,7 +289,7 @@ export default function Landing() {
             trouve dans leurs secteurs. Les détails s'en viennent — inscris-toi pour être averti en
             premier.
           </p>
-          <a href="#liste" className="landing__bouton-ardoise landing__bouton-neige">
+          <a href="#liste" className="landing__bouton-ardoise landing__bouton-neige landing__bouton-neige--e">
             Être averti pour Pro
           </a>
         </div>
