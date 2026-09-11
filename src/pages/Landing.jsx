@@ -352,7 +352,7 @@ export default function Landing() {
             </p>
           </div>
           <div className="landing__apropos-symbole">
-            <SnowroSymbol variant="x" size={180} />
+            <SnowroSymbol variant="x" neige size={180} />
           </div>
         </div>
       </section>
@@ -361,7 +361,7 @@ export default function Landing() {
         <div className="landing__pied-colonnes">
           <div className="landing__pied-colonne">
             <div className="landing__pied-logo">
-              <SnowroSymbol variant="reversed" size={32} />
+              <SnowroSymbol variant="reversed" neige size={32} />
               <span className="landing__pied-logo-texte">snowro</span>
             </div>
             <span className="landing__pied-slogan">Déneigement à la demande, fait à Québec.</span>

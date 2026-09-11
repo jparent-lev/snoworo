@@ -2,9 +2,11 @@ import SnowroSymbol from "./SnowroSymbol";
 
 // Verrouillage horizontal — voir README § Verrouillage horizontal.
 // Sous 28px de hauteur de symbole, tomber au symbole seul (contrainte du design system).
-export default function SnowroLockup({ qualifiant = "X", size = 42, className }) {
+export default function SnowroLockup({ qualifiant = "X", neige = false, size = 42, className }) {
   if (size < 28) {
-    return <SnowroSymbol variant={qualifiant === "PRO" ? "pro" : "x"} size={size} className={className} />;
+    return (
+      <SnowroSymbol variant={qualifiant === "PRO" ? "pro" : "x"} neige={neige} size={size} className={className} />
+    );
   }
 
   const gap = Math.round(size * 0.28);
@@ -12,7 +14,7 @@ export default function SnowroLockup({ qualifiant = "X", size = 42, className })
 
   return (
     <div className={className} style={{ display: "flex", alignItems: "center", gap }}>
-      <SnowroSymbol variant={qualifiant === "PRO" ? "pro" : "x"} size={size} />
+      <SnowroSymbol variant={qualifiant === "PRO" ? "pro" : "x"} neige={neige} size={size} />
       <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
         <span
           style={{
