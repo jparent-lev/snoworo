@@ -273,6 +273,39 @@
   background: var(--color-ardoise-survol);
 }
 
+/* Petite touche de marque : un amoncellement de neige posé sur le coin des
+   boutons d'action clés, comme l'amas du symbole (voir SnowroSymbol). Purement
+   décoratif — pointer-events: none, et sans incidence sur le texte du bouton
+   puisqu'il est centré et que l'amas reste calé sur le coin gauche. */
+.landing__bouton-neige {
+  position: relative;
+}
+
+.landing__bouton-neige::before {
+  content: "";
+  position: absolute;
+  top: -5px;
+  left: 15px;
+  width: 22px;
+  height: 10px;
+  background: var(--color-surface-carte);
+  border-radius: 60% 40% 50% 50% / 75% 75% 25% 25%;
+  pointer-events: none;
+}
+
+.landing__bouton-neige::after {
+  content: "";
+  position: absolute;
+  top: -2px;
+  left: 40px;
+  width: 9px;
+  height: 6px;
+  background: var(--color-surface-carte);
+  border-radius: 50%;
+  opacity: 0.9;
+  pointer-events: none;
+}
+
 .landing__hero-mention {
   margin: 2px 0 0;
   font-size: 14px;

@@ -45,7 +45,7 @@ export default function Landing() {
             <a href="#frais" onClick={fermerMenu}>Frais</a>
             <a href="#deneigeur" onClick={fermerMenu}>Déneiger</a>
             <a href="#pro" onClick={fermerMenu}>Pro</a>
-            <a href="#liste" className="landing__nav-cta" onClick={fermerMenu}>
+            <a href="#liste" className="landing__nav-cta landing__bouton-neige" onClick={fermerMenu}>
               Rejoindre la liste
             </a>
           </nav>
@@ -58,12 +58,12 @@ export default function Landing() {
           <span className="eyebrow landing__hero-eyebrow">Déneigement à la demande · Québec</span>
           <h1 className="landing__hero-titre">Un voisin qui vient pelleter chez un autre voisin.</h1>
           <p className="landing__hero-chapeau">
-            Tu publies ta demande — l'adresse, le prix, le moment qui te convient. Les déneigeurs
+            Tu publies ta demande — l'adresse, le prix, le moment qui te convient. Les déneigeurs citoyens
             disponibles dans ton secteur sont avertis tout de suite, et le premier qui accepte s'en occupe.
             Pas d'appels à faire, pas d'attente.
           </p>
           <div className="landing__hero-cta">
-            <a href="#liste" className="landing__bouton-primaire">
+            <a href="#liste" className="landing__bouton-primaire landing__bouton-neige">
               Je veux faire déneiger
             </a>
             <a href="#deneigeur" className="landing__bouton-fantome">
@@ -100,7 +100,7 @@ export default function Landing() {
                   <span className="landing__hero-phone-titre">Petit stationnement</span>
                   <span className="landing__hero-phone-prix landing__hero-phone-prix--petit">30 $</span>
                 </div>
-                <button type="button" className="landing__hero-phone-bouton" tabIndex={-1}>
+                <button type="button" className="landing__hero-phone-bouton landing__bouton-neige" tabIndex={-1}>
                   Je prends la job
                 </button>
                 <span className="landing__hero-phone-note">Paiement gardé par Snowro jusqu'à ce que ce soit fait.</span>
@@ -122,11 +122,11 @@ export default function Landing() {
             },
             {
               titre: "Le quartier reçoit l'appel",
-              texte: "Tous les déneigeurs disponibles dans ton secteur sont avertis en même temps. Le premier qui accepte, c'est le tien — pas besoin de magasiner.",
+              texte: "Tous les déneigeurs citoyens disponibles dans ton secteur sont avertis en même temps. Le premier qui accepte, c'est le tien — pas besoin de magasiner.",
             },
             {
               titre: "C'est pelleté, c'est payé",
-              texte: "On garde ton paiement le temps que la job se fasse, puis on le verse au déneigeur. Reçu automatique des deux bords.",
+              texte: "On garde ton paiement le temps que la job se fasse, puis on le verse au déneigeur citoyen. Reçu automatique des deux bords.",
             },
           ].map((etape, i) => (
             <div key={etape.titre} className="landing__etape-carte">
@@ -146,13 +146,13 @@ export default function Landing() {
             <h2 className="landing__h2 landing__h2--sur-ardoise">Tu sais avec qui tu traites, pis à quoi t'attendre</h2>
             <p className="landing__p landing__p--sur-ardoise">
               Aller vite, c'est bien, mais Snowro ajoute trois affaires que le groupe Facebook du quartier
-              t'offre pas : une note publique sur chaque déneigeur, une entente écrite avant que ça
+              t'offre pas : une note publique sur chaque déneigeur citoyen, une entente écrite avant que ça
               commence, et un paiement qui reste sécurisé jusqu'à ce que la job soit faite.
             </p>
           </div>
           <div className="landing__bloc-paiement-cartes">
             {[
-              { titre: "Des déneigeurs notés", texte: "Chaque job donne lieu à une appréciation. Un travail bâclé, ça se sait — et ça ferme des portes." },
+              { titre: "Des déneigeurs citoyens notés", texte: "Chaque job donne lieu à une appréciation. Un travail bâclé, ça se sait — et ça ferme des portes." },
               { titre: "Une entente claire dès le départ", texte: "Prix, heure souhaitée, outils fournis ou non : tout est écrit avant que quelqu'un accepte." },
               { titre: "Paiement sécurisé", texte: "Traité par Stripe, retenu jusqu'à ce que la job soit confirmée faite." },
             ].map((c) => (
@@ -194,7 +194,7 @@ export default function Landing() {
             <div className="landing__arguments">
               <span className="landing__p-sur-lin">
                 <strong>Tu attends pas après une réponse.</strong> Ta demande sonne chez tous les déneigeurs
-                disponibles du secteur en même temps.
+                citoyens disponibles du secteur en même temps.
               </span>
               <span className="landing__p-sur-lin">
                 <strong>Tu sais à qui tu as affaire.</strong> Une note publique, bâtie job après job — pas
@@ -210,8 +210,8 @@ export default function Landing() {
             <h3 className="landing__h3-carte">Les villes se dessinent toutes seules</h3>
             <p className="landing__p">
               On a pas de liste de villes desservies à te faire lire. Ta ville apparaît dans Snowro dès
-              qu'il y a du monde qui s'inscrit — et une demande est toujours montrée aux déneigeurs de ta
-              ville, jamais à quelqu'un à trois autoroutes de là.
+              qu'il y a du monde qui s'inscrit — et une demande est toujours montrée aux déneigeurs citoyens
+              de ta ville, jamais à quelqu'un à trois autoroutes de là.
             </p>
             <div className="landing__jetons">
               <span className="landing__jeton">Québec</span>
@@ -220,14 +220,14 @@ export default function Landing() {
               <span className="landing__jeton-texte">et la tienne, si tu t'inscris</span>
             </div>
             <p className="landing__p landing__p--legende">
-              On ouvre une ville quand il y a assez de déneigeurs dedans pour que ça vaille la peine. C'est
-              pour ça que la liste d'attente compte.
+              On ouvre une ville quand il y a assez de déneigeurs citoyens dedans pour que ça vaille la
+              peine. C'est pour ça que la liste d'attente compte.
             </p>
           </div>
         </div>
       </section>
 
-      {/* 6. Devenir déneigeur */}
+      {/* 6. Devenir déneigeur citoyen */}
       <section id="deneigeur" className="landing__section-pleine-largeur landing__section-terre">
         <div className="landing__deux-colonnes landing__conteneur">
           <div>
@@ -240,10 +240,10 @@ export default function Landing() {
             <div className="landing__profils">
               <span>Étudiant qui veut arrondir ses fins de mois entre deux sessions</span>
               <span>Gars du coin avec une souffleuse qui dort dans le garage</span>
-              <span>Déneigeur pro qui veut remplir les trous dans sa tournée</span>
+              <span>Un pro du déneigement qui veut remplir les trous dans sa tournée</span>
             </div>
-            <a href="#liste" className="landing__bouton-ocre">
-              M'inscrire comme déneigeur
+            <a href="#liste" className="landing__bouton-ocre landing__bouton-neige">
+              M'inscrire comme déneigeur citoyen
             </a>
           </div>
           <div className="landing__carte-revenus-wrap">
@@ -289,7 +289,7 @@ export default function Landing() {
             trouve dans leurs secteurs. Les détails s'en viennent — inscris-toi pour être averti en
             premier.
           </p>
-          <a href="#liste" className="landing__bouton-ardoise">
+          <a href="#liste" className="landing__bouton-ardoise landing__bouton-neige">
             Être averti pour Pro
           </a>
         </div>
@@ -370,7 +370,7 @@ export default function Landing() {
             <span className="eyebrow landing__pied-titre">Snowro X</span>
             <a href="#comment">Comment ça marche</a>
             <a href="#frais">Frais</a>
-            <a href="#deneigeur">Devenir déneigeur</a>
+            <a href="#deneigeur">Devenir déneigeur citoyen</a>
           </div>
           <div className="landing__pied-colonne">
             <span className="eyebrow landing__pied-titre">Snowro Pro</span>

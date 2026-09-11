@@ -40,7 +40,7 @@ export default function FeeCalculator() {
           <span className="fee-calc__valeur">{formatArgent(frais)}</span>
         </div>
         <div className="fee-calc__rangee">
-          <span>Le déneigeur reçoit</span>
+          <span>Le déneigeur citoyen reçoit</span>
           <span className="fee-calc__valeur fee-calc__valeur--net">{formatArgent(net)}</span>
         </div>
       </div>

@@ -63,7 +63,7 @@ export default function WaitlistForm() {
             className={`waitlist-form__role-bouton ${role === "deneigeur" ? "waitlist-form__role-bouton--actif" : ""}`}
             onClick={() => setRole("deneigeur")}
           >
-            Déneigeur
+            Déneigeur citoyen
           </button>
         </div>
       </div>
@@ -109,7 +109,7 @@ export default function WaitlistForm() {
 
       {erreur && <p className="waitlist-form__erreur">{erreur}</p>}
 
-      <button type="submit" className="waitlist-form__bouton" disabled={enCours}>
+      <button type="submit" className="waitlist-form__bouton landing__bouton-neige" disabled={enCours}>
         {enCours ? "Envoi…" : "Rejoindre la liste"}
       </button>
       <p className="waitlist-form__mention">

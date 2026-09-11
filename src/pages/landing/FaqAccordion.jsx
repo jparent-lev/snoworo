@@ -8,24 +8,24 @@ const QUESTIONS = [
     r: "À toi de voir. Autour de Québec, une entrée simple part souvent autour de 25-35 $, une entrée double avec balcon autour de 45-60 $. Si personne prend ta demande, tu peux monter ton offre en tout temps.",
   },
   {
-    q: "Et si le déneigeur se présente pas ?",
+    q: "Et si le déneigeur citoyen se présente pas ?",
     r: "Ton paiement est retenu tant que la job est pas confirmée faite. S'il se présente pas, tu es remboursé au complet et il perd l'accès à la demande. Rien à réclamer, rien à négocier.",
   },
   {
-    q: "Est-ce que je peux choisir mon déneigeur ?",
-    r: "Pas dans la première version : c'est le premier qui accepte qui prend la job, pour que ça aille vite quand il tombe 30 cm. On laisse aussi la chance à chaque déneigeur de faire quelques jobs et de bâtir sa note avant d'ouvrir des façons de choisir selon la réputation — ça s'en vient.",
+    q: "Est-ce que je peux choisir mon déneigeur citoyen ?",
+    r: "Pas dans la première version : c'est le premier qui accepte qui prend la job, pour que ça aille vite quand il tombe 30 cm. On laisse aussi la chance à chaque déneigeur citoyen de faire quelques jobs et de bâtir sa note avant d'ouvrir des façons de choisir selon la réputation — ça s'en vient.",
   },
   {
     q: "Ça fonctionne dans ma ville ?",
-    r: "On ouvre les villes une à une, selon le nombre de déneigeurs inscrits. Ta ville apparaît toute seule dans le système dès qu'il y a du monde qui s'inscrit avec une adresse là — c'est pour ça que la liste d'attente compte plus que tu penses.",
+    r: "On ouvre les villes une à une, selon le nombre de déneigeurs citoyens inscrits. Ta ville apparaît toute seule dans le système dès qu'il y a du monde qui s'inscrit avec une adresse là — c'est pour ça que la liste d'attente compte plus que tu penses.",
   },
   {
-    q: "Je suis déneigeur : comment je me fais payer ?",
+    q: "Je suis déneigeur citoyen : comment je me fais payer ?",
     r: "Tu crées ton compte de paiement en quelques minutes (identité vérifiée par Stripe), et l'argent arrive directement dans ton compte de banque après la job. Pas de facture à envoyer, pas de chèque à courir après.",
   },
   {
     q: "C'est quoi la différence avec Snowro Pro ?",
-    r: "Snowro X, c'est le service : publier ou prendre des jobs, gratuit à installer. Snowro Pro est une offre en préparation pour les entreprises de déneigement — les détails s'en viennent.",
+    r: "Snowro X, c'est le service entre déneigeurs citoyens : publier ou prendre des jobs, gratuit à installer. Snowro Pro s'adresse aux déneigeurs professionnels — les entreprises de déneigement qui veulent voir où la demande se trouve. Les détails s'en viennent.",
   },
 ];
 
