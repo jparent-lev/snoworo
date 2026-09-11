@@ -27,7 +27,7 @@ export default function Landing() {
       <header className="landing__entete">
         <div className="landing__entete-inner">
           <a href="#haut" className="landing__logo" onClick={fermerMenu}>
-            <SnowroSymbol variant="x" size={34} />
+            <SnowroSymbol variant="x" neige surTuile size={44} />
             <span className="landing__logo-texte">snowro</span>
           </a>
           <button
@@ -80,7 +80,7 @@ export default function Landing() {
             <div className="landing__hero-phone-ecran">
               <div className="landing__hero-phone-entete">
                 <div className="landing__hero-phone-logo">
-                  <SnowroSymbol variant="x" size={26} />
+                  <SnowroSymbol variant="x" neige surTuile size={38} />
                   <span>snowro</span>
                 </div>
                 <span className="landing__hero-phone-x">X</span>
@@ -276,7 +276,7 @@ export default function Landing() {
       {/* 7. Snowro Pro — détails de l'offre à préciser, section volontairement sobre pour l'instant */}
       <section id="pro" className="landing__section">
         <div className="landing__pro-entete">
-          <SnowroSymbol variant="pro" size={40} />
+          <SnowroSymbol variant="pro" neige surTuile size={50} />
           <div className="landing__pro-lockup-texte">
             <span className="landing__pro-lockup-nom">snowro</span>
             <span className="eyebrow landing__pro-lockup-qualifiant">PRO</span>

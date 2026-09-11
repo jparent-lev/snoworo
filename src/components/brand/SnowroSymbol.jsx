@@ -18,19 +18,31 @@ const NEIGE_PATH =
 const NEIGE_COULEUR = "#FFFDF8"; // doit rester la valeur la plus claire de la composition
 const NEIGE_TAILLE_MIN = 32; // en dessous, l'amas devient une entaille indistincte
 
-export default function SnowroSymbol({ variant = "x", neige = false, size = 32, className }) {
+// Tuile lin générique — voir handoff_logo_neige/README.md, option 2 : sur un
+// fond crème/blanc cassé (trop clair pour que le débordement de la neige s'y
+// distingue), poser le symbole sur une petite tuile lin plutôt que d'abandonner
+// la neige. Le S est réduit et recentré dans la tuile (même mécanique que
+// l'icône d'appli) parce que la neige touche le bord supérieur du viewBox —
+// sans cette marge, l'amas toucherait le bord de la tuile.
+const TUILE_LIN = "#EDE0CC";
+const TUILE_ECHELLE = 0.78;
+
+export default function SnowroSymbol({ variant = "x", neige = false, surTuile = false, size = 32, className }) {
   const v = VARIANTS[variant] ?? VARIANTS.x;
   const isPro = variant === "pro";
   const isAppIcon = variant === "appIcon";
   const viewBox = isPro ? "0 0 100 106" : "0 0 100 100";
   const afficherNeige = neige && size >= NEIGE_TAILLE_MIN;
+  const surTuileGenerique = surTuile && !isAppIcon;
 
-  // Deux règles de contraste du handoff neige, appliquées automatiquement
-  // pour que l'appelant n'ait pas à s'en souvenir :
+  // Règles de contraste appliquées automatiquement pour que l'appelant n'ait
+  // pas à s'en souvenir :
   // - Sur fond terre, le S doit rester en argile (jamais lin) pour que
   //   l'amas blanc cassé se détache de la lettre.
   // - Sur l'icône d'appli, la neige inverse tuile/lettre (lin + argile)
   //   plutôt qu'argile + lin, sinon l'amas se confond avec la tuile.
+  // - Sur une tuile lin générique, même chose : le S doit être visible sur
+  //   du lin, donc jamais en lin lui-même.
   let lettre = v.lettre;
   let tuile = v.tuile;
   if (afficherNeige && variant === "reversed") lettre = "#C1652F";
@@ -38,17 +50,13 @@ export default function SnowroSymbol({ variant = "x", neige = false, size = 32, 
     tuile = "#EDE0CC";
     lettre = "#C1652F";
   }
+  if (surTuileGenerique) {
+    tuile = TUILE_LIN;
+    if (variant === "reversed") lettre = "#C1652F";
+  }
 
-  return (
-    <svg
-      viewBox={viewBox}
-      width={size}
-      height={isPro ? (size * 106) / 100 : size}
-      className={className}
-      role="img"
-      aria-label="Snowro"
-    >
-      {tuile && <rect x="0" y="0" width="100" height="100" rx="30" fill={tuile} />}
+  const marque = (
+    <>
       <path fill={v.lame} d="M24 70 H76 L78 84 A9 9 0 0 1 69 92 H31 A9 9 0 0 1 22 84 Z" />
       <text
         x="50"
@@ -62,6 +70,24 @@ export default function SnowroSymbol({ variant = "x", neige = false, size = 32, 
         S
       </text>
       {afficherNeige && <path fill={NEIGE_COULEUR} d={NEIGE_PATH} />}
+    </>
+  );
+
+  return (
+    <svg
+      viewBox={viewBox}
+      width={size}
+      height={isPro ? (size * 106) / 100 : size}
+      className={className}
+      role="img"
+      aria-label="Snowro"
+    >
+      {tuile && <rect x="0" y="0" width="100" height={isPro ? 106 : 100} rx={isPro ? 32 : 30} fill={tuile} />}
+      {surTuileGenerique ? (
+        <g transform={`translate(50 50) scale(${TUILE_ECHELLE}) translate(-50 -50)`}>{marque}</g>
+      ) : (
+        marque
+      )}
       {isPro && <rect x="14" y="99" width="72" height="7" rx="3.5" fill={v.barreZone} />}
     </svg>
   );
