@@ -188,8 +188,8 @@ export default function Landing() {
             <h3 className="landing__h3-carte">« Pourquoi pas juste le groupe Facebook du quartier ? »</h3>
             <p className="landing__p-sur-lin">
               Bonne question, et honnêtement : pour un coup de pelle entre voisins qui se connaissent, le
-              groupe fait la job. Snowro sert quand tu connais personne, qu'il est 6 h du matin et que ton
-              entrée est bloquée.
+              groupe fait la job. Snowro sert quand tu connais personne, que c'est la veille d'une bonne
+              bordée, que tu pars tôt demain matin et que t'as pas le temps de pelleter.
             </p>
             <div className="landing__arguments">
               <span className="landing__p-sur-lin">
