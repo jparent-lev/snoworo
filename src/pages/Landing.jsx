@@ -215,8 +215,8 @@ export default function Landing() {
             </p>
             <div className="landing__jetons">
               <span className="landing__jeton">Québec</span>
-              <span className="landing__jeton">Lévis</span>
-              <span className="landing__jeton">Beauport</span>
+              <span className="landing__jeton">Montréal</span>
+              <span className="landing__jeton">Trois-Rivières</span>
               <span className="landing__jeton-texte">et la tienne, si tu t'inscris</span>
             </div>
             <p className="landing__p landing__p--legende">
