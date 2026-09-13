@@ -295,26 +295,8 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* 8. Témoignages */}
-      <section className="landing__section">
-        <h2 className="landing__h2">Ce qu'on entend dans le quartier</h2>
-        <p className="landing__chapeau">
-          Snowro est pas encore lancé, alors pas de faux témoignages ici. Voici plutôt ce que le monde nous
-          a dit pendant qu'on cognait aux portes à Limoilou.
-        </p>
-        <div className="landing__temoignages">
-          {[
-            { citation: "Mon déneigeur m'a lâchée en janvier. J'ai passé trois jours à texter du monde sur Facebook.", auteur: "Mireille, 61 ans — Vieux-Limoilou" },
-            { citation: "Je fais déjà des entrées le matin avant l'école. Mon problème c'est de me faire payer, pas de trouver du monde.", auteur: "Anthony, 19 ans — Saint-Roch" },
-            { citation: "Une tempête, j'ai douze clients de contrat pis dix appels que je peux pas prendre. J'aimerais savoir où va le monde.", auteur: "Yannick — Déneigement Bergeron" },
-          ].map((t) => (
-            <blockquote key={t.auteur} className="landing__temoignage">
-              <p className="landing__temoignage-citation">« {t.citation} »</p>
-              <footer className="landing__temoignage-auteur">{t.auteur}</footer>
-            </blockquote>
-          ))}
-        </div>
-      </section>
+      {/* Témoignages retirés en attendant de vrais verbatims — voir Landing.css
+          pour les styles landing__temoignage* laissés en place pour ce retour. */}
 
       {/* 9. Liste d'attente */}
       <section id="liste" className="landing__section">
