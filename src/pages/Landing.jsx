@@ -283,7 +283,7 @@ export default function Landing() {
           </div>
         </div>
         <div className="landing__pro-simple">
-          <h2 className="landing__h2">Pour ceux qui déneigent pour vivre</h2>
+          <h2 className="landing__h2">Pour ceux qui sont des professionnels du déneigement</h2>
           <p className="landing__chapeau">
             On prépare une offre pour les entreprises de déneigement qui veulent voir où la demande se
             trouve dans leurs secteurs. Les détails s'en viennent — inscris-toi pour être averti en
