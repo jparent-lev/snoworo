@@ -16,7 +16,7 @@ export default function WaitlistForm() {
   async function onSubmit(e) {
     e.preventDefault();
     if (!CODE_POSTAL_REGEX.test(codePostal.trim())) {
-      setErreur("Code postal canadien invalide — format attendu : G1L 2M4.");
+      setErreur("Code postal canadien invalide, format attendu : G1L 2M4.");
       return;
     }
     setErreur(null);
@@ -25,7 +25,7 @@ export default function WaitlistForm() {
       await rejoindreListeAttente({ courriel: courriel.trim(), codePostal: codePostal.trim(), role, siteWeb });
       setInscrit(true);
     } catch {
-      setErreur("Quelque chose a bloqué — vérifie ton courriel et ton code postal, puis réessaie.");
+      setErreur("Quelque chose a bloqué. Vérifie ton courriel et ton code postal, puis réessaie.");
     } finally {
       setEnCours(false);
     }
@@ -36,7 +36,7 @@ export default function WaitlistForm() {
       <div className="waitlist-form waitlist-form--succes">
         <span className="waitlist-form__succes-titre">C'est noté, merci !</span>
         <span className="waitlist-form__succes-texte">
-          On t'écrit dès qu'on ouvre dans ton secteur. Pas de spam, promis — juste ça.
+          On t'écrit dès qu'on ouvre dans ton secteur. Pas de spam, promis : juste ça.
         </span>
       </div>
     );
@@ -85,7 +85,7 @@ export default function WaitlistForm() {
         <input
           type="text"
           required
-          placeholder="Code postal — G1L 2M4"
+          placeholder="Code postal (ex. G1L 2M4)"
           value={codePostal}
           onChange={(e) => setCodePostal(e.target.value)}
           className="waitlist-form__input"

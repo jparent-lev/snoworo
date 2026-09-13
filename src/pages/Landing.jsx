@@ -58,7 +58,7 @@ export default function Landing() {
           <span className="eyebrow landing__hero-eyebrow">Déneigement à la demande · Québec</span>
           <h1 className="landing__hero-titre">Un voisin qui vient pelleter chez un autre voisin.</h1>
           <p className="landing__hero-chapeau">
-            Tu publies ta demande — l'adresse, le prix, le moment qui te convient. Les déneigeurs citoyens
+            Tu publies ta demande : l'adresse, le prix, le moment qui te convient. Les déneigeurs citoyens
             disponibles dans ton secteur sont avertis tout de suite, et le premier qui accepte s'en occupe.
             Pas d'appels à faire, pas d'attente.
           </p>
@@ -71,7 +71,7 @@ export default function Landing() {
             </a>
           </div>
           <p className="landing__hero-mention">
-            Pas encore lancé. On ouvre quartier par quartier — la liste d'attente décide de l'ordre.
+            Pas encore lancé. On ouvre quartier par quartier : la liste d'attente décide de l'ordre.
           </p>
         </div>
 
@@ -87,7 +87,7 @@ export default function Landing() {
               </div>
               <div className="landing__hero-phone-corps">
                 <div className="landing__hero-phone-carte">
-                  <span className="landing__hero-phone-surtitre">À 400 M — LIMOILOU</span>
+                  <span className="landing__hero-phone-surtitre">À 400 M · LIMOILOU</span>
                   <span className="landing__hero-phone-titre">Entrée double + balcon</span>
                   <span className="landing__hero-phone-desc">Avant 8 h demain matin. Pelle fournie si tu en as pas.</span>
                   <div className="landing__hero-phone-prix-ligne">
@@ -96,7 +96,7 @@ export default function Landing() {
                   </div>
                 </div>
                 <div className="landing__hero-phone-carte landing__hero-phone-carte--sourdine">
-                  <span className="landing__hero-phone-surtitre">À 1,1 KM — VIEUX-LIMOILOU</span>
+                  <span className="landing__hero-phone-surtitre">À 1,1 KM · VIEUX-LIMOILOU</span>
                   <span className="landing__hero-phone-titre">Petit stationnement</span>
                   <span className="landing__hero-phone-prix landing__hero-phone-prix--petit">30 $</span>
                 </div>
@@ -122,7 +122,7 @@ export default function Landing() {
             },
             {
               titre: "Le quartier reçoit l'appel",
-              texte: "Tous les déneigeurs citoyens disponibles dans ton secteur sont avertis en même temps. Le premier qui accepte, c'est le tien — pas besoin de magasiner.",
+              texte: "Tous les déneigeurs citoyens disponibles dans ton secteur sont avertis en même temps. Le premier qui accepte, c'est le tien : pas besoin de magasiner.",
             },
             {
               titre: "C'est pelleté, c'est payé",
@@ -152,7 +152,7 @@ export default function Landing() {
           </div>
           <div className="landing__bloc-paiement-cartes">
             {[
-              { titre: "Des déneigeurs citoyens notés", texte: "Chaque job donne lieu à une appréciation. Un travail bâclé, ça se sait — et ça ferme des portes." },
+              { titre: "Des déneigeurs citoyens notés", texte: "Chaque job donne lieu à une appréciation. Un travail bâclé, ça se sait, et ça ferme des portes." },
               { titre: "Une entente claire dès le départ", texte: "Prix, heure souhaitée, outils fournis ou non : tout est écrit avant que quelqu'un accepte." },
               { titre: "Paiement sécurisé", texte: "Traité par Stripe, retenu jusqu'à ce que la job soit confirmée faite." },
             ].map((c) => (
@@ -197,7 +197,7 @@ export default function Landing() {
                 citoyens disponibles du secteur en même temps.
               </span>
               <span className="landing__p-sur-lin">
-                <strong>Tu sais à qui tu as affaire.</strong> Une note publique, bâtie job après job — pas
+                <strong>Tu sais à qui tu as affaire.</strong> Une note publique, bâtie job après job, pas
                 un profil anonyme dans un fil de commentaires.
               </span>
               <span className="landing__p-sur-lin">
@@ -210,7 +210,7 @@ export default function Landing() {
             <h3 className="landing__h3-carte">Les villes se dessinent toutes seules</h3>
             <p className="landing__p">
               On a pas de liste de villes desservies à te faire lire. Ta ville apparaît dans Snowro dès
-              qu'il y a du monde qui s'inscrit — et une demande est toujours montrée aux déneigeurs citoyens
+              qu'il y a du monde qui s'inscrit, et une demande est toujours montrée aux déneigeurs citoyens
               de ta ville, jamais à quelqu'un à trois autoroutes de là.
             </p>
             <div className="landing__jetons">
@@ -251,15 +251,15 @@ export default function Landing() {
               <span className="eyebrow landing__carte-revenus-eyebrow">Ta semaine, en gros</span>
               <div className="landing__revenus-lignes">
                 <div className="landing__revenu-ligne">
-                  <span>Mardi — 3 entrées</span>
+                  <span>Mardi : 3 entrées</span>
                   <span className="landing__revenu-montant">110 $</span>
                 </div>
                 <div className="landing__revenu-ligne">
-                  <span>Jeudi — 1 stationnement</span>
+                  <span>Jeudi : 1 stationnement</span>
                   <span className="landing__revenu-montant">55 $</span>
                 </div>
                 <div className="landing__revenu-ligne landing__revenu-ligne--dernier">
-                  <span>Samedi — 4 entrées</span>
+                  <span>Samedi : 4 entrées</span>
                   <span className="landing__revenu-montant">145 $</span>
                 </div>
               </div>
@@ -286,7 +286,7 @@ export default function Landing() {
           <h2 className="landing__h2">Pour ceux qui sont des professionnels du déneigement</h2>
           <p className="landing__chapeau">
             On prépare une offre pour les entreprises de déneigement qui veulent voir où la demande se
-            trouve dans leurs secteurs. Les détails s'en viennent — inscris-toi pour être averti en
+            trouve dans leurs secteurs. Les détails s'en viennent. Inscris-toi pour être averti en
             premier.
           </p>
           <a href="#liste" className="landing__bouton-ardoise landing__bouton-neige landing__bouton-neige--e">
@@ -305,7 +305,7 @@ export default function Landing() {
             <h2 className="landing__h2 landing__h2--sur-argile">On ouvre où il y a du monde</h2>
             <p className="landing__p landing__p--sur-argile-clair">
               Laisse-nous ton courriel et ton code postal. On te fait signe quand Snowro débarque dans ton
-              coin — et ton inscription fait avancer ta ville dans la file.
+              coin, et ton inscription fait avancer ta ville dans la file.
             </p>
           </div>
           <WaitlistForm />
@@ -325,7 +325,7 @@ export default function Landing() {
             <span className="eyebrow landing__eyebrow-ardoise">D'où vient le nom</span>
             <h2 className="landing__h2 landing__h2--petit">Snow + snoreau</h2>
             <p className="landing__p-sur-lin">
-              Un snoreau, chez nous, c'est un petit vaurien sympathique — celui qui te joue un tour pis qui
+              Un snoreau, chez nous, c'est un petit vaurien sympathique, celui qui te joue un tour pis qui
               vient te donner un coup de main dix minutes après. C'est pas mal l'esprit qu'on cherche.
             </p>
             <p className="landing__p-sur-lin">

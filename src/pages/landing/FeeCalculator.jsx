@@ -45,7 +45,7 @@ export default function FeeCalculator() {
         </div>
       </div>
       <p className="fee-calc__mention">
-        Exemple à titre indicatif — la structure finale sera affichée avant le lancement, et elle sera
+        Exemple à titre indicatif : la structure finale sera affichée avant le lancement, et elle sera
         celle-là ou plus basse.
       </p>
     </div>
