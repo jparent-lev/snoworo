@@ -142,13 +142,13 @@ export default function HeroIllustration() {
               <circle cx="276" cy="203" r="5" className="hero-illu__pompon" />
 
               <g className="hero-illu__pelle">
-                <line x1="282" y1="258" x2="234" y2="310" className="hero-illu__manche" />
+                <line x1="282" y1="258" x2="243" y2="300" className="hero-illu__manche" />
                 {/* Lame dans l'axe du manche (angle 132,7deg), fixée au bout par une
                     douille : dessinée à plat puis tournée autour de l'extrémité. */}
-                <g transform="translate(234 310) rotate(132.7)">
-                  {/* Lame de pelle à neige : courte dans l'axe du manche, large en
-                      travers, avec un rebord au bout (sinon elle a l'air d'un balai). */}
-                  <path d="M3 -4 L12 -15.5 Q15 -17.5 17 -15 L17 15 Q15 17.5 12 15.5 L3 4 Z" className="hero-illu__lame" />
+                <g transform="translate(243 300) rotate(132.7)">
+                  {/* Lame de pelle à neige : col qui s'évase depuis la douille, rebord
+                      arrière, puis la palette large qui s'avance vers le sol. */}
+                  <path d="M3 -4 L12 -15.5 Q15 -17.5 17 -15.5 H24 Q27 -15.5 27 -12.5 V12.5 Q27 15.5 24 15.5 H17 Q15 17.5 12 15.5 L3 4 Z" className="hero-illu__lame" />
                   <rect x="15" y="-15.5" width="3" height="31" rx="1.5" className="hero-illu__lame-bord" />
                   <rect x="-3" y="-3" width="9" height="6" rx="2" className="hero-illu__douille" />
                 </g>
