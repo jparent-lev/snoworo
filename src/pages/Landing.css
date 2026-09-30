@@ -202,10 +202,6 @@
   min-width: 0;
 }
 
-.landing__hero-eyebrow {
-  color: var(--color-ardoise);
-}
-
 .landing__hero-titre {
   font-size: clamp(38px, 5.6vw, 62px);
   line-height: 1.02;
