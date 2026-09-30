@@ -24,6 +24,14 @@ const QUESTIONS = [
     r: "Tu crées ton compte de paiement en quelques minutes (identité vérifiée par Stripe), et l'argent arrive directement dans ton compte de banque après la job. Pas de facture à envoyer, pas de virement à courir après.",
   },
   {
+    // Délais : règle de confirmation automatique de 12 h (décision produit) et
+    // délais Stripe au Canada (3 jours ouvrables de règlement, premier
+    // versement d'un nouveau compte autour de 7 jours). À revalider une fois
+    // Stripe Connect configuré.
+    q: "Une fois la job faite, ça prend combien de temps avant que je sois payé ?",
+    r: "Quand tu marques la job faite, le client a 12 heures pour confirmer ou signaler un problème. S'il fait rien, c'est confirmé tout seul. Dès que c'est confirmé, on déclenche ton versement : l'argent arrive dans ton compte de banque en général en 2 à 4 jours ouvrables. Ton tout premier versement prend un peu plus de temps, autour de 7 jours : c'est une vérification standard de Stripe pour les nouveaux comptes.",
+  },
+  {
     q: "C'est quoi la différence avec Snowro Pro ?",
     r: "Snowro, c'est le service entre déneigeurs de quartier : publier ou prendre des jobs, gratuit à installer. Snowro Pro s'adresse aux déneigeurs professionnels : les entreprises de déneigement qui veulent voir où la demande se trouve. Les détails s'en viennent.",
   },
