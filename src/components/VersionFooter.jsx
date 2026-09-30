@@ -1,6 +1,6 @@
 // __SNOWRO_VERSION__ et __SNOWRO_BUILD_TIME__ sont injectés au build par
 // vite.config.js (commit court + horodatage) — utile pour distinguer les
-// déploiements en production sans avoir à fouiller les logs Netlify.
+// déploiements en production sans avoir à fouiller les journaux de déploiement.
 const formatteurDate = new Intl.DateTimeFormat("fr-CA", {
   dateStyle: "medium",
   timeStyle: "short",

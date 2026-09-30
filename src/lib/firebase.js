@@ -19,7 +19,7 @@ export const functions = getFunctions(app, "northamerica-northeast1");
 
 // Développement local : `VITE_UTILISER_EMULATEURS=1` dans .env branche l'app
 // sur les émulateurs Firebase (firebase emulators:start) au lieu de la
-// production. Jamais défini dans le build Netlify.
+// production. Toujours vide dans .env.production.
 if (import.meta.env.VITE_UTILISER_EMULATEURS === "1") {
   connectAuthEmulator(auth, "http://127.0.0.1:9099", { disableWarnings: true });
   connectFirestoreEmulator(db, "127.0.0.1", 8080);

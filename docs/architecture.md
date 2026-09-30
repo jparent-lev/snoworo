@@ -37,7 +37,7 @@ structure figées par `design_handoff_snowro_site`.
 | Couche | Choix |
 |---|---|
 | Frontend | React 19 (Vite), React Router |
-| Hébergement frontend | Netlify |
+| Hébergement frontend | Firebase Hosting (projet `snowro-app`), déployé par GitHub Actions avec le reste |
 | Backend/DB/Auth | Firebase (Firestore + Auth + Cloud Functions v2) |
 | Paiements Snowro X | Stripe Connect (comptes Express) — pas encore implémenté, voir ci-dessous |
 | Paiements Snowro Pro | Stripe Billing (abonnement) — pas encore implémenté |
