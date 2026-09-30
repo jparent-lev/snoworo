@@ -44,10 +44,6 @@ export default function FeeCalculator() {
           <span className="fee-calc__valeur fee-calc__valeur--net">{formatArgent(net)}</span>
         </div>
       </div>
-      <p className="fee-calc__mention">
-        Exemple à titre indicatif : la structure finale sera affichée avant le lancement, et elle sera
-        celle-là ou plus basse.
-      </p>
     </div>
   );
 }
