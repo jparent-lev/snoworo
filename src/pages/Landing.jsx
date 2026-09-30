@@ -67,7 +67,7 @@ export default function Landing() {
       <section id="haut" className="landing__hero">
         <div className="landing__hero-texte">
           <span className="eyebrow landing__hero-eyebrow">Déneigement à la demande · Québec</span>
-          <h1 className="landing__hero-titre">Un voisin qui vient pelleter chez un autre voisin.</h1>
+          <h1 className="landing__hero-titre">Déneigement citoyen à la demande, sans contrat.</h1>
           <p className="landing__hero-chapeau">
             Tu publies ta demande : l'adresse, le prix, le moment qui te convient. Les déneigeurs citoyens
             disponibles dans ton secteur sont avertis tout de suite, et le premier qui accepte s'en occupe.
