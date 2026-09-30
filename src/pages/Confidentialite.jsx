@@ -125,15 +125,12 @@ export default function Confidentialite() {
       </p>
       <ul>
         <li>
-          <strong>Google (Firebase et Google Maps Platform) :</strong> hébergement de la base de données,
+          <strong>Google (Firebase et Google Maps Platform) :</strong> hébergement du site web et de la base de données,
           authentification, fonctions serveur et conversion d'un code postal ou d'une position en nom de ville.
         </li>
         <li>
           <strong>Stripe :</strong> traitement des paiements et vérification d'identité des déneigeurs de
           quartier.
-        </li>
-        <li>
-          <strong>Netlify :</strong> hébergement du site web.
         </li>
         <li>
           <strong>Resend :</strong> envoi des courriels de Snowro (confirmation d'inscription, avis liés à tes
@@ -154,7 +151,7 @@ export default function Confidentialite() {
 
       <h2>Renseignements conservés à l'extérieur du Québec</h2>
       <p>
-        Nos fonctions serveur roulent à Montréal. Certains de nos fournisseurs (Google, Stripe, Netlify, Resend)
+        Nos fonctions serveur roulent à Montréal. Certains de nos fournisseurs (Google, Stripe, Resend)
         peuvent toutefois conserver ou traiter des renseignements ailleurs au Canada et aux États-Unis. Avant de
         le faire, on a évalué que la protection offerte par ces fournisseurs est adéquate, notamment par leurs
         engagements contractuels de confidentialité et de sécurité, comme l'exige la Loi 25.

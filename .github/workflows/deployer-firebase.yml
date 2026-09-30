@@ -1,23 +1,18 @@
-# Déploie les Cloud Functions, les règles et les index Firestore à chaque
-# fusion dans main qui touche ces fichiers (le site, lui, est déployé par
-# Netlify). Authentification sans clé : Workload Identity Federation, limitée
-# à la branche main de ce dépôt. Configuration unique côté Google Cloud :
+# Déploie tout Snowro sur Firebase à chaque fusion dans main : le site
+# (Firebase Hosting), les Cloud Functions, les règles et les index Firestore.
+# Les fonctions inchangées sont sautées par la CLI Firebase.
+# Authentification sans clé : Workload Identity Federation, limitée à la
+# branche main de ce dépôt. Configuration unique côté Google Cloud :
 # scripts/configurer-deploiement-ci.sh, puis deux variables de dépôt GitHub
 # (Settings > Secrets and variables > Actions > Variables) :
 #   GCP_WIF_PROVIDER    projects/<numéro>/locations/global/workloadIdentityPools/github/providers/snoworo
 #   GCP_SA_DEPLOIEMENT  deploiement-github@snowro-app.iam.gserviceaccount.com
-name: Déployer Firebase
+name: Déployer Snowro
 
 on:
   push:
     branches: [main]
-    paths:
-      - "functions/**"
-      - "firestore.rules"
-      - "firestore.indexes.json"
-      - "firebase.json"
-  # Lancement manuel (onglet Actions > Déployer Firebase > Run workflow),
-  # par exemple après avoir ajouté un secret.
+  # Lancement manuel (onglet Actions > Déployer Snowro > Run workflow).
   workflow_dispatch:
 
 # Jamais deux déploiements en même temps ; un déploiement en cours n'est pas
@@ -44,7 +39,16 @@ jobs:
         with:
           node-version: 22
           cache: npm
-          cache-dependency-path: functions/package-lock.json
+          cache-dependency-path: |
+            package-lock.json
+            functions/package-lock.json
+
+      # Configuration web lue dans .env.production ; version affichée dans le
+      # pied de page = commit court (vite.config.js).
+      - name: Construire le site
+        run: |
+          npm ci
+          npm run build
 
       - name: Installer les dépendances des fonctions
         working-directory: functions
@@ -59,5 +63,5 @@ jobs:
       - name: Déployer
         run: >-
           npx --yes firebase-tools@15
-          deploy --only functions,firestore:rules,firestore:indexes
+          deploy --only hosting,functions,firestore:rules,firestore:indexes
           --project snowro-app --non-interactive

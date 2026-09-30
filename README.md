@@ -12,21 +12,21 @@ cp .env.example .env   # puis remplir avec la config d'un projet Firebase
 npm run dev
 ```
 
-Sans config Firebase valide dans `.env`, l'app démarre mais l'auth/Firestore
-échoueront silencieusement — créer un projet Firebase (Auth + Firestore) et
-copier sa config web dans `.env` pour tester le flux complet.
+`npm run dev` lit `.env` (à créer, jamais versionné) ; `npm run build` lit
+`.env.production` (configuration web du projet de production, versionnée).
+Pour développer sans toucher la production, mettre `VITE_UTILISER_EMULATEURS=1`
+dans `.env` et lancer les émulateurs (voir `tests/README.md`).
 
 ## Firebase (règles, index, functions)
 
-**Déploiement automatique.** Chaque fusion dans `main` qui touche
-`functions/`, `firestore.rules`, `firestore.indexes.json` ou `firebase.json`
-déploie les fonctions, les règles et les index par GitHub Actions
-(`.github/workflows/deployer-firebase.yml`). Le site, lui, est déployé par
-Netlify. Lancement manuel possible : onglet Actions > « Déployer Firebase » >
-Run workflow. Configuration unique, sans clé de compte de service : lancer
-`scripts/configurer-deploiement-ci.sh` dans Cloud Shell, puis ajouter les deux
-variables de dépôt GitHub qu'il affiche. Les secrets (ci-dessous) doivent
-exister avant le déploiement, sinon il échoue.
+**Déploiement automatique.** Chaque fusion dans `main` construit et déploie
+tout sur Firebase par GitHub Actions (`.github/workflows/deployer-firebase.yml`) :
+le site (Firebase Hosting, configuration web dans `.env.production`), les
+fonctions, les règles et les index. Lancement manuel possible : onglet Actions >
+« Déployer Snowro » > Run workflow. Configuration unique, sans clé de compte de
+service : lancer `scripts/configurer-deploiement-ci.sh` dans Cloud Shell, puis
+ajouter les deux variables de dépôt GitHub qu'il affiche. Les secrets
+(ci-dessous) doivent exister avant le déploiement, sinon il échoue.
 
 Fonctions en Node.js 22 (`functions/package.json`, champ `engines`) : Node 20
 est retiré par Google le 30 octobre 2026. Pas Node 24 : `onUserCreate` est une

@@ -8,7 +8,7 @@
 #
 # Crée, sans aucune clé à télécharger :
 #   - un compte de service « deploiement-github » avec les rôles nécessaires
-#     au déploiement (fonctions, règles et index Firestore) ;
+#     au déploiement (site, fonctions, règles et index Firestore) ;
 #   - un pool Workload Identity Federation « github » dont le fournisseur
 #     n'accepte QUE la branche main du dépôt jparent-lev/snoworo.
 # Peut être relancé sans danger : ce qui existe déjà est conservé.
@@ -60,6 +60,7 @@ ROLES=(
   roles/secretmanager.admin            # lier les secrets (RESEND_API_KEY, etc.) aux fonctions
   roles/eventarc.admin                 # déclencheurs Firestore 2e génération
   roles/cloudscheduler.admin           # fonctions planifiées (regenererZonesStats)
+  roles/firebasehosting.admin          # site web (Firebase Hosting)
   roles/firebaserules.admin            # règles Firestore
   roles/datastore.indexAdmin           # index Firestore
   roles/firebase.viewer                # lecture du projet par la CLI Firebase
