@@ -37,7 +37,7 @@ export default function Conditions() {
       <p>
         Snowro n'est pas une entreprise de déneigement. On ne fait pas le déneigement nous-mêmes, et les
         déneigeurs de quartier ne sont ni nos employés, ni nos sous-traitants, ni nos mandataires : chacun
-        décide librement des demandes qu'il accepte, sans horaire ni obligation de notre part. Il n'y a pas de
+        décide librement des demandes qu'il accepte, sans horaire imposé ni obligation de notre part. Il n'y a pas de
         contrat de saison : chaque job est une entente ponctuelle entre le client et le déneigeur de quartier.
       </p>
 
