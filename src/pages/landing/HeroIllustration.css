@@ -50,6 +50,12 @@
 .hero-illu__oeil { fill: var(--color-terre); }
 .hero-illu__tuque { fill: var(--color-argile); }
 .hero-illu__tuque-rebord { fill: var(--color-argile-foncee); }
+.hero-illu__tuque-s {
+  fill: var(--color-surface-carte);
+  font-family: var(--font-titrage);
+  font-weight: 900;
+  font-size: 12.5px;
+}
 .hero-illu__pompon { fill: var(--color-ocre); }
 .hero-illu__manche { stroke: var(--color-terre); stroke-width: 4; stroke-linecap: round; }
 .hero-illu__lame { fill: var(--color-ocre); }

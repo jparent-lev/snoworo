@@ -123,7 +123,7 @@ export default function HeroIllustration() {
             className="hero-illu__neige hero-illu__amas"
           />
 
-          {/* Personnage : tuque, foulard, pelle à lame ocre (clin d'oeil au symbole) */}
+          {/* Personnage : tuque au S de Snowro, foulard, pelle à lame ocre (clin d'oeil au symbole) */}
           <g className="hero-illu__perso">
             <rect x="262" y="320" width="13" height="11" rx="3" className="hero-illu__botte" />
             <rect x="279" y="320" width="13" height="11" rx="3" className="hero-illu__botte" />
@@ -137,6 +137,8 @@ export default function HeroIllustration() {
               <circle cx="267" cy="231" r="1.6" className="hero-illu__oeil" />
               <path d="M261 222 Q262 205 276 205 Q289 206 288 222 Z" className="hero-illu__tuque" />
               <rect x="259" y="219" width="31" height="6" rx="3" className="hero-illu__tuque-rebord" />
+              {/* S du symbole sur le devant de la tuque (le personnage regarde à gauche) */}
+              <text x="269" y="218.6" textAnchor="middle" className="hero-illu__tuque-s">S</text>
               <circle cx="276" cy="203" r="5" className="hero-illu__pompon" />
 
               <g className="hero-illu__pelle">
