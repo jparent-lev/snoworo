@@ -13,6 +13,10 @@
 .landing__conteneur,
 .landing__hero,
 .landing__section {
+  /* width: 100% obligatoire : .landing est un flex en colonne, et sans ça
+     margin: 0 auto rétrécit chaque section à la largeur de son contenu
+     (bords gauches décalés d'une section à l'autre). */
+  width: 100%;
   max-width: 1180px;
   margin: 0 auto;
   padding-left: 24px;
@@ -186,7 +190,7 @@
   padding-top: 72px;
   padding-bottom: 24px;
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(340px, 100%), 1fr));
   gap: 56px;
   align-items: center;
 }
@@ -664,14 +668,14 @@
 
 .landing__deux-colonnes {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(300px, 100%), 1fr));
   gap: 44px;
   align-items: start;
 }
 
 .landing__deux-cartes {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(300px, 100%), 1fr));
   gap: 22px;
 }
 
@@ -679,7 +683,7 @@
 
 .landing__etapes-grille {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(260px, 100%), 1fr));
   gap: 22px;
 }
 
@@ -717,7 +721,7 @@
   border-radius: 22px;
   padding: clamp(28px, 4vw, 48px);
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(280px, 100%), 1fr));
   gap: 40px;
   align-items: center;
 }
@@ -992,7 +996,7 @@
 
 .landing__temoignages {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(280px, 100%), 1fr));
   gap: 22px;
 }
 
@@ -1028,7 +1032,7 @@
   border-radius: 22px;
   padding: clamp(30px, 4.5vw, 56px);
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(300px, 100%), 1fr));
   gap: 44px;
   align-items: center;
 }
@@ -1054,7 +1058,7 @@
   border-radius: 22px;
   padding: clamp(28px, 4vw, 48px);
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(280px, 100%), 1fr));
   gap: 44px;
   align-items: center;
 }
