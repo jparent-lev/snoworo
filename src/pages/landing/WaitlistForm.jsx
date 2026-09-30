@@ -63,7 +63,7 @@ export default function WaitlistForm() {
             className={`waitlist-form__role-bouton ${role === "deneigeur" ? "waitlist-form__role-bouton--actif" : ""}`}
             onClick={() => setRole("deneigeur")}
           >
-            Déneigeur citoyen
+            Déneigeur de quartier
           </button>
         </div>
       </div>

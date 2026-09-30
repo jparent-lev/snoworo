@@ -1,7 +1,7 @@
 import SnowroSymbol from "../../components/brand/SnowroSymbol";
 import "./HeroIllustration.css";
 
-// Illustration animée du héros : un déneigeur citoyen pellette devant un
+// Illustration animée du héros : un déneigeur de quartier pellette devant un
 // triplex de Limoilou pendant que son téléphone raconte la même job. Une seule
 // boucle de 8 s (--hero-cycle) pilote la scène ET les écrans du téléphone, pour
 // que les deux restent raccord :

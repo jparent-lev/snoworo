@@ -68,7 +68,7 @@ export default function Landing() {
         <div className="landing__hero-texte">
           <h1 className="landing__hero-titre">Déneigement à la demande, sans contrat.</h1>
           <p className="landing__hero-chapeau">
-            Tu publies ta demande : l'adresse, le prix, le moment qui te convient. Les déneigeurs citoyens
+            Tu publies ta demande : l'adresse, le prix, le moment qui te convient. Les déneigeurs de quartier
             disponibles dans ton secteur sont avertis tout de suite, et le premier qui accepte s'en occupe.
             Pas d'appels à faire, pas d'attente.
           </p>
@@ -102,11 +102,11 @@ export default function Landing() {
             },
             {
               titre: "Le quartier reçoit l'appel",
-              texte: "Tous les déneigeurs citoyens disponibles dans ton secteur sont avertis en même temps. Le premier qui accepte, c'est le tien : pas besoin de magasiner.",
+              texte: "Tous les déneigeurs de quartier disponibles dans ton secteur sont avertis en même temps. Le premier qui accepte, c'est le tien : pas besoin de magasiner.",
             },
             {
               titre: "C'est pelleté, c'est payé",
-              texte: "On garde ton paiement le temps que la job se fasse, puis on le verse au déneigeur citoyen. Reçu automatique des deux bords.",
+              texte: "On garde ton paiement le temps que la job se fasse, puis on le verse au déneigeur de quartier. Reçu automatique des deux bords.",
             },
           ].map((etape, i) => (
             <div key={etape.titre} className="landing__etape-carte">
@@ -130,13 +130,13 @@ export default function Landing() {
             <h2 className="landing__h2 landing__h2--sur-ardoise">Tu sais avec qui tu traites, pis à quoi t'attendre</h2>
             <p className="landing__p landing__p--sur-ardoise">
               Aller vite, c'est bien, mais Snowro ajoute trois affaires que le groupe Facebook du quartier
-              t'offre pas : une note publique sur chaque déneigeur citoyen, une entente écrite avant que ça
+              t'offre pas : une note publique sur chaque déneigeur de quartier, une entente écrite avant que ça
               commence, et un paiement qui reste sécurisé jusqu'à ce que la job soit faite.
             </p>
           </div>
           <div className="landing__bloc-paiement-cartes">
             {[
-              { icone: "note", titre: "Des déneigeurs citoyens notés", texte: "Chaque job donne lieu à une appréciation. Un travail bâclé, ça se sait, et ça ferme des portes." },
+              { icone: "note", titre: "Des déneigeurs de quartier notés", texte: "Chaque job donne lieu à une appréciation. Un travail bâclé, ça se sait, et ça ferme des portes." },
               { icone: "entente", titre: "Une entente claire dès le départ", texte: "Prix, heure souhaitée, outils fournis ou non : tout est écrit avant que quelqu'un accepte." },
               { icone: "cadenas", titre: "Paiement sécurisé", texte: "Traité par Stripe, retenu jusqu'à ce que la job soit confirmée faite." },
             ].map((c) => (
@@ -181,7 +181,7 @@ export default function Landing() {
             <div className="landing__arguments">
               <span className="landing__p-sur-lin">
                 <strong>Tu attends pas après une réponse.</strong> Ta demande sonne chez tous les déneigeurs
-                citoyens disponibles du secteur en même temps.
+                de quartier disponibles du secteur en même temps.
               </span>
               <span className="landing__p-sur-lin">
                 <strong>Tu sais à qui tu as affaire.</strong> Une note publique, bâtie job après job, pas
@@ -197,7 +197,7 @@ export default function Landing() {
             <h3 className="landing__h3-carte">Les villes se dessinent toutes seules</h3>
             <p className="landing__p">
               On a pas de liste de villes desservies à te faire lire. Ta ville apparaît dans Snowro dès
-              qu'il y a du monde qui s'inscrit, et une demande est toujours montrée aux déneigeurs citoyens
+              qu'il y a du monde qui s'inscrit, et une demande est toujours montrée aux déneigeurs de quartier
               de ta ville, jamais à quelqu'un à trois autoroutes de là.
             </p>
             <CarteVilles />
@@ -208,14 +208,14 @@ export default function Landing() {
               <span className="landing__jeton-texte">et la tienne, si tu t'inscris</span>
             </div>
             <p className="landing__p landing__p--legende">
-              On ouvre une ville quand il y a assez de déneigeurs citoyens dedans pour que ça vaille la
+              On ouvre une ville quand il y a assez de déneigeurs de quartier dedans pour que ça vaille la
               peine. C'est pour ça que la liste d'attente compte.
             </p>
           </div>
         </div>
       </section>
 
-      {/* 6. Devenir déneigeur citoyen */}
+      {/* 6. Devenir déneigeur de quartier */}
       <section id="deneigeur" className="landing__section-pleine-largeur landing__section-terre">
         <CapNeige plat className="landing__cap-terre" />
         <ChuteDeNeige />
@@ -242,7 +242,7 @@ export default function Landing() {
               </span>
             </div>
             <a href="#liste" className="landing__bouton-ocre landing__bouton-neige landing__bouton-neige--d">
-              M'inscrire comme déneigeur citoyen
+              M'inscrire comme déneigeur de quartier
             </a>
           </div>
           <div className="landing__carte-revenus-wrap">
@@ -356,7 +356,7 @@ export default function Landing() {
             <span className="eyebrow landing__pied-titre">Snowro X</span>
             <a href="#comment">Comment ça marche</a>
             <a href="#frais">Frais</a>
-            <a href="#deneigeur">Devenir déneigeur citoyen</a>
+            <a href="#deneigeur">Devenir déneigeur de quartier</a>
           </div>
           <div className="landing__pied-colonne">
             <span className="eyebrow landing__pied-titre">Snowro Pro</span>

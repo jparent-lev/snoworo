@@ -374,7 +374,7 @@
   opacity: 0;
 }
 
-/* d — « M'inscrire comme déneigeur citoyen » : amas au coin droit, miette isolée à gauche */
+/* d — « M'inscrire comme déneigeur de quartier » : amas au coin droit, miette isolée à gauche */
 .landing__bouton-neige--d::before {
   top: -5px;
   right: 18px;
