@@ -51,18 +51,24 @@ function composerConfirmation({ role, ville }) {
           `Ton inscription compte pour ouvrir Snowro ${coin} : on ouvre quartier par quartier, là où il y a du monde.`,
           "On t'écrit dès que Snowro débarque dans ton secteur. Pas de spam, promis : juste ça.",
         ];
+  // Partage simple (même lien pour tout le monde), comme sur le site.
+  const partage = (lien) =>
+    `Tu connais des voisins qui voudraient faire déneiger ou donner un coup de pelle ? Partage-leur ${lien} : plus on est nombreux dans ton secteur, plus vite on ouvre.`;
 
   const titre = "C'est noté, merci !";
   const pied =
     "Tu reçois ce courriel parce que cette adresse a été inscrite à la liste d'attente sur snowro.com. " +
     "Si ce n'est pas toi, ou si tu veux te retirer de la liste, réponds simplement à ce courriel.";
-  const lignes = paragraphes(ville ? `à ${ville}` : "dans ton coin");
+  const lignes = [...paragraphes(ville ? `à ${ville}` : "dans ton coin"), partage("https://snowro.com")];
 
   return {
     sujet: "C'est noté : tu es sur la liste Snowro",
     html: gabaritCourriel({
       titre,
-      paragraphes: paragraphes(ville ? `à ${echapperHtml(ville)}` : "dans ton coin"),
+      paragraphes: [
+        ...paragraphes(ville ? `à ${echapperHtml(ville)}` : "dans ton coin"),
+        partage('<a href="https://snowro.com" style="color:#9E4E23;font-weight:700;">snowro.com</a>'),
+      ],
       piedDePage: pied,
     }),
     texte: [titre, "", ...lignes, "", "L'équipe Snowro", "https://snowro.com", "", pied].join("\n"),

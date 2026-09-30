@@ -54,6 +54,8 @@ export const rejoindreListeAttente = onCall(
       { merge: true },
     );
 
-    return { ok: true };
+    // `ville` sert au message de partage affiché après l'inscription
+    // (src/pages/landing/PartageListe.jsx).
+    return { ok: true, ville: derive.ville };
   },
 );
