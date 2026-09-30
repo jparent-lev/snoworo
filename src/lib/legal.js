@@ -3,9 +3,9 @@
 // à chaque modification du texte de l'une ou l'autre politique (la Loi 25
 // demande que la version en vigueur soit identifiable).
 export const INFOS_LEGALES = {
-  // TODO avant la mise en ligne : nom légal de la société (et NEQ si voulu).
-  nomLegal: "[NOM LÉGAL DE LA SOCIÉTÉ]",
+  // Nom légal de la société (ajouter « inc. » ou le NEQ ici si voulu).
+  nomLegal: "Snowro",
   courriel: "allo@snowro.ca",
   responsableRenseignements: "Jonathan Parent",
-  miseAJour: "29 septembre 2026",
+  miseAJour: "30 septembre 2026",
 };

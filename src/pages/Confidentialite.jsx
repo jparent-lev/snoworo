@@ -25,7 +25,7 @@ export default function Confidentialite() {
 
       <h2>Qui est responsable de tes renseignements</h2>
       <p>
-        Snowro est exploité par {nomLegal}, à Québec. La personne responsable de la protection des
+        Snowro est exploité à Québec par la société {nomLegal}. La personne responsable de la protection des
         renseignements personnels est {responsableRenseignements}. Pour toute question ou demande liée à
         tes renseignements, écris-lui à {lienCourriel} ou passe par la page{" "}
         <Link to="/nous-ecrire">Nous écrire</Link>.

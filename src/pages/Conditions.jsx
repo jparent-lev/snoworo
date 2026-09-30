@@ -23,7 +23,7 @@ export default function Conditions() {
 
       <h2>1. Qui on est</h2>
       <p>
-        Snowro est une plateforme exploitée par {nomLegal}, à Québec (« Snowro », « on », « nous »). En utilisant
+        Snowro est une plateforme exploitée à Québec par la société {nomLegal} (« Snowro », « on », « nous »). En utilisant
         le site ou l'application, tu acceptes ces conditions et notre{" "}
         <Link to="/confidentialite">politique de confidentialité</Link>.
       </p>
