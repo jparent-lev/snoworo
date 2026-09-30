@@ -129,7 +129,19 @@ fraisPct: 8`, identiques aux valeurs par défaut de la maquette).
 courriel, codePostal, role: "client" | "deneigeur"
 ville, villeGeoId       // dérivés par géocodage serveur du codePostal
 createdAt
+confirmation: {         // écrit par confirmerInscriptionListeAttente
+  statut: "envoyee" | "echec",
+  resendId: string | null,
+  envoyeeAt: timestamp | null,
+  erreur: string | null
+}
 ```
+
+Le courriel de confirmation part à la **création** du document seulement
+(`functions/src/confirmationListeAttente.js`, envoi par Resend via
+`functions/src/courriels.js`) : une réinscription ne renvoie rien. Un envoi
+en échec n'annule jamais l'inscription ; les documents avec
+`confirmation.statut == "echec"` sont à relancer à la main.
 
 Site vitrine de pré-lancement (`design_handoff_snowro_site`) — collecte
 d'inscriptions à la liste d'attente. Le document est identifié par le

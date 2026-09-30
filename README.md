@@ -28,6 +28,9 @@ firebase deploy --only firestore:rules,firestore:indexes
 # Requis avant de déployer functions/ : clé Geocoding API (voir
 # docs/architecture.md § Intégrité du matching géographique)
 firebase functions:secrets:set GOOGLE_GEOCODING_API_KEY
+# Clé Resend (« Sending access », limitée au domaine snowro.com) pour les
+# courriels transactionnels, voir functions/src/courriels.js
+firebase functions:secrets:set RESEND_API_KEY
 
 cd functions && npm install && cd ..
 firebase deploy --only functions
