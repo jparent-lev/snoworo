@@ -23,6 +23,14 @@ structure figées par `design_handoff_snowro_site`.
 - Courriel de confirmation à la première inscription
   (`confirmerInscriptionListeAttente`, déclenché à la création du document),
   expédié depuis `allo@snowro.com`.
+- Partage après l'inscription (`src/pages/landing/PartageListe.jsx`) :
+  message prêt à partager adapté au rôle et à la ville, partage natif du
+  téléphone, copie du message ou du lien, raccourcis Facebook, WhatsApp,
+  texto et courriel. **Partage simple, sans suivi** : le même lien
+  (`https://snowro.com`) pour tout le monde, on ne note pas qui a invité qui
+  (décision produit ; ajouter un suivi demanderait une mise à jour de la
+  politique de confidentialité). Aperçu des liens partagés : balises Open
+  Graph dans `index.html`, image `public/og-snowro.png` (1200 x 630).
 
 ## Stack
 

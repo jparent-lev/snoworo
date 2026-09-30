@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { rejoindreListeAttente } from "../../lib/listeAttente";
+import PartageListe from "./PartageListe";
 import "./WaitlistForm.css";
 
 const CODE_POSTAL_REGEX = /^[A-Za-z]\d[A-Za-z][ -]?\d[A-Za-z]\d$/;
@@ -9,7 +10,8 @@ export default function WaitlistForm() {
   const [courriel, setCourriel] = useState("");
   const [codePostal, setCodePostal] = useState("");
   const [siteWeb, setSiteWeb] = useState(""); // honeypot — reste vide pour un humain
-  const [inscrit, setInscrit] = useState(false);
+  // null tant que pas inscrit ; ensuite { ville } (ville dérivée par le serveur, peut être absente).
+  const [inscription, setInscription] = useState(null);
   const [enCours, setEnCours] = useState(false);
   const [erreur, setErreur] = useState(null);
 
@@ -22,8 +24,8 @@ export default function WaitlistForm() {
     setErreur(null);
     setEnCours(true);
     try {
-      await rejoindreListeAttente({ courriel: courriel.trim(), codePostal: codePostal.trim(), role, siteWeb });
-      setInscrit(true);
+      const resultat = await rejoindreListeAttente({ courriel: courriel.trim(), codePostal: codePostal.trim(), role, siteWeb });
+      setInscription({ ville: resultat.data?.ville ?? null });
     } catch {
       setErreur("Quelque chose a bloqué. Vérifie ton courriel et ton code postal, puis réessaie.");
     } finally {
@@ -31,13 +33,14 @@ export default function WaitlistForm() {
     }
   }
 
-  if (inscrit) {
+  if (inscription) {
     return (
       <div className="waitlist-form waitlist-form--succes">
         <span className="waitlist-form__succes-titre">C'est noté, merci !</span>
         <span className="waitlist-form__succes-texte">
           On t'écrit dès qu'on ouvre dans ton secteur. Pas de spam, promis : juste ça.
         </span>
+        <PartageListe role={role} ville={inscription.ville} />
       </div>
     );
   }
