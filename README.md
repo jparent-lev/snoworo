@@ -28,8 +28,11 @@ Run workflow. Configuration unique, sans clé de compte de service : lancer
 variables de dépôt GitHub qu'il affiche. Les secrets (ci-dessous) doivent
 exister avant le déploiement, sinon il échoue.
 
-Fonctions en Node.js 24 (`functions/package.json`, champ `engines`) : Node 20
-est retiré par Google le 30 octobre 2026.
+Fonctions en Node.js 22 (`functions/package.json`, champ `engines`) : Node 20
+est retiré par Google le 30 octobre 2026. Pas Node 24 : `onUserCreate` est une
+fonction de 1re génération (déclencheur Auth, sans équivalent en 2e
+génération) et la 1re génération s'arrête à Node 22. Node 22 est déprécié le
+30 avril 2027 et retiré le 31 octobre 2027 : prévoir la suite d'ici là.
 
 Déploiement à la main, si besoin :
 
