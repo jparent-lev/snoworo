@@ -21,6 +21,23 @@ SA_COURRIEL="${SA_NOM}@${PROJECT_ID}.iam.gserviceaccount.com"
 POOL="github"
 FOURNISSEUR="snoworo"
 
+# Un compte de service tout juste créé met souvent quelques secondes (parfois
+# une minute) à être visible du service des permissions : sans nouvelle
+# tentative, la première attribution de rôle échoue avec « Service account
+# ... does not exist ». On réessaie donc chaque commande IAM jusqu'à 8 fois.
+reessayer() {
+  local essai
+  for essai in 1 2 3 4 5 6 7 8; do
+    if "$@" >/dev/null 2>/tmp/erreur-iam; then
+      return 0
+    fi
+    echo "   (pas encore prêt, nouvel essai dans 10 s : $essai/8)"
+    sleep 10
+  done
+  cat /tmp/erreur-iam >&2
+  return 1
+}
+
 gcloud config set project "$PROJECT_ID" >/dev/null
 NUMERO_PROJET="$(gcloud projects describe "$PROJECT_ID" --format='value(projectNumber)')"
 
@@ -32,6 +49,7 @@ echo "== Compte de service ${SA_COURRIEL}"
 if ! gcloud iam service-accounts describe "$SA_COURRIEL" >/dev/null 2>&1; then
   gcloud iam service-accounts create "$SA_NOM" --display-name="Déploiement depuis GitHub Actions" >/dev/null
 fi
+reessayer gcloud iam service-accounts describe "$SA_COURRIEL"
 
 echo "== Rôles du compte de service"
 ROLES=(
@@ -48,8 +66,8 @@ ROLES=(
   roles/serviceusage.serviceUsageConsumer
 )
 for ROLE in "${ROLES[@]}"; do
-  gcloud projects add-iam-policy-binding "$PROJECT_ID" \
-    --member="serviceAccount:${SA_COURRIEL}" --role="$ROLE" --condition=None >/dev/null
+  reessayer gcloud projects add-iam-policy-binding "$PROJECT_ID" \
+    --member="serviceAccount:${SA_COURRIEL}" --role="$ROLE" --condition=None
   echo "   $ROLE"
 done
 
@@ -71,10 +89,9 @@ if ! gcloud iam workload-identity-pools providers describe "$FOURNISSEUR" \
 fi
 
 echo "== Autorisation du dépôt à utiliser le compte de service"
-gcloud iam service-accounts add-iam-policy-binding "$SA_COURRIEL" \
+reessayer gcloud iam service-accounts add-iam-policy-binding "$SA_COURRIEL" \
   --role="roles/iam.workloadIdentityUser" \
-  --member="principalSet://iam.googleapis.com/projects/${NUMERO_PROJET}/locations/global/workloadIdentityPools/${POOL}/attribute.repository/${DEPOT}" \
-  >/dev/null
+  --member="principalSet://iam.googleapis.com/projects/${NUMERO_PROJET}/locations/global/workloadIdentityPools/${POOL}/attribute.repository/${DEPOT}"
 
 cat <<FIN
 
