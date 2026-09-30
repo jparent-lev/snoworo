@@ -140,6 +140,25 @@ valide le format du courriel/code postal, filtre les soumissions de bots
 (honeypot) et géocode le code postal — jamais lu ni écrit directement par le
 client (`allow read, write: if false`).
 
+## `messagesContact/{messageId}`
+
+```
+nom | null, courriel, sujet: "question" | "deneigeur" | "pro" | "renseignements" | "autre"
+message                 // 5000 caractères max
+userId | null           // rempli seulement si la personne était connectée
+traite: boolean         // à basculer à la main une fois répondu
+createdAt
+```
+
+Formulaire « Nous écrire » du site vitrine (`src/pages/NousEcrire.jsx`).
+Écrit uniquement par la Cloud Function callable publique
+`envoyerMessageContact` (`functions/src/contact.js`) — même principe que
+`listeAttente` : validation et honeypot côté serveur, jamais lu ni écrit
+directement par le client (`allow read, write: if false`). Aucun courriel
+n'est envoyé : les messages se consultent dans la console Firebase.
+Conservation annoncée dans la politique de confidentialité : 24 mois après le
+dernier échange.
+
 ## `offresCiblees/{offreId}`
 
 ```

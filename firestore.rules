@@ -93,6 +93,13 @@ service cloud.firestore {
       allow read, write: if false;
     }
 
+    // ---- messagesContact (formulaire « Nous écrire » du site vitrine) ----
+    // Même principe que listeAttente : écrit uniquement par
+    // envoyerMessageContact (Admin SDK), jamais lu depuis un client.
+    match /messagesContact/{document} {
+      allow read, write: if false;
+    }
+
     // ---- zonesStats / zonesStatsParVille (agrégats anonymisés, Snowro Pro) ----
     match /zonesStats/{statId} {
       allow read: if abonneProActif();

@@ -1,0 +1,84 @@
+/* Pied de page du site vitrine (accueil + pages légales). */
+
+.pied {
+  position: relative;
+  background: var(--color-terre);
+  /* Place pour la silhouette de toits (SilhouetteToits), posée au-dessus. */
+  margin-top: 150px;
+}
+
+.pied__colonnes {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 52px 24px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 36px;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.pied__colonne {
+  display: flex;
+  flex-direction: column;
+  gap: 11px;
+  min-width: 200px;
+}
+
+.pied__colonne a {
+  font-size: 15px;
+  color: var(--color-texte-sur-sombre);
+  text-decoration: none;
+}
+
+.pied__colonne a:hover {
+  color: var(--color-lin);
+}
+
+.pied__logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.pied__logo-texte {
+  font-family: var(--font-titrage);
+  font-weight: 600;
+  font-size: 20px;
+  color: var(--color-lin);
+  letter-spacing: -0.012em;
+}
+
+.pied__slogan {
+  font-size: 14.5px;
+  line-height: 1.5;
+  color: var(--color-texte-sur-sombre);
+  max-width: 260px;
+}
+
+.pied__titre {
+  color: var(--color-ocre);
+}
+
+.pied__barre {
+  border-top: 1px solid var(--color-bordure-sur-terre);
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 20px 24px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  justify-content: space-between;
+  font-size: 13.5px;
+  color: var(--color-texte-sur-sombre);
+}
+
+.pied__version {
+  border-top: 1px solid var(--color-bordure-sur-terre);
+  padding: 14px 24px 20px;
+  text-align: center;
+}
+
+.pied__version p {
+  color: var(--color-texte-sur-sombre) !important;
+}

@@ -1,0 +1,112 @@
+/* Formulaire « Nous écrire » — même langage visuel que WaitlistForm. */
+
+.nous-ecrire {
+  background: var(--color-surface-carte);
+  border: 1px solid var(--color-bordure);
+  border-radius: var(--radius-carte);
+  padding: 28px;
+  margin-top: 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.nous-ecrire__champ {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.nous-ecrire__libelle {
+  color: var(--color-ardoise);
+}
+
+.nous-ecrire__input {
+  font-family: var(--font-corps);
+  font-size: 16px;
+  padding: 14px 16px;
+  border-radius: 11px;
+  border: 1.5px solid var(--color-bordure);
+  background: var(--color-surface-secondaire);
+  color: var(--color-terre);
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.nous-ecrire__input:focus {
+  border-color: var(--color-argile);
+  outline: none;
+}
+
+.nous-ecrire__textarea {
+  resize: vertical;
+  min-height: 140px;
+  line-height: 1.5;
+}
+
+.nous-ecrire__honeypot {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+.nous-ecrire__erreur {
+  margin: 0 !important;
+  font-size: 13.5px;
+  color: var(--color-terre);
+  background: var(--color-surface-secondaire);
+  border: 1px solid var(--color-ardoise);
+  border-radius: var(--radius-panneau);
+  padding: 12px 14px;
+}
+
+.nous-ecrire__bouton {
+  border: none;
+  background: var(--color-argile);
+  color: var(--color-surface-carte);
+  font-family: var(--font-corps);
+  font-weight: 700;
+  font-size: 16.5px;
+  padding: 16px;
+  border-radius: var(--radius-bouton);
+  cursor: pointer;
+  width: 100%;
+  transition: var(--ease-out-rapide);
+}
+
+.nous-ecrire__bouton:hover:not(:disabled) {
+  background: var(--color-argile-foncee);
+}
+
+.nous-ecrire__bouton:disabled {
+  opacity: 0.75;
+  cursor: default;
+}
+
+.nous-ecrire__mention {
+  margin: 0 !important;
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--color-texte-secondaire);
+  text-align: center;
+}
+
+.nous-ecrire--succes {
+  gap: 10px;
+}
+
+.nous-ecrire__succes-titre {
+  font-family: var(--font-titrage);
+  font-weight: 600;
+  font-size: 24px;
+  letter-spacing: -0.01em;
+}
+
+.nous-ecrire__succes-texte {
+  font-size: 16px;
+  line-height: 1.5;
+  color: var(--color-texte-secondaire);
+}

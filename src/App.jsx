@@ -7,6 +7,9 @@ import Signup from "./pages/Signup";
 import DemandesX from "./pages/DemandesX";
 import PublierDemande from "./pages/PublierDemande";
 import Parametres from "./pages/Parametres";
+import Confidentialite from "./pages/Confidentialite";
+import Conditions from "./pages/Conditions";
+import NousEcrire from "./pages/NousEcrire";
 
 export default function App() {
   return (
@@ -14,6 +17,9 @@ export default function App() {
       <Route path="/" element={<Landing />} />
       <Route path="/connexion" element={<Login />} />
       <Route path="/inscription" element={<Signup />} />
+      <Route path="/confidentialite" element={<Confidentialite />} />
+      <Route path="/conditions" element={<Conditions />} />
+      <Route path="/nous-ecrire" element={<NousEcrire />} />
 
       <Route element={<Layout />}>
         <Route

@@ -5,3 +5,4 @@ export { regenererZonesStats } from "./zonesStats.js";
 export { mettreAJourAdresseUtilisateur } from "./adresse.js";
 export { calculerVilleDemande } from "./demandeVille.js";
 export { rejoindreListeAttente } from "./listeAttente.js";
+export { envoyerMessageContact } from "./contact.js";

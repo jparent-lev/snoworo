@@ -1,0 +1,150 @@
+/* Pages de texte du site vitrine — mêmes jetons que l'accueil (Landing.css),
+   en-tête allégé, colonne de lecture d'environ 70 caractères. */
+
+.page-legale {
+  display: flex;
+  flex-direction: column;
+  min-height: 100svh;
+  overflow-x: hidden;
+  background: var(--color-bg-page);
+  color: var(--color-terre);
+}
+
+.page-legale__entete {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  background: rgba(247, 241, 230, 0.94);
+  backdrop-filter: blur(8px);
+  border-bottom: 1px solid var(--color-bordure);
+}
+
+.page-legale__entete-inner {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 14px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+.page-legale__logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+  color: var(--color-terre);
+}
+
+.page-legale__logo-texte {
+  font-family: var(--font-titrage);
+  font-weight: 600;
+  font-size: 21px;
+  letter-spacing: -0.012em;
+}
+
+.page-legale__retour {
+  font-size: 15px;
+  color: var(--color-texte-secondaire);
+  text-decoration: none;
+  transition: color 120ms ease-out;
+}
+
+.page-legale__retour:hover {
+  color: var(--color-argile);
+}
+
+.page-legale__contenu {
+  flex: 1;
+  width: 100%;
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 56px 24px 0;
+}
+
+.page-legale__surtitre {
+  display: block;
+  color: var(--color-ardoise);
+  margin-bottom: 14px;
+}
+
+.page-legale__titre {
+  font-family: var(--font-titrage);
+  font-weight: 600;
+  font-size: clamp(34px, 5vw, 48px);
+  line-height: 1.05;
+  letter-spacing: -0.02em;
+  margin: 0;
+}
+
+.page-legale__maj {
+  margin: 14px 0 0;
+  font-size: 14px;
+  color: var(--color-texte-secondaire);
+}
+
+.page-legale__texte {
+  margin-top: 36px;
+  font-size: 16.5px;
+  line-height: 1.65;
+}
+
+.page-legale__texte h2 {
+  font-family: var(--font-titrage);
+  font-weight: 600;
+  font-size: 24px;
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+  margin: 44px 0 12px;
+}
+
+.page-legale__texte h2:first-child {
+  margin-top: 0;
+}
+
+.page-legale__texte h3 {
+  font-family: var(--font-corps);
+  font-weight: 700;
+  font-size: 17px;
+  margin: 26px 0 8px;
+}
+
+.page-legale__texte p,
+.page-legale__texte ul {
+  margin: 0 0 14px;
+}
+
+.page-legale__texte ul {
+  padding-left: 22px;
+}
+
+.page-legale__texte li {
+  margin-bottom: 6px;
+}
+
+.page-legale__texte a {
+  color: var(--color-argile-foncee);
+}
+
+.page-legale__encadre {
+  background: var(--color-surface-carte);
+  border: 1px solid var(--color-bordure);
+  border-radius: var(--radius-panneau);
+  padding: 18px 20px;
+  margin: 0 0 22px;
+}
+
+.page-legale__encadre p:last-child {
+  margin-bottom: 0;
+}
+
+@media (max-width: 480px) {
+  .page-legale__retour {
+    font-size: 14px;
+  }
+
+  .page-legale__contenu {
+    padding-top: 40px;
+  }
+}

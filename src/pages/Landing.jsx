@@ -1,8 +1,8 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Navigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import SnowroSymbol from "../components/brand/SnowroSymbol";
-import VersionFooter from "../components/VersionFooter";
+import PiedDePage from "../components/PiedDePage";
 import FeeCalculator from "./landing/FeeCalculator";
 import FaqAccordion from "./landing/FaqAccordion";
 import WaitlistForm from "./landing/WaitlistForm";
@@ -15,7 +15,6 @@ import {
   FloconsFiligrane,
   Icone,
   IllustrationEtape,
-  SilhouetteToits,
 } from "./landing/Decors";
 import "./Landing.css";
 
@@ -28,6 +27,14 @@ import "./Landing.css";
 export default function Landing() {
   const { user, loading } = useAuth();
   const [menuOuvert, setMenuOuvert] = useState(false);
+
+  // Arrivée depuis une autre page par un lien "/#section" (pied de page des
+  // pages légales) : le navigateur tente de défiler avant que React ait rendu
+  // la section, donc on le refait une fois la page montée.
+  useEffect(() => {
+    if (!window.location.hash) return;
+    document.getElementById(window.location.hash.slice(1))?.scrollIntoView();
+  }, [loading]);
 
   if (!loading && user) return <Navigate to="/demandes" replace />;
 
@@ -342,43 +349,7 @@ export default function Landing() {
         </div>
       </section>
 
-      <footer className="landing__pied">
-        <SilhouetteToits />
-        <div className="landing__pied-colonnes">
-          <div className="landing__pied-colonne">
-            <div className="landing__pied-logo">
-              <SnowroSymbol variant="reversed" neige size={32} />
-              <span className="landing__pied-logo-texte">snowro</span>
-            </div>
-            <span className="landing__pied-slogan">Déneigement à la demande, fait à Québec.</span>
-          </div>
-          <div className="landing__pied-colonne">
-            <span className="eyebrow landing__pied-titre">Snowro</span>
-            <a href="#comment">Comment ça marche</a>
-            <a href="#frais">Frais</a>
-            <a href="#deneigeur">Devenir déneigeur de quartier</a>
-          </div>
-          <div className="landing__pied-colonne">
-            <span className="eyebrow landing__pied-titre">Snowro Pro</span>
-            <a href="#pro">Données de zones</a>
-            <a href="#liste">Liste d'attente</a>
-          </div>
-          <div className="landing__pied-colonne">
-            <span className="eyebrow landing__pied-titre">Légal</span>
-            {/* Pages à créer, obligatoires avant la mise en ligne (collecte de courriels). */}
-            <a href="#">Confidentialité</a>
-            <a href="#">Conditions</a>
-            <a href="#">Nous écrire</a>
-          </div>
-        </div>
-        <div className="landing__pied-barre">
-          <span>© 2026 Snowro. Québec, QC.</span>
-          <span>Paiements traités par Stripe.</span>
-        </div>
-        <div className="landing__pied-version">
-          <VersionFooter />
-        </div>
-      </footer>
+      <PiedDePage />
     </div>
   );
 }
