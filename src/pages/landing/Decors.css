@@ -1,0 +1,355 @@
+/* Éléments graphiques des sections (voir Decors.jsx). Couleurs tirées des
+   tokens uniquement ; animations désactivées avec prefers-reduced-motion. */
+
+/* ---- Couleurs partagées ---- */
+
+.decor-terre { fill: var(--color-terre); }
+.decor-argile { fill: var(--color-argile); }
+.decor-ocre { fill: var(--color-ocre); }
+.decor-ardoise { fill: var(--color-ardoise); }
+.decor-ecran { fill: var(--color-surface-carte); }
+.decor-ligne { fill: var(--color-bordure); }
+.decor-neige { fill: var(--color-surface-carte); }
+.decor-vitre { fill: var(--color-lin); }
+.decor-neige-sol { fill: var(--color-surface-carte); }
+.decor-manche { stroke: var(--color-terre); stroke-width: 3.2; stroke-linecap: round; }
+.decor-crochet { fill: none; stroke: var(--color-surface-carte); stroke-width: 2.6; stroke-linecap: round; stroke-linejoin: round; }
+
+/* ---- Neige posée sur un bord ---- */
+
+.decor-cap {
+  position: absolute;
+  display: block;
+  pointer-events: none;
+  fill: var(--color-surface-carte);
+}
+
+/* ---- Flocons en filigrane (bloc ardoise) ---- */
+
+.decor-filigrane {
+  position: absolute;
+  top: -40px;
+  right: -40px;
+  width: min(320px, 70%);
+  height: auto;
+  z-index: -1;
+  pointer-events: none;
+  stroke: var(--color-lin);
+  stroke-width: 3;
+  stroke-linecap: round;
+  fill: none;
+  opacity: 0.13;
+}
+
+/* ---- Chute de neige (section terre) ---- */
+
+.decor-chute {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.decor-chute__flocon {
+  position: absolute;
+  top: -12px;
+  border-radius: 999px;
+  background: var(--color-lin);
+  opacity: 0.22;
+}
+
+/* ---- Illustrations des étapes ---- */
+
+.decor-etape {
+  width: 96px;
+  height: 72px;
+  flex: none;
+  overflow: visible;
+}
+
+.decor-etape__fond { fill: var(--color-lin); }
+
+.decor-onde {
+  fill: none;
+  stroke: var(--color-ocre);
+  stroke-width: 2.4;
+  opacity: 0;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+.decor-epingle-tombe,
+.decor-pastille-pop {
+  transform-box: fill-box;
+  transform-origin: 50% 100%;
+}
+
+.decor-pastille-pop { transform-origin: center; }
+
+/* ---- Icônes ---- */
+
+.decor-icone {
+  width: 40px;
+  height: 40px;
+  flex: none;
+  border-radius: 12px;
+  background: var(--color-lin);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.decor-icone svg {
+  width: 24px;
+  height: 24px;
+}
+
+.decor-icone--ocre { background: var(--color-ocre); }
+
+.decor-icone__trait {
+  fill: none;
+  stroke: var(--color-terre);
+  stroke-width: 1.7;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.decor-icone__trait-argile { stroke: var(--color-argile); stroke-width: 2; }
+.decor-icone__plein-ocre { fill: var(--color-ocre); }
+.decor-icone__plein-terre { fill: var(--color-terre); stroke: none; }
+
+/* ---- Carte des villes ---- */
+
+.decor-villes {
+  display: block;
+  width: 100%;
+  max-width: 380px;
+  height: auto;
+  margin: 2px 0 -4px;
+  overflow: visible;
+}
+
+.decor-villes__fleuve {
+  fill: none;
+  stroke: var(--color-lin);
+  stroke-width: 14;
+  stroke-linecap: round;
+}
+
+.decor-villes__epingle path { fill: var(--color-argile); }
+.decor-villes__centre { fill: var(--color-surface-carte); }
+
+.decor-villes__nom {
+  font-family: var(--font-corps);
+  font-size: 12px;
+  font-weight: 700;
+  fill: var(--color-texte-secondaire);
+}
+
+.decor-villes__fantome path {
+  fill: var(--color-surface-carte);
+  stroke: var(--color-ardoise);
+  stroke-width: 1.6;
+  stroke-dasharray: 3 2.5;
+}
+
+.decor-villes__fantome .decor-villes__centre { fill: var(--color-ardoise); }
+.decor-villes__fantome .decor-villes__nom { fill: var(--color-ardoise); }
+
+.decor-villes__halo {
+  fill: var(--color-ardoise);
+  opacity: 0;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+.decor-villes__epingle {
+  transform-box: fill-box;
+  transform-origin: 50% 100%;
+}
+
+/* ---- Aperçu des zones Pro ---- */
+
+.decor-zones {
+  container-type: inline-size;
+  position: relative;
+  background: var(--color-surface-carte);
+  border: 1px solid var(--color-bordure);
+  border-radius: 18px;
+  padding: 22px 22px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 0;
+}
+
+.decor-zones__entete {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+}
+
+.decor-zones__eyebrow { color: var(--color-ardoise); }
+
+.decor-zones__exemple {
+  font-size: 11.5px;
+  font-weight: 700;
+  color: var(--color-texte-secondaire);
+  background: var(--color-surface-secondaire);
+  border: 1px solid var(--color-bordure);
+  border-radius: var(--radius-badge);
+  padding: 3px 8px;
+}
+
+.decor-zones__carte {
+  display: block;
+  width: 100%;
+  max-width: 300px;
+  height: auto;
+}
+
+.decor-zones__hex {
+  stroke: var(--color-surface-carte);
+  stroke-width: 2;
+}
+
+.decor-zones__hex--0 { fill: var(--color-surface-secondaire); stroke: var(--color-bordure); stroke-width: 1; }
+.decor-zones__hex--1 { fill: var(--color-lin); }
+.decor-zones__hex--2 { fill: var(--color-ocre); }
+.decor-zones__hex--3 { fill: var(--color-argile); }
+.decor-zones__hex--4 { fill: var(--color-argile-foncee); }
+
+.decor-zones__vedette {
+  fill: none;
+  stroke: var(--color-ardoise);
+  stroke-width: 3;
+}
+
+.decor-zones__bulle {
+  position: absolute;
+  right: 18px;
+  top: 58px;
+  background: var(--color-terre);
+  color: var(--color-lin);
+  border-radius: 12px;
+  padding: 10px 13px;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  box-shadow: 0 12px 26px -14px rgba(59, 42, 31, 0.6);
+}
+
+/* Carte étroite : la bulle cacherait la zone en vedette, elle passe dessous. */
+@container (max-width: 459px) {
+  .decor-zones__bulle {
+    position: static;
+    align-self: flex-start;
+  }
+}
+
+.decor-zones__bulle-code {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: var(--color-texte-sur-sombre);
+}
+
+.decor-zones__bulle-chiffre {
+  font-family: var(--font-titrage);
+  font-weight: 600;
+  font-size: 20px;
+  color: var(--color-surface-carte);
+}
+
+.decor-zones__bulle-tendance {
+  font-size: 12px;
+  color: var(--color-ocre);
+  font-weight: 700;
+}
+
+.decor-zones__legende {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: var(--color-texte-secondaire);
+}
+
+.decor-zones__degrade {
+  flex: 1;
+  max-width: 140px;
+  height: 8px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--color-lin), var(--color-ocre), var(--color-argile), var(--color-argile-foncee));
+}
+
+/* ---- Toits du pied de page ---- */
+
+.decor-toits {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: calc(100% - 1px);
+  width: 100%;
+  height: clamp(56px, 7vw, 90px);
+  display: block;
+  pointer-events: none;
+}
+
+.decor-toits__bati { fill: var(--color-terre); }
+.decor-toits__neige { fill: var(--color-surface-carte); }
+.decor-toits__fenetre { fill: var(--color-ocre); opacity: 0.85; }
+
+/* ---- Animations ---- */
+
+@media (prefers-reduced-motion: no-preference) {
+  .decor-chute__flocon { animation: decor-chute 10s linear infinite; }
+  .decor-onde { animation: decor-onde 2.4s ease-out infinite; }
+  .decor-onde--2 { animation-delay: 1.2s; }
+  .decor-epingle-tombe { animation: decor-epingle 4s ease-in-out infinite; }
+  .decor-pastille-pop { animation: decor-pop 4s ease-out infinite; }
+  .decor-villes__epingle { animation: decor-villes-epingle 7s ease-out infinite backwards; }
+  .decor-villes__halo { animation: decor-halo 2.2s ease-out infinite; }
+}
+
+@keyframes decor-chute {
+  from { transform: translate(0, 0); }
+  50% { transform: translate(14px, 50vh); }
+  to { transform: translate(-6px, 100vh); }
+}
+
+@keyframes decor-onde {
+  from { opacity: 0.9; transform: scale(1); }
+  to { opacity: 0; transform: scale(3.2); }
+}
+
+@keyframes decor-epingle {
+  0% { transform: translateY(-10px); opacity: 0; }
+  12% { transform: translateY(0); opacity: 1; }
+  16% { transform: translateY(0) scaleY(0.88); }
+  22%, 82% { transform: translateY(0) scaleY(1); opacity: 1; }
+  92%, 100% { transform: translateY(-10px); opacity: 0; }
+}
+
+@keyframes decor-pop {
+  0%, 10% { transform: scale(0); }
+  18% { transform: scale(1.15); }
+  24%, 84% { transform: scale(1); }
+  94%, 100% { transform: scale(0); }
+}
+
+/* Les trois villes apparaissent l'une après l'autre (animation-delay), comme
+   des adresses qui s'inscrivent, puis la boucle recommence. */
+@keyframes decor-villes-epingle {
+  0% { transform: translateY(-12px) scale(0.6); opacity: 0; }
+  8% { transform: translateY(0) scale(1.08); opacity: 1; }
+  12%, 86% { transform: translateY(0) scale(1); opacity: 1; }
+  94%, 100% { transform: translateY(0) scale(0.6); opacity: 0; }
+}
+
+@keyframes decor-halo {
+  from { opacity: 0.28; transform: scale(0.7); }
+  to { opacity: 0; transform: scale(1.8); }
+}

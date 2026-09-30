@@ -7,6 +7,16 @@ import FeeCalculator from "./landing/FeeCalculator";
 import FaqAccordion from "./landing/FaqAccordion";
 import WaitlistForm from "./landing/WaitlistForm";
 import HeroIllustration from "./landing/HeroIllustration";
+import {
+  ApercuZonesPro,
+  CapNeige,
+  CarteVilles,
+  ChuteDeNeige,
+  FloconsFiligrane,
+  Icone,
+  IllustrationEtape,
+  SilhouetteToits,
+} from "./landing/Decors";
 import "./Landing.css";
 
 // Site vitrine de pré-lancement — collecte de liste d'attente uniquement,
@@ -101,7 +111,10 @@ export default function Landing() {
             },
           ].map((etape, i) => (
             <div key={etape.titre} className="landing__etape-carte">
-              <span className="landing__etape-pastille">{i + 1}</span>
+              <div className="landing__etape-haut">
+                <span className="landing__etape-pastille">{i + 1}</span>
+                <IllustrationEtape etape={i + 1} />
+              </div>
               <h3 className="landing__h3">{etape.titre}</h3>
               <p className="landing__p">{etape.texte}</p>
             </div>
@@ -112,6 +125,7 @@ export default function Landing() {
       {/* 3. Ce qui protège la relation (fiabilité, entente claire, paiement) */}
       <section className="landing__section">
         <div className="landing__bloc-paiement">
+          <FloconsFiligrane />
           <div>
             <span className="eyebrow landing__bloc-paiement-eyebrow">Ce qui te protège</span>
             <h2 className="landing__h2 landing__h2--sur-ardoise">Tu sais avec qui tu traites, pis à quoi t'attendre</h2>
@@ -123,13 +137,16 @@ export default function Landing() {
           </div>
           <div className="landing__bloc-paiement-cartes">
             {[
-              { titre: "Des déneigeurs citoyens notés", texte: "Chaque job donne lieu à une appréciation. Un travail bâclé, ça se sait, et ça ferme des portes." },
-              { titre: "Une entente claire dès le départ", texte: "Prix, heure souhaitée, outils fournis ou non : tout est écrit avant que quelqu'un accepte." },
-              { titre: "Paiement sécurisé", texte: "Traité par Stripe, retenu jusqu'à ce que la job soit confirmée faite." },
+              { icone: "note", titre: "Des déneigeurs citoyens notés", texte: "Chaque job donne lieu à une appréciation. Un travail bâclé, ça se sait, et ça ferme des portes." },
+              { icone: "entente", titre: "Une entente claire dès le départ", texte: "Prix, heure souhaitée, outils fournis ou non : tout est écrit avant que quelqu'un accepte." },
+              { icone: "cadenas", titre: "Paiement sécurisé", texte: "Traité par Stripe, retenu jusqu'à ce que la job soit confirmée faite." },
             ].map((c) => (
               <div key={c.titre} className="landing__mini-carte">
-                <span className="landing__mini-carte-titre">{c.titre}</span>
-                <span className="landing__mini-carte-texte">{c.texte}</span>
+                <Icone nom={c.icone} />
+                <div className="landing__mini-carte-corps">
+                  <span className="landing__mini-carte-titre">{c.titre}</span>
+                  <span className="landing__mini-carte-texte">{c.texte}</span>
+                </div>
               </div>
             ))}
           </div>
@@ -184,6 +201,7 @@ export default function Landing() {
               qu'il y a du monde qui s'inscrit, et une demande est toujours montrée aux déneigeurs citoyens
               de ta ville, jamais à quelqu'un à trois autoroutes de là.
             </p>
+            <CarteVilles />
             <div className="landing__jetons">
               <span className="landing__jeton">Québec</span>
               <span className="landing__jeton">Montréal</span>
@@ -200,6 +218,8 @@ export default function Landing() {
 
       {/* 6. Devenir déneigeur citoyen */}
       <section id="deneigeur" className="landing__section-pleine-largeur landing__section-terre">
+        <CapNeige plat className="landing__cap-terre" />
+        <ChuteDeNeige />
         <div className="landing__deux-colonnes landing__conteneur">
           <div>
             <span className="eyebrow landing__eyebrow-sur-terre">Tu as une pelle et du temps</span>
@@ -209,9 +229,18 @@ export default function Landing() {
               de contrat de saison. Tu es payé dans les jours qui suivent, directement dans ton compte.
             </p>
             <div className="landing__profils">
-              <span>Étudiant qui veut arrondir ses fins de mois entre deux sessions</span>
-              <span>Gars du coin avec une souffleuse qui dort dans le garage</span>
-              <span>Un pro du déneigement qui veut remplir les trous dans sa tournée</span>
+              <span>
+                <Icone nom="etudiant" className="decor-icone--ocre" />
+                Étudiant qui veut arrondir ses fins de mois entre deux sessions
+              </span>
+              <span>
+                <Icone nom="souffleuse" className="decor-icone--ocre" />
+                Gars du coin avec une souffleuse qui dort dans le garage
+              </span>
+              <span>
+                <Icone nom="camion" className="decor-icone--ocre" />
+                Un pro du déneigement qui veut remplir les trous dans sa tournée
+              </span>
             </div>
             <a href="#liste" className="landing__bouton-ocre landing__bouton-neige landing__bouton-neige--d">
               M'inscrire comme déneigeur citoyen
@@ -253,16 +282,19 @@ export default function Landing() {
             <span className="eyebrow landing__pro-lockup-qualifiant">PRO</span>
           </div>
         </div>
-        <div className="landing__pro-simple">
-          <h2 className="landing__h2">Pour ceux qui sont des professionnels du déneigement</h2>
-          <p className="landing__chapeau">
-            On prépare une offre pour les entreprises de déneigement qui veulent voir où la demande se
-            trouve dans leurs secteurs. Les détails s'en viennent. Inscris-toi pour être averti en
-            premier.
-          </p>
-          <a href="#liste" className="landing__bouton-ardoise landing__bouton-neige landing__bouton-neige--e">
-            Être averti pour Pro
-          </a>
+        <div className="landing__pro-grille">
+          <div className="landing__pro-simple">
+            <h2 className="landing__h2">Pour ceux qui sont des professionnels du déneigement</h2>
+            <p className="landing__chapeau">
+              On prépare une offre pour les entreprises de déneigement qui veulent voir où la demande se
+              trouve dans leurs secteurs. Les détails s'en viennent. Inscris-toi pour être averti en
+              premier.
+            </p>
+            <a href="#liste" className="landing__bouton-ardoise landing__bouton-neige landing__bouton-neige--e">
+              Être averti pour Pro
+            </a>
+          </div>
+          <ApercuZonesPro />
         </div>
       </section>
 
@@ -272,6 +304,7 @@ export default function Landing() {
       {/* 9. Liste d'attente */}
       <section id="liste" className="landing__section">
         <div className="landing__bloc-liste">
+          <CapNeige className="landing__cap-liste" />
           <div>
             <h2 className="landing__h2 landing__h2--sur-argile">On ouvre où il y a du monde</h2>
             <p className="landing__p landing__p--sur-argile-clair">
@@ -311,6 +344,7 @@ export default function Landing() {
       </section>
 
       <footer className="landing__pied">
+        <SilhouetteToits />
         <div className="landing__pied-colonnes">
           <div className="landing__pied-colonne">
             <div className="landing__pied-logo">

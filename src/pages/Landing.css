@@ -691,6 +691,13 @@
   min-width: 0;
 }
 
+.landing__etape-haut {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
 .landing__etape-pastille {
   width: 52px;
   height: 52px;
@@ -710,6 +717,11 @@
 /* ---- Bloc paiement (Stripe Connect) ---- */
 
 .landing__bloc-paiement {
+  /* position + isolation : les flocons en filigrane (z-index: -1) passent
+     derrière le contenu mais devant le fond ardoise. */
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
   background: var(--color-ardoise);
   border-radius: 22px;
   padding: clamp(28px, 4vw, 48px);
@@ -748,8 +760,15 @@
   border-radius: var(--radius-panneau);
   padding: 18px 20px;
   display: flex;
+  align-items: flex-start;
+  gap: 14px;
+}
+
+.landing__mini-carte-corps {
+  display: flex;
   flex-direction: column;
   gap: 5px;
+  min-width: 0;
 }
 
 .landing__mini-carte-titre {
@@ -830,13 +849,25 @@
 }
 
 .landing__section-terre {
+  position: relative;
+  overflow: hidden;
   background: var(--color-terre);
   padding-top: 72px;
   padding-bottom: 72px;
 }
 
 .landing__section-terre .landing__deux-colonnes {
+  position: relative;
+  z-index: 1;
   gap: 48px;
+}
+
+/* Neige qui déborde du haut de la bande terre (CapNeige plat). */
+.landing__cap-terre {
+  top: -1px;
+  left: 0;
+  width: 100%;
+  height: 36px;
 }
 
 .landing__eyebrow-sur-terre {
@@ -862,6 +893,9 @@
 }
 
 .landing__profils span {
+  display: flex;
+  align-items: center;
+  gap: 12px;
   font-size: 16px;
   line-height: 1.45;
   color: var(--color-lin);
@@ -974,6 +1008,13 @@
   color: var(--color-ardoise);
 }
 
+.landing__pro-grille {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(300px, 100%), 1fr));
+  gap: 44px;
+  align-items: center;
+}
+
 .landing__pro-simple {
   max-width: 620px;
   display: flex;
@@ -1021,6 +1062,7 @@
 /* ---- Liste d'attente ---- */
 
 .landing__bloc-liste {
+  position: relative;
   background: var(--color-argile);
   border-radius: 22px;
   padding: clamp(30px, 4.5vw, 56px);
@@ -1028,6 +1070,15 @@
   grid-template-columns: repeat(auto-fit, minmax(min(300px, 100%), 1fr));
   gap: 44px;
   align-items: center;
+}
+
+/* Amas de neige posé sur le bloc, même motif que les boutons : la base de
+   l'amas (y=22 sur 52 dans le viewBox) tombe pile sur le bord du bloc. */
+.landing__cap-liste {
+  top: -13px;
+  left: 16px;
+  width: calc(100% - 32px);
+  height: 30px;
 }
 
 .landing__h2--sur-argile {
@@ -1069,8 +1120,10 @@
 /* ---- Pied de page ---- */
 
 .landing__pied {
+  position: relative;
   background: var(--color-terre);
-  margin-top: 80px;
+  /* Place pour la silhouette de toits (SilhouetteToits), posée au-dessus. */
+  margin-top: 150px;
 }
 
 .landing__pied-colonnes {
