@@ -18,6 +18,21 @@ copier sa config web dans `.env` pour tester le flux complet.
 
 ## Firebase (règles, index, functions)
 
+**Déploiement automatique.** Chaque fusion dans `main` qui touche
+`functions/`, `firestore.rules`, `firestore.indexes.json` ou `firebase.json`
+déploie les fonctions, les règles et les index par GitHub Actions
+(`.github/workflows/deployer-firebase.yml`). Le site, lui, est déployé par
+Netlify. Lancement manuel possible : onglet Actions > « Déployer Firebase » >
+Run workflow. Configuration unique, sans clé de compte de service : lancer
+`scripts/configurer-deploiement-ci.sh` dans Cloud Shell, puis ajouter les deux
+variables de dépôt GitHub qu'il affiche. Les secrets (ci-dessous) doivent
+exister avant le déploiement, sinon il échoue.
+
+Fonctions en Node.js 24 (`functions/package.json`, champ `engines`) : Node 20
+est retiré par Google le 30 octobre 2026.
+
+Déploiement à la main, si besoin :
+
 ```bash
 npm install -g firebase-tools   # si pas déjà installé
 firebase login
