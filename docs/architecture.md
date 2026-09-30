@@ -20,6 +20,9 @@ structure figées par `design_handoff_snowro_site`.
 - Inscription à la liste : `rejoindreListeAttente` (callable publique, sans
   authentification), qui valide et géocode le code postal avant d'écrire dans
   `listeAttente/{courriel}` — voir `data-model.md`.
+- Courriel de confirmation à la première inscription
+  (`confirmerInscriptionListeAttente`, déclenché à la création du document),
+  expédié depuis `allo@snowro.com`.
 
 ## Stack
 
@@ -31,7 +34,8 @@ structure figées par `design_handoff_snowro_site`.
 | Paiements Snowro X | Stripe Connect (comptes Express) — pas encore implémenté, voir ci-dessous |
 | Paiements Snowro Pro | Stripe Billing (abonnement) — pas encore implémenté |
 | Cartes / zones | Géolocalisation navigateur + geohash (`ngeohash`) pour le MVP ; Google Maps API à intégrer pour la carte visuelle |
-| Notifications | Twilio (SMS) + FCM — pas encore implémenté |
+| Courriels transactionnels | Resend, appelé directement depuis les Cloud Functions (`functions/src/courriels.js`) ; pas l'extension Trigger Email, le service Firebase Extensions fermant le 31 mars 2027 |
+| Notifications | Twilio (SMS) + FCM, pas encore implémenté |
 
 ## Paiement — Stripe Connect (décision révisée)
 

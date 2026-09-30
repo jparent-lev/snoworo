@@ -134,6 +134,10 @@ export default function Confidentialite() {
         <li>
           <strong>Netlify :</strong> hébergement du site web.
         </li>
+        <li>
+          <strong>Resend :</strong> envoi des courriels de Snowro (confirmation d'inscription, avis liés à tes
+          demandes).
+        </li>
       </ul>
       <p>
         Entre utilisateurs : une fois un match confirmé, le client et le déneigeur de quartier voient ce qu'il
@@ -149,7 +153,7 @@ export default function Confidentialite() {
 
       <h2>Renseignements conservés à l'extérieur du Québec</h2>
       <p>
-        Nos fonctions serveur roulent à Montréal. Certains de nos fournisseurs (Google, Stripe, Netlify)
+        Nos fonctions serveur roulent à Montréal. Certains de nos fournisseurs (Google, Stripe, Netlify, Resend)
         peuvent toutefois conserver ou traiter des renseignements ailleurs au Canada et aux États-Unis. Avant de
         le faire, on a évalué que la protection offerte par ces fournisseurs est adéquate, notamment par leurs
         engagements contractuels de confidentialité et de sécurité, comme l'exige la Loi 25.
