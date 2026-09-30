@@ -146,7 +146,10 @@ export default function HeroIllustration() {
                 {/* Lame dans l'axe du manche (angle 132,7deg), fixée au bout par une
                     douille : dessinée à plat puis tournée autour de l'extrémité. */}
                 <g transform="translate(234 310) rotate(132.7)">
-                  <path d="M3 -5.5 L24 -8 Q29 -8 29 -3.5 L29 3.5 Q29 8 24 8 L3 5.5 Z" className="hero-illu__lame" />
+                  {/* Lame de pelle à neige : courte dans l'axe du manche, large en
+                      travers, avec un rebord au bout (sinon elle a l'air d'un balai). */}
+                  <path d="M3 -4 L12 -15.5 Q15 -17.5 17 -15 L17 15 Q15 17.5 12 15.5 L3 4 Z" className="hero-illu__lame" />
+                  <rect x="15" y="-15.5" width="3" height="31" rx="1.5" className="hero-illu__lame-bord" />
                   <rect x="-3" y="-3" width="9" height="6" rx="2" className="hero-illu__douille" />
                 </g>
               </g>

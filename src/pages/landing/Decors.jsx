@@ -140,7 +140,8 @@ export function IllustrationEtape({ etape }) {
         <g>
           <line x1="64" y1="12" x2="40" y2="50" className="decor-manche" />
           <g transform="translate(40 50) rotate(122)">
-            <path d="M2 -5.5 L16 -7.5 Q20 -7.5 20 -3.5 L20 3.5 Q20 7.5 16 7.5 L2 5.5 Z" className="decor-ocre" />
+            <path d="M2 -3 L9 -11.5 Q11 -13 12.5 -11 L12.5 11 Q11 13 9 11.5 L2 3 Z" className="decor-ocre" />
+            <rect x="11" y="-11.5" width="2.4" height="23" rx="1.2" className="decor-lame-bord" />
             <rect x="-2.5" y="-2.5" width="7" height="5" rx="1.5" className="decor-terre" />
           </g>
           <ellipse cx="34" cy="64" rx="15" ry="4" className="decor-neige-sol" />

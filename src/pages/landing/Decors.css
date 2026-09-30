@@ -6,6 +6,7 @@
 .decor-terre { fill: var(--color-terre); }
 .decor-argile { fill: var(--color-argile); }
 .decor-ocre { fill: var(--color-ocre); }
+.decor-lame-bord { fill: var(--color-argile-foncee); }
 .decor-ardoise { fill: var(--color-ardoise); }
 .decor-ecran { fill: var(--color-surface-carte); }
 .decor-ligne { fill: var(--color-bordure); }
