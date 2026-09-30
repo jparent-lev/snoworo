@@ -1,4 +1,10 @@
 import { useState } from "react";
+import { doc, setDoc } from "firebase/firestore";
+import { signOut } from "firebase/auth";
+import { auth, db } from "../lib/firebase";
+import { ChoixRoles } from "./tableau/elements";
+import { ROLE_DENEIGEUR } from "../lib/mode";
+import "./tableau/Tableau.css";
 import { useAuth } from "../context/AuthContext";
 import { grantConsent, revokeConsent } from "../lib/consents";
 import { mettreAJourAdresseParPosition, mettreAJourAdresseParTexte } from "../lib/adresse";
@@ -24,7 +30,7 @@ const CONSENTS = [
 ];
 
 export default function Parametres() {
-  const { profile } = useAuth();
+  const { user, profile } = useAuth();
   const [enCours, setEnCours] = useState(null);
   const [erreurAdresse, setErreurAdresse] = useState(null);
   const [majAdresseEnCours, setMajAdresseEnCours] = useState(false);
@@ -83,8 +89,17 @@ export default function Parametres() {
 
   if (!profile) return null;
 
+  const roles = profile.role ?? [];
+  const changerRoles = (r) => r.length && setDoc(doc(db, "users", user.uid), { role: r }, { merge: true });
+
   return (
     <div className="parametres__page">
+      <h1>Comment tu utilises Snowro</h1>
+      <p className="parametres__intro">Tu peux avoir les deux rôles : une bascule Client / Déneigeur apparaît alors en haut.</p>
+      <ChoixRoles valeur={roles} onChange={changerRoles} />
+
+      {roles.includes(ROLE_DENEIGEUR) && (
+        <>
       <h1>Ton adresse de service</h1>
       <p className="parametres__intro">
         Détermine les demandes que tu peux voir : jamais hors de ta ville, même si la distance semble
@@ -128,6 +143,9 @@ export default function Parametres() {
         </button>
       </form>
 
+        </>
+      )}
+
       <h1>Tes consentements</h1>
       <p className="parametres__intro">
         Chacun de ces consentements est indépendant, daté, et retirable en tout temps — le retrait est aussi
@@ -163,6 +181,10 @@ export default function Parametres() {
           );
         })}
       </div>
+
+      <button type="button" className="btn btn--fantome" style={{ alignSelf: "flex-start" }} onClick={() => signOut(auth)}>
+        Me déconnecter
+      </button>
     </div>
   );
 }

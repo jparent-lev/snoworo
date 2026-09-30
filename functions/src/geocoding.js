@@ -42,11 +42,19 @@ async function villeDepuisCoordonnees(latitude, longitude) {
 
   const villeComponent = resultatVille.address_components.find((c) => c.types.includes("locality"));
   const codePostal = extraireComposant(body.results[0].address_components, "postal_code");
+  // Quartier pour l'affichage seulement (« À 400 m · Limoilou ») : jamais
+  // utilisé pour le matching, qui repose uniquement sur villeGeoId.
+  const composants = body.results.flatMap((r) => r.address_components);
+  const quartier =
+    extraireComposant(composants, "neighborhood") ??
+    extraireComposant(composants, "sublocality_level_1") ??
+    extraireComposant(composants, "sublocality");
 
   return {
     ville: villeComponent.long_name,
     villeGeoId: resultatVille.place_id,
     postalCodePrefix: codePostal ? codePostal.replace(/\s/g, "").slice(0, 3).toUpperCase() : null,
+    quartier,
   };
 }
 

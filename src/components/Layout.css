@@ -59,3 +59,63 @@
   text-align: center;
   border-top: 1px solid var(--color-bordure);
 }
+
+/* Bascule Client / Déneigeur : visible seulement avec les deux rôles. */
+.layout__bascule {
+  display: flex;
+  background: var(--color-surface-secondaire);
+  border: 1px solid var(--color-bordure);
+  border-radius: 999px;
+  padding: 3px;
+}
+
+.layout__bascule button {
+  font-family: var(--font-corps);
+  font-weight: 700;
+  font-size: 14px;
+  padding: 7px 14px;
+  border-radius: 999px;
+  border: none;
+  background: transparent;
+  color: var(--color-texte-secondaire);
+  cursor: pointer;
+}
+
+.layout__bascule button.layout__bascule--actif {
+  background: var(--color-terre);
+  color: var(--color-surface-carte);
+}
+
+.layout__logo-court {
+  display: none;
+}
+
+@media (max-width: 700px) {
+  .layout__logo-complet {
+    display: none;
+  }
+
+  .layout__logo-court {
+    display: inline-flex;
+  }
+
+  /* Déconnexion reste accessible dans Paramètres. */
+  .layout__deconnexion {
+    display: none;
+  }
+
+  .layout__entete {
+    padding: 10px 16px;
+    gap: 10px;
+  }
+
+  .layout__nav {
+    gap: 12px;
+    font-size: 13px;
+  }
+
+  .layout__bascule button {
+    padding: 6px 10px;
+    font-size: 13px;
+  }
+}

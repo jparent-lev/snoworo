@@ -97,3 +97,24 @@
   text-align: center;
   margin: 0;
 }
+
+.auth-form__aide {
+  font-size: 13px;
+  font-weight: 400;
+  line-height: 1.45;
+  color: var(--color-texte-secondaire);
+}
+
+.auth-form__case {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 15px;
+  cursor: pointer;
+}
+
+.auth-form__case input {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--color-argile);
+}

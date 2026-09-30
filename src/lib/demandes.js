@@ -1,55 +1,12 @@
-import {
-  addDoc,
-  collection,
-  doc,
-  onSnapshot,
-  orderBy,
-  query,
-  serverTimestamp,
-  updateDoc,
-  where,
-} from "firebase/firestore";
+import { collection, doc, getDoc, onSnapshot, orderBy, query, where } from "firebase/firestore";
 import { db } from "./firebase";
 
-export function publierDemande({
-  donneurOuvrageId,
-  donneurPrenom,
-  adresseGeohash,
-  postalCodePrefix,
-  quartier,
-  titre,
-  description,
-  dateHeureSouhaitee,
-  typeService,
-  remunerationOfferte,
-}) {
-  return addDoc(collection(db, "demandes"), {
-    donneurOuvrageId,
-    donneurPrenom,
-    statut: "ouverte",
-    adresseGeohash,
-    postalCodePrefix,
-    quartier,
-    titre,
-    description,
-    dateHeureSouhaitee,
-    typeService,
-    remunerationOfferte,
-    createdAt: serverTimestamp(),
-    deneigeurId: null,
-    matchedAt: null,
-    // Calculé par la Cloud Function de match (Stripe Connect, frais fixe + %) —
-    // voir snowro-changements-claude-code.md § 1-2. Jamais posé par le client
-    // (bloqué par champsProtegesDemande() dans firestore.rules).
-    paiement: null,
-  });
-}
+const versListe = (onChange) => (snap) => onChange(snap.docs.map((d) => ({ id: d.id, ...d.data() })));
 
-// Le filtre par villeGeoId est une exclusion dure, jamais un critère de tri —
-// voir l'addendum "intégrité du matching géographique" : un déneigeur ne doit
-// jamais voir une demande hors de sa ville de service, même proche à vol
-// d'oiseau. Le tri par distance ne s'applique qu'à l'intérieur de ce sous-ensemble
-// (voir DemandesX.jsx, qui trie ensuite par distanceM).
+// Le filtre par villeGeoId est une exclusion dure, jamais un critère de tri :
+// un déneigeur ne voit jamais une demande hors de sa ville de service, même
+// proche à vol d'oiseau. Tris et filtres (TableauDeneigeur) ne s'appliquent
+// qu'à l'intérieur de ce sous-ensemble. Le serveur revérifie à l'acceptation.
 export function ecouterDemandesOuvertes(villeGeoId, onChange) {
   const q = query(
     collection(db, "demandes"),
@@ -57,23 +14,24 @@ export function ecouterDemandesOuvertes(villeGeoId, onChange) {
     where("statut", "==", "ouverte"),
     orderBy("createdAt", "desc"),
   );
-  return onSnapshot(q, (snap) => {
-    onChange(snap.docs.map((d) => ({ id: d.id, ...d.data() })));
-  });
+  return onSnapshot(q, versListe(onChange));
 }
 
-// Le premier déneigeur qui accepte devient le match. Les Firestore rules
-// n'autorisent la transition que depuis "ouverte" — si un autre a déjà
-// accepté, cette écriture est rejetée (permission-denied) et l'appelant doit
-// afficher "déjà prise" plutôt qu'une erreur générique.
-// TODO (bloquant avant lancement) : une fois l'onboarding Stripe Connect
-// construit, empêcher ici (et dans firestore.rules) un déneigeur dont
-// connectStatus != "actif" d'accepter une demande.
-export function accepterDemande(demandeId, deneigeurId, donneurOuvrageId) {
-  return updateDoc(doc(db, "demandes", demandeId), {
-    statut: "matchee",
-    deneigeurId,
-    donneurOuvrageId,
-    matchedAt: serverTimestamp(),
-  });
+// Mode client : toutes mes demandes, les plus récentes d'abord.
+export function ecouterMesDemandes(uid, onChange) {
+  const q = query(collection(db, "demandes"), where("donneurOuvrageId", "==", uid), orderBy("createdAt", "desc"));
+  return onSnapshot(q, versListe(onChange));
+}
+
+// Mode déneigeur : les jobs que j'ai acceptées, par heure souhaitée.
+export function ecouterMesJobs(uid, onChange) {
+  const q = query(collection(db, "demandes"), where("deneigeurId", "==", uid), orderBy("dateHeureSouhaitee", "asc"));
+  return onSnapshot(q, versListe(onChange));
+}
+
+// Adresse exacte : lisible seulement par le client et le déneigeur choisi
+// (firestore.rules, demandes/{id}/prive/adresse).
+export async function lireAdressePrivee(demandeId) {
+  const snap = await getDoc(doc(db, "demandes", demandeId, "prive", "adresse"));
+  return snap.exists() ? snap.data().adresse : null;
 }

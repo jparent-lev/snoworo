@@ -4,6 +4,16 @@ export { creerOffreCiblee } from "./offresCiblees.js";
 export { regenererZonesStats } from "./zonesStats.js";
 export { mettreAJourAdresseUtilisateur } from "./adresse.js";
 export { calculerVilleDemande } from "./demandeVille.js";
+export {
+  publierDemande,
+  accepterDemande,
+  marquerFaite,
+  confirmerJob,
+  confirmerJobsEchues,
+  signalerProbleme,
+  annulerDemande,
+  augmenterOffre,
+} from "./cycleDemande.js";
 export { rejoindreListeAttente } from "./listeAttente.js";
 export { confirmerInscriptionListeAttente } from "./confirmationListeAttente.js";
 export { envoyerMessageContact } from "./contact.js";

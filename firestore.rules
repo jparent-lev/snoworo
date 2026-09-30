@@ -19,15 +19,11 @@ service cloud.firestore {
       // snowro-changements-claude-code.md § 1 : une donnée qui détermine un
       // comportement de sécurité/matching/paiement ne doit jamais être
       // manipulable par le client, au même titre que les consentements.
-      return ['consents', 'proSubscription', 'ville', 'villeGeoId', 'stripeConnectAccountId', 'connectStatus'];
-    }
-
-    function champsProtegesDemande() {
-      // Même principe que champsProteges() ci-dessus, pour les demandes :
-      // ville/villeGeoId sont calculés par calculerVilleDemande (trigger Firestore) ;
-      // paiement est calculé par la Cloud Function de match (frais fixe + %,
-      // lus depuis config/frais) — jamais fournis ni modifiés par le client.
-      return ['ville', 'villeGeoId', 'paiement'];
+      // ratingAvg, ratingCount, nbJobsCompletees : la réputation d'un
+      // déneigeur, mise à jour seulement par les Cloud Functions (sinon chacun
+      // pourrait se donner 5 étoiles).
+      return ['consents', 'proSubscription', 'ville', 'villeGeoId', 'stripeConnectAccountId', 'connectStatus',
+              'ratingAvg', 'ratingCount', 'nbJobsCompletees'];
     }
 
     function abonneProActif() {
@@ -36,8 +32,11 @@ service cloud.firestore {
     }
 
     // ---- users ----
+    // Lecture par le propriétaire SEULEMENT : la fiche contient courriel et
+    // téléphone (Loi 25). Ce que les autres doivent voir (prénom, note) est
+    // recopié dans la demande au moment où c'est pertinent.
     match /users/{userId} {
-      allow read: if estConnecte();
+      allow read: if estProprietaire(userId);
       allow create: if estProprietaire(userId) &&
         !request.resource.data.keys().hasAny(champsProteges());
       allow update: if estProprietaire(userId) &&
@@ -46,27 +45,24 @@ service cloud.firestore {
     }
 
     // ---- demandes ----
-    // TODO (bloquant avant lancement, voir snowro-changements-claude-code.md § 1) :
-    // une fois l'onboarding Stripe Connect construit, un déneigeur avec
-    // connectStatus != 'actif' ne doit jamais pouvoir déclencher la transition
-    // ouverte -> matchee ci-dessous (exclusion dure, pas juste un badge UI).
-    // Pas encore appliqué : aucun déneigeur n'a de connectStatus 'actif' tant
-    // que l'onboarding n'existe pas, ce qui bloquerait tout matching aujourd'hui.
+    // Toutes les écritures passent par les Cloud Functions du cycle de vie
+    // (functions/src/cycleDemande.js : publier, accepter, marquer faite,
+    // confirmer, signaler, annuler tant qu'ouverte, augmenter l'offre) : le
+    // premier-arrivé-premier-servi, le filtre de ville en exclusion dure et le
+    // calcul du paiement ne dépendent jamais du client.
+    // Lecture ouverte aux connectés (nécessaire au matching) : le document ne
+    // contient qu'un geohash arrondi (~150 m) et un prénom.
     match /demandes/{demandeId} {
       allow read: if estConnecte();
-      allow create: if estConnecte() &&
-        request.resource.data.donneurOuvrageId == request.auth.uid &&
-        request.resource.data.statut == 'ouverte' &&
-        !request.resource.data.keys().hasAny(champsProtegesDemande());
-      // Le match : un déneigeur connecté peut faire passer ouverte -> matchee, rien d'autre
-      // — ville/villeGeoId (déjà posés par le trigger) ne doivent pas bouger ici.
-      allow update: if estConnecte() &&
-        resource.data.statut == 'ouverte' &&
-        request.resource.data.statut == 'matchee' &&
-        request.resource.data.deneigeurId == request.auth.uid &&
-        request.resource.data.donneurOuvrageId == resource.data.donneurOuvrageId &&
-        !request.resource.data.diff(resource.data).affectedKeys().hasAny(champsProtegesDemande());
-      allow delete: if estProprietaire(resource.data.donneurOuvrageId);
+      allow write: if false;
+
+      // Adresse exacte : le client, et le déneigeur une fois qu'il a accepté.
+      match /prive/{docId} {
+        allow read: if estConnecte() &&
+          (request.auth.uid == get(/databases/$(database)/documents/demandes/$(demandeId)).data.donneurOuvrageId ||
+           request.auth.uid == get(/databases/$(database)/documents/demandes/$(demandeId)).data.deneigeurId);
+        allow write: if false;
+      }
     }
 
     // ---- config (paramètres internes) ----
@@ -124,7 +120,7 @@ service cloud.firestore {
     // et n'est visible qu'aux deux parties du match (jamais avant, jamais à un tiers).
     function participantAuMatch(demandeId) {
       let demande = get(/databases/$(database)/documents/demandes/$(demandeId)).data;
-      return demande.statut == 'matchee' &&
+      return demande.statut in ['matchee', 'faite', 'completee', 'signalee'] &&
         (request.auth.uid == demande.donneurOuvrageId || request.auth.uid == demande.deneigeurId);
     }
 

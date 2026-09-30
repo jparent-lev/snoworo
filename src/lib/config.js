@@ -15,3 +15,12 @@ export function ecouterConfigFrais(onChange) {
     () => onChange(FRAIS_PAR_DEFAUT),
   );
 }
+
+// Même calcul que la Cloud Function (functions/src/cycleDemande.js,
+// calculerPaiement) : ce que le client paie, les frais Snowro, ce que le
+// déneigeur reçoit. Sert à l'affichage seulement ; le serveur recalcule.
+export function calculerPaiement(montant, { fraisFixe, fraisPct } = FRAIS_PAR_DEFAUT) {
+  const arrondir = (x) => Math.round(x * 100) / 100;
+  const fraisSnowro = arrondir(fraisFixe + (montant * fraisPct) / 100);
+  return { montantTotal: montant, fraisSnowro, montantDeneigeur: arrondir(montant - fraisSnowro) };
+}

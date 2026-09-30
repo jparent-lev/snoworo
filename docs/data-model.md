@@ -2,6 +2,12 @@
 
 ## `users/{userId}`
 
+Lisible **par son propriétaire seulement** (courriel, téléphone : Loi 25). Ce que
+les autres doivent voir (prénom, note) est recopié dans la demande. `role`
+est choisi à l'inscription et modifiable dans Paramètres ; `ratingAvg`,
+`ratingCount` et `nbJobsCompletees` ne sont écrits que par les Cloud Functions.
+
+
 ```
 role: ["donneur_ouvrage" | "deneigeur_x" | "deneigeur_pro"]
 displayName, phone, email
@@ -54,25 +60,56 @@ matching.
 
 ## `demandes/{demandeId}`
 
+Écrit **uniquement** par les Cloud Functions du cycle de vie
+(`functions/src/cycleDemande.js`) ; les Firestore rules refusent toute
+écriture client. Lisible par tout utilisateur connecté (nécessaire au
+matching) : ne contient donc ni l'adresse exacte ni de coordonnées précises.
+
 ```
-donneurOuvrageId, donneurPrenom       // prénom dénormalisé pour l'affichage carte (évite un join)
-statut: "ouverte" | "matchee" | "completee" | "annulee"
-adresseGeohash, postalCodePrefix, quartier   // quartier : saisie libre en attendant Google Maps
-ville, villeGeoId                      // 🔒 calculés par calculerVilleDemande (trigger Firestore)
-titre, description                     // copie affichée sur la carte de demande (écran X)
-dateHeureSouhaitee, typeService, remunerationOfferte, createdAt
+donneurOuvrageId, donneurPrenom
+statut: "ouverte" | "matchee" | "faite" | "completee" | "signalee" | "annulee"
+adresseGeohash          // 7 caractères (~150 m) : distance affichée, jamais l'adresse
+postalCodePrefix, quartier, ville, villeGeoId   // dérivés du géocodage de l'adresse
+titre, description, typeService, outilsFournis
+dateHeureSouhaitee, remunerationOfferte, createdAt
 
-deneigeurId, matchedAt
+deneigeurId, deneigeurPrenom, deneigeurNote: { moyenne, nombre }, matchedAt
+faiteAt, confirmationAutoAt     // confirmationAutoAt = faiteAt + 12 h
+confirmeeAt, confirmationAuto   // true si confirmée par confirmerJobsEchues
+annuleeAt                       // seulement depuis « ouverte »
+signalement: { par: "client" | "deneigeur", motif, details, statutPrecedent, at } | null
 
-paiement: {              // 🔒 calculé par la Cloud Function de match — pas encore implémenté
-  montantTotal: number,          // valeur du contrat (== remunerationOfferte au moment du match)
-  fraisSnowro: number,           // config/frais : fraisFixe + fraisPct * montantTotal
-  montantDeneigeur: number,      // montantTotal - fraisSnowro
-  statutPaiement: "en_attente" | "paye" | "echoue" | "rembourse",
-  stripePaymentIntentId: string,
-  stripeTransferId: string | null,
+paiement: {              // posé à l'acceptation ; SIMULÉ tant que Stripe n'est pas branché
+  montantTotal, fraisSnowro, montantDeneigeur,   // config/frais : fraisFixe + fraisPct %
+  statutPaiement: "simule_retenu" | "simule_verse" | "simule_bloque"
+                  // (Stripe : "en_attente" | "paye" | "echoue" | "rembourse")
+  stripePaymentIntentId, stripeTransferId        // null en simulation
 } | null
 ```
+
+Transitions (toutes dans des transactions) :
+
+| De | Vers | Qui | Fonction |
+|---|---|---|---|
+| (rien) | ouverte | client | `publierDemande` (géocode l'adresse) |
+| ouverte | matchee | déneigeur de la même ville, premier arrivé | `accepterDemande` |
+| ouverte | annulee | client | `annulerDemande` |
+| ouverte | ouverte (offre plus haute) | client | `augmenterOffre` |
+| matchee | faite | déneigeur choisi | `marquerFaite` |
+| faite | completee | client, ou automatiquement après 12 h | `confirmerJob`, `confirmerJobsEchues` (toutes les 15 min) |
+| matchee, faite | signalee | client ou déneigeur choisi | `signalerProbleme` |
+
+**Pas d'annulation une fois acceptée**, ni par le client ni par le
+déneigeur (décision produit) : le seul recours est de signaler un problème.
+
+### `demandes/{demandeId}/prive/adresse`
+
+```
+adresse, geohash        // adresse saisie et geohash pleine précision
+```
+
+Lisible seulement par le client et, après acceptation, par le déneigeur
+choisi. Jamais écrit côté client.
 
 `paiement` remplace l'ancien `fraisMiseEnRelation` (frais de mise en relation
 fixe, modèle abandonné — voir `docs/architecture.md` § Paiement). Renommé pour
