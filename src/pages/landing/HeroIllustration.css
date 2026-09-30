@@ -59,6 +59,7 @@
 .hero-illu__pompon { fill: var(--color-ocre); }
 .hero-illu__manche { stroke: var(--color-terre); stroke-width: 4; stroke-linecap: round; }
 .hero-illu__lame { fill: var(--color-ocre); }
+.hero-illu__lame-bord { fill: var(--color-argile-foncee); }
 .hero-illu__douille { fill: var(--color-terre); }
 .hero-illu__jet { fill: var(--color-surface-carte); opacity: 0; }
 .hero-illu__etincelles { fill: var(--color-ocre); opacity: 0; }
