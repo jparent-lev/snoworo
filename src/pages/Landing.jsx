@@ -117,10 +117,7 @@ export default function Landing() {
             },
           ].map((etape, i) => (
             <div key={etape.titre} className="landing__etape-carte">
-              <div className="landing__etape-haut">
-                <span className="landing__etape-pastille">{i + 1}</span>
-                <IllustrationEtape etape={i + 1} />
-              </div>
+              <IllustrationEtape etape={i + 1} />
               <h3 className="landing__h3">{etape.titre}</h3>
               <p className="landing__p">{etape.texte}</p>
             </div>

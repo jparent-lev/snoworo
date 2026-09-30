@@ -687,27 +687,11 @@
   min-width: 0;
 }
 
-.landing__etape-haut {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-}
-
-.landing__etape-pastille {
-  width: 52px;
-  height: 52px;
-  flex: none;
-  border-radius: 999px;
-  background: var(--color-ocre);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-family: var(--font-titrage);
-  font-weight: 900;
-  font-size: 26px;
-  line-height: 1;
-  color: var(--color-terre);
+/* L'illustration tient lieu de numéro : alignée à gauche, un peu plus grande. */
+.landing__etape-carte .decor-etape {
+  width: 112px;
+  height: 84px;
+  margin-left: -17px; /* le cercle (x = 15 sur 96) s'aligne sur le texte */
 }
 
 /* ---- Bloc paiement (Stripe Connect) ---- */
