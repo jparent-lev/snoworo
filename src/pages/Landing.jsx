@@ -231,8 +231,9 @@ export default function Landing() {
             <span className="eyebrow landing__eyebrow-sur-terre">Tu as une pelle et du temps</span>
             <h2 className="landing__h2 landing__h2--sur-terre">Fais de l'argent avec la tempête</h2>
             <p className="landing__chapeau landing__chapeau--sur-terre">
-              Tu choisis les jobs que tu prends, quand ça fait ton affaire. Pas de quota, pas d'horaire, pas
-              de contrat de saison. Tu es payé dans les jours qui suivent, directement dans ton compte.
+              Tu choisis les jobs qui te conviennent : chaque demande indique l'heure souhaitée, et tu acceptes
+              seulement celles qui entrent dans ta journée. Pas de quota, pas de quarts de travail, pas de
+              contrat de saison. Tu es payé dans les jours qui suivent, directement dans ton compte.
             </p>
             <div className="landing__profils">
               <span>
