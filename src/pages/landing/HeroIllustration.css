@@ -59,6 +59,7 @@
 .hero-illu__pompon { fill: var(--color-ocre); }
 .hero-illu__manche { stroke: var(--color-terre); stroke-width: 4; stroke-linecap: round; }
 .hero-illu__lame { fill: var(--color-ocre); }
+.hero-illu__douille { fill: var(--color-terre); }
 .hero-illu__jet { fill: var(--color-surface-carte); opacity: 0; }
 .hero-illu__etincelles { fill: var(--color-ocre); opacity: 0; }
 
@@ -227,19 +228,19 @@
 }
 
 /* Quatre coups de pelle de 7 % chacun (35 à 63 %) : on plonge dans l'amas
-   (-8deg), on relève et on lance (+12deg), on revient droit. */
+   (-5deg), on relève et on lance (+12deg), on revient droit. */
 @keyframes hero-pelleter {
   0%, 35% { transform: rotate(0deg); }
-  38% { transform: rotate(-8deg); }
+  38% { transform: rotate(-5deg); }
   40% { transform: rotate(12deg); }
   42% { transform: rotate(0deg); }
-  45% { transform: rotate(-8deg); }
+  45% { transform: rotate(-5deg); }
   47% { transform: rotate(12deg); }
   49% { transform: rotate(0deg); }
-  52% { transform: rotate(-8deg); }
+  52% { transform: rotate(-5deg); }
   54% { transform: rotate(12deg); }
   56% { transform: rotate(0deg); }
-  59% { transform: rotate(-8deg); }
+  59% { transform: rotate(-5deg); }
   61% { transform: rotate(12deg); }
   63%, 100% { transform: rotate(0deg); }
 }

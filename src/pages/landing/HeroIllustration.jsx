@@ -142,19 +142,24 @@ export default function HeroIllustration() {
               <circle cx="276" cy="203" r="5" className="hero-illu__pompon" />
 
               <g className="hero-illu__pelle">
-                <line x1="282" y1="258" x2="222" y2="322" className="hero-illu__manche" />
-                <path d="M206 318 H236 L237 326 A4 4 0 0 1 233 330 H209 A4 4 0 0 1 205 326 Z" className="hero-illu__lame" />
+                <line x1="282" y1="258" x2="234" y2="310" className="hero-illu__manche" />
+                {/* Lame dans l'axe du manche (angle 132,7deg), fixée au bout par une
+                    douille : dessinée à plat puis tournée autour de l'extrémité. */}
+                <g transform="translate(234 310) rotate(132.7)">
+                  <path d="M3 -5.5 L24 -8 Q29 -8 29 -3.5 L29 3.5 Q29 8 24 8 L3 5.5 Z" className="hero-illu__lame" />
+                  <rect x="-3" y="-3" width="9" height="6" rx="2" className="hero-illu__douille" />
+                </g>
               </g>
               <path d="M286 258 Q272 274 256 286" className="hero-illu__bras" />
-              <path d="M280 256 Q268 262 262 272" className="hero-illu__bras" />
+              <path d="M280 256 Q270 264 264 277" className="hero-illu__bras" />
             </g>
 
             {/* Neige projetée, un jet par coup de pelle */}
             {[0, 1, 2, 3].map((i) => (
               <g key={i} className="hero-illu__jet" style={{ animationDelay: `${i * 0.56}s` }}>
-                <circle cx="216" cy="306" r="3.2" />
-                <circle cx="224" cy="302" r="2.4" />
-                <circle cx="210" cy="300" r="2" />
+                <circle cx="210" cy="312" r="3.2" />
+                <circle cx="218" cy="307" r="2.4" />
+                <circle cx="204" cy="305" r="2" />
               </g>
             ))}
 
