@@ -832,10 +832,22 @@
   border-radius: 999px;
 }
 
-.landing__jeton-texte {
-  font-size: 14.5px;
-  color: var(--color-texte-secondaire);
-  padding: 9px 4px;
+/* Pastille « + La tienne ? » : en pointillés ardoise comme l'épingle
+   fantôme de la carte des villes (Decors.jsx), et lien vers la liste
+   d'attente. Padding réduit de la bordure pour garder la même hauteur que
+   les autres pastilles. */
+.landing__jeton--tienne {
+  background: transparent;
+  color: var(--color-ardoise);
+  border: 1.5px dashed var(--color-ardoise);
+  padding: 7.5px 13.5px;
+  text-decoration: none;
+  transition: var(--ease-out-rapide), color 120ms ease-out;
+}
+
+.landing__jeton--tienne:hover {
+  background: var(--color-ardoise);
+  color: var(--color-surface-carte);
 }
 
 /* ---- Devenir déneigeur ---- */

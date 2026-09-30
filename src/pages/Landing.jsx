@@ -212,7 +212,9 @@ export default function Landing() {
               <span className="landing__jeton">Québec</span>
               <span className="landing__jeton">Montréal</span>
               <span className="landing__jeton">Trois-Rivières</span>
-              <span className="landing__jeton-texte">et la tienne, si tu t'inscris</span>
+              <a href="#liste" className="landing__jeton landing__jeton--tienne">
+                + La tienne ?
+              </a>
             </div>
             <p className="landing__p landing__p--legende">
               On ouvre une ville quand il y a assez de déneigeurs de quartier dedans pour que ça vaille la
