@@ -1,8 +1,7 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import PageLegale from "../components/PageLegale";
 import { envoyerMessageContact } from "../lib/contact";
-import { INFOS_LEGALES } from "../lib/legal";
 import "./NousEcrire.css";
 
 // Doit rester aligné sur SUJETS dans functions/src/contact.js.
@@ -16,10 +15,12 @@ const SUJETS = [
 const LONGUEUR_MAX_MESSAGE = 5000;
 
 export default function NousEcrire() {
-  const { courriel: courrielSnowro } = INFOS_LEGALES;
+  // ?sujet=renseignements (lien de la politique de confidentialité) présélectionne le sujet.
+  const [parametres] = useSearchParams();
+  const sujetDemande = parametres.get("sujet");
   const [nom, setNom] = useState("");
   const [courriel, setCourriel] = useState("");
-  const [sujet, setSujet] = useState("question");
+  const [sujet, setSujet] = useState(SUJETS.some((s) => s.valeur === sujetDemande) ? sujetDemande : "question");
   const [message, setMessage] = useState("");
   const [siteWeb, setSiteWeb] = useState(""); // honeypot — reste vide pour un humain
   const [envoye, setEnvoye] = useState(false);
@@ -40,7 +41,7 @@ export default function NousEcrire() {
       });
       setEnvoye(true);
     } catch {
-      setErreur(`Ton message n'est pas parti. Vérifie ton courriel et réessaie, ou écris-nous directement à ${courrielSnowro}.`);
+      setErreur("Ton message n'est pas parti. Vérifie ton courriel et réessaie dans quelques minutes.");
     } finally {
       setEnCours(false);
     }
@@ -50,8 +51,7 @@ export default function NousEcrire() {
     <PageLegale surtitre="Contact" titre="Nous écrire">
       <p>
         Une question, une idée, un problème avec une job ? Écris-nous : on répond habituellement en un ou deux
-        jours ouvrables. Tu peux aussi nous joindre directement à{" "}
-        <a href={`mailto:${courrielSnowro}`}>{courrielSnowro}</a>.
+        jours ouvrables.
       </p>
 
       {envoye ? (
