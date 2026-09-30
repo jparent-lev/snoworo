@@ -12,6 +12,9 @@ export const calculerVilleDemande = onDocumentCreated(
   { document: "demandes/{demandeId}", region: "northamerica-northeast1", secrets: [GEOCODING_API_KEY] },
   async (event) => {
     const demande = event.data.data();
+    // Les demandes publiées par publierDemande (cycleDemande.js) arrivent avec
+    // ville/villeGeoId déjà dérivés de l'adresse : rien à refaire.
+    if (demande.villeGeoId) return;
     if (!demande.adresseGeohash) {
       logger.error(`Demande ${event.params.demandeId} sans adresseGeohash — impossible de dériver la ville.`);
       return;

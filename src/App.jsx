@@ -1,10 +1,10 @@
-import { Route, Routes } from "react-router-dom";
+import { Navigate, Route, Routes } from "react-router-dom";
 import Layout from "./components/Layout";
 import RequireAuth from "./components/RequireAuth";
 import Landing from "./pages/Landing";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
-import DemandesX from "./pages/DemandesX";
+import TableauDeBord from "./pages/tableau/TableauDeBord";
 import PublierDemande from "./pages/PublierDemande";
 import Parametres from "./pages/Parametres";
 import Confidentialite from "./pages/Confidentialite";
@@ -23,13 +23,15 @@ export default function App() {
 
       <Route element={<Layout />}>
         <Route
-          path="/demandes"
+          path="/tableau-de-bord"
           element={
             <RequireAuth>
-              <DemandesX />
+              <TableauDeBord />
             </RequireAuth>
           }
         />
+        {/* Ancienne adresse, gardée pour les favoris et les liens déjà partagés. */}
+        <Route path="/demandes" element={<Navigate to="/tableau-de-bord" replace />} />
         <Route
           path="/publier"
           element={

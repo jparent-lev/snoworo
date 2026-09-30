@@ -1,0 +1,498 @@
+/* Tableaux de bord client et déneigeur (maquettes validées : rangées,
+   filtres, tri). Couleurs tirées des tokens. */
+
+.tableau {
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 28px 24px 56px;
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+}
+
+.tableau__salut {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.tableau__salut h1 {
+  font-size: clamp(27px, 3.4vw, 34px);
+}
+
+.tableau__salut p {
+  color: var(--color-texte-secondaire);
+  margin-top: 4px;
+}
+
+.tableau__simulation {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--color-ardoise);
+  background: #dce6e8;
+  border-radius: 10px;
+  padding: 8px 12px;
+  align-self: flex-start;
+}
+
+.btn {
+  display: inline-block;
+  font-family: var(--font-corps);
+  font-weight: 700;
+  font-size: 15px;
+  padding: 12px 18px;
+  border-radius: var(--radius-bouton);
+  border: 1.5px solid transparent;
+  text-align: center;
+  text-decoration: none;
+  cursor: pointer;
+  transition: var(--ease-out-rapide), border-color 120ms ease-out;
+}
+
+.btn:disabled {
+  cursor: default;
+  opacity: 0.6;
+}
+
+.btn--principal {
+  background: var(--color-argile);
+  color: var(--color-surface-carte);
+}
+
+.btn--principal:hover:not(:disabled) {
+  background: var(--color-argile-foncee);
+}
+
+.btn--ardoise {
+  background: var(--color-ardoise);
+  color: var(--color-surface-carte);
+}
+
+.btn--fantome {
+  background: transparent;
+  color: var(--color-terre);
+  border-color: var(--color-bordure-bouton-fantome);
+}
+
+.btn--fantome:hover:not(:disabled) {
+  border-color: var(--color-terre);
+}
+
+.btn--petit {
+  padding: 8px 12px;
+  font-size: 13.5px;
+  border-radius: 10px;
+}
+
+.btn--lien {
+  background: none;
+  border: none;
+  padding: 0;
+  color: var(--color-argile-foncee);
+  font-weight: 700;
+  font-size: 13.5px;
+  text-decoration: underline;
+}
+
+/* ---- Cartes ---- */
+
+.carte-job {
+  background: var(--color-surface-carte);
+  border: 1px solid var(--color-bordure);
+  border-radius: 18px;
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 0;
+}
+
+.carte-job--attention {
+  border: 2px solid var(--color-argile);
+  box-shadow: 0 10px 26px -18px rgba(193, 101, 47, 0.8);
+}
+
+.carte-job__haut {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.carte-job__titre {
+  font-family: var(--font-titrage);
+  font-weight: 600;
+  font-size: 19px;
+  line-height: 1.2;
+}
+
+.carte-job__meta {
+  font-size: 13.5px;
+  color: var(--color-texte-secondaire);
+}
+
+.carte-job__prix {
+  font-family: var(--font-titrage);
+  font-weight: 600;
+  font-size: 24px;
+}
+
+.carte-job__ligne {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.carte-job__actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.carte-job__note {
+  font-size: 13px;
+  color: var(--color-texte-secondaire);
+  background: var(--color-surface-secondaire);
+  border-radius: 10px;
+  padding: 9px 11px;
+}
+
+.carte-job__note b {
+  color: var(--color-terre);
+}
+
+.carte-job__erreur {
+  font-size: 13px;
+  color: var(--color-terre);
+  border: 1px solid var(--color-argile);
+  background: #fbeee6;
+  border-radius: 10px;
+  padding: 8px 10px;
+}
+
+.carte-job__adresse {
+  font-weight: 700;
+}
+
+.carte-job__etiquette {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--color-ardoise);
+  background: #dce6e8;
+  border-radius: 6px;
+  padding: 3px 8px;
+}
+
+.badge {
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 4px 9px;
+  border-radius: 6px;
+}
+
+.badge--ocre { background: #f6e7c6; color: #6b4a0e; }
+.badge--ardoise { background: #dce6e8; color: #2f4549; }
+.badge--argile { background: var(--color-argile); color: var(--color-surface-carte); }
+.badge--vert { background: #ddebd8; color: #2f4a26; }
+.badge--gris { background: var(--color-bordure); color: var(--color-terre); }
+
+.heure {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 700;
+  font-size: 14px;
+  background: var(--color-surface-secondaire);
+  border: 1px solid var(--color-bordure);
+  padding: 5px 10px;
+  border-radius: 8px;
+  white-space: nowrap;
+}
+
+.personne {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.personne__pastille {
+  width: 38px;
+  height: 38px;
+  border-radius: 999px;
+  display: grid;
+  place-items: center;
+  font-weight: 700;
+  background: var(--color-lin);
+  flex: none;
+}
+
+.etoile {
+  color: var(--color-ocre);
+}
+
+/* Étapes Publiée > Acceptée > Faite > Confirmée */
+.etapes {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 4px;
+  margin-top: auto;
+  padding-top: 2px;
+}
+
+.etapes__etape {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--color-texte-secondaire);
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.etapes__etape::before {
+  content: "";
+  height: 5px;
+  border-radius: 999px;
+  background: var(--color-bordure);
+}
+
+.etapes__etape--fait::before { background: var(--color-ardoise); }
+.etapes__etape--encours::before { background: var(--color-argile); }
+.etapes__etape--fait,
+.etapes__etape--encours { color: var(--color-terre); }
+
+/* ---- Historique ---- */
+
+.historique {
+  background: var(--color-surface-carte);
+  border: 1px solid var(--color-bordure);
+  border-radius: 18px;
+}
+
+.historique__rang {
+  display: grid;
+  grid-template-columns: 90px 1fr auto;
+  gap: 14px;
+  align-items: center;
+  padding: 13px 18px;
+  border-bottom: 1px solid var(--color-bordure);
+  font-size: 14px;
+}
+
+.historique__rang:last-child {
+  border-bottom: none;
+}
+
+.historique__date {
+  color: var(--color-texte-secondaire);
+}
+
+/* ---- Déneigeur : bandeau et chiffres ---- */
+
+.bandeau {
+  background: #fbf0d8;
+  border: 1.5px solid var(--color-ocre);
+  border-radius: 18px;
+  padding: 18px 20px;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 16px;
+  align-items: center;
+}
+
+.bandeau h3 {
+  font-size: 19px;
+}
+
+.bandeau__etapes {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-top: 8px;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.bandeau__ok { color: #2f4a26; }
+.bandeau__manque { color: var(--color-argile-foncee); }
+
+.chiffres {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(200px, 100%), 1fr));
+  gap: 14px;
+}
+
+.chiffre {
+  background: var(--color-surface-carte);
+  border: 1px solid var(--color-bordure);
+  border-radius: 16px;
+  padding: 16px 18px;
+}
+
+.chiffre .eyebrow {
+  color: var(--color-ardoise);
+}
+
+.chiffre__valeur {
+  font-family: var(--font-titrage);
+  font-weight: 600;
+  font-size: 28px;
+  margin-top: 4px;
+}
+
+.chiffre__sous {
+  font-size: 13px;
+  color: var(--color-texte-secondaire);
+}
+
+/* ---- Fenêtre de confirmation ---- */
+
+.modale__fond {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  background: rgba(59, 42, 31, 0.45);
+  display: grid;
+  place-items: center;
+  padding: 16px;
+}
+
+.modale {
+  width: 100%;
+  max-width: 460px;
+  background: var(--color-surface-carte);
+  border-radius: 20px;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  box-shadow: 0 24px 60px -24px rgba(59, 42, 31, 0.6);
+}
+
+.modale h2 {
+  font-size: 23px;
+}
+
+.modale p {
+  color: var(--color-texte-secondaire);
+}
+
+.modale__resume {
+  background: var(--color-surface-secondaire);
+  border: 1px solid var(--color-bordure);
+  border-radius: 12px;
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.modale__engagement {
+  border-left: 3px solid var(--color-argile);
+  padding: 4px 0 4px 12px;
+  color: var(--color-terre) !important;
+  font-weight: 700;
+}
+
+.modale__actions {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+}
+
+.modale label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-weight: 700;
+  font-size: 14px;
+}
+
+.modale select,
+.modale textarea,
+.modale input {
+  font-family: var(--font-corps);
+  font-size: 15px;
+  padding: 11px 12px;
+  border-radius: 10px;
+  border: 1.5px solid var(--color-bordure);
+  background: var(--color-surface-secondaire);
+  color: var(--color-terre);
+}
+
+/* ---- Choix des rôles ---- */
+
+.roles {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(240px, 100%), 1fr));
+  gap: 12px;
+}
+
+.roles__choix {
+  text-align: left;
+  font-family: var(--font-corps);
+  background: var(--color-surface-carte);
+  border: 2px solid var(--color-bordure);
+  border-radius: 16px;
+  padding: 16px;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  color: var(--color-terre);
+}
+
+.roles__choix--actif {
+  border-color: var(--color-argile);
+  background: #fbeee6;
+}
+
+.roles__choix strong {
+  font-family: var(--font-titrage);
+  font-size: 18px;
+}
+
+.roles__choix span {
+  font-size: 14px;
+  color: var(--color-texte-secondaire);
+}
+
+@media (max-width: 700px) {
+  .tableau {
+    padding: 20px 16px 40px;
+    gap: 24px;
+  }
+
+  .tableau__salut .btn {
+    width: 100%;
+  }
+
+  .bandeau {
+    grid-template-columns: 1fr;
+  }
+
+  .chiffres {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .chiffres .chiffre:first-child {
+    grid-column: 1 / -1;
+  }
+
+  .historique__rang {
+    grid-template-columns: 1fr auto;
+    row-gap: 2px;
+  }
+
+  .historique__date {
+    grid-column: 1 / -1;
+    font-size: 12.5px;
+  }
+}

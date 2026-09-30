@@ -1,0 +1,16 @@
+{
+  "name": "snowro-tests",
+  "private": true,
+  "type": "module",
+  "description": "Tests contre les émulateurs Firebase (voir tests/README.md).",
+  "scripts": {
+    "test": "firebase emulators:exec --project demo-snowro --only firestore 'node cycle.test.mjs'",
+    "e2e": "firebase emulators:exec --project demo-snowro --only auth,firestore,functions 'node parcours.e2e.mjs'"
+  },
+  "devDependencies": {
+    "@firebase/rules-unit-testing": "^5.0.0",
+    "firebase": "^12.18.0",
+    "firebase-tools": "^15.0.0",
+    "playwright": "^1.50.0"
+  }
+}

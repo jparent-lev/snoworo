@@ -1,0 +1,321 @@
+import { onCall, HttpsError } from "firebase-functions/v2/https";
+import { onSchedule } from "firebase-functions/v2/scheduler";
+import { logger } from "firebase-functions/v2";
+import { FieldValue, Timestamp } from "firebase-admin/firestore";
+import { db } from "./admin.js";
+import { GEOCODING_API_KEY, villeDepuisAdresse } from "./geocoding.js";
+
+// Cycle de vie d'une demande, entièrement côté serveur (les Firestore rules
+// refusent toute écriture client sur demandes/) :
+//
+//   ouverte ──accepter──> matchee ──marquerFaite──> faite ──confirmer──> completee
+//      │                     │                        │   (ou automatique après 12 h)
+//      └─annuler─> annulee   └──────signaler──────────┴──> signalee
+//
+// Pas d'annulation une fois la demande acceptée, ni par le client ni par le
+// déneigeur (décision produit : pas de porte de sortie pour laisser une job
+// en plan au profit d'une plus payante). Après l'acceptation, le seul recours
+// est « Signaler un problème ».
+//
+// Paiement : SIMULÉ tant que Stripe Connect n'est pas branché (étape 4). Les
+// montants sont calculés comme ils le seront (config/frais), mais aucun argent
+// ne circule ; statutPaiement porte le préfixe « simule_ » pour qu'aucune
+// donnée de test ne soit confondue avec un vrai paiement.
+
+const REGION = "northamerica-northeast1";
+export const DELAI_CONFIRMATION_MS = 12 * 60 * 60 * 1000;
+const FRAIS_PAR_DEFAUT = { fraisFixe: 2, fraisPct: 8 }; // mêmes valeurs que src/lib/config.js
+const TYPES_SERVICE = new Set(["entree", "entree_balcon", "toiture", "stationnement"]);
+const MOTIFS_SIGNALEMENT = new Set(["absent", "incomplet", "acces", "autre"]);
+const MONTANT_MIN = 10;
+const MONTANT_MAX = 1000;
+// Précision du geohash public (lisible par tout utilisateur connecté) :
+// 7 caractères, environ 150 m, assez pour « À 400 m » sans révéler l'adresse.
+// L'adresse exacte reste dans demandes/{id}/prive/adresse.
+const PRECISION_GEOHASH_PUBLIC = 7;
+
+// TODO étape 4 (Stripe Connect) : passer à true. Tant que l'onboarding
+// n'existe pas, aucun déneigeur n'a connectStatus « actif » et exiger le
+// compte bloquerait tout test du parcours.
+const EXIGER_COMPTE_PAIEMENT = false;
+
+function exigerConnexion(request) {
+  if (!request.auth) throw new HttpsError("unauthenticated", "Connexion requise.");
+  return request.auth.uid;
+}
+
+function prenom(nom) {
+  return (nom || "").trim().split(/\s+/)[0] || "Voisin";
+}
+
+function arrondir(montant) {
+  return Math.round(montant * 100) / 100;
+}
+
+export function calculerPaiement(montant, { fraisFixe, fraisPct }) {
+  const fraisSnowro = arrondir(fraisFixe + (montant * fraisPct) / 100);
+  return { montantTotal: montant, fraisSnowro, montantDeneigeur: arrondir(montant - fraisSnowro) };
+}
+
+async function lireFrais() {
+  const snap = await db.doc("config/frais").get();
+  return snap.exists ? { ...FRAIS_PAR_DEFAUT, ...snap.data() } : FRAIS_PAR_DEFAUT;
+}
+
+function validerMontant(montant) {
+  if (typeof montant !== "number" || !Number.isFinite(montant) || montant < MONTANT_MIN || montant > MONTANT_MAX) {
+    throw new HttpsError("invalid-argument", `Montant entre ${MONTANT_MIN} $ et ${MONTANT_MAX} $.`);
+  }
+  return arrondir(montant);
+}
+
+function texte(valeur, { max, requis = false, nom }) {
+  if (valeur == null || valeur === "") {
+    if (requis) throw new HttpsError("invalid-argument", `${nom} requis.`);
+    return "";
+  }
+  if (typeof valeur !== "string" || valeur.length > max) {
+    throw new HttpsError("invalid-argument", `${nom} invalide (${max} caractères max).`);
+  }
+  return valeur.trim();
+}
+
+// Lit la demande dans une transaction et vérifie le rôle de l'appelant et le
+// statut attendu. Renvoie { ref, demande }.
+async function lireDemande(tx, demandeId, { uid, role, statuts }) {
+  if (typeof demandeId !== "string" || !demandeId) {
+    throw new HttpsError("invalid-argument", "demandeId requis.");
+  }
+  const ref = db.doc(`demandes/${demandeId}`);
+  const snap = await tx.get(ref);
+  if (!snap.exists) throw new HttpsError("not-found", "Demande introuvable.");
+  const demande = snap.data();
+  const champ = role === "client" ? "donneurOuvrageId" : "deneigeurId";
+  if (demande[champ] !== uid) throw new HttpsError("permission-denied", "Cette demande n'est pas la tienne.");
+  if (!statuts.includes(demande.statut)) {
+    throw new HttpsError("failed-precondition", `Action impossible au statut « ${demande.statut} ».`);
+  }
+  return { ref, demande };
+}
+
+// ---- Publier ----
+// L'adresse est géocodée ici (jamais la position du téléphone, qui peut être
+// au travail) : ville/villeGeoId en découlent, comme partout ailleurs.
+export const publierDemande = onCall({ region: REGION, secrets: [GEOCODING_API_KEY] }, async (request) => {
+  const uid = exigerConnexion(request);
+  const d = request.data ?? {};
+  const adresse = texte(d.adresse, { max: 200, requis: true, nom: "Adresse" });
+  const titre = texte(d.titre, { max: 80, requis: true, nom: "Titre" });
+  const description = texte(d.description, { max: 600, nom: "Description" });
+  if (!TYPES_SERVICE.has(d.typeService)) throw new HttpsError("invalid-argument", "Type de service invalide.");
+  const montant = validerMontant(d.montant);
+  const echeance = new Date(d.dateHeureSouhaitee);
+  if (Number.isNaN(echeance.getTime()) || echeance.getTime() < Date.now() + 30 * 60 * 1000) {
+    throw new HttpsError("invalid-argument", "L'heure souhaitée doit être au moins 30 minutes plus tard.");
+  }
+
+  let lieu;
+  try {
+    lieu = await villeDepuisAdresse(adresse);
+  } catch (err) {
+    throw new HttpsError("failed-precondition", `Adresse introuvable : ${err.message}`);
+  }
+
+  const profil = (await db.doc(`users/${uid}`).get()).data() ?? {};
+  const ref = db.collection("demandes").doc();
+  const batch = db.batch();
+  batch.set(ref, {
+    donneurOuvrageId: uid,
+    donneurPrenom: prenom(profil.displayName),
+    statut: "ouverte",
+    adresseGeohash: lieu.geohash.slice(0, PRECISION_GEOHASH_PUBLIC),
+    postalCodePrefix: lieu.postalCodePrefix,
+    quartier: lieu.quartier ?? null,
+    ville: lieu.ville,
+    villeGeoId: lieu.villeGeoId,
+    titre,
+    description,
+    typeService: d.typeService,
+    outilsFournis: d.outilsFournis === true,
+    dateHeureSouhaitee: Timestamp.fromDate(echeance),
+    remunerationOfferte: montant,
+    createdAt: FieldValue.serverTimestamp(),
+    deneigeurId: null,
+    deneigeurPrenom: null,
+    deneigeurNote: null,
+    matchedAt: null,
+    faiteAt: null,
+    confirmationAutoAt: null,
+    confirmeeAt: null,
+    confirmationAuto: null,
+    signalement: null,
+    paiement: null,
+  });
+  // Adresse exacte : lisible seulement par le client et, après acceptation,
+  // par le déneigeur choisi (firestore.rules).
+  batch.set(db.doc(`demandes/${ref.id}/prive/adresse`), { adresse, geohash: lieu.geohash });
+  // Publier une demande fait de toi un client, si ce n'était pas déjà le cas.
+  batch.set(db.doc(`users/${uid}`), { role: FieldValue.arrayUnion("donneur_ouvrage") }, { merge: true });
+  await batch.commit();
+
+  return { demandeId: ref.id, ville: lieu.ville };
+});
+
+// ---- Accepter ----
+// Premier arrivé, premier servi (transaction). Le filtre de ville est une
+// exclusion dure : un déneigeur ne peut jamais accepter hors de sa ville de
+// service, même si la demande est à 500 m de l'autre côté du pont.
+export const accepterDemande = onCall({ region: REGION }, async (request) => {
+  const uid = exigerConnexion(request);
+  const { demandeId } = request.data ?? {};
+  if (typeof demandeId !== "string" || !demandeId) throw new HttpsError("invalid-argument", "demandeId requis.");
+  const frais = await lireFrais();
+
+  return db.runTransaction(async (tx) => {
+    const ref = db.doc(`demandes/${demandeId}`);
+    const userRef = db.doc(`users/${uid}`);
+    const [snap, userSnap] = await Promise.all([tx.get(ref), tx.get(userRef)]);
+    if (!snap.exists) throw new HttpsError("not-found", "Demande introuvable.");
+    const demande = snap.data();
+    const profil = userSnap.data() ?? {};
+
+    if (demande.statut !== "ouverte") throw new HttpsError("already-exists", "deja-prise");
+    if (demande.donneurOuvrageId === uid) throw new HttpsError("permission-denied", "C'est ta propre demande.");
+    if (!(profil.role ?? []).includes("deneigeur_x")) {
+      throw new HttpsError("permission-denied", "Active le mode déneigeur dans tes paramètres.");
+    }
+    if (!profil.villeGeoId || profil.villeGeoId !== demande.villeGeoId) {
+      throw new HttpsError("permission-denied", "Cette demande est hors de ta ville de service.");
+    }
+    if (EXIGER_COMPTE_PAIEMENT && profil.connectStatus !== "actif") {
+      throw new HttpsError("failed-precondition", "Configure ton compte de paiement avant d'accepter des jobs.");
+    }
+
+    tx.update(ref, {
+      statut: "matchee",
+      deneigeurId: uid,
+      deneigeurPrenom: prenom(profil.displayName),
+      deneigeurNote: { moyenne: profil.ratingAvg ?? 0, nombre: profil.nbJobsCompletees ?? 0 },
+      matchedAt: FieldValue.serverTimestamp(),
+      paiement: {
+        ...calculerPaiement(demande.remunerationOfferte, frais),
+        statutPaiement: "simule_retenu",
+        stripePaymentIntentId: null,
+        stripeTransferId: null,
+      },
+    });
+    return { ok: true };
+  });
+});
+
+// ---- Marquer faite (déneigeur) ----
+export const marquerFaite = onCall({ region: REGION }, async (request) => {
+  const uid = exigerConnexion(request);
+  return db.runTransaction(async (tx) => {
+    const { ref } = await lireDemande(tx, request.data?.demandeId, { uid, role: "deneigeur", statuts: ["matchee"] });
+    tx.update(ref, {
+      statut: "faite",
+      faiteAt: FieldValue.serverTimestamp(),
+      confirmationAutoAt: Timestamp.fromMillis(Date.now() + DELAI_CONFIRMATION_MS),
+    });
+    return { ok: true };
+  });
+});
+
+function confirmer(tx, ref, demande, { automatique }) {
+  tx.update(ref, {
+    statut: "completee",
+    confirmeeAt: FieldValue.serverTimestamp(),
+    confirmationAuto: automatique,
+    "paiement.statutPaiement": "simule_verse",
+  });
+  tx.set(db.doc(`users/${demande.deneigeurId}`), { nbJobsCompletees: FieldValue.increment(1) }, { merge: true });
+}
+
+// ---- Confirmer (client) ----
+export const confirmerJob = onCall({ region: REGION }, async (request) => {
+  const uid = exigerConnexion(request);
+  return db.runTransaction(async (tx) => {
+    const { ref, demande } = await lireDemande(tx, request.data?.demandeId, { uid, role: "client", statuts: ["faite"] });
+    confirmer(tx, ref, demande, { automatique: false });
+    return { ok: true };
+  });
+});
+
+// ---- Confirmation automatique 12 h après « faite » ----
+export const confirmerJobsEchues = onSchedule(
+  { schedule: "every 15 minutes", timeZone: "America/Toronto", region: REGION },
+  async () => {
+    const echues = await db
+      .collection("demandes")
+      .where("statut", "==", "faite")
+      .where("confirmationAutoAt", "<=", Timestamp.now())
+      .limit(200)
+      .get();
+    let n = 0;
+    for (const doc of echues.docs) {
+      await db.runTransaction(async (tx) => {
+        const snap = await tx.get(doc.ref);
+        const demande = snap.data();
+        // Revérifié dans la transaction : le client a pu confirmer ou signaler entre-temps.
+        if (demande?.statut !== "faite" || demande.confirmationAutoAt.toMillis() > Date.now()) return;
+        confirmer(tx, doc.ref, demande, { automatique: true });
+        n += 1;
+      });
+    }
+    if (n) logger.info(`${n} job(s) confirmée(s) automatiquement.`);
+  },
+);
+
+// ---- Signaler un problème (client ou déneigeur) ----
+export const signalerProbleme = onCall({ region: REGION }, async (request) => {
+  const uid = exigerConnexion(request);
+  const { demandeId, motif } = request.data ?? {};
+  if (!MOTIFS_SIGNALEMENT.has(motif)) throw new HttpsError("invalid-argument", "Motif invalide.");
+  const details = texte(request.data?.details, { max: 1000, nom: "Détails" });
+
+  return db.runTransaction(async (tx) => {
+    const ref = db.doc(`demandes/${demandeId}`);
+    const snap = await tx.get(ref);
+    if (!snap.exists) throw new HttpsError("not-found", "Demande introuvable.");
+    const demande = snap.data();
+    const par = demande.donneurOuvrageId === uid ? "client" : demande.deneigeurId === uid ? "deneigeur" : null;
+    if (!par) throw new HttpsError("permission-denied", "Cette demande n'est pas la tienne.");
+    if (!["matchee", "faite"].includes(demande.statut)) {
+      throw new HttpsError("failed-precondition", `Action impossible au statut « ${demande.statut} ».`);
+    }
+    tx.update(ref, {
+      statut: "signalee",
+      signalement: { par, motif, details, statutPrecedent: demande.statut, at: FieldValue.serverTimestamp() },
+      // Plus de versement automatique : Snowro tranche à la main (remboursement
+      // si le déneigeur ne s'est pas présenté, voir la FAQ).
+      "paiement.statutPaiement": "simule_bloque",
+      confirmationAutoAt: null,
+    });
+    return { ok: true };
+  });
+});
+
+// ---- Annuler (client, seulement tant que personne n'a accepté) ----
+export const annulerDemande = onCall({ region: REGION }, async (request) => {
+  const uid = exigerConnexion(request);
+  return db.runTransaction(async (tx) => {
+    const { ref } = await lireDemande(tx, request.data?.demandeId, { uid, role: "client", statuts: ["ouverte"] });
+    tx.update(ref, { statut: "annulee", annuleeAt: FieldValue.serverTimestamp() });
+    return { ok: true };
+  });
+});
+
+// ---- Augmenter l'offre (client, tant que personne n'a accepté) ----
+export const augmenterOffre = onCall({ region: REGION }, async (request) => {
+  const uid = exigerConnexion(request);
+  const montant = validerMontant(request.data?.montant);
+  return db.runTransaction(async (tx) => {
+    const { ref, demande } = await lireDemande(tx, request.data?.demandeId, { uid, role: "client", statuts: ["ouverte"] });
+    if (montant <= demande.remunerationOfferte) {
+      throw new HttpsError("invalid-argument", "La nouvelle offre doit être plus élevée que l'actuelle.");
+    }
+    tx.update(ref, { remunerationOfferte: montant });
+    return { ok: true };
+  });
+});

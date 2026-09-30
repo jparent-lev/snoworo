@@ -36,7 +36,7 @@ export default function Landing() {
     document.getElementById(window.location.hash.slice(1))?.scrollIntoView();
   }, [loading]);
 
-  if (!loading && user) return <Navigate to="/demandes" replace />;
+  if (!loading && user) return <Navigate to="/tableau-de-bord" replace />;
 
   const fermerMenu = () => setMenuOuvert(false);
 

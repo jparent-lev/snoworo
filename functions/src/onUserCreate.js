@@ -12,8 +12,7 @@ export const onUserCreate = region("northamerica-northeast1").auth.user().onCrea
     consents[type] = { granted: false, grantedAt: null, version: null };
   }
 
-  await db.doc(`users/${user.uid}`).set({
-    role: [],
+  const valeursParDefaut = {
     displayName: user.displayName ?? "",
     phone: user.phoneNumber ?? "",
     email: user.email ?? "",
@@ -23,6 +22,7 @@ export const onUserCreate = region("northamerica-northeast1").auth.user().onCrea
     villeGeoId: null,
     ratingAvg: 0,
     ratingCount: 0,
+    nbJobsCompletees: 0,
     createdAt: FieldValue.serverTimestamp(),
     proSubscription: null,
     // Paiement Stripe Connect (voir snowro-changements-claude-code.md § 1) —
@@ -32,5 +32,16 @@ export const onUserCreate = region("northamerica-northeast1").auth.user().onCrea
     stripeConnectAccountId: null,
     connectStatus: "non_demarre",
     consents,
+  };
+
+  // L'app enregistre le nom et les rôles choisis à l'inscription juste après
+  // la création du compte, souvent AVANT que cette fonction tourne. On ne
+  // remplit donc que les champs encore absents : sinon le nom saisi serait
+  // remis à vide (user.displayName n'existe pas encore à la création).
+  const ref = db.doc(`users/${user.uid}`);
+  await db.runTransaction(async (tx) => {
+    const existant = (await tx.get(ref)).data() ?? {};
+    const manquants = Object.fromEntries(Object.entries(valeursParDefaut).filter(([cle]) => !(cle in existant)));
+    if (Object.keys(manquants).length) tx.set(ref, manquants, { merge: true });
   });
 });

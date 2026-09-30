@@ -1,7 +1,10 @@
 import { useState } from "react";
 import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
 import { useNavigate, Link } from "react-router-dom";
-import { auth } from "../lib/firebase";
+import { doc, setDoc } from "firebase/firestore";
+import { auth, db } from "../lib/firebase";
+import { ChoixRoles } from "./tableau/elements";
+import "./tableau/Tableau.css";
 import VersionFooter from "../components/VersionFooter";
 import "./AuthForm.css";
 
@@ -9,6 +12,7 @@ export default function Signup() {
   const [displayName, setDisplayName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [roles, setRoles] = useState([]);
   const [erreur, setErreur] = useState(null);
   const [enCours, setEnCours] = useState(false);
   const navigate = useNavigate();
@@ -16,11 +20,18 @@ export default function Signup() {
   async function onSubmit(e) {
     e.preventDefault();
     setErreur(null);
+    if (!roles.length) {
+      setErreur("Choisis au moins une façon d'utiliser Snowro.");
+      return;
+    }
     setEnCours(true);
     try {
       const { user } = await createUserWithEmailAndPassword(auth, email, password);
       if (displayName) await updateProfile(user, { displayName });
-      navigate("/demandes");
+      // merge : onUserCreate (Cloud Function) complète la fiche de son côté,
+      // sans jamais toucher aux rôles (voir functions/src/onUserCreate.js).
+      await setDoc(doc(db, "users", user.uid), { role: roles, displayName }, { merge: true });
+      navigate("/tableau-de-bord");
     } catch (err) {
       setErreur(traduireErreur(err.code));
     } finally {
@@ -50,6 +61,10 @@ export default function Signup() {
             required
           />
         </label>
+        <div className="auth-form__champ">
+          Je veux…
+          <ChoixRoles valeur={roles} onChange={setRoles} />
+        </div>
         {erreur && <p className="auth-form__erreur">{erreur}</p>}
         <button type="submit" className="auth-form__bouton" disabled={enCours}>
           {enCours ? "Création…" : "Créer mon compte"}

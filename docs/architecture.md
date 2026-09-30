@@ -172,10 +172,23 @@ de `VITE_GOOGLE_MAPS_API_KEY` (client). Nécessite l'activation de la
 firebase functions:secrets:set GOOGLE_GEOCODING_API_KEY
 ```
 
+## Tableaux de bord et cycle d'une job
+
+Après connexion : `/tableau-de-bord` (`src/pages/tableau/`). Un seul compte,
+deux modes (Client, Déneigeur) ; la bascule de l'en-tête n'apparaît qu'avec les
+deux rôles, choisis à l'inscription (`users.role`). Chaque section est une
+rangée défilante (`src/components/Rangee.jsx`) avec filtres par état et, pour
+les demandes près de soi, un tri (distance, montant, urgence, récence).
+Accepter une job passe par une fenêtre d'engagement : **aucune annulation
+possible une fois acceptée**. Cycle complet et transitions :
+`docs/data-model.md` § demandes.
+
+Paiement **simulé** tant que Stripe Connect n'est pas branché (bandeau
+« Période de test » dans les deux tableaux de bord).
+
 ## Ce qui reste à construire
 
-Voir l'ordre de construction du handoff. Après ce scaffold (auth + modèle de
-données + Snowro X minimal — publication, liste, match) :
+Prochaines étapes, dans l'ordre convenu :
 
 1. Paiement Stripe Connect complet : onboarding Express, webhook, PaymentIntent
    au moment du match, `config/frais`, filtre `connectStatus == 'actif'`

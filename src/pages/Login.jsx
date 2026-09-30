@@ -18,7 +18,7 @@ export default function Login() {
     setEnCours(true);
     try {
       await signInWithEmailAndPassword(auth, email, password);
-      navigate("/demandes");
+      navigate("/tableau-de-bord");
     } catch {
       setErreur("Courriel ou mot de passe incorrect.");
     } finally {
