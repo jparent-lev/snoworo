@@ -1202,6 +1202,26 @@
   color: var(--color-texte-sur-sombre) !important;
 }
 
+/* Une seule colonne (sous ~700 px) : les boutons d'action pleine largeur et
+   la carte de revenus sans largeur max, pour que le bouton et la boîte qui
+   le suit aient exactement les mêmes bords. */
+@media (max-width: 700px) {
+  .landing__bouton-ocre,
+  .landing__bouton-ardoise {
+    display: block;
+    width: 100%;
+    text-align: center;
+  }
+
+  .landing__pro-simple {
+    align-items: stretch;
+  }
+
+  .landing__carte-revenus {
+    max-width: none;
+  }
+}
+
 @media (max-width: 480px) {
   .landing__hero-cta {
     flex-direction: column;
