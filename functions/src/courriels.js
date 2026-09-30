@@ -11,8 +11,9 @@ import { defineSecret } from "firebase-functions/params";
 // (clé Resend « Sending access » limitée au domaine snowro.com).
 export const RESEND_API_KEY = defineSecret("RESEND_API_KEY");
 
-// Doit rester aligné sur INFOS_LEGALES.courriel (src/lib/legal.js) : les
-// réponses aux courriels arrivent dans la même boîte que le contact officiel.
+// Boîte qui reçoit les réponses aux courriels de Snowro (Google Workspace).
+// Le site, lui, ne l'affiche nulle part : on renvoie toujours vers le
+// formulaire Nous écrire.
 export const ADRESSE_SNOWRO = "allo@snowro.com";
 const EXPEDITEUR = `Snowro <${ADRESSE_SNOWRO}>`;
 

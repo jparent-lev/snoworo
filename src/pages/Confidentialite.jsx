@@ -9,8 +9,10 @@ import { INFOS_LEGALES } from "../lib/legal";
 // nouveau fournisseur ou un nouveau type de consentement se reflète ici, avec
 // une nouvelle date dans INFOS_LEGALES.miseAJour.
 export default function Confidentialite() {
-  const { nomLegal, courriel, responsableRenseignements, miseAJour } = INFOS_LEGALES;
-  const lienCourriel = <a href={`mailto:${courriel}`}>{courriel}</a>;
+  const { nomLegal, responsableRenseignements, miseAJour } = INFOS_LEGALES;
+  // Toute demande passe par le formulaire, sujet présélectionné : elle arrive
+  // dans messagesContact avec la date, ce qui aide à respecter le délai de 30 jours.
+  const lienFormulaire = <Link to="/nous-ecrire?sujet=renseignements">formulaire Nous écrire</Link>;
 
   return (
     <PageLegale surtitre="Légal" titre="Politique de confidentialité" miseAJour={miseAJour}>
@@ -27,8 +29,7 @@ export default function Confidentialite() {
       <p>
         Snowro est exploité à Québec par la société {nomLegal}. La personne responsable de la protection des
         renseignements personnels est {responsableRenseignements}. Pour toute question ou demande liée à
-        tes renseignements, écris-lui à {lienCourriel} ou passe par la page{" "}
-        <Link to="/nous-ecrire">Nous écrire</Link>.
+        tes renseignements, écris-lui par le {lienFormulaire} (sujet « Mes renseignements personnels »).
       </p>
 
       <h2>Ce qu'on collecte, et pourquoi</h2>
@@ -199,7 +200,7 @@ export default function Confidentialite() {
         </li>
       </ul>
       <p>
-        Écris à {lienCourriel} pour exercer ces droits. On te répond dans un délai de 30 jours. Si tu n'es pas
+        Pour exercer ces droits, écris-nous par le {lienFormulaire} (sujet « Mes renseignements personnels »). On te répond dans un délai de 30 jours. Si tu n'es pas
         satisfait de notre réponse, tu peux porter plainte auprès de la{" "}
         <a href="https://www.cai.gouv.qc.ca/" target="_blank" rel="noreferrer">
           Commission d'accès à l'information du Québec

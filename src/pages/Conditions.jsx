@@ -7,8 +7,7 @@ import { INFOS_LEGALES } from "../lib/legal";
 // remboursement) et avec les frais lus depuis config/frais (jamais de chiffre
 // codé en dur ici, pour la même raison que FeeCalculator).
 export default function Conditions() {
-  const { nomLegal, courriel, miseAJour } = INFOS_LEGALES;
-  const lienCourriel = <a href={`mailto:${courriel}`}>{courriel}</a>;
+  const { nomLegal, miseAJour } = INFOS_LEGALES;
 
   return (
     <PageLegale surtitre="Légal" titre="Conditions d'utilisation" miseAJour={miseAJour}>
@@ -175,8 +174,7 @@ export default function Conditions() {
 
       <h2>14. Nous joindre</h2>
       <p>
-        Une question sur ces conditions ? Écris à {lienCourriel} ou passe par la page{" "}
-        <Link to="/nous-ecrire">Nous écrire</Link>.
+        Une question sur ces conditions ? Écris-nous par la page <Link to="/nous-ecrire">Nous écrire</Link>.
       </p>
     </PageLegale>
   );

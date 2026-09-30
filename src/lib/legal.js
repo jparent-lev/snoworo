@@ -5,8 +5,6 @@
 export const INFOS_LEGALES = {
   // Nom légal de la société (ajouter « inc. » ou le NEQ ici si voulu).
   nomLegal: "Snowro",
-  // Doit rester aligné sur ADRESSE_SNOWRO (functions/src/courriels.js).
-  courriel: "allo@snowro.com",
   responsableRenseignements: "Jonathan Parent",
   miseAJour: "30 septembre 2026",
 };

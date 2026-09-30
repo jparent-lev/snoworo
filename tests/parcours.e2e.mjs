@@ -78,7 +78,6 @@ const test = async (nom, fn) => {
   ok++; console.log("  ✓", nom);
 };
 const carteD1 = (p) => p.locator(".rangee").nth(1).locator(".carte-job", { hasText: "Marches du balcon aussi" });
-const figer = (p) => p.evaluate(() => document.getAnimations().forEach((a) => a.finish?.()));
 
 async function connexion(cle, largeur = 1280) {
   const ctx = await b.newContext({ viewport: { width: largeur, height: 900 }, deviceScaleFactor: largeur < 500 ? 2 : 1.5 });
