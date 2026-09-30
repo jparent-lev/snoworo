@@ -353,7 +353,7 @@ export default function Landing() {
             <span className="landing__pied-slogan">Déneigement à la demande, fait à Québec.</span>
           </div>
           <div className="landing__pied-colonne">
-            <span className="eyebrow landing__pied-titre">Snowro X</span>
+            <span className="eyebrow landing__pied-titre">Snowro</span>
             <a href="#comment">Comment ça marche</a>
             <a href="#frais">Frais</a>
             <a href="#deneigeur">Devenir déneigeur de quartier</a>

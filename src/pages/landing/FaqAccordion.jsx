@@ -25,7 +25,7 @@ const QUESTIONS = [
   },
   {
     q: "C'est quoi la différence avec Snowro Pro ?",
-    r: "Snowro X, c'est le service entre déneigeurs de quartier : publier ou prendre des jobs, gratuit à installer. Snowro Pro s'adresse aux déneigeurs professionnels : les entreprises de déneigement qui veulent voir où la demande se trouve. Les détails s'en viennent.",
+    r: "Snowro, c'est le service entre déneigeurs de quartier : publier ou prendre des jobs, gratuit à installer. Snowro Pro s'adresse aux déneigeurs professionnels : les entreprises de déneigement qui veulent voir où la demande se trouve. Les détails s'en viennent.",
   },
 ];
 
