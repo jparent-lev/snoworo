@@ -138,9 +138,9 @@ export function IllustrationEtape({ etape }) {
       )}
       {etape === 3 && (
         <g>
-          <line x1="64" y1="12" x2="40" y2="50" className="decor-manche" />
-          <g transform="translate(40 50) rotate(122)">
-            <path d="M2 -3 L9 -11.5 Q11 -13 12.5 -11 L12.5 11 Q11 13 9 11.5 L2 3 Z" className="decor-ocre" />
+          <line x1="64" y1="12" x2="44" y2="44" className="decor-manche" />
+          <g transform="translate(44 44) rotate(122)">
+            <path d="M2 -3 L9 -11.5 Q11 -13 12.5 -11.5 H17 Q19.5 -11.5 19.5 -9 V9 Q19.5 11.5 17 11.5 H12.5 Q11 13 9 11.5 L2 3 Z" className="decor-ocre" />
             <rect x="11" y="-11.5" width="2.4" height="23" rx="1.2" className="decor-lame-bord" />
             <rect x="-2.5" y="-2.5" width="7" height="5" rx="1.5" className="decor-terre" />
           </g>
