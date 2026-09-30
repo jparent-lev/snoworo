@@ -21,7 +21,7 @@ const QUESTIONS = [
   },
   {
     q: "Je suis déneigeur de quartier : comment je me fais payer ?",
-    r: "Tu crées ton compte de paiement en quelques minutes (identité vérifiée par Stripe), et l'argent arrive directement dans ton compte de banque après la job. Pas de facture à envoyer, pas de chèque à courir après.",
+    r: "Tu crées ton compte de paiement en quelques minutes (identité vérifiée par Stripe), et l'argent arrive directement dans ton compte de banque après la job. Pas de facture à envoyer, pas de virement à courir après.",
   },
   {
     q: "C'est quoi la différence avec Snowro Pro ?",
