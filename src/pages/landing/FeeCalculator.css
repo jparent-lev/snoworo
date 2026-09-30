@@ -57,10 +57,3 @@
 .fee-calc__valeur--net {
   color: var(--color-argile);
 }
-
-.fee-calc__mention {
-  margin: 0;
-  font-size: 13.5px;
-  line-height: 1.45;
-  color: var(--color-texte-secondaire);
-}
