@@ -467,7 +467,9 @@
   color: var(--color-texte-secondaire);
 }
 
-/* ---- Mockup de téléphone (héros) ---- */
+/* ---- Mockup de téléphone (héros) ----
+   Réutilisé dans l'illustration animée (landing/HeroIllustration), qui en
+   réduit les tailles et fait défiler les écrans au rythme de la scène. */
 
 .landing__hero-phone-wrap {
   display: flex;
@@ -530,11 +532,6 @@
   gap: 8px;
 }
 
-.landing__hero-phone-carte--sourdine {
-  opacity: 0.75;
-  gap: 7px;
-}
-
 .landing__hero-phone-surtitre {
   font-size: 10.5px;
   font-weight: 700;
@@ -568,10 +565,6 @@
   font-weight: 600;
   font-size: 27px;
   line-height: 1;
-}
-
-.landing__hero-phone-prix--petit {
-  font-size: 22px;
 }
 
 .landing__hero-phone-par {

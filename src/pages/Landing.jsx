@@ -6,6 +6,7 @@ import VersionFooter from "../components/VersionFooter";
 import FeeCalculator from "./landing/FeeCalculator";
 import FaqAccordion from "./landing/FaqAccordion";
 import WaitlistForm from "./landing/WaitlistForm";
+import HeroIllustration from "./landing/HeroIllustration";
 import "./Landing.css";
 
 // Site vitrine de pré-lancement — collecte de liste d'attente uniquement,
@@ -75,38 +76,8 @@ export default function Landing() {
           </p>
         </div>
 
-        <div className="landing__hero-phone-wrap" aria-hidden="true">
-          <div className="landing__hero-phone">
-            <div className="landing__hero-phone-ecran">
-              <div className="landing__hero-phone-entete">
-                <div className="landing__hero-phone-logo">
-                  <SnowroSymbol variant="x" neige surTuile size={38} />
-                  <span>snowro</span>
-                </div>
-                <span className="landing__hero-phone-x">X</span>
-              </div>
-              <div className="landing__hero-phone-corps">
-                <div className="landing__hero-phone-carte">
-                  <span className="landing__hero-phone-surtitre">À 400 M · LIMOILOU</span>
-                  <span className="landing__hero-phone-titre">Entrée double + balcon</span>
-                  <span className="landing__hero-phone-desc">Avant 8 h demain matin. Pelle fournie si tu en as pas.</span>
-                  <div className="landing__hero-phone-prix-ligne">
-                    <span className="landing__hero-phone-prix">45 $</span>
-                    <span className="landing__hero-phone-par">offert par Mireille G.</span>
-                  </div>
-                </div>
-                <div className="landing__hero-phone-carte landing__hero-phone-carte--sourdine">
-                  <span className="landing__hero-phone-surtitre">À 1,1 KM · VIEUX-LIMOILOU</span>
-                  <span className="landing__hero-phone-titre">Petit stationnement</span>
-                  <span className="landing__hero-phone-prix landing__hero-phone-prix--petit">30 $</span>
-                </div>
-                <button type="button" className="landing__hero-phone-bouton landing__bouton-neige landing__bouton-neige--c" tabIndex={-1}>
-                  Je prends la job
-                </button>
-                <span className="landing__hero-phone-note">Paiement gardé par Snowro jusqu'à ce que ce soit fait.</span>
-              </div>
-            </div>
-          </div>
+        <div className="landing__hero-phone-wrap">
+          <HeroIllustration />
         </div>
       </section>
 
