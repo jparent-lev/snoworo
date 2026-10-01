@@ -28,13 +28,18 @@ export function chargerStripe() {
 
 export function libelleCarte(carte) {
   if (!carte) return "";
-  const marque = { visa: "Visa", mastercard: "Mastercard", amex: "American Express" }[carte.marque] ?? "Carte";
-  return `${marque} •••• ${carte.derniers4}`;
+  const marque = { visa: "Visa", mastercard: "Mastercard", amex: "American Express", link: "Link" }[carte.marque] ?? "Carte";
+  return carte.derniers4 ? `${marque} •••• ${carte.derniers4}` : marque;
 }
 
-export const LIBELLES_CONNECT = {
-  non_demarre: "Pas encore configuré",
-  en_attente: "Inscription à terminer ou en vérification",
-  actif: "Actif : tes versements arrivent dans ton compte bancaire",
-  restreint: "Stripe a besoin d'informations de plus",
+// Statut du compte de versement : pastille (Paramètres) et phrase d'explication.
+export const STATUTS_CONNECT = {
+  non_demarre: { pastille: "Pas configuré", ton: "neutre", texte: "Configure-le une fois pour pouvoir accepter des jobs." },
+  en_attente: {
+    pastille: "À terminer",
+    ton: "attente",
+    texte: "Ton inscription chez Stripe n'est pas terminée, ou Stripe vérifie encore tes informations.",
+  },
+  actif: { pastille: "Actif", ton: "ok", texte: "Tes versements arrivent dans ton compte bancaire." },
+  restreint: { pastille: "Action requise", ton: "alerte", texte: "Stripe a besoin d'informations de plus avant tes prochains versements." },
 };

@@ -12,7 +12,7 @@ import { mettreAJourAdresseParPosition, mettreAJourAdresseParTexte } from "../li
 import { encoderGeohash } from "../lib/geo";
 import { messageErreur } from "../lib/cycleDemande";
 import {
-  LIBELLES_CONNECT,
+  STATUTS_CONNECT,
   PAIEMENT_REEL,
   libelleCarte,
   lienCompteDeneigeur,
@@ -210,6 +210,7 @@ function SectionPaiement({ profile, deneigeur }) {
   const [erreur, setErreur] = useState(null);
   const carte = carteAjoutee ?? profile.carte;
   const statut = profile.connectStatus ?? "non_demarre";
+  const infoStatut = STATUTS_CONNECT[statut] ?? STATUTS_CONNECT.en_attente;
 
   // Retour de Stripe (?stripe=retour ou ?stripe=reprendre) : met le statut à
   // jour sans attendre le webhook.
@@ -261,12 +262,18 @@ function SectionPaiement({ profile, deneigeur }) {
         </div>
 
         {deneigeur && (
-          <div className="parametres__item">
+          <div className="parametres__item parametres__item--empile-mobile">
             <div className="parametres__item-texte">
               <h3>Compte de versement</h3>
-              <p>{LIBELLES_CONNECT[statut] ?? LIBELLES_CONNECT.en_attente}</p>
+              <span className={`statut-connect statut-connect--${infoStatut.ton}`}>
+                <span className="statut-connect__icone" aria-hidden="true">
+                  {{ ok: "✓", attente: "…", alerte: "!", neutre: "○" }[infoStatut.ton]}
+                </span>
+                {infoStatut.pastille}
+              </span>
+              <p>{infoStatut.texte}</p>
               <p className="parametres__meta">
-                Géré par Stripe : identité et compte bancaire, une seule fois. Obligatoire pour accepter des jobs.
+                Géré par Stripe : identité et compte bancaire, une seule fois. <strong>Obligatoire pour accepter des jobs.</strong>
               </p>
               {erreur && <p className="message-erreur" role="alert">{erreur}</p>}
             </div>
