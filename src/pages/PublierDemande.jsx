@@ -189,7 +189,7 @@ export default function PublierDemande() {
           </div>
         )}
 
-        {erreur && <p className="auth-form__erreur">{erreur}</p>}
+        {erreur && <p className="message-erreur" role="alert">{erreur}</p>}
 
         <button type="submit" className="auth-form__bouton" disabled={enCours || carteManquante}>
           {enCours ? "Publication…" : "Publier la demande"}

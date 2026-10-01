@@ -122,7 +122,7 @@ export default function NousEcrire() {
             />
           </label>
 
-          {erreur && <p className="nous-ecrire__erreur">{erreur}</p>}
+          {erreur && <p className="message-erreur" role="alert">{erreur}</p>}
 
           <button type="submit" className="nous-ecrire__bouton" disabled={enCours || !message.trim()}>
             {enCours ? "Envoi…" : "Envoyer"}

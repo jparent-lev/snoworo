@@ -49,6 +49,22 @@ function exigerConnexion(request) {
   return request.auth.uid;
 }
 
+// Une erreur renvoyée par Stripe (compte de plateforme incomplet, carte
+// refusée, etc.) devient un message lisible dans l'app au lieu de « Quelque
+// chose a bloqué », et reste notée dans le journal des fonctions.
+function avecStripe(gestionnaire) {
+  return async (request) => {
+    try {
+      return await gestionnaire(request);
+    } catch (err) {
+      if (err instanceof HttpsError) throw err;
+      logger.error(`Stripe (${err.type ?? "erreur"}${err.code ? `, ${err.code}` : ""}) : ${err.message}`);
+      if (String(err.type ?? "").startsWith("Stripe")) throw new HttpsError("failed-precondition", `Stripe : ${err.message}`);
+      throw err;
+    }
+  };
+}
+
 // ---- Carte du client ----
 
 async function clientStripe(uid) {
@@ -65,7 +81,7 @@ async function clientStripe(uid) {
 
 // Prépare l'enregistrement d'une carte : renvoie le client_secret d'un
 // SetupIntent pour le Payment Element de Stripe dans l'app.
-export const preparerCarte = onCall({ region: REGION, secrets: [STRIPE_SECRET_KEY] }, async (request) => {
+export const preparerCarte = onCall({ region: REGION, secrets: [STRIPE_SECRET_KEY] }, avecStripe(async (request) => {
   const uid = exigerConnexion(request);
   const { customerId } = await clientStripe(uid);
   const intent = await stripe().setupIntents.create({
@@ -75,12 +91,12 @@ export const preparerCarte = onCall({ region: REGION, secrets: [STRIPE_SECRET_KE
     metadata: { uid },
   });
   return { clientSecret: intent.client_secret };
-});
+}));
 
 // Après la confirmation du SetupIntent dans l'app : vérifie qu'il appartient
 // bien à ce client, en fait la carte par défaut et en garde un résumé
 // (marque, 4 derniers chiffres) dans users/{uid}.carte (champ protégé).
-export const enregistrerCarte = onCall({ region: REGION, secrets: [STRIPE_SECRET_KEY] }, async (request) => {
+export const enregistrerCarte = onCall({ region: REGION, secrets: [STRIPE_SECRET_KEY] }, avecStripe(async (request) => {
   const uid = exigerConnexion(request);
   const { setupIntentId } = request.data ?? {};
   if (typeof setupIntentId !== "string" || !setupIntentId.startsWith("seti_")) {
@@ -101,7 +117,7 @@ export const enregistrerCarte = onCall({ region: REGION, secrets: [STRIPE_SECRET
   };
   await db.doc(`users/${uid}`).set({ carte, carteMiseAJourAt: FieldValue.serverTimestamp() }, { merge: true });
   return { carte: { marque: carte.marque, derniers4: carte.derniers4 } };
-});
+}));
 
 // ---- Prélèvement à l'acceptation ----
 
@@ -212,7 +228,7 @@ export function statutConnect(compte) {
 
 // Lien vers Stripe : l'inscription (identité, compte bancaire) tant qu'elle
 // n'est pas faite, ensuite le tableau de bord Express (versements, relevés).
-export const lienCompteDeneigeur = onCall({ region: REGION, secrets: [STRIPE_SECRET_KEY] }, async (request) => {
+export const lienCompteDeneigeur = onCall({ region: REGION, secrets: [STRIPE_SECRET_KEY] }, avecStripe(async (request) => {
   const uid = exigerConnexion(request);
   const ref = db.doc(`users/${uid}`);
   const profil = (await ref.get()).data() ?? {};
@@ -249,10 +265,10 @@ export const lienCompteDeneigeur = onCall({ region: REGION, secrets: [STRIPE_SEC
     type: "account_onboarding",
   });
   return { url: lien.url, type: "inscription" };
-});
+}));
 
 // Au retour de Stripe : met connectStatus à jour sans attendre le webhook.
-export const synchroniserCompteDeneigeur = onCall({ region: REGION, secrets: [STRIPE_SECRET_KEY] }, async (request) => {
+export const synchroniserCompteDeneigeur = onCall({ region: REGION, secrets: [STRIPE_SECRET_KEY] }, avecStripe(async (request) => {
   const uid = exigerConnexion(request);
   const ref = db.doc(`users/${uid}`);
   const { stripeConnectAccountId } = (await ref.get()).data() ?? {};
@@ -260,7 +276,7 @@ export const synchroniserCompteDeneigeur = onCall({ region: REGION, secrets: [ST
   const connectStatus = statutConnect(await stripe().accounts.retrieve(stripeConnectAccountId));
   await ref.set({ connectStatus }, { merge: true });
   return { connectStatus };
-});
+}));
 
 // ---- Webhook Stripe ----
 // URL à inscrire dans Stripe (Développeurs > Webhooks), événements :

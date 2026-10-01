@@ -124,7 +124,7 @@ export default function Parametres() {
               ? "Tu vois les demandes ouvertes dans cette ville."
               : "Ajoute ton adresse pour voir les demandes près de chez toi."}
           </p>
-          {erreurAdresse && <p className="parametres__meta">{erreurAdresse}</p>}
+          {erreurAdresse && <p className="message-erreur" role="alert">{erreurAdresse}</p>}
         </div>
         <button
           type="button"
@@ -268,7 +268,7 @@ function SectionPaiement({ profile, deneigeur }) {
               <p className="parametres__meta">
                 Géré par Stripe : identité et compte bancaire, une seule fois. Obligatoire pour accepter des jobs.
               </p>
-              {erreur && <p className="parametres__meta">{erreur}</p>}
+              {erreur && <p className="message-erreur" role="alert">{erreur}</p>}
             </div>
             <button type="button" className="auth-form__bouton" style={{ flex: "none" }} disabled={enCours} onClick={ouvrirStripe}>
               {enCours ? "Ouverture…" : statut === "actif" ? "Voir mes versements" : statut === "non_demarre" ? "Configurer" : "Continuer"}

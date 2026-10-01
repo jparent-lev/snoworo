@@ -14,9 +14,3 @@
   color: var(--color-texte-secondaire);
 }
 
-.carte-paiement__erreur {
-  margin: 0;
-  font-size: 14px;
-  font-weight: 700;
-  color: #9e2b1f;
-}

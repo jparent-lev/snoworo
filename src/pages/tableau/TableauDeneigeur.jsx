@@ -273,7 +273,7 @@ function CarteJob({ job: j, nouveau, conversationOuverte, onConversationFermee }
         </p>
       )}
       {j.statut === "completee" && j.evaluee && <EvaluationRecue demandeId={j.id} prenom={j.donneurPrenom} />}
-      {erreur && <p className="carte-job__erreur">{erreur}</p>}
+      {erreur && <p className="message-erreur" role="alert">{erreur}</p>}
 
       {(j.statut === "matchee" || j.statut === "faite" || j.statut === "signalee" || j.dernierMessage) && (
         <div className="carte-job__actions">
@@ -356,7 +356,7 @@ function ModaleFaite({ job: j, net, onConfirmer, onFermer }) {
           30 jours.
         </span>
       </div>
-      {erreur && <p className="carte-job__erreur">{erreur}</p>}
+      {erreur && <p className="message-erreur" role="alert">{erreur}</p>}
       <div className="modale__actions">
         <button type="button" className="btn btn--fantome" onClick={onFermer}>
           Pas encore
@@ -432,7 +432,7 @@ function CarteDemandeOuverte({ demande: d, frais, compteActif }) {
         <span className="carte-job__prix">{formatArgent(d.remunerationOfferte)}</span>
         <span className="carte-job__meta">{formatArgent(net)} pour toi</span>
       </div>
-      {erreur && <p className="carte-job__erreur">{erreur}</p>}
+      {erreur && <p className="message-erreur" role="alert">{erreur}</p>}
       <button
         type="button"
         className="btn btn--principal btn--petit"

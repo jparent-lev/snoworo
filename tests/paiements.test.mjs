@@ -189,5 +189,16 @@ await test("virement en échec : reste « a_verser », réessayé par la tâche 
   assert.equal(d.paiement.statutPaiement, "verse"); assert.equal(d.paiement.erreurVersement, null);
 });
 
+await test("erreur Stripe : message lisible renvoyé à l'app", async () => {
+  await db.doc("users/payDen2").set({ displayName: "Léa", email: "lea@exemple.ca", role: ["deneigeur_x"] });
+  const creer = fauxStripe.accounts.create;
+  fauxStripe.accounts.create = async () => {
+    throw Object.assign(new Error("Please review the responsibilities of managing losses for connected accounts."), { type: "StripeInvalidRequestError" });
+  };
+  const e = await echoue(appel(p.lienCompteDeneigeur, "payDen2", {}), "failed-precondition", "plateforme incomplète");
+  assert.match(e.message, /^Stripe : Please review the responsibilities/);
+  fauxStripe.accounts.create = creer;
+});
+
 console.log(`\n${ok} tests réussis`);
 process.exit(0);

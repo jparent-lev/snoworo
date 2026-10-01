@@ -34,7 +34,7 @@ export default function CarteDePaiement({ onEnregistree, libelle = "Enregistrer 
     };
   }, []);
 
-  if (erreur) return <p className="carte-paiement__erreur">{erreur}</p>;
+  if (erreur) return <p className="message-erreur" role="alert">{erreur}</p>;
   if (!clientSecret) return <p className="carte-paiement__aide">Chargement du formulaire sécurisé…</p>;
   return (
     <Elements stripe={chargerStripe()} options={{ clientSecret, appearance: APPARENCE, fonts: POLICES, locale: "fr-CA" }}>
@@ -77,7 +77,7 @@ function Formulaire({ onEnregistree, libelle }) {
   return (
     <div className="carte-paiement">
       <PaymentElement options={{ layout: "tabs" }} />
-      {erreur && <p className="carte-paiement__erreur">{erreur}</p>}
+      {erreur && <p className="message-erreur" role="alert">{erreur}</p>}
       <button type="button" className="btn btn--ardoise" disabled={!stripe || enCours} onClick={enregistrer}>
         {enCours ? "Vérification…" : libelle}
       </button>

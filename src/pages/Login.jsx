@@ -41,7 +41,7 @@ export default function Login() {
           Mot de passe
           <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required />
         </label>
-        {erreur && <p className="auth-form__erreur">{erreur}</p>}
+        {erreur && <p className="message-erreur" role="alert">{erreur}</p>}
         <button type="submit" className="auth-form__bouton" disabled={enCours}>
           {enCours ? "Connexion…" : "Se connecter"}
         </button>
