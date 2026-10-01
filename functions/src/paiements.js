@@ -218,16 +218,30 @@ export async function verser(demandeId) {
   }
 }
 
-// ---- Compte du déneigeur (Stripe Connect Express) ----
+// ---- Compte du déneigeur (Stripe Connect, Accounts v2) ----
+// Stripe exige Accounts v2 pour une nouvelle intégration Connect : compte
+// « destinataire » (configuration recipient, virements vers son solde
+// Stripe), tableau de bord Express, frais et pertes assumés par Snowro
+// (« application »). Les virements (transfers, API v1) fonctionnent tels quels
+// vers un compte v2.
 
+const INCLURE_DESTINATAIRE = ["configuration.recipient", "requirements"];
+
+// connectStatus d'après la capacité « recevoir des virements » du compte.
 export function statutConnect(compte) {
-  if (compte.capabilities?.transfers === "active" && compte.payouts_enabled) return "actif";
-  if (compte.details_submitted && compte.requirements?.disabled_reason) return "restreint";
+  const statut = compte.configuration?.recipient?.capabilities?.stripe_balance?.stripe_transfers?.status;
+  if (statut === "active") return "actif";
+  if (statut === "restricted" || statut === "rejected") return "restreint";
   return "en_attente";
 }
 
-// Lien vers Stripe : l'inscription (identité, compte bancaire) tant qu'elle
-// n'est pas faite, ensuite le tableau de bord Express (versements, relevés).
+async function lireCompte(compteId) {
+  return stripe().v2.core.accounts.retrieve(compteId, { include: INCLURE_DESTINATAIRE });
+}
+
+// Lien vers Stripe : l'inscription (identité, compte bancaire) tant que le
+// compte n'est pas actif, ensuite le tableau de bord Express (versements,
+// relevés).
 export const lienCompteDeneigeur = onCall({ region: REGION, secrets: [STRIPE_SECRET_KEY] }, avecStripe(async (request) => {
   const uid = exigerConnexion(request);
   const ref = db.doc(`users/${uid}`);
@@ -237,32 +251,42 @@ export const lienCompteDeneigeur = onCall({ region: REGION, secrets: [STRIPE_SEC
   }
   let compteId = profil.stripeConnectAccountId;
   if (!compteId) {
-    const compte = await stripe().accounts.create(
+    const compte = await stripe().v2.core.accounts.create(
       {
-        type: "express",
-        country: "CA",
-        email: profil.email || undefined,
-        business_type: "individual",
-        capabilities: { transfers: { requested: true } },
-        business_profile: { product_description: "Déneigement résidentiel offert par l'entremise de Snowro" },
+        contact_email: profil.email || undefined,
+        display_name: profil.displayName || undefined,
+        identity: { country: "CA" },
+        dashboard: "express",
+        defaults: {
+          currency: "cad",
+          locales: ["fr-CA"],
+          profile: { product_description: "Déneigement résidentiel offert par l'entremise de Snowro" },
+          responsibilities: { fees_collector: "application", losses_collector: "application" },
+        },
+        configuration: { recipient: { capabilities: { stripe_balance: { stripe_transfers: { requested: true } } } } },
         metadata: { uid },
       },
-      { idempotencyKey: `compte-${uid}` },
+      { idempotencyKey: `compte-v2-${uid}` },
     );
     compteId = compte.id;
     await ref.set({ stripeConnectAccountId: compteId, connectStatus: "en_attente" }, { merge: true });
   }
-  const compte = await stripe().accounts.retrieve(compteId);
-  if (compte.details_submitted) {
+  const connectStatus = statutConnect(await lireCompte(compteId));
+  if (connectStatus !== profil.connectStatus) await ref.set({ connectStatus }, { merge: true });
+  if (connectStatus === "actif") {
     const lien = await stripe().accounts.createLoginLink(compteId);
     return { url: lien.url, type: "tableau" };
   }
   const site = URL_SITE.value();
-  const lien = await stripe().accountLinks.create({
+  const lien = await stripe().v2.core.accountLinks.create({
     account: compteId,
-    refresh_url: `${site}/parametres?stripe=reprendre`,
-    return_url: `${site}/parametres?stripe=retour`,
-    type: "account_onboarding",
+    use_case: {
+      type: "account_onboarding",
+      account_onboarding: {
+        refresh_url: `${site}/parametres?stripe=reprendre`,
+        return_url: `${site}/parametres?stripe=retour`,
+      },
+    },
   });
   return { url: lien.url, type: "inscription" };
 }));
@@ -273,7 +297,7 @@ export const synchroniserCompteDeneigeur = onCall({ region: REGION, secrets: [ST
   const ref = db.doc(`users/${uid}`);
   const { stripeConnectAccountId } = (await ref.get()).data() ?? {};
   if (!stripeConnectAccountId) return { connectStatus: "non_demarre" };
-  const connectStatus = statutConnect(await stripe().accounts.retrieve(stripeConnectAccountId));
+  const connectStatus = statutConnect(await lireCompte(stripeConnectAccountId));
   await ref.set({ connectStatus }, { merge: true });
   return { connectStatus };
 }));
@@ -302,11 +326,15 @@ export const webhookStripe = onRequest(
   },
 );
 
+// account.updated (événement v1, toujours émis pour les comptes v2) ou
+// événement v2 « v2.core.account… » : dans les deux cas, on relit le compte
+// pour calculer le statut, plutôt que de dépendre de la forme du message.
 export async function traiterEvenement(evenement) {
-  if (evenement.type === "account.updated") {
-    const compte = evenement.data.object;
-    const trouves = await db.collection("users").where("stripeConnectAccountId", "==", compte.id).limit(1).get();
-    if (trouves.empty) return;
-    await trouves.docs[0].ref.set({ connectStatus: statutConnect(compte) }, { merge: true });
-  }
+  let compteId = null;
+  if (evenement.type === "account.updated") compteId = evenement.data?.object?.id;
+  else if (String(evenement.type).startsWith("v2.core.account")) compteId = evenement.related_object?.id;
+  if (!compteId) return;
+  const trouves = await db.collection("users").where("stripeConnectAccountId", "==", compteId).limit(1).get();
+  if (trouves.empty) return;
+  await trouves.docs[0].ref.set({ connectStatus: statutConnect(await lireCompte(compteId)) }, { merge: true });
 }

@@ -99,7 +99,10 @@ Snowro tant que la job n'est pas confirmée (et bloqué si elle est signalée).
   `confirmerJobsEchues` toutes les 15 minutes.
 - Signalement : `bloque`, aucun virement ; remboursement à la main dans le
   tableau de bord Stripe.
-- Déneigeur : inscription Express (`lienCompteDeneigeur`), statut mis à jour
+- Déneigeur : compte Connect créé avec **Accounts v2** (exigé par Stripe pour
+  une nouvelle intégration : configuration « recipient », tableau de bord
+  Express, frais et pertes assumés par Snowro), inscription par
+  `lienCompteDeneigeur`, statut mis à jour
   au retour (`synchroniserCompteDeneigeur`) et par le webhook
   `account.updated` (`webhookStripe`). Accepter une job exige
   `connectStatus == "actif"` (vérifié par le serveur ; le bouton est aussi

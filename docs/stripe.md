@@ -44,6 +44,9 @@ Après la fusion dans `main`, le déploiement automatique crée les fonctions
    - URL : `https://northamerica-northeast1-snowro-app.cloudfunctions.net/webhookStripe`
    - Événements : `account.updated`, en cochant « Comptes connectés » (les
      événements viennent des comptes Express des déneigeurs).
+     Les comptes sont créés avec Accounts v2 ; `account.updated` reste émis
+     pour eux, et le webhook relit le compte pour en tirer le statut (il
+     accepte aussi les événements `v2.core.account…`).
 2. Copier le **secret de signature** (`whsec_…`) et l'enregistrer :
 
 ```bash
