@@ -9,6 +9,7 @@ process.env.RESEND_API_KEY = "cle-factice";
 process.env.STRIPE_SECRET_KEY = "sk_test_factice";
 process.env.STRIPE_WEBHOOK_SECRET = "whsec_factice";
 process.env.PAIEMENT_REEL = "true";
+process.env.URL_SITE = "https://snowro.com";
 const REPO = fileURLToPath(new URL("..", import.meta.url));
 
 // Géocodage toujours à Québec ; courriels Resend notés.
@@ -68,6 +69,7 @@ const fauxStripe = {
       accounts: {
         create: async (p, o) => (noter("v2.accounts.create", p, o), { id: "acct_den" }),
         retrieve: async (id, p) => (noter("v2.accounts.retrieve", { id, ...p }), compte),
+        update: async (id, p) => (noter("v2.accounts.update", { id, ...p }), compte),
       },
       accountLinks: { create: async (p) => (noter("v2.accountLinks.create", p), { url: "https://connect.stripe.com/setup/e/inscription" }) },
     },
@@ -124,7 +126,12 @@ await test("compte déneigeur (Accounts v2) : créé une fois, inscription, puis
   assert.deepEqual(creation.defaults.responsibilities, { fees_collector: "application", losses_collector: "application" });
   assert.equal(creation.configuration.recipient.capabilities.stripe_balance.stripe_transfers.requested, true);
   assert.equal(creation.contact_email, "eric@exemple.ca");
-  assert.deepEqual(derniers("v2.accounts.retrieve")[0].params.include, ["configuration.recipient", "requirements"]);
+  assert.equal(creation.identity.entity_type, "individual");
+  assert.deepEqual(creation.identity.individual, { email: "eric@exemple.ca", given_name: "Éric", surname: "Pelletier" });
+  assert.equal(creation.defaults.profile.business_url, "https://snowro.com");
+  assert.deepEqual(derniers("v2.accounts.retrieve")[0].params.include, ["configuration.recipient", "requirements", "identity"]);
+  // Le faux compte n'a pas de type : il est complété en « particulier ».
+  assert.equal(derniers("v2.accounts.update")[0].params.identity.entity_type, "individual");
   assert.equal((await db.doc("users/payDen").get()).data().connectStatus, "en_attente");
   await appel(p.lienCompteDeneigeur, "payDen", {});
   assert.equal(derniers("v2.accounts.create").length, 1);
