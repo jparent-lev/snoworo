@@ -55,7 +55,7 @@ gcloud services enable cloudfunctions.googleapis.com cloudbuild.googleapis.com \
   artifactregistry.googleapis.com run.googleapis.com eventarc.googleapis.com \
   pubsub.googleapis.com secretmanager.googleapis.com cloudscheduler.googleapis.com \
   firebasehosting.googleapis.com firebaserules.googleapis.com firestore.googleapis.com \
-  firebaseextensions.googleapis.com >/dev/null
+  firebaseextensions.googleapis.com cloudbilling.googleapis.com >/dev/null
 
 echo "== Compte de service ${SA_COURRIEL}"
 if ! gcloud iam service-accounts describe "$SA_COURRIEL" >/dev/null 2>&1; then
