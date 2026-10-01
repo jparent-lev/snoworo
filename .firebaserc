@@ -1,0 +1,7 @@
+{
+  "projects": {
+    "default": "snowro-app",
+    "prod": "snowro-app",
+    "test": "snowro-test"
+  }
+}
