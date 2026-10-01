@@ -22,5 +22,9 @@ export const augmenterOffre = appeler("augmenterOffre");
 // ses messages en français) ; « deja-prise » est traité à part par l'appelant.
 export function messageErreur(err) {
   if (err?.message === "deja-prise") return "Un autre déneigeur de quartier vient de la prendre.";
+  if (err?.message === "carte-requise") return "Ajoute une carte de paiement d'abord. Rien n'est prélevé avant qu'un déneigeur accepte.";
+  if (err?.message === "carte-refusee") {
+    return "La carte du client a été refusée. Sa demande est en pause le temps qu'il la mette à jour.";
+  }
   return err?.message && err.code !== "functions/internal" ? err.message : "Quelque chose a bloqué. Réessaie.";
 }

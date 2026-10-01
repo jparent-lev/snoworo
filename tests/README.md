@@ -30,6 +30,10 @@ npm run e2e
   30 jours sauf job signalée) et évaluation (en confirmant ou dans les 7 jours,
   une seule fois, moyenne recalculée).
   Le géocodage Google est simulé.
+- `paiements.test.mjs` : paiements réels avec un faux Stripe (aucun appel
+  réseau) : carte obligatoire, enregistrement vérifié, compte Express,
+  prélèvement à l'acceptation, virement à la confirmation, virement bloqué
+  par un signalement, carte refusée puis relance, virement réessayé.
 - `parcours.e2e.mjs` : trois comptes (déneigeur, cliente, deux rôles) dans
   un vrai navigateur, captures d'écran dans un dossier temporaire.
 

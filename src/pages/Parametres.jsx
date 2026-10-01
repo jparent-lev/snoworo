@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import { doc, setDoc } from "firebase/firestore";
 import { signOut } from "firebase/auth";
 import { auth, db } from "../lib/firebase";
@@ -9,6 +10,15 @@ import { useAuth } from "../context/AuthContext";
 import { grantConsent, revokeConsent } from "../lib/consents";
 import { mettreAJourAdresseParPosition, mettreAJourAdresseParTexte } from "../lib/adresse";
 import { encoderGeohash } from "../lib/geo";
+import { messageErreur } from "../lib/cycleDemande";
+import {
+  LIBELLES_CONNECT,
+  PAIEMENT_REEL,
+  libelleCarte,
+  lienCompteDeneigeur,
+  synchroniserCompteDeneigeur,
+} from "../lib/paiements";
+import CarteDePaiement from "../components/CarteDePaiement";
 import "./Parametres.css";
 
 const CONSENTS = [
@@ -65,7 +75,7 @@ export default function Parametres() {
         }
       },
       () => {
-        setErreurAdresse("Localisation refusée ou indisponible — entre ton adresse manuellement ci-dessous.");
+        setErreurAdresse("Localisation refusée ou indisponible : entre ton adresse manuellement ci-dessous.");
         setMajAdresseEnCours(false);
       },
       { timeout: 10000 },
@@ -81,7 +91,7 @@ export default function Parametres() {
       await mettreAJourAdresseParTexte(adresseTexte.trim());
       setAdresseTexte("");
     } catch {
-      setErreurAdresse("Adresse introuvable — vérifie l'orthographe et réessaie.");
+      setErreurAdresse("Adresse introuvable. Vérifie l'orthographe et réessaie.");
     } finally {
       setMajAdresseEnCours(false);
     }
@@ -146,9 +156,11 @@ export default function Parametres() {
         </>
       )}
 
+      {PAIEMENT_REEL && <SectionPaiement profile={profile} deneigeur={roles.includes(ROLE_DENEIGEUR)} />}
+
       <h1>Tes consentements</h1>
       <p className="parametres__intro">
-        Chacun de ces consentements est indépendant, daté, et retirable en tout temps — le retrait est aussi
+        Chacun de ces consentements est indépendant, daté, et retirable en tout temps, et le retrait est aussi
         simple que l'octroi.
       </p>
 
@@ -163,7 +175,7 @@ export default function Parametres() {
                 <p>{c.description}</p>
                 {etat?.grantedAt && (
                   <p className="parametres__meta">
-                    {accorde ? "Accordé" : "Retiré"} — version {etat.version}
+                    {accorde ? "Accordé" : "Retiré"} · version {etat.version}
                   </p>
                 )}
               </div>
@@ -186,5 +198,84 @@ export default function Parametres() {
         Me déconnecter
       </button>
     </div>
+  );
+}
+
+// Carte du client et compte de versement du déneigeur (Stripe).
+function SectionPaiement({ profile, deneigeur }) {
+  const [params, setParams] = useSearchParams();
+  const [changerCarte, setChangerCarte] = useState(false);
+  const [carteAjoutee, setCarteAjoutee] = useState(null);
+  const [enCours, setEnCours] = useState(false);
+  const [erreur, setErreur] = useState(null);
+  const carte = carteAjoutee ?? profile.carte;
+  const statut = profile.connectStatus ?? "non_demarre";
+
+  // Retour de Stripe (?stripe=retour ou ?stripe=reprendre) : met le statut à
+  // jour sans attendre le webhook.
+  const retourStripe = params.get("stripe");
+  useEffect(() => {
+    if (!retourStripe) return;
+    synchroniserCompteDeneigeur()
+      .catch(() => {})
+      .finally(() => setParams({}, { replace: true }));
+  }, [retourStripe, setParams]);
+
+  async function ouvrirStripe() {
+    setEnCours(true);
+    setErreur(null);
+    try {
+      const { url } = await lienCompteDeneigeur();
+      window.location.assign(url);
+    } catch (err) {
+      setErreur(messageErreur(err));
+      setEnCours(false);
+    }
+  }
+
+  return (
+    <>
+      <h1>Paiement</h1>
+      <div className="parametres__liste">
+        <div className="parametres__item parametres__item--colonne">
+          <div className="parametres__item-texte">
+            <h3>Carte pour tes demandes</h3>
+            <p>
+              {carte
+                ? `${libelleCarte(carte)}. Prélevée seulement quand un déneigeur de quartier accepte ta demande.`
+                : "Aucune carte enregistrée. Tu pourras en ajouter une en publiant ta première demande."}
+            </p>
+          </div>
+          {changerCarte ? (
+            <CarteDePaiement
+              onEnregistree={(c) => {
+                setCarteAjoutee(c);
+                setChangerCarte(false);
+              }}
+            />
+          ) : (
+            <button type="button" className="btn btn--fantome btn--petit" onClick={() => setChangerCarte(true)}>
+              {carte ? "Changer de carte" : "Ajouter une carte"}
+            </button>
+          )}
+        </div>
+
+        {deneigeur && (
+          <div className="parametres__item">
+            <div className="parametres__item-texte">
+              <h3>Compte de versement</h3>
+              <p>{LIBELLES_CONNECT[statut] ?? LIBELLES_CONNECT.en_attente}</p>
+              <p className="parametres__meta">
+                Géré par Stripe : identité et compte bancaire, une seule fois. Obligatoire pour accepter des jobs.
+              </p>
+              {erreur && <p className="parametres__meta">{erreur}</p>}
+            </div>
+            <button type="button" className="auth-form__bouton" style={{ flex: "none" }} disabled={enCours} onClick={ouvrirStripe}>
+              {enCours ? "Ouverture…" : statut === "actif" ? "Voir mes versements" : statut === "non_demarre" ? "Configurer" : "Continuer"}
+            </button>
+          </div>
+        )}
+      </div>
+    </>
   );
 }

@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import { ecouterDemandesOuvertes, ecouterMesJobs, lireAdressePrivee, lirePrive } from "../../lib/demandes";
 import { preparerPhoto } from "../../lib/photo";
+import { PAIEMENT_REEL } from "../../lib/paiements";
 import { accepterDemande, marquerFaite, messageErreur } from "../../lib/cycleDemande";
 import { aNouveauMessage, ecouterLectures } from "../../lib/messagerie";
 import { calculerPaiement, ecouterConfigFrais } from "../../lib/config";
@@ -54,6 +55,8 @@ export default function TableauDeneigeur({ conversation, onConversationFermee })
   const [filtreDemandes, setFiltreDemandes] = useState("toutes");
   const [tri, setTri] = useState("proches");
   const villeGeoId = profile?.villeGeoId;
+  // Sans paiement réel, aucun compte de versement n'est exigé.
+  const compteActif = !PAIEMENT_REEL || profile?.connectStatus === "actif";
 
   useEffect(() => ecouterMesJobs(user.uid, setJobs), [user.uid]);
   useEffect(() => ecouterLectures(user.uid, setLectures), [user.uid]);
@@ -94,23 +97,31 @@ export default function TableauDeneigeur({ conversation, onConversationFermee })
           <p>{profile?.ville ? `Tu déneiges à ${profile.ville}` : "Ajoute ton adresse de service pour voir les demandes"}</p>
         </div>
       </div>
-      <p className="tableau__simulation">Période de test : aucun paiement réel n'est fait pour l'instant.</p>
+      {!PAIEMENT_REEL && (
+        <p className="tableau__simulation">Période de test : aucun paiement réel n'est fait pour l'instant.</p>
+      )}
 
-      {!villeGeoId && (
+      {(!villeGeoId || !compteActif) && (
         <div className="bandeau">
           <div>
-            <h3>Une étape avant de voir les demandes</h3>
+            <h3>{villeGeoId ? "Une étape avant d'accepter des jobs" : "Une étape avant de voir les demandes"}</h3>
             <p className="carte-job__meta" style={{ marginTop: 4 }}>
-              Ton adresse de service détermine ta ville : tu ne vois jamais de demandes ailleurs.
+              {villeGeoId
+                ? "Ton compte de versement Stripe reçoit l'argent de tes jobs. Ça se fait une seule fois."
+                : "Ton adresse de service détermine ta ville : tu ne vois jamais de demandes ailleurs."}
             </p>
             <div className="bandeau__etapes">
               <span className="bandeau__ok">✓ Profil</span>
-              <span className="bandeau__manque">○ Adresse de service</span>
-              <span className="bandeau__manque">○ Compte de paiement (bientôt)</span>
+              <span className={villeGeoId ? "bandeau__ok" : "bandeau__manque"}>{villeGeoId ? "✓" : "○"} Adresse de service</span>
+              {PAIEMENT_REEL ? (
+                <span className={compteActif ? "bandeau__ok" : "bandeau__manque"}>{compteActif ? "✓" : "○"} Compte de versement</span>
+              ) : (
+                <span className="bandeau__manque">○ Compte de versement (bientôt)</span>
+              )}
             </div>
           </div>
           <Link to="/parametres" className="btn btn--principal">
-            Ajouter mon adresse
+            {villeGeoId ? "Configurer mes versements" : "Ajouter mon adresse"}
           </Link>
         </div>
       )}
@@ -180,7 +191,7 @@ export default function TableauDeneigeur({ conversation, onConversationFermee })
           vide={ouvertes.length ? "Aucune demande avec ce filtre." : `Aucune demande ouverte à ${profile.ville} pour l'instant.`}
         >
           {demandes.map((d) => (
-            <CarteDemandeOuverte key={d.id} demande={d} frais={frais} />
+            <CarteDemandeOuverte key={d.id} demande={d} frais={frais} compteActif={compteActif} />
           ))}
         </Rangee>
       )}
@@ -381,7 +392,7 @@ function EvaluationRecue({ demandeId, prenom }) {
   );
 }
 
-function CarteDemandeOuverte({ demande: d, frais }) {
+function CarteDemandeOuverte({ demande: d, frais, compteActif }) {
   const [engagement, setEngagement] = useState(false);
   const [etat, setEtat] = useState("libre"); // libre | envoi | prise | erreur
   const [erreur, setErreur] = useState(null);
@@ -425,10 +436,17 @@ function CarteDemandeOuverte({ demande: d, frais }) {
       <button
         type="button"
         className="btn btn--principal btn--petit"
-        disabled={etat === "envoi" || etat === "prise"}
+        disabled={etat === "envoi" || etat === "prise" || !compteActif}
+        title={compteActif ? undefined : "Configure ton compte de versement dans tes paramètres"}
         onClick={() => setEngagement(true)}
       >
-        {etat === "envoi" ? "Confirmation…" : etat === "prise" ? "Déjà prise" : "Je prends la job"}
+        {etat === "envoi"
+          ? "Confirmation…"
+          : etat === "prise"
+            ? "Déjà prise"
+            : compteActif
+              ? "Je prends la job"
+              : "Compte de versement requis"}
       </button>
 
       {engagement && (

@@ -3,6 +3,8 @@ import { Link } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import { ecouterMesDemandes } from "../../lib/demandes";
 import { aNouveauMessage, ecouterLectures } from "../../lib/messagerie";
+import { PAIEMENT_REEL, relancerDemande } from "../../lib/paiements";
+import CarteDePaiement from "../../components/CarteDePaiement";
 import { annulerDemande, augmenterOffre, confirmerJob, evaluerJob, messageErreur } from "../../lib/cycleDemande";
 import { formatArgent } from "../../lib/formatArgent";
 import { dateCourte, dureeRestante, echeance, ilYa, millis } from "../../lib/temps";
@@ -12,13 +14,13 @@ import Conversation, { BoutonMessages } from "./Conversation";
 import "./Tableau.css";
 
 const FILTRES = [
-  { cle: "en_cours", libelle: "En cours", statuts: ["faite", "matchee", "ouverte", "signalee"] },
+  { cle: "en_cours", libelle: "En cours", statuts: ["paiement_refuse", "faite", "matchee", "ouverte", "signalee"] },
   { cle: "a_confirmer", libelle: "À confirmer", statuts: ["faite"] },
-  { cle: "en_attente", libelle: "En attente", statuts: ["ouverte"] },
+  { cle: "en_attente", libelle: "En attente", statuts: ["ouverte", "paiement_refuse"] },
   { cle: "acceptees", libelle: "Acceptées", statuts: ["matchee"] },
 ];
 // Ce qui attend une action du client passe en premier.
-const PRIORITE = { faite: 0, signalee: 1, matchee: 2, ouverte: 3 };
+const PRIORITE = { paiement_refuse: 0, faite: 0, signalee: 1, matchee: 2, ouverte: 3 };
 // Même délai que EVALUATION_DELAI_MS (functions/src/cycleDemande.js).
 const DELAI_EVALUATION_MS = 7 * 24 * 60 * 60 * 1000;
 
@@ -55,7 +57,9 @@ export default function TableauClient({ conversation, onConversationFermee }) {
           + Publier une demande
         </Link>
       </div>
-      <p className="tableau__simulation">Période de test : aucun paiement réel n'est fait pour l'instant.</p>
+      {!PAIEMENT_REEL && (
+        <p className="tableau__simulation">Période de test : aucun paiement réel n'est fait pour l'instant.</p>
+      )}
 
       {demandes && (
         <Rangee
@@ -145,7 +149,7 @@ function RangHistorique({ demande: d, evaluable }) {
 }
 
 function CarteDemandeClient({ demande: d, nouveau, conversationOuverte, onConversationFermee }) {
-  // "augmenter" | "annuler" | "signaler" | "messages" | "confirmer" | "photo"
+  // "augmenter" | "annuler" | "signaler" | "messages" | "confirmer" | "photo" | "carte"
   const [modale, setModale] = useState(conversationOuverte && d.deneigeurId ? "messages" : null);
   const [erreur, setErreur] = useState(null);
 
@@ -158,7 +162,7 @@ function CarteDemandeClient({ demande: d, nouveau, conversationOuverte, onConver
     }
   }
 
-  const attention = d.statut === "faite";
+  const attention = d.statut === "faite" || d.statut === "paiement_refuse";
 
   return (
     <article className={`carte-job ${attention ? "carte-job--attention" : ""}`}>
@@ -167,6 +171,7 @@ function CarteDemandeClient({ demande: d, nouveau, conversationOuverte, onConver
         {d.statut === "matchee" && <span className="badge badge--ardoise">Acceptée</span>}
         {d.statut === "faite" && <span className="badge badge--argile">À confirmer</span>}
         {d.statut === "signalee" && <span className="badge badge--gris">Problème signalé</span>}
+        {d.statut === "paiement_refuse" && <span className="badge badge--argile">Carte refusée</span>}
         <span className="carte-job__meta">{ilYa(d.statut === "faite" ? d.faiteAt : d.createdAt)}</span>
       </div>
       <div className="carte-job__titre">{d.titre}</div>
@@ -202,9 +207,20 @@ function CarteDemandeClient({ demande: d, nouveau, conversationOuverte, onConver
       {d.statut === "signalee" && (
         <p className="carte-job__note">On regarde ça et on te revient par courriel. Aucun versement ne part d'ici là.</p>
       )}
+      {d.statut === "paiement_refuse" && (
+        <p className="carte-job__note">
+          Un déneigeur de quartier voulait la prendre, mais ta carte a été refusée. Ta demande est en pause :
+          mets ta carte à jour et elle redevient visible tout de suite.
+        </p>
+      )}
       {erreur && <p className="carte-job__erreur">{erreur}</p>}
 
       <div className="carte-job__actions">
+        {d.statut === "paiement_refuse" && (
+          <button type="button" className="btn btn--principal btn--petit" onClick={() => setModale("carte")}>
+            Mettre ma carte à jour
+          </button>
+        )}
         {d.statut === "ouverte" && (
           <>
             <button type="button" className="btn btn--ardoise btn--petit" onClick={() => setModale("augmenter")}>
@@ -267,6 +283,18 @@ function CarteDemandeClient({ demande: d, nouveau, conversationOuverte, onConver
       )}
       {modale === "signaler" && <ModaleSignalement demande={d} par="client" onFermer={() => setModale(null)} />}
       {modale === "photo" && <ModalePhoto demande={d} onFermer={() => setModale(null)} />}
+      {modale === "carte" && (
+        <Modale titre="Mettre ma carte à jour" onFermer={() => setModale(null)} fermer>
+          <p>Ta demande redevient visible dès que la nouvelle carte est enregistrée. Rien n'est prélevé maintenant.</p>
+          <CarteDePaiement
+            libelle="Enregistrer et relancer ma demande"
+            onEnregistree={() => {
+              setModale(null);
+              agir(() => relancerDemande({ demandeId: d.id }));
+            }}
+          />
+        </Modale>
+      )}
       {modale === "confirmer" && (
         <ModaleEvaluation
           titre="Confirmer la job ?"

@@ -19,6 +19,9 @@ createdAt
 proSubscription: { stripeCustomerId, status, plan, currentPeriodEnd } | null
 
 stripeConnectAccountId: string | null   // 🔒 compte Stripe Connect Express du déneigeur
+stripeCustomerId: string | null         // 🔒 client Stripe (carte du client)
+carte: { paymentMethodId, marque, derniers4, expMois, expAnnee } | null   // 🔒 écrit par enregistrerCarte
+carteMiseAJourAt                        // 🔒
 connectStatus: "non_demarre" | "en_attente" | "actif" | "restreint"   // 🔒 voir plus bas
 
 consents: {                 // 🔒 écrit uniquement via grantConsent/revokeConsent
@@ -52,11 +55,8 @@ Voir `docs/architecture.md` § Paiement pour la décision complète
 à la création du compte, et n'est ensuite modifié que par une Cloud Function
 recevant la confirmation Stripe (webhook `account.updated`) — jamais par le
 client, même titre que `consents`/`ville`. Un déneigeur dont `connectStatus`
-n'est pas `"actif"` ne doit jamais apparaître dans le matching. **Pas encore
-appliqué** dans les requêtes/règles actuelles : voir le TODO dans
-`firestore.rules` et `src/lib/demandes.js` — l'onboarding Stripe Connect n'est
-pas encore construit, activer ce filtre avant qu'il existe bloquerait tout
-matching.
+n'est pas `"actif"` ne peut accepter aucune demande (vérifié par
+`accepterDemande` quand le paiement est réel).
 
 ## `demandes/{demandeId}`
 
@@ -67,7 +67,7 @@ matching) : ne contient donc ni l'adresse exacte ni de coordonnées précises.
 
 ```
 donneurOuvrageId, donneurPrenom
-statut: "ouverte" | "matchee" | "faite" | "completee" | "signalee" | "annulee"
+statut: "ouverte" | "matchee" | "faite" | "completee" | "signalee" | "annulee" | "paiement_refuse"
 adresseGeohash          // 7 caractères (~150 m) : distance affichée, jamais l'adresse
 postalCodePrefix, quartier, ville, villeGeoId   // dérivés du géocodage de l'adresse
 titre, description, typeService, outilsFournis
@@ -79,6 +79,11 @@ confirmeeAt, confirmationAuto   // true si confirmée par confirmerJobsEchues
 annuleeAt                       // seulement depuis « ouverte »
 signalement: { par: "client" | "deneigeur", motif, details, statutPrecedent, at } | null
 dernierMessage: { at, par } | null   // recopié par notifierNouveauMessage
+paiementRefuse: { at, raison } | null   // carte refusée à l'acceptation (paiement réel)
+paiement: { montantTotal, fraisSnowro, montantDeneigeur, statutPaiement,
+            stripePaymentIntentId, stripeChargeId, stripeTransferId, verseAt, erreurVersement }
+// statutPaiement simulé : simule_retenu | simule_verse | simule_bloque
+// statutPaiement réel   : prelevement_en_cours | retenu | a_verser | verse | bloque
 photo, photoExpireAt    // photo « c'est fait » dans prive/photo, effacée à photoExpireAt
 evaluee                 // true une fois le déneigeur évalué (note dans prive/evaluation)
 
