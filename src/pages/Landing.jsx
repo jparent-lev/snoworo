@@ -12,6 +12,7 @@ import {
   ApercuZonesPro,
   CapNeige,
   CarteVilles,
+  BancDeNeige,
   ChuteDeNeige,
   FloconsFiligrane,
   Icone,
@@ -73,6 +74,8 @@ export default function Landing() {
       </header>
 
       {/* 1. Héros */}
+      <div className="landing__hero-bande">
+        <ChuteDeNeige className="decor-chute--ciel" />
       <section id="haut" className="landing__hero">
         <div className="landing__hero-texte">
           <h1 className="landing__hero-titre">Déneigement à la demande, sans contrat.</h1>
@@ -98,6 +101,8 @@ export default function Landing() {
           <HeroIllustration />
         </div>
       </section>
+        <BancDeNeige />
+      </div>
 
       {/* 2. Comment ça marche */}
       <section id="comment" className="landing__section">

@@ -75,9 +75,9 @@ const CHUTE = [
   { x: 87, t: 9, d: -6 }, { x: 95, t: 13, d: -2.5 },
 ];
 
-export function ChuteDeNeige() {
+export function ChuteDeNeige({ className = "" }) {
   return (
-    <div className="decor-chute" aria-hidden="true">
+    <div className={`decor-chute ${className}`} aria-hidden="true">
       {CHUTE.map((f, i) => (
         <span
           key={f.x}
@@ -92,6 +92,19 @@ export function ChuteDeNeige() {
         />
       ))}
     </div>
+  );
+}
+
+// Banc de neige ondulé au bas du héros : la neige « accumulée » prend la
+// couleur de la page et fait la transition avec la section suivante.
+export function BancDeNeige({ className = "" }) {
+  const sol = "M0 60 V34 C80 18 150 22 230 30 C320 39 380 16 470 18 C560 20 610 38 700 36 C790 34 850 14 930 20 C970 23 990 28 1000 30 V60 Z";
+  const reflet = "M0 34 C80 18 150 22 230 30 C320 39 380 16 470 18 C560 20 610 38 700 36 C790 34 850 14 930 20 C970 23 990 28 1000 30";
+  return (
+    <svg className={`decor-banc ${className}`} viewBox="0 0 1000 60" preserveAspectRatio="none" aria-hidden="true">
+      <path d={sol} className="decor-banc__sol" />
+      <path d={reflet} className="decor-banc__reflet" />
+    </svg>
   );
 }
 
