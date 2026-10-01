@@ -61,7 +61,7 @@ export default function Landing() {
           </button>
           <nav id="landing-nav" className={`landing__nav ${menuOuvert ? "landing__nav--ouvert" : ""}`}>
             <a href="#comment" onClick={fermerMenu}>Comment ça marche</a>
-            <a href="#app" onClick={fermerMenu}>L'app</a>
+            <a href="#tableau-de-bord" onClick={fermerMenu}>Tableau de bord</a>
             <a href="#frais" onClick={fermerMenu}>Frais</a>
             <a href="#deneigeur" onClick={fermerMenu}>Déneiger</a>
             <a href="#pro" onClick={fermerMenu}>Pro</a>
@@ -158,11 +158,11 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* 3 bis. Dans l'app : aperçu du tableau de bord et éléments de confiance */}
-      <section id="app" className="landing__section">
+      {/* 3 bis. Dans le tableau de bord : aperçu (Client / Déneigeur) et éléments de confiance */}
+      <section id="tableau-de-bord" className="landing__section">
         <div className="landing__deux-colonnes landing__dans-app">
           <div>
-            <span className="eyebrow">Dans l'app</span>
+            <span className="eyebrow">Dans le tableau de bord</span>
             <h2 className="landing__h2">Tout se passe dans ton tableau de bord</h2>
             <p className="landing__chapeau">
               Un seul compte, deux modes : Client pour faire déneiger, Déneigeur pour prendre des jobs. Chaque
