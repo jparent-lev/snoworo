@@ -55,7 +55,7 @@ gcloud services enable cloudfunctions.googleapis.com cloudbuild.googleapis.com \
   artifactregistry.googleapis.com run.googleapis.com eventarc.googleapis.com \
   pubsub.googleapis.com secretmanager.googleapis.com cloudscheduler.googleapis.com \
   firebasehosting.googleapis.com firebaserules.googleapis.com firestore.googleapis.com \
-  firebaseextensions.googleapis.com >/dev/null
+  firebaseextensions.googleapis.com cloudbilling.googleapis.com >/dev/null
 
 echo "== Compte de service ${SA_COURRIEL}"
 if ! gcloud iam service-accounts describe "$SA_COURRIEL" >/dev/null 2>&1; then
@@ -81,6 +81,22 @@ ROLES=(
 for ROLE in "${ROLES[@]}"; do
   reessayer gcloud projects add-iam-policy-binding "$PROJECT_ID" \
     --member="serviceAccount:${SA_COURRIEL}" --role="$ROLE" --condition=None
+  echo "   $ROLE"
+done
+
+# Autorisations des agents de service Google exigées au premier déploiement
+# de fonctions (déclencheurs Firestore et tâches planifiées). Le compte de
+# déploiement n'a pas le droit de les accorder : elles se donnent ici, une
+# fois, par un propriétaire du projet.
+echo "== Agents de service (Pub/Sub, Eventarc, Cloud Run)"
+gcloud beta services identity create --service=pubsub.googleapis.com --project="$PROJECT_ID" >/dev/null 2>&1 || true
+gcloud beta services identity create --service=eventarc.googleapis.com --project="$PROJECT_ID" >/dev/null 2>&1 || true
+reessayer gcloud projects add-iam-policy-binding "$PROJECT_ID" --condition=None \
+  --member="serviceAccount:service-${NUMERO_PROJET}@gcp-sa-pubsub.iam.gserviceaccount.com" \
+  --role=roles/iam.serviceAccountTokenCreator
+for ROLE in roles/run.invoker roles/eventarc.eventReceiver; do
+  reessayer gcloud projects add-iam-policy-binding "$PROJECT_ID" --condition=None \
+    --member="serviceAccount:${NUMERO_PROJET}-compute@developer.gserviceaccount.com" --role="$ROLE"
   echo "   $ROLE"
 done
 

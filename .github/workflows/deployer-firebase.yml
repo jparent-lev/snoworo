@@ -68,8 +68,11 @@ jobs:
           workload_identity_provider: ${{ github.ref_name == 'test' && vars.GCP_WIF_PROVIDER_TEST || vars.GCP_WIF_PROVIDER }}
           service_account: ${{ github.ref_name == 'test' && vars.GCP_SA_DEPLOIEMENT_TEST || vars.GCP_SA_DEPLOIEMENT }}
 
+      # --force : en mode non interactif, la CLI exige ce drapeau pour créer
+      # la règle de nettoyage des images de fonctions (projet neuf) et pour
+      # supprimer les fonctions retirées du code.
       - name: Déployer
         run: >-
           npx --yes firebase-tools@15
           deploy --only hosting,functions,firestore:rules,firestore:indexes
-          --project "$PROJET" --non-interactive
+          --project "$PROJET" --non-interactive --force
