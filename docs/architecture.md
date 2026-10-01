@@ -30,7 +30,9 @@ structure figées par `design_handoff_snowro_site`.
   (`https://snowro.com`) pour tout le monde, on ne note pas qui a invité qui
   (décision produit ; ajouter un suivi demanderait une mise à jour de la
   politique de confidentialité). Aperçu des liens partagés : balises Open
-  Graph dans `index.html`, image `public/og-snowro.png` (1200 x 630).
+  Graph et Twitter (`twitter:title`, `twitter:description`, `twitter:image`)
+  dans `index.html`, image `public/og-snowro.png` (1200 x 630) ; icône
+  `public/apple-touch-icon.png` (180 x 180, fond plein) pour iOS.
 
 ## Stack
 
