@@ -60,6 +60,29 @@
   opacity: 0.22;
 }
 
+/* Variante du héros : flocons blancs, plus visibles sur le ciel pâle. */
+.decor-chute--ciel .decor-chute__flocon {
+  background: #ffffff;
+  opacity: 0.9;
+  box-shadow: 0 0 0 1px rgba(79, 107, 114, 0.12);
+}
+
+/* ---- Banc de neige (bas du héros) ---- */
+
+.decor-banc {
+  position: absolute;
+  left: 0;
+  bottom: -1px;
+  width: 100%;
+  height: clamp(36px, 5vw, 64px);
+  display: block;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.decor-banc__sol { fill: var(--color-bg-page); }
+.decor-banc__reflet { fill: none; stroke: #ffffff; stroke-width: 3; vector-effect: non-scaling-stroke; }
+
 /* ---- Illustrations des étapes ---- */
 
 .decor-etape {
