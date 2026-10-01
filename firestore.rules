@@ -22,8 +22,11 @@ service cloud.firestore {
       // ratingAvg, ratingCount, nbJobsCompletees : la réputation d'un
       // déneigeur, mise à jour seulement par les Cloud Functions (sinon chacun
       // pourrait se donner 5 étoiles).
+      // stripeCustomerId, carte, carteMiseAJourAt : la carte du client,
+      // enregistrée par enregistrerCarte après vérification auprès de Stripe
+      // (functions/src/paiements.js) ; jamais le numéro, seulement un résumé.
       return ['consents', 'proSubscription', 'ville', 'villeGeoId', 'stripeConnectAccountId', 'connectStatus',
-              'ratingAvg', 'ratingCount', 'nbJobsCompletees'];
+              'ratingAvg', 'ratingCount', 'nbJobsCompletees', 'stripeCustomerId', 'carte', 'carteMiseAJourAt'];
     }
 
     function abonneProActif() {

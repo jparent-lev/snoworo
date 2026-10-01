@@ -11,7 +11,12 @@ const LIBELLES_ETAPES = ["Publiée", "Acceptée", "Faite", "Confirmée"];
 // Barre d'étapes Publiée > Acceptée > Faite > Confirmée. Une demande signalée
 // reste figée à l'étape où le problème a été signalé.
 export function Etapes({ demande }) {
-  const statut = demande.statut === "signalee" ? demande.signalement?.statutPrecedent : demande.statut;
+  const statut =
+    demande.statut === "signalee"
+      ? demande.signalement?.statutPrecedent
+      : demande.statut === "paiement_refuse"
+        ? "ouverte"
+        : demande.statut;
   const position = ORDRE_ETAPES.indexOf(statut);
   return (
     <div className="etapes" aria-label={`Étape : ${LIBELLES_ETAPES[position] ?? ""}`}>

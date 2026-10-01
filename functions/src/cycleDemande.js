@@ -4,23 +4,28 @@ import { logger } from "firebase-functions/v2";
 import { FieldValue, Timestamp } from "firebase-admin/firestore";
 import { db } from "./admin.js";
 import { GEOCODING_API_KEY, villeDepuisAdresse } from "./geocoding.js";
+import { RESEND_API_KEY } from "./courriels.js";
+import { STRIPE_SECRET_KEY, avertirCarteRefusee, paiementReel, prelever, verser } from "./paiements.js";
 
 // Cycle de vie d'une demande, entièrement côté serveur (les Firestore rules
 // refusent toute écriture client sur demandes/) :
 //
 //   ouverte ──accepter──> matchee ──marquerFaite──> faite ──confirmer──> completee
-//      │                     │                        │   (ou automatique après 12 h)
-//      └─annuler─> annulee   └──────signaler──────────┴──> signalee
+//    │  ▲                    │                        │   (ou automatique après 12 h)
+//    │  └─relancer─ paiement_refuse (carte refusée à l'acceptation)
+//    └─annuler─> annulee     └──────signaler──────────┴──> signalee
 //
 // Pas d'annulation une fois la demande acceptée, ni par le client ni par le
 // déneigeur (décision produit : pas de porte de sortie pour laisser une job
 // en plan au profit d'une plus payante). Après l'acceptation, le seul recours
 // est « Signaler un problème ».
 //
-// Paiement : SIMULÉ tant que Stripe Connect n'est pas branché (étape 4). Les
-// montants sont calculés comme ils le seront (config/frais), mais aucun argent
-// ne circule ; statutPaiement porte le préfixe « simule_ » pour qu'aucune
-// donnée de test ne soit confondue avec un vrai paiement.
+// Paiement (functions/src/paiements.js) : réel par Stripe Connect quand
+// PAIEMENT_REEL est vrai, sinon SIMULÉ : mêmes montants (config/frais), mais
+// aucun argent ne circule et statutPaiement porte le préfixe « simule_ » pour
+// qu'aucune donnée de test ne soit confondue avec un vrai paiement.
+// statutPaiement réel : retenu (prélevé à l'acceptation) > a_verser (job
+// confirmée) > verse (virement fait au déneigeur) ; bloque si signalée.
 
 const REGION = "northamerica-northeast1";
 export const DELAI_CONFIRMATION_MS = 12 * 60 * 60 * 1000;
@@ -50,10 +55,6 @@ const PREFIXE_PHOTO = "data:image/jpeg;base64,";
 export const EVALUATION_DELAI_MS = 7 * 24 * 60 * 60 * 1000;
 const COMMENTAIRE_MAX = 500;
 
-// TODO étape 4 (Stripe Connect) : passer à true. Tant que l'onboarding
-// n'existe pas, aucun déneigeur n'a connectStatus « actif » et exiger le
-// compte bloquerait tout test du parcours.
-const EXIGER_COMPTE_PAIEMENT = false;
 
 function exigerConnexion(request) {
   if (!request.auth) throw new HttpsError("unauthenticated", "Connexion requise.");
@@ -138,6 +139,9 @@ export const publierDemande = onCall({ region: REGION, secrets: [GEOCODING_API_K
   }
 
   const profil = (await db.doc(`users/${uid}`).get()).data() ?? {};
+  // Rien n'est prélevé à la publication, mais il faut une carte pour que
+  // l'acceptation puisse prélever.
+  if (paiementReel() && !profil.carte?.paymentMethodId) throw new HttpsError("failed-precondition", "carte-requise");
   const ref = db.collection("demandes").doc();
   const batch = db.batch();
   batch.set(ref, {
@@ -181,13 +185,14 @@ export const publierDemande = onCall({ region: REGION, secrets: [GEOCODING_API_K
 // Premier arrivé, premier servi (transaction). Le filtre de ville est une
 // exclusion dure : un déneigeur ne peut jamais accepter hors de sa ville de
 // service, même si la demande est à 500 m de l'autre côté du pont.
-export const accepterDemande = onCall({ region: REGION }, async (request) => {
+export const accepterDemande = onCall({ region: REGION, secrets: [STRIPE_SECRET_KEY, RESEND_API_KEY] }, async (request) => {
   const uid = exigerConnexion(request);
   const { demandeId } = request.data ?? {};
   if (typeof demandeId !== "string" || !demandeId) throw new HttpsError("invalid-argument", "demandeId requis.");
   const frais = await lireFrais();
+  const reel = paiementReel();
 
-  return db.runTransaction(async (tx) => {
+  const demande = await db.runTransaction(async (tx) => {
     const ref = db.doc(`demandes/${demandeId}`);
     const userRef = db.doc(`users/${uid}`);
     const [snap, userSnap] = await Promise.all([tx.get(ref), tx.get(userRef)]);
@@ -203,7 +208,7 @@ export const accepterDemande = onCall({ region: REGION }, async (request) => {
     if (!profil.villeGeoId || profil.villeGeoId !== demande.villeGeoId) {
       throw new HttpsError("permission-denied", "Cette demande est hors de ta ville de service.");
     }
-    if (EXIGER_COMPTE_PAIEMENT && profil.connectStatus !== "actif") {
+    if (reel && profil.connectStatus !== "actif") {
       throw new HttpsError("failed-precondition", "Configure ton compte de paiement avant d'accepter des jobs.");
     }
 
@@ -213,13 +218,59 @@ export const accepterDemande = onCall({ region: REGION }, async (request) => {
       deneigeurPrenom: prenom(profil.displayName),
       deneigeurNote: { moyenne: profil.ratingAvg ?? 0, nombre: profil.nbJobsCompletees ?? 0 },
       matchedAt: FieldValue.serverTimestamp(),
+      paiementRefuse: null,
       paiement: {
         ...calculerPaiement(demande.remunerationOfferte, frais),
-        statutPaiement: "simule_retenu",
+        statutPaiement: reel ? "prelevement_en_cours" : "simule_retenu",
         stripePaymentIntentId: null,
+        stripeChargeId: null,
         stripeTransferId: null,
       },
     });
+    return demande;
+  });
+  if (!reel) return { ok: true };
+
+  // Prélèvement hors transaction (une transaction peut être rejouée ; un
+  // prélèvement ne doit pas l'être). La demande est déjà réservée à ce
+  // déneigeur : personne d'autre ne peut la prendre pendant ce temps.
+  const ref = db.doc(`demandes/${demandeId}`);
+  const resultat = await prelever(demandeId, demande);
+  if (resultat.ok) {
+    await ref.update({
+      "paiement.statutPaiement": "retenu",
+      "paiement.stripePaymentIntentId": resultat.paymentIntentId,
+      "paiement.stripeChargeId": resultat.chargeId,
+    });
+    return { ok: true };
+  }
+  await ref.update({
+    statut: "paiement_refuse",
+    deneigeurId: null,
+    deneigeurPrenom: null,
+    deneigeurNote: null,
+    matchedAt: null,
+    paiement: null,
+    paiementRefuse: { at: FieldValue.serverTimestamp(), raison: resultat.raison },
+  });
+  await avertirCarteRefusee(demande);
+  throw new HttpsError("failed-precondition", "carte-refusee");
+});
+
+// ---- Relancer après une carte refusée (client, une fois la carte à jour) ----
+export const relancerDemande = onCall({ region: REGION }, async (request) => {
+  const uid = exigerConnexion(request);
+  const profil = (await db.doc(`users/${uid}`).get()).data() ?? {};
+  if (paiementReel() && !profil.carte?.paymentMethodId) throw new HttpsError("failed-precondition", "carte-requise");
+  return db.runTransaction(async (tx) => {
+    const { ref, demande } = await lireDemande(tx, request.data?.demandeId, { uid, role: "client", statuts: ["paiement_refuse"] });
+    // Il faut une carte enregistrée APRÈS le refus : réessayer la même carte
+    // donnerait le même refus (Stripe rejoue la réponse d'une même clé
+    // d'idempotence, voir prelever).
+    if (paiementReel() && (profil.carteMiseAJourAt?.toMillis() ?? 0) <= (demande.paiementRefuse?.at?.toMillis() ?? 0)) {
+      throw new HttpsError("failed-precondition", "carte-requise");
+    }
+    tx.update(ref, { statut: "ouverte", paiementRefuse: null });
     return { ok: true };
   });
 });
@@ -281,27 +332,29 @@ function evaluer(tx, ref, demande, profil, { note, commentaire }) {
   tx.update(ref, { evaluee: true });
 }
 
+// Le virement réel se fait après la transaction (verser).
 function confirmer(tx, ref, demande, { automatique }) {
   tx.update(ref, {
     statut: "completee",
     confirmeeAt: FieldValue.serverTimestamp(),
     confirmationAuto: automatique,
-    "paiement.statutPaiement": "simule_verse",
+    "paiement.statutPaiement": demande.paiement?.statutPaiement === "retenu" ? "a_verser" : "simule_verse",
   });
   tx.set(db.doc(`users/${demande.deneigeurId}`), { nbJobsCompletees: FieldValue.increment(1) }, { merge: true });
 }
 
 // ---- Confirmer (client), avec évaluation facultative ----
-export const confirmerJob = onCall({ region: REGION }, async (request) => {
+export const confirmerJob = onCall({ region: REGION, secrets: [STRIPE_SECRET_KEY] }, async (request) => {
   const uid = exigerConnexion(request);
   const evaluation = request.data?.note == null ? null : validerEvaluation(request.data);
-  return db.runTransaction(async (tx) => {
+  await db.runTransaction(async (tx) => {
     const { ref, demande } = await lireDemande(tx, request.data?.demandeId, { uid, role: "client", statuts: ["faite"] });
     const profil = evaluation ? ((await tx.get(db.doc(`users/${demande.deneigeurId}`))).data() ?? {}) : null;
     confirmer(tx, ref, demande, { automatique: false });
     if (evaluation) evaluer(tx, ref, demande, profil, evaluation);
-    return { ok: true };
   });
+  await verser(request.data.demandeId);
+  return { ok: true };
 });
 
 // ---- Évaluer après coup (client), une seule fois, dans les 7 jours ----
@@ -321,8 +374,9 @@ export const evaluerJob = onCall({ region: REGION }, async (request) => {
 });
 
 // ---- Confirmation automatique 12 h après « faite » ----
+// Réessaie aussi les virements restés « a_verser » (erreur Stripe passagère).
 export const confirmerJobsEchues = onSchedule(
-  { schedule: "every 15 minutes", timeZone: "America/Toronto", region: REGION },
+  { schedule: "every 15 minutes", timeZone: "America/Toronto", region: REGION, secrets: [STRIPE_SECRET_KEY] },
   async () => {
     const echues = await db
       .collection("demandes")
@@ -342,6 +396,8 @@ export const confirmerJobsEchues = onSchedule(
       });
     }
     if (n) logger.info(`${n} job(s) confirmée(s) automatiquement.`);
+    const aVerser = await db.collection("demandes").where("paiement.statutPaiement", "==", "a_verser").limit(100).get();
+    for (const doc of aVerser.docs) await verser(doc.id);
   },
 );
 
@@ -388,7 +444,7 @@ export const signalerProbleme = onCall({ region: REGION }, async (request) => {
       signalement: { par, motif, details, statutPrecedent: demande.statut, at: FieldValue.serverTimestamp() },
       // Plus de versement automatique : Snowro tranche à la main (remboursement
       // si le déneigeur ne s'est pas présenté, voir la FAQ).
-      "paiement.statutPaiement": "simule_bloque",
+      "paiement.statutPaiement": demande.paiement?.statutPaiement === "retenu" ? "bloque" : "simule_bloque",
       confirmationAutoAt: null,
     });
     return { ok: true };

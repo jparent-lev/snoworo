@@ -7,6 +7,7 @@ export { calculerVilleDemande } from "./demandeVille.js";
 export {
   publierDemande,
   accepterDemande,
+  relancerDemande,
   marquerFaite,
   confirmerJob,
   evaluerJob,
@@ -20,3 +21,10 @@ export { rejoindreListeAttente } from "./listeAttente.js";
 export { confirmerInscriptionListeAttente } from "./confirmationListeAttente.js";
 export { envoyerMessageContact } from "./contact.js";
 export { notifierNouveauMessage } from "./messagerie.js";
+export {
+  preparerCarte,
+  enregistrerCarte,
+  lienCompteDeneigeur,
+  synchroniserCompteDeneigeur,
+  webhookStripe,
+} from "./paiements.js";

@@ -65,13 +65,10 @@ Implications :
 - Un déneigeur doit compléter l'onboarding Stripe Connect Express avant de
   pouvoir accepter une demande — vérification d'identité gérée par Stripe.
 - `users/{userId}.connectStatus` ("non_demarre" | "en_attente" | "actif" |
-  "restreint") — un déneigeur dont le statut n'est pas "actif" ne doit
-  **jamais** apparaître dans les résultats de matching (exclusion dure, pas un
-  badge UI). **Pas encore appliqué** : voir le TODO dans `firestore.rules` et
-  `src/lib/demandes.js` — l'onboarding Connect doit exister avant d'activer ce
-  filtre, sinon plus aucun déneigeur ne peut rien voir.
+  "restreint") : un déneigeur dont le statut n'est pas "actif" ne peut pas
+  accepter de demande (refus du serveur, en mode paiement réel).
 - `demandes/{demandeId}.paiement` (remplace l'ancien `fraisMiseEnRelation`) :
-  `{ montantTotal, fraisSnowro, montantDeneigeur, statutPaiement, stripePaymentIntentId, stripeTransferId }`.
+  `{ montantTotal, fraisSnowro, montantDeneigeur, statutPaiement, stripePaymentIntentId, stripeChargeId, stripeTransferId, verseAt, erreurVersement }`.
 - Structure de frais **fixe + %** (remplace l'ancien frais fixe unique), lue
   depuis `config/frais` (`fraisFixe`, `fraisPct`) — jamais codée en dur, pour
   pouvoir l'ajuster sans redéploiement. Montants exacts non finalisés (voir le
@@ -84,12 +81,34 @@ Implications :
   confirmation Stripe (webhook), jamais en écriture directe côté client — voir
   `champsProteges()` dans `firestore.rules`.
 
-**Pas encore construit** : onboarding Connect (génération du lien
-d'inscription Express, page de retour), webhook Stripe (`account.updated` →
-`connectStatus`), création du PaymentIntent au moment du match (destination
-charge vers le compte Connect du déneigeur, `application_fee_amount` = frais
-calculé), document `config/frais`. Nécessite une clé secrète Stripe (comme
-`GOOGLE_GEOCODING_API_KEY`, à stocker via `firebase functions:secrets:set`).
+**Construit** (`functions/src/paiements.js`, mode d'emploi : `docs/stripe.md`),
+modèle « charges et virements séparés » plutôt que la destination charge
+envisagée au départ : le prélèvement a lieu à l'acceptation, mais le virement
+au déneigeur n'est fait qu'à la confirmation, ce qui garde l'argent chez
+Snowro tant que la job n'est pas confirmée (et bloqué si elle est signalée).
+- Publication : le client enregistre une carte (SetupIntent hors session,
+  Payment Element de Stripe dans l'app). Rien n'est prélevé.
+- Acceptation : prélèvement du montant offert sur cette carte
+  (PaymentIntent hors session, `transfer_group` = demandeId). Carte refusée :
+  la demande passe à `paiement_refuse`, le déneigeur est libéré et le client
+  averti par courriel ; une nouvelle carte puis `relancerDemande` la remet en
+  ligne.
+- Confirmation (client ou automatique) : virement de `montantDeneigeur` au
+  compte Express du déneigeur (Transfer avec `source_transaction`), clé
+  d'idempotence par demande ; un échec reste `a_verser` et est réessayé par
+  `confirmerJobsEchues` toutes les 15 minutes.
+- Signalement : `bloque`, aucun virement ; remboursement à la main dans le
+  tableau de bord Stripe.
+- Déneigeur : inscription Express (`lienCompteDeneigeur`), statut mis à jour
+  au retour (`synchroniserCompteDeneigeur`) et par le webhook
+  `account.updated` (`webhookStripe`). Accepter une job exige
+  `connectStatus == "actif"` (vérifié par le serveur ; le bouton est aussi
+  désactivé dans l'app). Les demandes restent visibles : il voit ce qu'il
+  pourrait prendre, ce qui l'incite à finir l'inscription.
+
+Interrupteur : `PAIEMENT_REEL` (fonctions) et `VITE_STRIPE_CLE_PUBLIQUE`
+(site). Sans eux, le paiement reste simulé (`simule_*`) avec le bandeau
+« Période de test ».
 
 ## Cloud Functions (`functions/`)
 
@@ -204,9 +223,9 @@ Paiement **simulé** tant que Stripe Connect n'est pas branché (bandeau
 
 Prochaines étapes, dans l'ordre convenu :
 
-1. Paiement Stripe Connect complet : onboarding Express, webhook, PaymentIntent
-   au moment du match, `config/frais`, filtre `connectStatus == 'actif'`
-   (voir § Paiement ci-dessus — priorité avant tout lancement public).
+1. Passer les paiements en réel : compte Stripe, secrets, webhook, puis
+   `PAIEMENT_REEL` et `VITE_STRIPE_CLE_PUBLIQUE` (voir `docs/stripe.md`) ;
+   créer `config/frais` avec les montants définitifs.
 2. Snowro Pro : abonnement Stripe Billing, tableau de bord `zonesStats`.
 3. Snowro Pro : UI pour `creerOffreCiblee`.
 4. Notifications SMS/push (Twilio + FCM) à l'ouverture d'une demande dans la

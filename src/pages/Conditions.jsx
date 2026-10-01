@@ -61,17 +61,19 @@ export default function Conditions() {
           la prend.
         </li>
         <li>
-          Tu paies le montant offert par carte au moment du match. Il est retenu jusqu'à ce que la job soit
-          confirmée faite. Il est alors versé au déneigeur de quartier. Tu reçois un reçu
-          automatiquement.
+          Tu enregistres une carte en publiant ta demande; rien n'est prélevé à ce moment-là. Le montant
+          offert est prélevé quand un déneigeur de quartier accepte, puis retenu par Snowro jusqu'à ce que la
+          job soit confirmée faite. Il est alors versé au déneigeur de quartier. Tu reçois un reçu par
+          courriel au moment du prélèvement.
         </li>
         <li>
           Si le déneigeur de quartier ne se présente pas, tu es remboursé au complet.
         </li>
         <li>
           Tu peux annuler une demande sans frais tant que personne ne l'a acceptée. Une fois qu'elle est
-          acceptée, l'annulation se fait par entente avec le déneigeur de quartier; en cas de désaccord,
-          écris-nous et on tranche selon les faits.
+          acceptée, elle ne peut plus être annulée, ni par toi ni par le déneigeur de quartier. En cas de
+          problème (absence, travail incomplet), utilise « Signaler un problème » : le paiement reste retenu
+          et on tranche selon les faits.
         </li>
         <li>
           Tu t'engages à rendre l'endroit accessible et à signaler tout ce qui pourrait être dangereux ou

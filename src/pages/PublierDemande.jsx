@@ -3,6 +3,9 @@ import { useNavigate } from "react-router-dom";
 import { publierDemande, messageErreur } from "../lib/cycleDemande";
 import { calculerPaiement, ecouterConfigFrais } from "../lib/config";
 import { formatArgent } from "../lib/formatArgent";
+import { PAIEMENT_REEL, libelleCarte } from "../lib/paiements";
+import { useAuth } from "../context/AuthContext";
+import CarteDePaiement from "../components/CarteDePaiement";
 import "./AuthForm.css";
 
 const TYPES_SERVICE = [
@@ -40,6 +43,13 @@ function demainHuitHeures() {
 // position du téléphone, qui peut être au travail plutôt qu'à la maison.
 export default function PublierDemande() {
   const navigate = useNavigate();
+  const { profile } = useAuth();
+  // La carte enregistrée pendant cette visite s'affiche tout de suite, avant
+  // que la fiche (users/{uid}.carte, écrite par le serveur) se mette à jour.
+  const [carteAjoutee, setCarteAjoutee] = useState(null);
+  const [changerCarte, setChangerCarte] = useState(false);
+  const carte = carteAjoutee ?? profile?.carte;
+  const carteManquante = PAIEMENT_REEL && !carte;
   const [adresse, setAdresse] = useState("");
   const [typeService, setTypeService] = useState(TYPES_SERVICE[1].value);
   const [titre, setTitre] = useState("");
@@ -154,9 +164,34 @@ export default function PublierDemande() {
           )}
         </label>
 
+        {PAIEMENT_REEL && (
+          <div className="auth-form__champ">
+            Paiement
+            {carte && !changerCarte ? (
+              <span className="auth-form__carte-enregistree">
+                {libelleCarte(carte)}
+                <button type="button" className="btn btn--lien" onClick={() => setChangerCarte(true)}>
+                  Changer
+                </button>
+              </span>
+            ) : (
+              <CarteDePaiement
+                onEnregistree={(c) => {
+                  setCarteAjoutee(c);
+                  setChangerCarte(false);
+                }}
+              />
+            )}
+            <span className="auth-form__aide">
+              Rien n'est prélevé maintenant. Le montant est prélevé quand un déneigeur de quartier accepte, puis
+              versé une fois la job confirmée.
+            </span>
+          </div>
+        )}
+
         {erreur && <p className="auth-form__erreur">{erreur}</p>}
 
-        <button type="submit" className="auth-form__bouton" disabled={enCours}>
+        <button type="submit" className="auth-form__bouton" disabled={enCours || carteManquante}>
           {enCours ? "Publication…" : "Publier la demande"}
         </button>
         <p className="auth-form__aide" style={{ textAlign: "center" }}>
