@@ -29,8 +29,8 @@ const g7 = (lat, lng) => geohash.encode(lat, lng).slice(0, 7);
 // ---- Données ----
 const comptes = {
   mireille: { email: "mireille@test.ca", nom: "Mireille Gagnon", role: ["donneur_ouvrage"] },
-  marc: { email: "marc@test.ca", nom: "Marc Tremblay", role: ["deneigeur_x"], ville: "Québec", villeGeoId: "ID_QUEBEC", addressGeohash: geohash.encode(46.8263, -71.2206), ratingAvg: 4.8, nbJobsCompletees: 23 },
-  julie: { email: "julie@test.ca", nom: "Julie Lavoie", role: ["donneur_ouvrage", "deneigeur_x"], ville: "Québec", villeGeoId: "ID_QUEBEC", addressGeohash: geohash.encode(46.83, -71.21), ratingAvg: 4.9, nbJobsCompletees: 41 },
+  marc: { email: "marc@test.ca", nom: "Marc Tremblay", role: ["deneigeur_x"], ville: "Québec", villeGeoId: "ID_QUEBEC", addressGeohash: geohash.encode(46.8263, -71.2206), ratingAvg: 4.8, ratingCount: 20, nbJobsCompletees: 23 },
+  julie: { email: "julie@test.ca", nom: "Julie Lavoie", role: ["donneur_ouvrage", "deneigeur_x"], ville: "Québec", villeGeoId: "ID_QUEBEC", addressGeohash: geohash.encode(46.83, -71.21), ratingAvg: 4.9, ratingCount: 35, nbJobsCompletees: 41 },
   paul: { email: "paul@test.ca", nom: "Paul Bergeron", role: ["donneur_ouvrage"] },
 };
 const uid = {};
@@ -128,12 +128,17 @@ async function connexion(cle, largeur = 1280) {
     const d = (await db.doc("demandes/D1").get()).data();
     assert.equal(d.statut, "matchee"); assert.equal(d.deneigeurId, uid.marc); assert.equal(d.paiement.montantDeneigeur, 39.4);
   });
-  await test("Marc : « C'est fait » demande confirmation, puis passe « En attente de confirmation »", async () => {
+  await test("Marc : « C'est fait » avec photo, puis passe « En attente de confirmation »", async () => {
     await p.locator(".carte-job", { hasText: "1234, 3e Avenue" }).getByRole("button", { name: "C'est fait" }).click();
+    await p.getByRole("dialog").locator('input[type="file"]').setInputFiles(`${REPO}public/og-snowro.png`);
+    await p.getByRole("img", { name: "Aperçu de ta photo" }).waitFor();
+    await p.screenshot({ path: `${D}/e2e-faite-photo-1280.png` });
     await p.getByRole("button", { name: "Oui, c'est fait" }).click();
     await p.waitForFunction(async () => true);
     for (let i = 0; i < 30 && (await db.doc("demandes/D1").get()).data().statut !== "faite"; i++) await new Promise((r) => setTimeout(r, 500));
     assert.equal((await db.doc("demandes/D1").get()).data().statut, "faite");
+    const photo = (await db.doc("demandes/D1/prive/photo").get()).data().donnees;
+    assert.ok(photo.startsWith("data:image/jpeg;base64,") && photo.length < 650000, `photo ${photo.length}`);
   });
   await p.screenshot({ path: `${D}/e2e-marc-apres-1280.png`, fullPage: true });
   await test("Marc : écrit à Paul depuis la job ; le message s'affiche et la demande note le dernier message", async () => {
@@ -166,6 +171,14 @@ async function connexion(cle, largeur = 1280) {
     await dlg.locator(".bulle--moi", { hasText: "Parfait, merci Marc" }).waitFor();
     await p.keyboard.press("Escape");
     await carte.getByRole("button", { name: "Écrire à Marc" }).waitFor();
+  });
+  await test("Paul : « Voir la photo » affiche la photo de Marc", async () => {
+    await p.locator(".carte-job", { hasText: "Entrée double + balcon" }).getByRole("button", { name: "Voir la photo" }).click();
+    const img = p.getByRole("dialog", { name: "Photo de Marc" }).getByRole("img");
+    await img.waitFor();
+    assert.ok(await img.evaluate((i) => i.complete && i.naturalWidth > 1000), "image chargée");
+    await p.screenshot({ path: `${D}/e2e-photo-1280.png` });
+    await p.getByRole("button", { name: "Fermer" }).click();
   });
   await ctx.close();
 }
@@ -208,12 +221,39 @@ async function connexion(cle, largeur = 1280) {
     for (let i = 0; i < 30 && (await db.doc("demandes/M1").get()).data().remunerationOfferte !== 35; i++) await new Promise((r) => setTimeout(r, 500));
     assert.equal((await db.doc("demandes/M1").get()).data().remunerationOfferte, 35);
   });
-  await test("Mireille : « Confirmer » : la job passe à l'historique, versement simulé", async () => {
-    await p.getByRole("button", { name: "Confirmer" }).click();
+  await test("Mireille : « Confirmer » avec 5 étoiles et un mot : historique, versement simulé, note de Marc", async () => {
+    await p.locator(".carte-job", { hasText: "À confirmer" }).getByRole("button", { name: "Confirmer" }).click();
+    const dlg = p.getByRole("dialog", { name: "Confirmer la job ?" });
+    await dlg.getByRole("radio", { name: /5 étoiles/ }).click();
+    await dlg.getByRole("textbox").fill("Impeccable, merci Marc !");
+    await p.screenshot({ path: `${D}/e2e-evaluation-1280.png` });
+    await dlg.getByRole("button", { name: "Confirmer" }).click();
     await p.waitForFunction(() => document.querySelectorAll(".historique__rang").length === 2, null, { timeout: 15000 });
     const d = (await db.doc("demandes/M3").get()).data();
-    assert.equal(d.statut, "completee"); assert.equal(d.paiement.statutPaiement, "simule_verse");
+    assert.equal(d.statut, "completee"); assert.equal(d.paiement.statutPaiement, "simule_verse"); assert.equal(d.evaluee, true);
+    const marc = (await db.doc(`users/${uid.marc}`).get()).data();
+    assert.equal(marc.ratingCount, 21); assert.equal(marc.ratingAvg, 4.81);
   });
+  await test("Mireille : la job de Julie confirmée automatiquement il y a 4 jours peut encore être évaluée", async () => {
+    await db.doc("demandes/M4").update({ confirmeeAt: ts(-96 * H) });
+    await p.reload();
+    await p.getByRole("button", { name: "Évaluer Julie" }).click();
+    await p.getByRole("dialog").getByRole("radio", { name: /4 étoiles/ }).click();
+    await p.getByRole("dialog").getByRole("button", { name: "Envoyer" }).click();
+    await p.getByRole("button", { name: "Évaluer Julie" }).waitFor({ state: "detached", timeout: 15000 });
+    assert.equal((await db.doc("demandes/M4").get()).data().evaluee, true);
+  });
+  await ctx.close();
+}
+
+// Marc revient : l'évaluation de Mireille est sur sa job terminée
+{
+  const { p, ctx } = await connexion("marc");
+  await test("Marc : la job terminée affiche les 5 étoiles et le mot de Mireille", async () => {
+    await p.getByRole("tab", { name: /Terminées/ }).click();
+    await p.locator(".evaluation-recue", { hasText: "Impeccable, merci Marc" }).waitFor();
+  });
+  await p.screenshot({ path: `${D}/e2e-marc-evaluation-1280.png`, fullPage: true });
   await ctx.close();
 }
 

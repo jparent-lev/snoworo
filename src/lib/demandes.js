@@ -35,3 +35,10 @@ export async function lireAdressePrivee(demandeId) {
   const snap = await getDoc(doc(db, "demandes", demandeId, "prive", "adresse"));
   return snap.exists() ? snap.data().adresse : null;
 }
+
+// Photo « c'est fait » et évaluation : mêmes droits que l'adresse (le client
+// et le déneigeur choisi). null si absente.
+export async function lirePrive(demandeId, docId) {
+  const snap = await getDoc(doc(db, "demandes", demandeId, "prive", docId));
+  return snap.exists() ? snap.data() : null;
+}

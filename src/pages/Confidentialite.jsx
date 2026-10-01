@@ -62,8 +62,9 @@ export default function Confidentialite() {
         </li>
         <li>
           <strong>Demandes et jobs :</strong> le montant offert, le quartier indiqué, le statut de la demande,
-          les messages échangés avec l'autre personne une fois le match confirmé, et les appréciations
-          laissées après une job.
+          les messages échangés avec l'autre personne une fois le match confirmé, la photo facultative prise
+          par le déneigeur de quartier à la fin de la job (visible seulement par vous deux) et l'appréciation
+          laissée par le client (des étoiles et, s'il le souhaite, un mot lu seulement par le déneigeur).
         </li>
         <li>
           <strong>Paiement :</strong> le paiement est traité par Stripe. Snowro ne voit ni ne conserve jamais
@@ -165,6 +166,11 @@ export default function Confidentialite() {
         </li>
         <li>
           <strong>Messages envoyés par « Nous écrire » :</strong> 24 mois après le dernier échange.
+        </li>
+        <li>
+          <strong>Photo de fin de job :</strong> effacée automatiquement 30 jours après la job, sauf si un problème
+          a été signalé : on la garde alors jusqu'à ce qu'il soit réglé. Avant l'envoi, l'app retire de la photo
+          les informations cachées qu'ajoute le téléphone (dont la position GPS).
         </li>
         <li>
           <strong>Compte :</strong> tant que ton compte est actif. Si tu le fermes, on efface ou on rend anonymes

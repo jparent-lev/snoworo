@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
-import { ecouterDemandesOuvertes, ecouterMesJobs, lireAdressePrivee } from "../../lib/demandes";
+import { ecouterDemandesOuvertes, ecouterMesJobs, lireAdressePrivee, lirePrive } from "../../lib/demandes";
+import { preparerPhoto } from "../../lib/photo";
 import { accepterDemande, marquerFaite, messageErreur } from "../../lib/cycleDemande";
 import { aNouveauMessage, ecouterLectures } from "../../lib/messagerie";
 import { calculerPaiement, ecouterConfigFrais } from "../../lib/config";
@@ -200,12 +201,12 @@ function CarteJob({ job: j, nouveau, conversationOuverte, onConversationFermee }
       .catch(() => setAdresse(null));
   }, [j.id, j.statut]);
 
-  async function confirmerFaite() {
+  async function confirmerFaite(photo) {
     setModale(null);
     setEnCours(true);
     setErreur(null);
     try {
-      await marquerFaite({ demandeId: j.id });
+      await marquerFaite(photo ? { demandeId: j.id, photo } : { demandeId: j.id });
     } catch (err) {
       setErreur(messageErreur(err));
     } finally {
@@ -260,6 +261,7 @@ function CarteJob({ job: j, nouveau, conversationOuverte, onConversationFermee }
           {j.confirmationAuto ? "Confirmée automatiquement." : `Confirmée par ${j.donneurPrenom}.`} Versement en route vers ton compte.
         </p>
       )}
+      {j.statut === "completee" && j.evaluee && <EvaluationRecue demandeId={j.id} prenom={j.donneurPrenom} />}
       {erreur && <p className="carte-job__erreur">{erreur}</p>}
 
       {(j.statut === "matchee" || j.statut === "faite" || j.statut === "signalee" || j.dernierMessage) && (
@@ -279,20 +281,7 @@ function CarteJob({ job: j, nouveau, conversationOuverte, onConversationFermee }
       )}
 
       {modale === "faite" && (
-        <Modale titre="La job est terminée ?" onFermer={() => setModale(null)}>
-          <p>
-            {j.donneurPrenom} sera averti et aura 12 heures pour confirmer ou signaler un problème. Sans réponse, c'est
-            confirmé tout seul et ton versement de {formatArgent(net ?? 0)} part.
-          </p>
-          <div className="modale__actions">
-            <button type="button" className="btn btn--fantome" onClick={() => setModale(null)}>
-              Pas encore
-            </button>
-            <button type="button" className="btn btn--principal" onClick={confirmerFaite}>
-              Oui, c'est fait
-            </button>
-          </div>
-        </Modale>
+        <ModaleFaite job={j} net={net} onConfirmer={confirmerFaite} onFermer={() => setModale(null)} />
       )}
       {modale === "signaler" && <ModaleSignalement demande={j} par="deneigeur" onFermer={() => setModale(null)} />}
       {modale === "messages" && (
@@ -306,6 +295,89 @@ function CarteJob({ job: j, nouveau, conversationOuverte, onConversationFermee }
         />
       )}
     </article>
+  );
+}
+
+// « C'est fait », avec photo facultative : une photo du travail terminé
+// rassure le client et sert de preuve en cas de signalement.
+function ModaleFaite({ job: j, net, onConfirmer, onFermer }) {
+  const [photo, setPhoto] = useState(null);
+  const [preparation, setPreparation] = useState(false);
+  const [erreur, setErreur] = useState(null);
+
+  async function choisir(e) {
+    const fichier = e.target.files?.[0];
+    e.target.value = "";
+    if (!fichier) return;
+    setPreparation(true);
+    setErreur(null);
+    try {
+      setPhoto(await preparerPhoto(fichier));
+    } catch (err) {
+      setErreur(err.message);
+    } finally {
+      setPreparation(false);
+    }
+  }
+
+  return (
+    <Modale titre="La job est terminée ?" onFermer={onFermer}>
+      <p>
+        {j.donneurPrenom} sera averti et aura 12 heures pour confirmer ou signaler un problème. Sans réponse, c'est
+        confirmé tout seul et ton versement de {formatArgent(net ?? 0)} part.
+      </p>
+      <div className="photo-faite">
+        {photo ? (
+          <>
+            <img src={photo} alt="Aperçu de ta photo" className="photo-faite__apercu" />
+            <button type="button" className="btn btn--lien" onClick={() => setPhoto(null)}>
+              Retirer la photo
+            </button>
+          </>
+        ) : (
+          <label className="btn btn--fantome btn--petit photo-faite__choisir">
+            {preparation ? "Préparation…" : "📷 Ajouter une photo (facultatif)"}
+            <input type="file" accept="image/*" capture="environment" onChange={choisir} className="sr-only" />
+          </label>
+        )}
+        <span className="modale__aide">
+          Une photo du travail fini rassure {j.donneurPrenom}. Seuls vous deux la voyez, et elle est effacée après
+          30 jours.
+        </span>
+      </div>
+      {erreur && <p className="carte-job__erreur">{erreur}</p>}
+      <div className="modale__actions">
+        <button type="button" className="btn btn--fantome" onClick={onFermer}>
+          Pas encore
+        </button>
+        <button type="button" className="btn btn--principal" disabled={preparation} onClick={() => onConfirmer(photo)}>
+          Oui, c'est fait
+        </button>
+      </div>
+    </Modale>
+  );
+}
+
+function EvaluationRecue({ demandeId, prenom }) {
+  const [evaluation, setEvaluation] = useState(null);
+  useEffect(() => {
+    lirePrive(demandeId, "evaluation")
+      .then(setEvaluation)
+      .catch(() => setEvaluation(null));
+  }, [demandeId]);
+  if (!evaluation) return null;
+  return (
+    <div className="evaluation-recue">
+      <span className="etoile" aria-label={`${evaluation.note} sur 5`}>
+        {"★".repeat(evaluation.note)}
+        <span className="evaluation-recue__vide">{"★".repeat(5 - evaluation.note)}</span>
+      </span>
+      {evaluation.commentaire && (
+        <p>
+          « {evaluation.commentaire} » <span className="carte-job__meta">· {prenom}</span>
+        </p>
+      )}
+    </div>
   );
 }
 

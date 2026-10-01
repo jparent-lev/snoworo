@@ -132,6 +132,65 @@ await test("annuler : permis tant qu'ouverte", async () => {
   assert.equal((await lire(e)).statut, "annulee");
 });
 
+console.log("Photo et évaluation");
+const { Timestamp: TS } = createRequire(`${REPO}functions/package.json`)("firebase-admin/firestore");
+const jpeg = "data:image/jpeg;base64," + Buffer.from([0xff, 0xd8, 0xff, 0xe0, 0, 16, 74, 70, 73, 70, 0, 1, 0xff, 0xd9]).toString("base64");
+async function jobFaite(deneigeur, photo) {
+  const { demandeId } = await appel(f.publierDemande, "client1", base);
+  await appel(f.accepterDemande, deneigeur, { demandeId });
+  await appel(f.marquerFaite, deneigeur, photo ? { demandeId, photo } : { demandeId });
+  return demandeId;
+}
+let avecPhoto;
+await test("photo : refusée si ce n'est pas un JPEG ou si elle est trop lourde", async () => {
+  const { demandeId } = await appel(f.publierDemande, "client1", base);
+  await appel(f.accepterDemande, "den3", { demandeId });
+  await echoue(appel(f.marquerFaite, "den3", { demandeId, photo: "data:image/png;base64,iVBORw0KGgo=" }), "invalid-argument", "png");
+  await echoue(appel(f.marquerFaite, "den3", { demandeId, photo: "data:image/jpeg;base64,PHN2Zz4=" }), "invalid-argument", "faux jpeg");
+  await echoue(appel(f.marquerFaite, "den3", { demandeId, photo: jpeg + "A".repeat(f.PHOTO_MAX_CARACTERES) }), "invalid-argument", "trop lourde");
+  assert.equal((await lire(demandeId)).statut, "matchee");
+});
+await test("photo : enregistrée en privé avec « C'est fait », effacement prévu dans 30 jours", async () => {
+  avecPhoto = await jobFaite("den3", jpeg);
+  const d = await lire(avecPhoto);
+  assert.equal(d.statut, "faite"); assert.equal(d.photo, true);
+  const ecart = d.photoExpireAt.toMillis() - Date.now();
+  assert.ok(ecart > 29.9 * 24 * 3600e3 && ecart <= 30 * 24 * 3600e3, `délai ${ecart}`);
+  assert.equal((await db.doc(`demandes/${avecPhoto}/prive/photo`).get()).data().donnees, jpeg);
+});
+await test("confirmer avec 4 étoiles et un mot : moyenne recalculée, mot privé", async () => {
+  await db.doc("users/den3").set({ ratingAvg: 5, ratingCount: 1 }, { merge: true });
+  await echoue(appel(f.confirmerJob, "client1", { demandeId: avecPhoto, note: 6 }), "invalid-argument", "note 6");
+  await appel(f.confirmerJob, "client1", { demandeId: avecPhoto, note: 4, commentaire: "Merci, très propre !" });
+  const den3 = (await db.doc("users/den3").get()).data();
+  assert.equal(den3.ratingAvg, 4.5); assert.equal(den3.ratingCount, 2);
+  assert.equal((await lire(avecPhoto)).evaluee, true);
+  assert.deepEqual((({ note, commentaire }) => ({ note, commentaire }))((await db.doc(`demandes/${avecPhoto}/prive/evaluation`).get()).data()), { note: 4, commentaire: "Merci, très propre !" });
+});
+await test("évaluer après coup : une seule fois, client seulement, dans les 7 jours", async () => {
+  const x = await jobFaite("den3");
+  await echoue(appel(f.evaluerJob, "client1", { demandeId: x, note: 5 }), "failed-precondition", "pas encore confirmée");
+  await appel(f.confirmerJob, "client1", { demandeId: x });
+  assert.notEqual((await lire(x)).evaluee, true);
+  await echoue(appel(f.evaluerJob, "den3", { demandeId: x, note: 5 }), "permission-denied", "déneigeur");
+  await appel(f.evaluerJob, "client1", { demandeId: x, note: 5 });
+  assert.equal((await db.doc("users/den3").get()).data().ratingCount, 3);
+  await echoue(appel(f.evaluerJob, "client1", { demandeId: x, note: 1 }), "already-exists", "deux fois");
+  const y = await jobFaite("den3");
+  await appel(f.confirmerJob, "client1", { demandeId: y });
+  await db.doc(`demandes/${y}`).update({ confirmeeAt: TS.fromMillis(Date.now() - 8 * 24 * 3600e3) });
+  await echoue(appel(f.evaluerJob, "client1", { demandeId: y, note: 5 }), "failed-precondition", "après 7 jours");
+});
+await test("purge : photo effacée après 30 jours, gardée si la job est signalée", async () => {
+  const signalee = await jobFaite("den1", jpeg);
+  await appel(f.signalerProbleme, "client1", { demandeId: signalee, motif: "incomplet" });
+  for (const x of [avecPhoto, signalee]) await db.doc(`demandes/${x}`).update({ photoExpireAt: TS.fromMillis(Date.now() - 1000) });
+  await f.purgerPhotos.run({});
+  assert.equal((await db.doc(`demandes/${avecPhoto}/prive/photo`).get()).exists, false);
+  assert.equal((await lire(avecPhoto)).photo, false);
+  assert.equal((await db.doc(`demandes/${signalee}/prive/photo`).get()).exists, true);
+});
+
 console.log("Messagerie (avis par courriel)");
 const m = await import(`${REPO}functions/src/messagerie.js`);
 const envois = [];
@@ -189,6 +248,14 @@ await test("demandes : lecture par un connecté, aucune écriture client", async
   await assertSucceeds(getDoc(doc(d3, `demandes/${id}`)));
   await assertFails(updateDoc(doc(d3, `demandes/${id}`), { statut: "matchee", deneigeurId: "den3" }));
   await assertFails(addDoc(collection(c1, "demandes"), { donneurOuvrageId: "client1", statut: "ouverte" }));
+});
+await test("photo et évaluation privées : client et déneigeur choisi seulement", async () => {
+  await db.doc("demandes/privee1").set({ statut: "faite", donneurOuvrageId: "client1", deneigeurId: "den1" });
+  await db.doc("demandes/privee1/prive/photo").set({ donnees: "x" });
+  await assertSucceeds(getDoc(doc(c1, "demandes/privee1/prive/photo")));
+  await assertSucceeds(getDoc(doc(d1, "demandes/privee1/prive/photo")));
+  await assertFails(getDoc(doc(d3, "demandes/privee1/prive/photo")));
+  await assertFails(setDoc(doc(d1, "demandes/privee1/prive/photo"), { donnees: "autre" }));
 });
 await test("adresse privée : client et déneigeur choisi seulement", async () => {
   await assertSucceeds(getDoc(doc(c1, `demandes/${id}/prive/adresse`)));

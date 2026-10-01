@@ -13,6 +13,7 @@ export const publierDemande = appeler("publierDemande");
 export const accepterDemande = appeler("accepterDemande");
 export const marquerFaite = appeler("marquerFaite");
 export const confirmerJob = appeler("confirmerJob");
+export const evaluerJob = appeler("evaluerJob");
 export const signalerProbleme = appeler("signalerProbleme");
 export const annulerDemande = appeler("annulerDemande");
 export const augmenterOffre = appeler("augmenterOffre");

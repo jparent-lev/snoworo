@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { messageErreur, signalerProbleme } from "../../lib/cycleDemande";
+import { lirePrive } from "../../lib/demandes";
 import { ROLE_CLIENT, ROLE_DENEIGEUR } from "../../lib/mode";
 
 // Éléments partagés par les deux tableaux de bord.
@@ -177,5 +178,98 @@ export function ChoixRoles({ valeur, onChange }) {
         </button>
       ))}
     </div>
+  );
+}
+
+const LIBELLES_NOTES = ["", "Décevant", "Bof", "Correct", "Très bien", "Impeccable"];
+
+// Choix de 1 à 5 étoiles (groupe de boutons radio, utilisable au clavier).
+export function ChoixEtoiles({ valeur, onChange }) {
+  return (
+    <div className="etoiles" role="radiogroup" aria-label="Note">
+      {[1, 2, 3, 4, 5].map((n) => (
+        <button
+          key={n}
+          type="button"
+          role="radio"
+          aria-checked={valeur === n}
+          aria-label={`${n} étoile${n > 1 ? "s" : ""} : ${LIBELLES_NOTES[n]}`}
+          className={`etoiles__etoile ${valeur >= n ? "etoiles__etoile--pleine" : ""}`}
+          onClick={() => onChange(valeur === n ? null : n)}
+        >
+          ★
+        </button>
+      ))}
+      <span className="etoiles__libelle">{valeur ? LIBELLES_NOTES[valeur] : "Facultatif"}</span>
+    </div>
+  );
+}
+
+// Étoiles + mot privé. `onEnvoyer({ note, commentaire })` ; note peut être
+// null si `noteRequise` est faux (confirmation sans évaluation).
+export function ModaleEvaluation({ titre, intro, libelleEnvoyer, noteRequise, prenom, onEnvoyer, onFermer }) {
+  const [note, setNote] = useState(null);
+  const [commentaire, setCommentaire] = useState("");
+  const [enCours, setEnCours] = useState(false);
+  const [erreur, setErreur] = useState(null);
+
+  async function envoyer(e) {
+    e.preventDefault();
+    setEnCours(true);
+    setErreur(null);
+    try {
+      await onEnvoyer({ note, commentaire: note ? commentaire.trim() : "" });
+      onFermer();
+    } catch (err) {
+      setErreur(messageErreur(err));
+      setEnCours(false);
+    }
+  }
+
+  return (
+    <Modale titre={titre} onFermer={onFermer}>
+      {intro && <p>{intro}</p>}
+      <form onSubmit={envoyer} style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+        <div>
+          <span className="modale__etiquette">Comment ça s'est passé avec {prenom} ?</span>
+          <ChoixEtoiles valeur={note} onChange={setNote} />
+        </div>
+        {note && (
+          <label>
+            Un mot pour {prenom} (facultatif)
+            <textarea rows={3} maxLength={500} value={commentaire} onChange={(e) => setCommentaire(e.target.value)} />
+            <span className="modale__aide">Seul {prenom} le lira. Il n'est pas affiché publiquement.</span>
+          </label>
+        )}
+        {erreur && <p className="carte-job__erreur">{erreur}</p>}
+        <div className="modale__actions">
+          <button type="button" className="btn btn--fantome" onClick={onFermer}>
+            Retour
+          </button>
+          <button type="submit" className="btn btn--principal" disabled={enCours || (noteRequise && !note)}>
+            {enCours ? "Envoi…" : libelleEnvoyer}
+          </button>
+        </div>
+      </form>
+    </Modale>
+  );
+}
+
+// Photo « c'est fait », lue à l'ouverture seulement (document de quelques
+// centaines de Ko).
+export function ModalePhoto({ demande, onFermer }) {
+  const [photo, setPhoto] = useState(undefined);
+  useEffect(() => {
+    lirePrive(demande.id, "photo")
+      .then((p) => setPhoto(p?.donnees ?? null))
+      .catch(() => setPhoto(null));
+  }, [demande.id]);
+
+  return (
+    <Modale titre={`Photo de ${demande.deneigeurPrenom}`} onFermer={onFermer} classe="modale--photo" fermer>
+      {photo === undefined && <p>Chargement…</p>}
+      {photo === null && <p>La photo n'est plus disponible (elle est effacée 30 jours après la job).</p>}
+      {photo && <img className="modale__photo" src={photo} alt={`Photo prise par ${demande.deneigeurPrenom} : ${demande.titre}`} />}
+    </Modale>
   );
 }

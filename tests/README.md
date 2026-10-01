@@ -26,6 +26,9 @@ npm run e2e
   aucune écriture client sur les demandes, adresse privée, messages :
   participants seulement, pendant la job, heure du serveur, 1000 caractères
   max) et l'avis par courriel d'un nouveau message (une fois par 15 min).
+  Aussi : photo « c'est fait » (JPEG seulement, taille, effacement après
+  30 jours sauf job signalée) et évaluation (en confirmant ou dans les 7 jours,
+  une seule fois, moyenne recalculée).
   Le géocodage Google est simulé.
 - `parcours.e2e.mjs` : trois comptes (déneigeur, cliente, deux rôles) dans
   un vrai navigateur, captures d'écran dans un dossier temporaire.
