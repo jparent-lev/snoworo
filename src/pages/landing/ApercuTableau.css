@@ -19,12 +19,21 @@
   color: var(--color-terre);
 }
 
-.apercu-tableau__bascule span {
+.apercu-tableau__bascule button {
   padding: 5px 12px;
+  border: none;
   border-radius: 999px;
+  background: none;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
 }
 
-.apercu-tableau__bascule--actif {
+.apercu-tableau__bascule button:hover:not(.apercu-tableau__bascule--actif) {
+  background: var(--color-surface-secondaire);
+}
+
+.apercu-tableau__bascule button.apercu-tableau__bascule--actif {
   background: var(--color-terre);
   color: var(--color-surface-carte);
 }
@@ -195,4 +204,57 @@
   .apercu-tableau__bulle {
     right: 0;
   }
+}
+
+.apercu-tableau__heure {
+  padding: 4px 9px;
+  border: 1px solid var(--color-bordure);
+  border-radius: 8px;
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--color-terre);
+}
+
+.apercu-tableau__adresse {
+  font-size: 15.5px;
+  font-weight: 700;
+  color: var(--color-terre);
+}
+
+.apercu-tableau__montant {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.apercu-tableau__montant b {
+  font-family: var(--font-titrage);
+  font-size: 24px;
+  color: var(--color-terre);
+}
+
+.apercu-tableau__a-photographier {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+
+.apercu-tableau__case-photo {
+  display: grid;
+  place-items: center;
+  aspect-ratio: 4 / 3;
+  border: 2px dashed var(--color-bordure-bouton-fantome);
+  border-radius: 10px;
+  background: var(--color-surface-secondaire);
+  font-size: 20px;
+}
+
+.apercu-tableau__bouton--ardoise {
+  border-color: var(--color-ardoise);
+  background: var(--color-ardoise);
+  color: #fff;
+}
+
+.apercu-tableau__bulle--client {
+  background: var(--color-terre);
 }

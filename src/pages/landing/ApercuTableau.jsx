@@ -1,12 +1,14 @@
+import { useState } from "react";
 import "./ApercuTableau.css";
 
-// Aperçu décoratif du tableau de bord côté client (section « Dans l'app ») :
-// une job « À confirmer » avec les photos du déneigeur et un message reçu.
-// Reprend les composants réels (carte de job, étapes, bulle de conversation)
-// en version figée ; tout le sens est aussi donné en texte à côté.
+// Aperçu du tableau de bord (section « Dans le tableau de bord ») : la
+// bascule Client / Déneigeur fonctionne comme dans l'app. Vue client : une job
+// « À confirmer » avec les photos du déneigeur. Vue déneigeur : une job
+// « À faire » avec l'adresse exacte et les photos à prendre avant de partir.
+// Montants cohérents avec les frais par défaut (2 $ + 8 %).
 function PhotoNeige({ variante }) {
   return (
-    <svg viewBox="0 0 80 60" className="apercu-tableau__photo">
+    <svg viewBox="0 0 80 60" className="apercu-tableau__photo" aria-hidden="true">
       <rect width="80" height="60" fill="#DCE6E8" />
       <rect y="34" width="80" height="26" fill="#F4F6F7" />
       {variante === 1 ? (
@@ -28,13 +30,21 @@ function PhotoNeige({ variante }) {
   );
 }
 
-export default function ApercuTableau() {
+function Etapes({ position }) {
   return (
-    <div className="apercu-tableau" aria-hidden="true">
-      <div className="apercu-tableau__bascule">
-        <span className="apercu-tableau__bascule--actif">Client</span>
-        <span>Déneigeur</span>
-      </div>
+    <div className="apercu-tableau__etapes">
+      {["Publiée", "Acceptée", "Faite", "Confirmée"].map((e, i) => (
+        <span key={e} className={i < position ? "fait" : i === position ? "encours" : ""}>
+          {e}
+        </span>
+      ))}
+    </div>
+  );
+}
+
+function VueClient() {
+  return (
+    <>
       <div className="apercu-tableau__carte">
         <div className="apercu-tableau__haut">
           <span className="apercu-tableau__badge">À confirmer</span>
@@ -42,7 +52,7 @@ export default function ApercuTableau() {
         </div>
         <div className="apercu-tableau__titre">Entrée double + balcon</div>
         <div className="apercu-tableau__personne">
-          <span className="apercu-tableau__pastille">M</span>
+          <span className="apercu-tableau__pastille" aria-hidden="true">M</span>
           <span>
             <b>Marc dit que c'est fait</b>
             <span className="apercu-tableau__meta">
@@ -62,18 +72,77 @@ export default function ApercuTableau() {
           <span className="apercu-tableau__bouton apercu-tableau__bouton--principal">Confirmer</span>
           <span className="apercu-tableau__bouton">Signaler un problème</span>
         </div>
-        <div className="apercu-tableau__etapes">
-          {["Publiée", "Acceptée", "Faite", "Confirmée"].map((e, i) => (
-            <span key={e} className={i < 2 ? "fait" : i === 2 ? "encours" : ""}>
-              {e}
-            </span>
-          ))}
-        </div>
+        <Etapes position={2} />
       </div>
       <div className="apercu-tableau__bulle">
         <span className="apercu-tableau__bulle-qui">Marc · 7 h 53</span>
         J'ai aussi dégagé les marches du balcon. Bonne journée !
       </div>
+    </>
+  );
+}
+
+function VueDeneigeur() {
+  return (
+    <>
+      <div className="apercu-tableau__carte">
+        <div className="apercu-tableau__haut">
+          <span className="apercu-tableau__badge">À faire</span>
+          <span className="apercu-tableau__heure">⏱ Demain avant 8 h</span>
+        </div>
+        <div className="apercu-tableau__titre">Entrée double + balcon</div>
+        <div>
+          <div className="apercu-tableau__adresse">1234, 3e Avenue, Québec</div>
+          <span className="apercu-tableau__meta">Mireille · Marches du balcon aussi</span>
+        </div>
+        <div className="apercu-tableau__montant">
+          <b>39,40 $</b>
+          <span className="apercu-tableau__meta">pour toi, frais déjà déduits</span>
+        </div>
+        <div className="apercu-tableau__a-photographier">
+          {[1, 2, 3].map((n) => (
+            <span key={n} className="apercu-tableau__case-photo" aria-hidden="true">
+              📷
+            </span>
+          ))}
+          <span className="apercu-tableau__photos-legende">De 1 à 3 photos avant de partir</span>
+        </div>
+        <div className="apercu-tableau__actions">
+          <span className="apercu-tableau__bouton apercu-tableau__bouton--principal">C'est fait</span>
+          <span className="apercu-tableau__bouton apercu-tableau__bouton--ardoise">Écrire à Mireille</span>
+        </div>
+        <Etapes position={1} />
+      </div>
+      <div className="apercu-tableau__bulle apercu-tableau__bulle--client">
+        <span className="apercu-tableau__bulle-qui">Mireille · 21 h 10</span>
+        Merci ! La pelle est sur le balcon, la porte de la cour est débarrée.
+      </div>
+    </>
+  );
+}
+
+export default function ApercuTableau() {
+  const [vue, setVue] = useState("client");
+  return (
+    <div className="apercu-tableau" role="group" aria-label="Aperçu du tableau de bord">
+      <div className="apercu-tableau__bascule" role="radiogroup" aria-label="Mode">
+        {[
+          ["client", "Client"],
+          ["deneigeur", "Déneigeur"],
+        ].map(([cle, libelle]) => (
+          <button
+            key={cle}
+            type="button"
+            role="radio"
+            aria-checked={vue === cle}
+            className={vue === cle ? "apercu-tableau__bascule--actif" : ""}
+            onClick={() => setVue(cle)}
+          >
+            {libelle}
+          </button>
+        ))}
+      </div>
+      {vue === "client" ? <VueClient /> : <VueDeneigeur />}
     </div>
   );
 }
