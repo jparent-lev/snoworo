@@ -19,6 +19,8 @@ dist-ssr
 # Configuration web Firebase par environnement : publique, versionnée.
 !.env.production
 !.env.test
+# Paramètres non secrets des Cloud Functions, par projet : versionnés.
+!functions/.env.snowro-app
 
 # Firebase
 .firebase

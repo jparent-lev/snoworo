@@ -58,7 +58,7 @@ read -rs CLE && printf '%s' "$CLE" | gcloud secrets versions add STRIPE_WEBHOOK_
 Une seule PR, qui doit changer les deux côtés ensemble :
 - `.env.production` : `VITE_STRIPE_CLE_PUBLIQUE=pk_test_…` (clé publiable,
   pas un secret) ;
-- `functions/.env.snowro-app` : `PAIEMENT_REEL=true`.
+- `functions/.env.snowro-app` : `PAIEMENT_REEL=true` (fichier versionné, déjà présent avec `false` : la CLI Firebase exige une valeur pour chaque paramètre au déploiement).
 
 Dès lors : carte obligatoire pour publier, compte de versement actif
 obligatoire pour accepter, bandeaux « Période de test » retirés.
