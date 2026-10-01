@@ -9,6 +9,7 @@ process.env.RESEND_API_KEY = "cle-factice";
 process.env.STRIPE_SECRET_KEY = "sk_test_factice";
 process.env.STRIPE_WEBHOOK_SECRET = "whsec_factice";
 process.env.PAIEMENT_REEL = "true";
+process.env.URL_SITE = "https://snowro.com";
 const REPO = fileURLToPath(new URL("..", import.meta.url));
 
 // Géocodage toujours à Québec ; courriels Resend notés.
@@ -68,6 +69,7 @@ const fauxStripe = {
       accounts: {
         create: async (p, o) => (noter("v2.accounts.create", p, o), { id: "acct_den" }),
         retrieve: async (id, p) => (noter("v2.accounts.retrieve", { id, ...p }), compte),
+        update: async (id, p) => (noter("v2.accounts.update", { id, ...p }), compte),
       },
       accountLinks: { create: async (p) => (noter("v2.accountLinks.create", p), { url: "https://connect.stripe.com/setup/e/inscription" }) },
     },
@@ -90,6 +92,7 @@ let ok = 0; const test = async (nom, fn) => { await fn(); ok++; console.log("  �
 await db.doc("users/payClient").set({ displayName: "Sophie Roy", email: "sophie@exemple.ca", role: ["donneur_ouvrage"] });
 await db.doc("users/payDen").set({ displayName: "Éric Pelletier", email: "eric@exemple.ca", role: ["deneigeur_x"], villeGeoId: "ID_QUEBEC", connectStatus: "non_demarre" });
 const demain = new Date(Date.now() + 24 * 3600e3).toISOString();
+const photos = ["data:image/jpeg;base64," + Buffer.from([0xff, 0xd8, 0xff, 0xd9]).toString("base64")];
 const base = { adresse: "10, 4e Avenue, Québec", titre: "Entrée simple", typeService: "entree", montant: 50, dateHeureSouhaitee: demain };
 
 console.log("Paiements Stripe (faux Stripe)");
@@ -102,7 +105,9 @@ await test("carte : un seul client Stripe, SetupIntent hors session, carte d'un 
   assert.equal(r.clientSecret, "seti_1_secret_x");
   await appel(p.preparerCarte, "payClient", {});
   assert.equal(derniers("customers.create").length, 1);
-  assert.equal(derniers("setupIntents.create")[0].params.usage, "off_session");
+  const intent = derniers("setupIntents.create")[0].params;
+  assert.equal(intent.usage, "off_session"); assert.equal(intent.payment_method_types, undefined);
+  assert.deepEqual(intent.automatic_payment_methods, { enabled: true, allow_redirects: "never" });
   await echoue(appel(p.enregistrerCarte, "payClient", { setupIntentId: "seti_autre" }), "permission-denied", "carte d'un autre");
   await echoue(appel(p.enregistrerCarte, "payClient", { setupIntentId: "pas-un-id" }), "invalid-argument", "id invalide");
 });
@@ -124,7 +129,12 @@ await test("compte déneigeur (Accounts v2) : créé une fois, inscription, puis
   assert.deepEqual(creation.defaults.responsibilities, { fees_collector: "application", losses_collector: "application" });
   assert.equal(creation.configuration.recipient.capabilities.stripe_balance.stripe_transfers.requested, true);
   assert.equal(creation.contact_email, "eric@exemple.ca");
-  assert.deepEqual(derniers("v2.accounts.retrieve")[0].params.include, ["configuration.recipient", "requirements"]);
+  assert.equal(creation.identity.entity_type, "individual");
+  assert.deepEqual(creation.identity.individual, { email: "eric@exemple.ca", given_name: "Éric", surname: "Pelletier" });
+  assert.equal(creation.defaults.profile.business_url, "https://snowro.com");
+  assert.deepEqual(derniers("v2.accounts.retrieve")[0].params.include, ["configuration.recipient", "requirements", "identity"]);
+  // Le faux compte n'a pas de type : il est complété en « particulier ».
+  assert.equal(derniers("v2.accounts.update")[0].params.identity.entity_type, "individual");
   assert.equal((await db.doc("users/payDen").get()).data().connectStatus, "en_attente");
   await appel(p.lienCompteDeneigeur, "payDen", {});
   assert.equal(derniers("v2.accounts.create").length, 1);
@@ -159,7 +169,7 @@ await test("accepter : 50 $ prélevés hors session sur la carte du client, paie
   assert.equal(d.paiement.montantDeneigeur, 44);
 });
 await test("confirmer : 44 $ virés au compte du déneigeur, liés au prélèvement", async () => {
-  await appel(f.marquerFaite, "payDen", { demandeId: id });
+  await appel(f.marquerFaite, "payDen", { demandeId: id, photos });
   await appel(f.confirmerJob, "payClient", { demandeId: id });
   const [tr] = derniers("transfers.create");
   assert.equal(tr.params.amount, 4400); assert.equal(tr.params.destination, "acct_den");
@@ -200,7 +210,7 @@ await test("relancer : exige une nouvelle carte, puis la demande redevient ouver
 await test("virement en échec : reste « a_verser », réessayé par la tâche planifiée", async () => {
   const { demandeId } = await appel(f.publierDemande, "payClient", base);
   await appel(f.accepterDemande, "payDen", { demandeId });
-  await appel(f.marquerFaite, "payDen", { demandeId });
+  await appel(f.marquerFaite, "payDen", { demandeId, photos });
   const creer = fauxStripe.transfers.create;
   fauxStripe.transfers.create = async () => { throw new Error("Stripe indisponible"); };
   await appel(f.confirmerJob, "payClient", { demandeId });

@@ -45,6 +45,10 @@ await db.doc("users/sansrole").set({ displayName: "Paul", role: [], villeGeoId: 
 const demain = new Date(Date.now() + 24 * 3600e3).toISOString();
 const base = { adresse: "1234, 3e Avenue, Québec", titre: "Entrée double + balcon", description: "Pelle sur le balcon", typeService: "entree_balcon", montant: 45, dateHeureSouhaitee: demain, outilsFournis: true };
 
+// Plus petit JPEG valable : « C'est fait » exige au moins une photo.
+const jpeg = "data:image/jpeg;base64," + Buffer.from([0xff, 0xd8, 0xff, 0xe0, 0, 16, 74, 70, 73, 70, 0, 1, 0xff, 0xd9]).toString("base64");
+const photos = [jpeg];
+
 let id;
 await test("publier : ville, geohash arrondi, adresse privée, rôle client ajouté", async () => {
   ({ demandeId: id } = await appel(f.publierDemande, "client1", base));
@@ -91,9 +95,9 @@ await test("pas d'annulation une fois acceptée, ni augmentation", async () => {
   await echoue(appel(f.augmenterOffre, "client1", { demandeId: id, montant: 60 }), "failed-precondition", "augmenter acceptée");
 });
 await test("marquer faite : seulement le déneigeur choisi ; confirmation auto dans 12 h", async () => {
-  await echoue(appel(f.marquerFaite, "den3", { demandeId: id }), "permission-denied", "autre déneigeur");
+  await echoue(appel(f.marquerFaite, "den3", { demandeId: id, photos }), "permission-denied", "autre déneigeur");
   await echoue(appel(f.confirmerJob, "client1", { demandeId: id }), "failed-precondition", "confirmer avant faite");
-  await appel(f.marquerFaite, "den1", { demandeId: id });
+  await appel(f.marquerFaite, "den1", { demandeId: id, photos });
   const d = await lire(id);
   assert.equal(d.statut, "faite");
   const ecart = d.confirmationAutoAt.toMillis() - Date.now();
@@ -109,7 +113,7 @@ await test("confirmer (client) : completee, versement simulé, compteur du déne
 await test("confirmation automatique : seulement les jobs faites dont les 12 h sont écoulées", async () => {
   const { demandeId: a } = await appel(f.publierDemande, "client1", base);
   const { demandeId: b } = await appel(f.publierDemande, "client1", base);
-  for (const x of [a, b]) { await appel(f.accepterDemande, "den3", { demandeId: x }); await appel(f.marquerFaite, "den3", { demandeId: x }); }
+  for (const x of [a, b]) { await appel(f.accepterDemande, "den3", { demandeId: x }); await appel(f.marquerFaite, "den3", { demandeId: x, photos }); }
   const { Timestamp } = createRequire(`${REPO}functions/package.json`)("firebase-admin/firestore");
   await db.doc(`demandes/${a}`).update({ confirmationAutoAt: Timestamp.fromMillis(Date.now() - 60e3) });
   await f.confirmerJobsEchues.run({});
@@ -134,29 +138,32 @@ await test("annuler : permis tant qu'ouverte", async () => {
 
 console.log("Photo et évaluation");
 const { Timestamp: TS } = createRequire(`${REPO}functions/package.json`)("firebase-admin/firestore");
-const jpeg = "data:image/jpeg;base64," + Buffer.from([0xff, 0xd8, 0xff, 0xe0, 0, 16, 74, 70, 73, 70, 0, 1, 0xff, 0xd9]).toString("base64");
-async function jobFaite(deneigeur, photo) {
+async function jobFaite(deneigeur, liste = photos) {
   const { demandeId } = await appel(f.publierDemande, "client1", base);
   await appel(f.accepterDemande, deneigeur, { demandeId });
-  await appel(f.marquerFaite, deneigeur, photo ? { demandeId, photo } : { demandeId });
+  await appel(f.marquerFaite, deneigeur, { demandeId, photos: liste });
   return demandeId;
 }
 let avecPhoto;
-await test("photo : refusée si ce n'est pas un JPEG ou si elle est trop lourde", async () => {
+await test("photos : au moins une exigée, 3 au plus, JPEG seulement, taille limitée", async () => {
   const { demandeId } = await appel(f.publierDemande, "client1", base);
   await appel(f.accepterDemande, "den3", { demandeId });
-  await echoue(appel(f.marquerFaite, "den3", { demandeId, photo: "data:image/png;base64,iVBORw0KGgo=" }), "invalid-argument", "png");
-  await echoue(appel(f.marquerFaite, "den3", { demandeId, photo: "data:image/jpeg;base64,PHN2Zz4=" }), "invalid-argument", "faux jpeg");
-  await echoue(appel(f.marquerFaite, "den3", { demandeId, photo: jpeg + "A".repeat(f.PHOTO_MAX_CARACTERES) }), "invalid-argument", "trop lourde");
+  const e = await echoue(appel(f.marquerFaite, "den3", { demandeId }), "invalid-argument", "sans photo");
+  assert.equal(e.message, "photos-requises");
+  await echoue(appel(f.marquerFaite, "den3", { demandeId, photos: [] }), "invalid-argument", "liste vide");
+  await echoue(appel(f.marquerFaite, "den3", { demandeId, photos: [jpeg, jpeg, jpeg, jpeg] }), "invalid-argument", "4 photos");
+  await echoue(appel(f.marquerFaite, "den3", { demandeId, photos: ["data:image/png;base64,iVBORw0KGgo="] }), "invalid-argument", "png");
+  await echoue(appel(f.marquerFaite, "den3", { demandeId, photos: [jpeg, "data:image/jpeg;base64,PHN2Zz4="] }), "invalid-argument", "faux jpeg");
+  await echoue(appel(f.marquerFaite, "den3", { demandeId, photos: [jpeg + "A".repeat(f.PHOTO_MAX_CARACTERES)] }), "invalid-argument", "trop lourde");
   assert.equal((await lire(demandeId)).statut, "matchee");
 });
-await test("photo : enregistrée en privé avec « C'est fait », effacement prévu dans 30 jours", async () => {
-  avecPhoto = await jobFaite("den3", jpeg);
+await test("photos : enregistrées en privé avec « C'est fait » (3 documents), effacement prévu dans 30 jours", async () => {
+  avecPhoto = await jobFaite("den3", [jpeg, jpeg, jpeg]);
   const d = await lire(avecPhoto);
-  assert.equal(d.statut, "faite"); assert.equal(d.photo, true);
+  assert.equal(d.statut, "faite"); assert.equal(d.photo, true); assert.equal(d.nbPhotos, 3);
   const ecart = d.photoExpireAt.toMillis() - Date.now();
   assert.ok(ecart > 29.9 * 24 * 3600e3 && ecart <= 30 * 24 * 3600e3, `délai ${ecart}`);
-  assert.equal((await db.doc(`demandes/${avecPhoto}/prive/photo`).get()).data().donnees, jpeg);
+  for (const i of [0, 1, 2]) assert.equal((await db.doc(`demandes/${avecPhoto}/prive/photo-${i}`).get()).data().donnees, jpeg);
 });
 await test("confirmer avec 4 étoiles et un mot : moyenne recalculée, mot privé", async () => {
   await db.doc("users/den3").set({ ratingAvg: 5, ratingCount: 1 }, { merge: true });
@@ -181,14 +188,14 @@ await test("évaluer après coup : une seule fois, client seulement, dans les 7 
   await db.doc(`demandes/${y}`).update({ confirmeeAt: TS.fromMillis(Date.now() - 8 * 24 * 3600e3) });
   await echoue(appel(f.evaluerJob, "client1", { demandeId: y, note: 5 }), "failed-precondition", "après 7 jours");
 });
-await test("purge : photo effacée après 30 jours, gardée si la job est signalée", async () => {
-  const signalee = await jobFaite("den1", jpeg);
+await test("purge : photos effacées après 30 jours, gardées si la job est signalée", async () => {
+  const signalee = await jobFaite("den1");
   await appel(f.signalerProbleme, "client1", { demandeId: signalee, motif: "incomplet" });
   for (const x of [avecPhoto, signalee]) await db.doc(`demandes/${x}`).update({ photoExpireAt: TS.fromMillis(Date.now() - 1000) });
   await f.purgerPhotos.run({});
-  assert.equal((await db.doc(`demandes/${avecPhoto}/prive/photo`).get()).exists, false);
-  assert.equal((await lire(avecPhoto)).photo, false);
-  assert.equal((await db.doc(`demandes/${signalee}/prive/photo`).get()).exists, true);
+  for (const i of [0, 1, 2]) assert.equal((await db.doc(`demandes/${avecPhoto}/prive/photo-${i}`).get()).exists, false);
+  assert.equal((await lire(avecPhoto)).photo, false); assert.equal((await lire(avecPhoto)).nbPhotos, 0);
+  assert.equal((await db.doc(`demandes/${signalee}/prive/photo-0`).get()).exists, true);
 });
 
 console.log("Messagerie (avis par courriel)");

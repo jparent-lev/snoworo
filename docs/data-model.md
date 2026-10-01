@@ -84,7 +84,7 @@ paiement: { montantTotal, fraisSnowro, montantDeneigeur, statutPaiement,
             stripePaymentIntentId, stripeChargeId, stripeTransferId, verseAt, erreurVersement }
 // statutPaiement simulé : simule_retenu | simule_verse | simule_bloque
 // statutPaiement réel   : prelevement_en_cours | retenu | a_verser | verse | bloque
-photo, photoExpireAt    // photo « c'est fait » dans prive/photo, effacée à photoExpireAt
+photo, nbPhotos, photoExpireAt   // photos « c'est fait » (1 à 3, obligatoires) dans prive/photo-0…, effacées à photoExpireAt
 evaluee                 // true une fois le déneigeur évalué (note dans prive/evaluation)
 
 paiement: {              // posé à l'acceptation ; SIMULÉ tant que Stripe n'est pas branché
@@ -229,8 +229,9 @@ avant l'écriture).
 ### Sous-collection `prive` (client et déneigeur choisi seulement)
 
 - `adresse` : `{ adresse, geohash }`, écrite par `publierDemande`.
-- `photo` : `{ donnees, ajouteeAt, expireAt }`, photo facultative envoyée avec
-  `marquerFaite`. L'app la réduit (1280 px) et la réencode en JPEG, ce qui
+- `photo-0`, `photo-1`, `photo-2` : `{ donnees, ajouteeAt, expireAt }`, de 1 à
+  3 photos **obligatoires** envoyées avec `marquerFaite` (anciennes jobs : un
+  seul document `photo`). L'app la réduit (1280 px) et la réencode en JPEG, ce qui
   retire les métadonnées EXIF dont la position GPS ; le serveur n'accepte qu'un
   JPEG de 700 000 caractères au plus (en base64, loin de la limite de 1 Mio
   d'un document). `purgerPhotos` (tous les jours) l'efface 30 jours après la

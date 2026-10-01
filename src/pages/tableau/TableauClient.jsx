@@ -238,7 +238,7 @@ function CarteDemandeClient({ demande: d, nouveau, conversationOuverte, onConver
             </button>
             {d.photo && (
               <button type="button" className="btn btn--fantome btn--petit" onClick={() => setModale("photo")}>
-                Voir la photo
+                {d.nbPhotos > 1 ? `Voir les ${d.nbPhotos} photos` : "Voir la photo"}
               </button>
             )}
             <button type="button" className="btn btn--fantome btn--petit" onClick={() => setModale("signaler")}>

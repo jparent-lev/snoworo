@@ -39,13 +39,18 @@ const MONTANT_MAX = 1000;
 // L'adresse exacte reste dans demandes/{id}/prive/adresse.
 const PRECISION_GEOHASH_PUBLIC = 7;
 
-// Photo « c'est fait » (facultative, prise par le déneigeur) : réencodée en
-// JPEG par l'app (sans métadonnées EXIF, donc sans position GPS), stockée dans
-// demandes/{id}/prive/photo (lisible par le client et le déneigeur seulement)
-// et effacée PHOTO_CONSERVATION_MS plus tard par purgerPhotos. Taille limitée
-// pour rester loin de la limite de 1 Mio d'un document Firestore.
+// Photos « c'est fait » : OBLIGATOIRES, de 1 à PHOTOS_MAX, prises par le
+// déneigeur sur place avant de partir (preuve pour le client et en cas de
+// litige). Réencodées en JPEG par l'app (sans métadonnées EXIF, donc sans
+// position GPS), une par document dans demandes/{id}/prive/photo-0, photo-1…
+// (lisibles par le client et le déneigeur seulement), effacées
+// PHOTO_CONSERVATION_MS plus tard par purgerPhotos. Taille limitée pour rester
+// loin de la limite de 1 Mio d'un document Firestore.
 export const PHOTO_CONSERVATION_MS = 30 * 24 * 60 * 60 * 1000;
 export const PHOTO_MAX_CARACTERES = 700_000;
+export const PHOTOS_MAX = 3;
+// Anciennes jobs (photo unique facultative) : document « photo ».
+const DOCS_PHOTOS = ["photo", ...Array.from({ length: PHOTOS_MAX }, (_, i) => `photo-${i}`)];
 const PREFIXE_PHOTO = "data:image/jpeg;base64,";
 
 // Évaluation du déneigeur par le client : 1 à 5 étoiles, mot facultatif lu
@@ -275,8 +280,15 @@ export const relancerDemande = onCall({ region: REGION }, async (request) => {
   });
 });
 
-export function validerPhoto(photo) {
-  if (photo == null) return null;
+export function validerPhotos(photos) {
+  if (!Array.isArray(photos) || photos.length === 0) {
+    throw new HttpsError("invalid-argument", "photos-requises");
+  }
+  if (photos.length > PHOTOS_MAX) throw new HttpsError("invalid-argument", `${PHOTOS_MAX} photos au plus.`);
+  return photos.map(validerPhoto);
+}
+
+function validerPhoto(photo) {
   if (typeof photo !== "string" || !photo.startsWith(PREFIXE_PHOTO)) {
     throw new HttpsError("invalid-argument", "Photo invalide (JPEG attendu).");
   }
@@ -288,10 +300,10 @@ export function validerPhoto(photo) {
   return photo;
 }
 
-// ---- Marquer faite (déneigeur), photo facultative ----
+// ---- Marquer faite (déneigeur), avec 1 à 3 photos obligatoires ----
 export const marquerFaite = onCall({ region: REGION }, async (request) => {
   const uid = exigerConnexion(request);
-  const photo = validerPhoto(request.data?.photo);
+  const photos = validerPhotos(request.data?.photos);
   return db.runTransaction(async (tx) => {
     const { ref } = await lireDemande(tx, request.data?.demandeId, { uid, role: "deneigeur", statuts: ["matchee"] });
     const expireAt = Timestamp.fromMillis(Date.now() + PHOTO_CONSERVATION_MS);
@@ -299,12 +311,13 @@ export const marquerFaite = onCall({ region: REGION }, async (request) => {
       statut: "faite",
       faiteAt: FieldValue.serverTimestamp(),
       confirmationAutoAt: Timestamp.fromMillis(Date.now() + DELAI_CONFIRMATION_MS),
-      photo: Boolean(photo),
-      photoExpireAt: photo ? expireAt : null,
+      photo: true,
+      nbPhotos: photos.length,
+      photoExpireAt: expireAt,
     });
-    if (photo) {
-      tx.set(db.doc(`${ref.path}/prive/photo`), { donnees: photo, ajouteeAt: FieldValue.serverTimestamp(), expireAt });
-    }
+    photos.forEach((donnees, i) => {
+      tx.set(db.doc(`${ref.path}/prive/photo-${i}`), { donnees, ajouteeAt: FieldValue.serverTimestamp(), expireAt });
+    });
     return { ok: true };
   });
 });
@@ -402,7 +415,7 @@ export const confirmerJobsEchues = onSchedule(
 );
 
 // ---- Effacement des photos après 30 jours ----
-// Une photo liée à une job signalée est gardée tant que le signalement n'est
+// Les photos d'une job signalée sont gardées tant que le signalement n'est
 // pas réglé (preuve) : elle sera effacée au passage suivant une fois la job
 // sortie de « signalee ».
 export const purgerPhotos = onSchedule(
@@ -413,8 +426,8 @@ export const purgerPhotos = onSchedule(
     for (const doc of expirees.docs) {
       if (doc.data().statut === "signalee") continue;
       const batch = db.batch();
-      batch.delete(db.doc(`${doc.ref.path}/prive/photo`));
-      batch.update(doc.ref, { photo: false, photoExpireAt: null });
+      for (const nom of DOCS_PHOTOS) batch.delete(db.doc(`${doc.ref.path}/prive/${nom}`));
+      batch.update(doc.ref, { photo: false, nbPhotos: 0, photoExpireAt: null });
       await batch.commit();
       n += 1;
     }

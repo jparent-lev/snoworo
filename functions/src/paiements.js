@@ -87,7 +87,11 @@ export const preparerCarte = onCall({ region: REGION, secrets: [STRIPE_SECRET_KE
   const intent = await stripe().setupIntents.create({
     customer: customerId,
     usage: "off_session",
-    payment_method_types: ["card"],
+    // Moyens de paiement réglés dans le tableau de bord Stripe (Stripe
+    // n'accepte plus payment_method_types). Aucun moyen qui exige une
+    // redirection : la carte doit pouvoir être prélevée plus tard, sans le
+    // client, quand un déneigeur accepte.
+    automatic_payment_methods: { enabled: true, allow_redirects: "never" },
     metadata: { uid },
   });
   return { clientSecret: intent.client_secret };
@@ -110,7 +114,7 @@ export const enregistrerCarte = onCall({ region: REGION, secrets: [STRIPE_SECRET
   await stripe().customers.update(customerId, { invoice_settings: { default_payment_method: pm.id } });
   const carte = {
     paymentMethodId: pm.id,
-    marque: pm.card?.brand ?? "carte",
+    marque: pm.card?.brand ?? pm.type ?? "carte",
     derniers4: pm.card?.last4 ?? "",
     expMois: pm.card?.exp_month ?? null,
     expAnnee: pm.card?.exp_year ?? null,
@@ -225,7 +229,31 @@ export async function verser(demandeId) {
 // (« application »). Les virements (transfers, API v1) fonctionnent tels quels
 // vers un compte v2.
 
-const INCLURE_DESTINATAIRE = ["configuration.recipient", "requirements"];
+const INCLURE_DESTINATAIRE = ["configuration.recipient", "requirements", "identity"];
+
+// Les déneigeurs de quartier sont des particuliers : on le dit à Stripe dès la
+// création, pour que l'inscription ne demande pas de choisir « entreprise » ni
+// d'informations sur une entreprise. Stripe exige tout de même, pour tout
+// compte, une description de l'activité et un site web : ceux de Snowro.
+function identiteParticulier(profil) {
+  const [prenom, ...reste] = (profil.displayName || "").trim().split(/\s+/);
+  return {
+    country: "CA",
+    entity_type: "individual",
+    individual: {
+      email: profil.email || undefined,
+      given_name: prenom || undefined,
+      surname: reste.join(" ") || undefined,
+    },
+  };
+}
+
+function profilActivite() {
+  return {
+    business_url: URL_SITE.value(),
+    product_description: "Déneigement résidentiel ponctuel (entrées, balcons, stationnements) offert par l'entremise de Snowro",
+  };
+}
 
 // connectStatus d'après la capacité « recevoir des virements » du compte.
 export function statutConnect(compte) {
@@ -255,12 +283,12 @@ export const lienCompteDeneigeur = onCall({ region: REGION, secrets: [STRIPE_SEC
       {
         contact_email: profil.email || undefined,
         display_name: profil.displayName || undefined,
-        identity: { country: "CA" },
+        identity: identiteParticulier(profil),
         dashboard: "express",
         defaults: {
           currency: "cad",
           locales: ["fr-CA"],
-          profile: { product_description: "Déneigement résidentiel offert par l'entremise de Snowro" },
+          profile: profilActivite(),
           responsibilities: { fees_collector: "application", losses_collector: "application" },
         },
         configuration: { recipient: { capabilities: { stripe_balance: { stripe_transfers: { requested: true } } } } },
@@ -271,7 +299,17 @@ export const lienCompteDeneigeur = onCall({ region: REGION, secrets: [STRIPE_SEC
     compteId = compte.id;
     await ref.set({ stripeConnectAccountId: compteId, connectStatus: "en_attente" }, { merge: true });
   }
-  const connectStatus = statutConnect(await lireCompte(compteId));
+  const compte = await lireCompte(compteId);
+  // Compte créé avant que le type « particulier » soit précisé : on le
+  // complète, tant que l'inscription n'a pas fixé un autre type.
+  if (!compte.identity?.entity_type) {
+    try {
+      await stripe().v2.core.accounts.update(compteId, { identity: identiteParticulier(profil), defaults: { profile: profilActivite() } });
+    } catch (err) {
+      logger.warn(`Compte ${compteId} : type particulier non appliqué (${err.message})`);
+    }
+  }
+  const connectStatus = statutConnect(compte);
   if (connectStatus !== profil.connectStatus) await ref.set({ connectStatus }, { merge: true });
   if (connectStatus === "actif") {
     const lien = await stripe().accounts.createLoginLink(compteId);
