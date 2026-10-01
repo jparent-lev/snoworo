@@ -29,7 +29,13 @@ globalThis.fetch = async (url, options) => {
 // ---- Faux Stripe ----
 const appels = [];
 let refuserCarte = false;
-let compte = { id: "acct_den", details_submitted: false, payouts_enabled: false, capabilities: {} };
+// Compte au format Accounts v2 ; `transferts` = statut de la capacité.
+const compteV2 = (transferts) => ({
+  id: "acct_den",
+  object: "v2.core.account",
+  configuration: { recipient: { capabilities: { stripe_balance: { stripe_transfers: { status: transferts } } } } },
+});
+let compte = compteV2("pending");
 const noter = (nom, params, options) => appels.push({ nom, params, options });
 const fauxStripe = {
   customers: {
@@ -54,11 +60,18 @@ const fauxStripe = {
   },
   transfers: { create: async (p, o) => (noter("transfers.create", p, o), { id: "tr_1" }) },
   accounts: {
-    create: async (p, o) => (noter("accounts.create", p, o), { id: "acct_den" }),
-    retrieve: async () => compte,
+    create: async () => { throw new Error("Accounts v1 ne doit plus être utilisé"); },
     createLoginLink: async () => ({ url: "https://connect.stripe.com/express/tableau" }),
   },
-  accountLinks: { create: async (p) => (noter("accountLinks.create", p), { url: "https://connect.stripe.com/setup/e/inscription" }) },
+  v2: {
+    core: {
+      accounts: {
+        create: async (p, o) => (noter("v2.accounts.create", p, o), { id: "acct_den" }),
+        retrieve: async (id, p) => (noter("v2.accounts.retrieve", { id, ...p }), compte),
+      },
+      accountLinks: { create: async (p) => (noter("v2.accountLinks.create", p), { url: "https://connect.stripe.com/setup/e/inscription" }) },
+    },
+  },
 };
 
 const p = await import(`${REPO}functions/src/paiements.js`);
@@ -100,16 +113,21 @@ await test("carte : enregistrée en résumé (marque, 4 derniers chiffres), cart
   assert.equal(u.carte.paymentMethodId, "pm_1"); assert.equal(u.stripeCustomerId, "cus_pay1");
   assert.equal(derniers("customers.update")[0].params.invoice_settings.default_payment_method, "pm_1");
 });
-await test("compte déneigeur : inscription Express créée une fois, puis tableau de bord une fois rempli", async () => {
+await test("compte déneigeur (Accounts v2) : créé une fois, inscription, puis tableau de bord une fois actif", async () => {
   const r = await appel(p.lienCompteDeneigeur, "payDen", {});
   assert.equal(r.type, "inscription");
-  assert.match(derniers("accountLinks.create")[0].params.return_url, /\/parametres\?stripe=retour$/);
-  const creation = derniers("accounts.create")[0].params;
-  assert.equal(creation.type, "express"); assert.equal(creation.country, "CA");
+  const lien = derniers("v2.accountLinks.create")[0].params;
+  assert.equal(lien.account, "acct_den"); assert.equal(lien.use_case.type, "account_onboarding");
+  assert.match(lien.use_case.account_onboarding.return_url, /\/parametres\?stripe=retour$/);
+  const creation = derniers("v2.accounts.create")[0].params;
+  assert.equal(creation.dashboard, "express"); assert.equal(creation.identity.country, "CA");
+  assert.deepEqual(creation.defaults.responsibilities, { fees_collector: "application", losses_collector: "application" });
+  assert.equal(creation.configuration.recipient.capabilities.stripe_balance.stripe_transfers.requested, true);
+  assert.equal(creation.contact_email, "eric@exemple.ca");
+  assert.deepEqual(derniers("v2.accounts.retrieve")[0].params.include, ["configuration.recipient", "requirements"]);
   assert.equal((await db.doc("users/payDen").get()).data().connectStatus, "en_attente");
-  compte = { ...compte, details_submitted: true };
-  assert.equal((await appel(p.lienCompteDeneigeur, "payDen", {})).type, "tableau");
-  assert.equal(derniers("accounts.create").length, 1);
+  await appel(p.lienCompteDeneigeur, "payDen", {});
+  assert.equal(derniers("v2.accounts.create").length, 1);
   await echoue(appel(p.lienCompteDeneigeur, "payClient", {}), "permission-denied", "client sans rôle déneigeur");
 });
 let id;
@@ -118,11 +136,16 @@ await test("accepter : refusé tant que le compte de paiement n'est pas actif", 
   await echoue(appel(f.accepterDemande, "payDen", { demandeId: id }), "failed-precondition", "compte inactif");
   assert.equal(derniers("paymentIntents.create").length, 0);
 });
-await test("webhook account.updated : le compte devient actif", async () => {
-  compte = { ...compte, payouts_enabled: true, capabilities: { transfers: "active" } };
-  await p.traiterEvenement({ type: "account.updated", data: { object: compte } });
+await test("webhook account.updated : compte relu, devient actif ; tableau de bord ensuite", async () => {
+  compte = compteV2("active");
+  await p.traiterEvenement({ type: "account.updated", data: { object: { id: "acct_den" } } });
   assert.equal((await db.doc("users/payDen").get()).data().connectStatus, "actif");
-  assert.equal(p.statutConnect({ details_submitted: true, requirements: { disabled_reason: "requirements.past_due" } }), "restreint");
+  assert.equal((await appel(p.lienCompteDeneigeur, "payDen", {})).type, "tableau");
+  assert.equal(p.statutConnect(compteV2("restricted")), "restreint");
+  assert.equal(p.statutConnect({}), "en_attente");
+  await db.doc("users/payDen").set({ connectStatus: "en_attente" }, { merge: true });
+  await p.traiterEvenement({ type: "v2.core.account[configuration.recipient].capability_status_updated", related_object: { id: "acct_den" } });
+  assert.equal((await db.doc("users/payDen").get()).data().connectStatus, "actif");
 });
 await test("accepter : 50 $ prélevés hors session sur la carte du client, paiement retenu", async () => {
   await appel(f.accepterDemande, "payDen", { demandeId: id });
@@ -191,13 +214,13 @@ await test("virement en échec : reste « a_verser », réessayé par la tâche 
 
 await test("erreur Stripe : message lisible renvoyé à l'app", async () => {
   await db.doc("users/payDen2").set({ displayName: "Léa", email: "lea@exemple.ca", role: ["deneigeur_x"] });
-  const creer = fauxStripe.accounts.create;
-  fauxStripe.accounts.create = async () => {
+  const creer = fauxStripe.v2.core.accounts.create;
+  fauxStripe.v2.core.accounts.create = async () => {
     throw Object.assign(new Error("Please review the responsibilities of managing losses for connected accounts."), { type: "StripeInvalidRequestError" });
   };
   const e = await echoue(appel(p.lienCompteDeneigeur, "payDen2", {}), "failed-precondition", "plateforme incomplète");
   assert.match(e.message, /^Stripe : Please review the responsibilities/);
-  fauxStripe.accounts.create = creer;
+  fauxStripe.v2.core.accounts.create = creer;
 });
 
 console.log(`\n${ok} tests réussis`);
