@@ -197,6 +197,36 @@ const ICONES = {
       <path d="M2.5 16 H4" />
     </g>
   ),
+  photo: (
+    <g className="decor-icone__trait">
+      <path d="M3.5 8.5 H7.5 L9 6 H15 L16.5 8.5 H20.5 V18.5 H3.5 Z" />
+      <circle cx="12" cy="13" r="3.4" className="decor-icone__trait-argile" />
+    </g>
+  ),
+  message: (
+    <g className="decor-icone__trait">
+      <path d="M4 5.5 H20 V15.5 H11 L6.5 19 V15.5 H4 Z" />
+      <path d="M8 9.5 H16 M8 12.3 H13" className="decor-icone__trait-argile" />
+    </g>
+  ),
+  epingle: (
+    <g className="decor-icone__trait">
+      <path d="M12 21 C7.5 15.5 5.5 12.3 5.5 9.5 A6.5 6.5 0 0 1 18.5 9.5 C18.5 12.3 16.5 15.5 12 21 Z" />
+      <circle cx="12" cy="9.5" r="2.3" className="decor-icone__plein-terre" />
+    </g>
+  ),
+  horloge: (
+    <g className="decor-icone__trait">
+      <circle cx="12" cy="12.5" r="8" />
+      <path d="M12 8 V12.5 L15 14.5" className="decor-icone__trait-argile" />
+    </g>
+  ),
+  engagement: (
+    <g className="decor-icone__trait">
+      <path d="M12 3.5 L19 6.2 V11.5 C19 15.8 16.2 19 12 20.5 C7.8 19 5 15.8 5 11.5 V6.2 Z" />
+      <path d="M8.8 12 L11.2 14.4 L15.6 9.8" className="decor-icone__trait-argile" />
+    </g>
+  ),
   camion: (
     <g className="decor-icone__trait">
       <path d="M8 16.5 V8.5 H15 L18 12 H20.5 V16.5 Z" />

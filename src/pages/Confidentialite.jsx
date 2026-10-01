@@ -62,8 +62,8 @@ export default function Confidentialite() {
         </li>
         <li>
           <strong>Demandes et jobs :</strong> le montant offert, le quartier indiqué, le statut de la demande,
-          les messages échangés avec l'autre personne une fois le match confirmé, la photo facultative prise
-          par le déneigeur de quartier à la fin de la job (visible seulement par vous deux) et l'appréciation
+          les messages échangés avec l'autre personne une fois le match confirmé, les photos (de 1 à 3) prises
+          par le déneigeur de quartier à la fin de la job (visibles seulement par vous deux) et l'appréciation
           laissée par le client (des étoiles et, s'il le souhaite, un mot lu seulement par le déneigeur).
         </li>
         <li>
@@ -168,8 +168,8 @@ export default function Confidentialite() {
           <strong>Messages envoyés par « Nous écrire » :</strong> 24 mois après le dernier échange.
         </li>
         <li>
-          <strong>Photo de fin de job :</strong> effacée automatiquement 30 jours après la job, sauf si un problème
-          a été signalé : on la garde alors jusqu'à ce qu'il soit réglé. Avant l'envoi, l'app retire de la photo
+          <strong>Photos de fin de job :</strong> effacées automatiquement 30 jours après la job, sauf si un problème
+          a été signalé : on les garde alors jusqu'à ce qu'il soit réglé. Avant l'envoi, l'app retire des photos
           les informations cachées qu'ajoute le téléphone (dont la position GPS).
         </li>
         <li>

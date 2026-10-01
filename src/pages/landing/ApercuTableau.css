@@ -1,0 +1,198 @@
+.apercu-tableau {
+  position: relative;
+  max-width: 400px;
+  width: 100%;
+  margin: 0 auto;
+  padding-bottom: 56px;
+}
+
+.apercu-tableau__bascule {
+  display: inline-flex;
+  gap: 4px;
+  padding: 4px;
+  margin-bottom: 12px;
+  border: 1px solid var(--color-bordure);
+  border-radius: 999px;
+  background: var(--color-surface-carte);
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--color-terre);
+}
+
+.apercu-tableau__bascule span {
+  padding: 5px 12px;
+  border-radius: 999px;
+}
+
+.apercu-tableau__bascule--actif {
+  background: var(--color-terre);
+  color: var(--color-surface-carte);
+}
+
+.apercu-tableau__carte {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 20px;
+  background: var(--color-surface-carte);
+  border: 2px solid var(--color-argile);
+  border-radius: 18px;
+  box-shadow: 0 24px 50px -30px rgba(59, 42, 31, 0.55);
+}
+
+.apercu-tableau__haut,
+.apercu-tableau__actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.apercu-tableau__badge {
+  padding: 4px 9px;
+  border-radius: 7px;
+  background: var(--color-argile);
+  color: var(--color-surface-carte);
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.apercu-tableau__meta {
+  display: block;
+  font-size: 13px;
+  color: var(--color-texte-secondaire);
+}
+
+.apercu-tableau__haut .apercu-tableau__meta {
+  display: inline;
+}
+
+.apercu-tableau__titre {
+  font-family: var(--font-titrage);
+  font-weight: 600;
+  font-size: 21px;
+  color: var(--color-terre);
+}
+
+.apercu-tableau__personne {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 14.5px;
+  color: var(--color-terre);
+}
+
+.apercu-tableau__pastille {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 36px;
+  height: 36px;
+  border-radius: 999px;
+  background: var(--color-lin);
+  font-weight: 700;
+}
+
+.apercu-tableau__etoile {
+  color: var(--color-ocre);
+}
+
+.apercu-tableau__photos {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.apercu-tableau__photo {
+  display: block;
+  width: 100%;
+  border-radius: 10px;
+}
+
+.apercu-tableau__photos-legende {
+  grid-column: 1 / -1;
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--color-ardoise);
+}
+
+.apercu-tableau__note {
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: var(--color-surface-secondaire);
+  font-size: 13.5px;
+  color: var(--color-texte-secondaire);
+}
+
+.apercu-tableau__note b {
+  color: var(--color-terre);
+}
+
+.apercu-tableau__bouton {
+  padding: 8px 12px;
+  border: 1.5px solid var(--color-bordure-bouton-fantome);
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--color-terre);
+}
+
+.apercu-tableau__bouton--principal {
+  border-color: var(--color-argile);
+  background: var(--color-argile);
+  color: var(--color-surface-carte);
+}
+
+.apercu-tableau__etapes {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 4px;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--color-texte-secondaire);
+}
+
+.apercu-tableau__etapes span {
+  padding-top: 7px;
+  border-top: 4px solid var(--color-bordure);
+}
+
+.apercu-tableau__etapes .fait {
+  border-color: var(--color-ardoise);
+  color: var(--color-terre);
+}
+
+.apercu-tableau__etapes .encours {
+  border-color: var(--color-argile);
+  color: var(--color-terre);
+}
+
+.apercu-tableau__bulle {
+  position: absolute;
+  right: -8px;
+  bottom: 0;
+  max-width: 250px;
+  padding: 10px 14px;
+  border-radius: 14px 14px 14px 4px;
+  background: var(--color-ardoise);
+  color: #fff;
+  font-size: 13.5px;
+  line-height: 1.4;
+  box-shadow: 0 16px 30px -18px rgba(59, 42, 31, 0.7);
+}
+
+.apercu-tableau__bulle-qui {
+  display: block;
+  font-size: 11.5px;
+  font-weight: 700;
+  opacity: 0.8;
+}
+
+@media (max-width: 480px) {
+  .apercu-tableau__bulle {
+    right: 0;
+  }
+}

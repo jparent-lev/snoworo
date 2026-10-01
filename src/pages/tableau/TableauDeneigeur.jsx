@@ -212,12 +212,12 @@ function CarteJob({ job: j, nouveau, conversationOuverte, onConversationFermee }
       .catch(() => setAdresse(null));
   }, [j.id, j.statut]);
 
-  async function confirmerFaite(photo) {
+  async function confirmerFaite(photos) {
     setModale(null);
     setEnCours(true);
     setErreur(null);
     try {
-      await marquerFaite(photo ? { demandeId: j.id, photo } : { demandeId: j.id });
+      await marquerFaite({ demandeId: j.id, photos });
     } catch (err) {
       setErreur(messageErreur(err));
     } finally {
@@ -309,21 +309,25 @@ function CarteJob({ job: j, nouveau, conversationOuverte, onConversationFermee }
   );
 }
 
-// « C'est fait », avec photo facultative : une photo du travail terminé
-// rassure le client et sert de preuve en cas de signalement.
+// « C'est fait » exige de 1 à 3 photos du travail terminé, prises sur place
+// avant de partir : la preuve pour le client et en cas de signalement.
+const PHOTOS_MAX = 3;
+
 function ModaleFaite({ job: j, net, onConfirmer, onFermer }) {
-  const [photo, setPhoto] = useState(null);
+  const [photos, setPhotos] = useState([]);
   const [preparation, setPreparation] = useState(false);
   const [erreur, setErreur] = useState(null);
 
-  async function choisir(e) {
-    const fichier = e.target.files?.[0];
+  async function ajouter(e) {
+    const fichiers = [...(e.target.files ?? [])].slice(0, PHOTOS_MAX - photos.length);
     e.target.value = "";
-    if (!fichier) return;
+    if (!fichiers.length) return;
     setPreparation(true);
     setErreur(null);
     try {
-      setPhoto(await preparerPhoto(fichier));
+      const prets = [];
+      for (const f of fichiers) prets.push(await preparerPhoto(f));
+      setPhotos((p) => [...p, ...prets].slice(0, PHOTOS_MAX));
     } catch (err) {
       setErreur(err.message);
     } finally {
@@ -334,35 +338,47 @@ function ModaleFaite({ job: j, net, onConfirmer, onFermer }) {
   return (
     <Modale titre="La job est terminée ?" onFermer={onFermer}>
       <p>
-        {j.donneurPrenom} sera averti et aura 12 heures pour confirmer ou signaler un problème. Sans réponse, c'est
-        confirmé tout seul et ton versement de {formatArgent(net ?? 0)} part.
+        Avant de partir, prends <b>au moins une photo</b> du travail terminé (jusqu'à {PHOTOS_MAX}) : l'entrée, le
+        balcon, le stationnement. {j.donneurPrenom} la voit tout de suite et a 12 heures pour confirmer ou signaler un
+        problème. Sans réponse, c'est confirmé tout seul et ton versement de {formatArgent(net ?? 0)} part.
       </p>
-      <div className="photo-faite">
-        {photo ? (
-          <>
-            <img src={photo} alt="Aperçu de ta photo" className="photo-faite__apercu" />
-            <button type="button" className="btn btn--lien" onClick={() => setPhoto(null)}>
-              Retirer la photo
+      <div className="photos-faite">
+        {photos.map((photo, i) => (
+          <div key={i} className="photos-faite__vignette">
+            <img src={photo} alt={`Photo ${i + 1}`} />
+            <button
+              type="button"
+              className="photos-faite__retirer"
+              aria-label={`Retirer la photo ${i + 1}`}
+              onClick={() => setPhotos((p) => p.filter((_, k) => k !== i))}
+            >
+              ×
             </button>
-          </>
-        ) : (
-          <label className="btn btn--fantome btn--petit photo-faite__choisir">
-            {preparation ? "Préparation…" : "📷 Ajouter une photo (facultatif)"}
-            <input type="file" accept="image/*" capture="environment" onChange={choisir} className="sr-only" />
+          </div>
+        ))}
+        {photos.length < PHOTOS_MAX && (
+          <label className="photos-faite__ajouter">
+            <span aria-hidden="true">📷</span>
+            {preparation ? "Préparation…" : photos.length ? "Une autre" : "Prendre une photo"}
+            <input type="file" accept="image/*" capture="environment" multiple onChange={ajouter} className="sr-only" />
           </label>
         )}
-        <span className="modale__aide">
-          Une photo du travail fini rassure {j.donneurPrenom}. Seuls vous deux la voyez, et elle est effacée après
-          30 jours.
-        </span>
       </div>
+      <span className="modale__aide">
+        Seuls vous deux voyez les photos. Elles sont effacées 30 jours après la job.
+      </span>
       {erreur && <p className="message-erreur" role="alert">{erreur}</p>}
       <div className="modale__actions">
         <button type="button" className="btn btn--fantome" onClick={onFermer}>
           Pas encore
         </button>
-        <button type="button" className="btn btn--principal" disabled={preparation} onClick={() => onConfirmer(photo)}>
-          Oui, c'est fait
+        <button
+          type="button"
+          className="btn btn--principal"
+          disabled={preparation || photos.length === 0}
+          onClick={() => onConfirmer(photos)}
+        >
+          {photos.length ? "Oui, c'est fait" : "Photo requise"}
         </button>
       </div>
     </Modale>
