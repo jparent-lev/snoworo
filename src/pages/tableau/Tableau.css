@@ -166,14 +166,6 @@
   color: var(--color-terre);
 }
 
-.carte-job__erreur {
-  font-size: 13px;
-  color: var(--color-terre);
-  border: 1px solid var(--color-argile);
-  background: #fbeee6;
-  border-radius: 10px;
-  padding: 8px 10px;
-}
 
 .carte-job__adresse {
   font-weight: 700;

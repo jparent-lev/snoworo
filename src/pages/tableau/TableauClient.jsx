@@ -213,7 +213,7 @@ function CarteDemandeClient({ demande: d, nouveau, conversationOuverte, onConver
           mets ta carte à jour et elle redevient visible tout de suite.
         </p>
       )}
-      {erreur && <p className="carte-job__erreur">{erreur}</p>}
+      {erreur && <p className="message-erreur" role="alert">{erreur}</p>}
 
       <div className="carte-job__actions">
         {d.statut === "paiement_refuse" && (
@@ -355,7 +355,7 @@ function ModaleAugmenter({ demande, onFermer }) {
             required
           />
         </label>
-        {erreur && <p className="carte-job__erreur">{erreur}</p>}
+        {erreur && <p className="message-erreur" role="alert">{erreur}</p>}
         <div className="modale__actions">
           <button type="button" className="btn btn--fantome" onClick={onFermer}>
             Retour

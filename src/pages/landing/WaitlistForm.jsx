@@ -110,7 +110,7 @@ export default function WaitlistForm() {
         />
       </label>
 
-      {erreur && <p className="waitlist-form__erreur">{erreur}</p>}
+      {erreur && <p className="message-erreur" role="alert">{erreur}</p>}
 
       <button type="submit" className="waitlist-form__bouton landing__bouton-neige landing__bouton-neige--f" disabled={enCours}>
         {enCours ? "Envoi…" : "Rejoindre la liste"}

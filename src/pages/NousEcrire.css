@@ -53,15 +53,6 @@
   white-space: nowrap;
 }
 
-.nous-ecrire__erreur {
-  margin: 0 !important;
-  font-size: 13.5px;
-  color: var(--color-terre);
-  background: var(--color-surface-secondaire);
-  border: 1px solid var(--color-ardoise);
-  border-radius: var(--radius-panneau);
-  padding: 12px 14px;
-}
 
 .nous-ecrire__bouton {
   border: none;

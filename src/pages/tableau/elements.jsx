@@ -142,7 +142,7 @@ export function ModaleSignalement({ demande, par, onFermer }) {
           Détails (facultatif)
           <textarea rows={3} maxLength={1000} value={details} onChange={(e) => setDetails(e.target.value)} />
         </label>
-        {erreur && <p className="carte-job__erreur">{erreur}</p>}
+        {erreur && <p className="message-erreur" role="alert">{erreur}</p>}
         <div className="modale__actions">
           <button type="button" className="btn btn--fantome" onClick={onFermer}>
             Retour
@@ -246,7 +246,7 @@ export function ModaleEvaluation({ titre, intro, libelleEnvoyer, noteRequise, pr
             <span className="modale__aide">Seul {prenom} le lira. Il n'est pas affiché publiquement.</span>
           </label>
         )}
-        {erreur && <p className="carte-job__erreur">{erreur}</p>}
+        {erreur && <p className="message-erreur" role="alert">{erreur}</p>}
         <div className="modale__actions">
           <button type="button" className="btn btn--fantome" onClick={onFermer}>
             Retour

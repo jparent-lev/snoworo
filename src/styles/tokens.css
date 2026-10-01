@@ -32,6 +32,10 @@
   --color-texte-sur-lin: #5C4636;
   --color-texte-sur-sombre: #C8B49C;
   --color-ardoise-survol: #3F565C;
+  /* Messages d'erreur : rouge franc, contraste AA sur son fond. */
+  --color-erreur: #A3261B;
+  --color-erreur-fond: #FDECEA;
+  --color-erreur-bordure: #E3A39A;
 
   /* Typographie */
   --font-titrage: "Fraunces", serif;

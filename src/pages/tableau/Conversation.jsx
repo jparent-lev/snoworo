@@ -91,7 +91,7 @@ export default function Conversation({ demande, autrePrenom, onFermer }) {
         })}
       </div>
 
-      {erreur && <p className="carte-job__erreur">{erreur}</p>}
+      {erreur && <p className="message-erreur" role="alert">{erreur}</p>}
 
       {ouverte ? (
         <form className="conversation__saisie" onSubmit={envoyer}>
