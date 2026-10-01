@@ -23,7 +23,9 @@ npm run e2e
   ville), marquer faite, confirmer, confirmation automatique après 12 h,
   signaler, annuler (seulement si ouverte), augmenter l'offre ; puis les
   rules (fiche lisible par son propriétaire seulement, note non modifiable,
-  aucune écriture client sur les demandes, adresse privée, messages).
+  aucune écriture client sur les demandes, adresse privée, messages :
+  participants seulement, pendant la job, heure du serveur, 1000 caractères
+  max) et l'avis par courriel d'un nouveau message (une fois par 15 min).
   Le géocodage Google est simulé.
 - `parcours.e2e.mjs` : trois comptes (déneigeur, cliente, deux rôles) dans
   un vrai navigateur, captures d'écran dans un dossier temporaire.

@@ -3,12 +3,14 @@ import { Link } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import { ecouterDemandesOuvertes, ecouterMesJobs, lireAdressePrivee } from "../../lib/demandes";
 import { accepterDemande, marquerFaite, messageErreur } from "../../lib/cycleDemande";
+import { aNouveauMessage, ecouterLectures } from "../../lib/messagerie";
 import { calculerPaiement, ecouterConfigFrais } from "../../lib/config";
 import { formatArgent } from "../../lib/formatArgent";
 import { decoderGeohash, distanceMetres } from "../../lib/geo";
 import { dateCourte, debutSemaine, echeance, estAujourdhui, heure, ilYa, millis } from "../../lib/temps";
 import Rangee from "../../components/Rangee";
 import { Modale, ModaleSignalement } from "./elements";
+import Conversation, { BoutonMessages } from "./Conversation";
 import "./Tableau.css";
 
 const FILTRES_JOBS = [
@@ -41,9 +43,10 @@ function distanceTexte(m) {
   return m < 1000 ? `À ${Math.max(100, Math.round(m / 100) * 100)} m` : `À ${(m / 1000).toFixed(1).replace(".", ",")} km`;
 }
 
-export default function TableauDeneigeur() {
+export default function TableauDeneigeur({ conversation, onConversationFermee }) {
   const { user, profile } = useAuth();
   const [jobs, setJobs] = useState(null);
+  const [lectures, setLectures] = useState({});
   const [ouvertes, setOuvertes] = useState([]);
   const [frais, setFrais] = useState(undefined);
   const [filtreJobs, setFiltreJobs] = useState("en_cours");
@@ -52,6 +55,7 @@ export default function TableauDeneigeur() {
   const villeGeoId = profile?.villeGeoId;
 
   useEffect(() => ecouterMesJobs(user.uid, setJobs), [user.uid]);
+  useEffect(() => ecouterLectures(user.uid, setLectures), [user.uid]);
   useEffect(() => (villeGeoId ? ecouterDemandesOuvertes(villeGeoId, setOuvertes) : undefined), [villeGeoId]);
   useEffect(() => ecouterConfigFrais(setFrais), []);
 
@@ -153,7 +157,13 @@ export default function TableauDeneigeur() {
           pied={`${jobsAffichees.length} affichée${jobsAffichees.length > 1 ? "s" : ""}, triées par heure`}
         >
           {jobsAffichees.map((j) => (
-            <CarteJob key={j.id} job={j} />
+            <CarteJob
+              key={j.id}
+              job={j}
+              nouveau={aNouveauMessage(j, user.uid, lectures)}
+              conversationOuverte={conversation === j.id}
+              onConversationFermee={onConversationFermee}
+            />
           ))}
         </Rangee>
       )}
@@ -177,9 +187,9 @@ export default function TableauDeneigeur() {
   );
 }
 
-function CarteJob({ job: j }) {
+function CarteJob({ job: j, nouveau, conversationOuverte, onConversationFermee }) {
   const [adresse, setAdresse] = useState(null);
-  const [modale, setModale] = useState(null); // "faite" | "signaler"
+  const [modale, setModale] = useState(conversationOuverte ? "messages" : null); // "faite" | "signaler" | "messages"
   const [enCours, setEnCours] = useState(false);
   const [erreur, setErreur] = useState(null);
 
@@ -252,14 +262,19 @@ function CarteJob({ job: j }) {
       )}
       {erreur && <p className="carte-job__erreur">{erreur}</p>}
 
-      {j.statut === "matchee" && (
+      {(j.statut === "matchee" || j.statut === "faite" || j.statut === "signalee" || j.dernierMessage) && (
         <div className="carte-job__actions">
-          <button type="button" className="btn btn--principal btn--petit" disabled={enCours} onClick={() => setModale("faite")}>
-            {enCours ? "Envoi…" : "C'est fait"}
-          </button>
-          <button type="button" className="btn btn--lien" onClick={() => setModale("signaler")}>
-            Signaler un problème
-          </button>
+          {j.statut === "matchee" && (
+            <>
+              <button type="button" className="btn btn--principal btn--petit" disabled={enCours} onClick={() => setModale("faite")}>
+                {enCours ? "Envoi…" : "C'est fait"}
+              </button>
+              <button type="button" className="btn btn--lien" onClick={() => setModale("signaler")}>
+                Signaler un problème
+              </button>
+            </>
+          )}
+          <BoutonMessages prenom={j.donneurPrenom} nouveau={nouveau} onClick={() => setModale("messages")} />
         </div>
       )}
 
@@ -280,6 +295,16 @@ function CarteJob({ job: j }) {
         </Modale>
       )}
       {modale === "signaler" && <ModaleSignalement demande={j} par="deneigeur" onFermer={() => setModale(null)} />}
+      {modale === "messages" && (
+        <Conversation
+          demande={j}
+          autrePrenom={j.donneurPrenom}
+          onFermer={() => {
+            setModale(null);
+            if (conversationOuverte) onConversationFermee();
+          }}
+        />
+      )}
     </article>
   );
 }

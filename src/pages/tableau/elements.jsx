@@ -50,11 +50,12 @@ export function Personne({ prenom, note, texte }) {
   );
 }
 
-export function Modale({ titre, onFermer, children }) {
+export function Modale({ titre, onFermer, children, classe = "", fermer = false }) {
   const boite = useRef(null);
   useEffect(() => {
     const precedent = document.activeElement;
-    boite.current?.querySelector("button, select, textarea, input")?.focus();
+    const b = boite.current;
+    (b?.querySelector("[data-autofocus]") ?? b?.querySelector("button, select, textarea, input"))?.focus();
     const touche = (e) => e.key === "Escape" && onFermer();
     document.addEventListener("keydown", touche);
     return () => {
@@ -65,8 +66,17 @@ export function Modale({ titre, onFermer, children }) {
 
   return (
     <div className="modale__fond" onClick={(e) => e.target === e.currentTarget && onFermer()}>
-      <div className="modale" role="dialog" aria-modal="true" aria-label={titre} ref={boite}>
-        <h2>{titre}</h2>
+      <div className={`modale ${classe}`} role="dialog" aria-modal="true" aria-label={titre} ref={boite}>
+        {fermer ? (
+          <div className="modale__entete">
+            <h2>{titre}</h2>
+            <button type="button" className="modale__fermer" onClick={onFermer} aria-label="Fermer">
+              ×
+            </button>
+          </div>
+        ) : (
+          <h2>{titre}</h2>
+        )}
         {children}
       </div>
     </div>

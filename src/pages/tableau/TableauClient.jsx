@@ -2,11 +2,13 @@ import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import { ecouterMesDemandes } from "../../lib/demandes";
+import { aNouveauMessage, ecouterLectures } from "../../lib/messagerie";
 import { annulerDemande, augmenterOffre, confirmerJob, messageErreur } from "../../lib/cycleDemande";
 import { formatArgent } from "../../lib/formatArgent";
 import { dateCourte, dureeRestante, echeance, ilYa } from "../../lib/temps";
 import Rangee from "../../components/Rangee";
 import { Etapes, Modale, ModaleSignalement, Personne } from "./elements";
+import Conversation, { BoutonMessages } from "./Conversation";
 import "./Tableau.css";
 
 const FILTRES = [
@@ -18,12 +20,14 @@ const FILTRES = [
 // Ce qui attend une action du client passe en premier.
 const PRIORITE = { faite: 0, signalee: 1, matchee: 2, ouverte: 3 };
 
-export default function TableauClient() {
+export default function TableauClient({ conversation, onConversationFermee }) {
   const { user, profile } = useAuth();
   const [demandes, setDemandes] = useState(null);
+  const [lectures, setLectures] = useState({});
   const [filtre, setFiltre] = useState("en_cours");
 
   useEffect(() => ecouterMesDemandes(user.uid, setDemandes), [user.uid]);
+  useEffect(() => ecouterLectures(user.uid, setLectures), [user.uid]);
 
   const { enCours, historique } = useMemo(() => {
     const liste = demandes ?? [];
@@ -64,7 +68,13 @@ export default function TableauClient() {
           }
         >
           {affichees.map((d) => (
-            <CarteDemandeClient key={d.id} demande={d} />
+            <CarteDemandeClient
+              key={d.id}
+              demande={d}
+              nouveau={aNouveauMessage(d, user.uid, lectures)}
+              conversationOuverte={conversation === d.id}
+              onConversationFermee={onConversationFermee}
+            />
           ))}
         </Rangee>
       )}
@@ -100,8 +110,9 @@ export default function TableauClient() {
   );
 }
 
-function CarteDemandeClient({ demande: d }) {
-  const [modale, setModale] = useState(null); // "augmenter" | "annuler" | "signaler"
+function CarteDemandeClient({ demande: d, nouveau, conversationOuverte, onConversationFermee }) {
+  // "augmenter" | "annuler" | "signaler" | "messages"
+  const [modale, setModale] = useState(conversationOuverte && d.deneigeurId ? "messages" : null);
   const [enCours, setEnCours] = useState(false);
   const [erreur, setErreur] = useState(null);
 
@@ -194,6 +205,9 @@ function CarteDemandeClient({ demande: d }) {
             Signaler un problème
           </button>
         )}
+        {d.deneigeurId && (
+          <BoutonMessages prenom={d.deneigeurPrenom} nouveau={nouveau} onClick={() => setModale("messages")} />
+        )}
       </div>
 
       <Etapes demande={d} />
@@ -222,6 +236,16 @@ function CarteDemandeClient({ demande: d }) {
         </Modale>
       )}
       {modale === "signaler" && <ModaleSignalement demande={d} par="client" onFermer={() => setModale(null)} />}
+      {modale === "messages" && (
+        <Conversation
+          demande={d}
+          autrePrenom={d.deneigeurPrenom}
+          onFermer={() => {
+            setModale(null);
+            if (conversationOuverte) onConversationFermee();
+          }}
+        />
+      )}
     </article>
   );
 }

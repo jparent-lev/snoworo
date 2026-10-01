@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { signInWithEmailAndPassword } from "firebase/auth";
-import { useNavigate, Link } from "react-router-dom";
+import { useLocation, useNavigate, Link } from "react-router-dom";
 import { auth } from "../lib/firebase";
 import VersionFooter from "../components/VersionFooter";
 import "./AuthForm.css";
@@ -11,6 +11,9 @@ export default function Login() {
   const [erreur, setErreur] = useState(null);
   const [enCours, setEnCours] = useState(false);
   const navigate = useNavigate();
+  const depuis = useLocation().state?.depuis;
+  // Seulement un chemin interne : jamais de redirection vers un autre site.
+  const destination = typeof depuis === "string" && depuis.startsWith("/") && !depuis.startsWith("//") ? depuis : "/tableau-de-bord";
 
   async function onSubmit(e) {
     e.preventDefault();
@@ -18,7 +21,7 @@ export default function Login() {
     setEnCours(true);
     try {
       await signInWithEmailAndPassword(auth, email, password);
-      navigate("/tableau-de-bord");
+      navigate(destination, { replace: true });
     } catch {
       setErreur("Courriel ou mot de passe incorrect.");
     } finally {
