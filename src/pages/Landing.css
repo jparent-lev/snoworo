@@ -1171,3 +1171,29 @@
 .landing__confiance-item .landing__mini-carte-titre {
   color: var(--color-terre);
 }
+
+/* ---- Bande du héros : ciel d'hiver pleine largeur, plein écran sur
+   ordinateur, flocons qui tombent et banc de neige en transition. ---- */
+
+.landing__hero-bande {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  background: linear-gradient(180deg, #d3e0e3 0%, #e4ebeb 55%, #eff1ec 100%);
+}
+
+.landing__hero-bande .landing__hero {
+  position: relative;
+  z-index: 1;
+  padding-bottom: clamp(72px, 9vw, 112px);
+}
+
+@media (min-width: 900px) and (min-height: 620px) {
+  /* Le héros occupe l'écran sous l'en-tête (73 px) jusqu'au défilement. */
+  .landing__hero-bande {
+    min-height: calc(100svh - 73px);
+  }
+}
