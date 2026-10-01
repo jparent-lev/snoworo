@@ -79,6 +79,8 @@ confirmeeAt, confirmationAuto   // true si confirmée par confirmerJobsEchues
 annuleeAt                       // seulement depuis « ouverte »
 signalement: { par: "client" | "deneigeur", motif, details, statutPrecedent, at } | null
 dernierMessage: { at, par } | null   // recopié par notifierNouveauMessage
+photo, photoExpireAt    // photo « c'est fait » dans prive/photo, effacée à photoExpireAt
+evaluee                 // true une fois le déneigeur évalué (note dans prive/evaluation)
 
 paiement: {              // posé à l'acceptation ; SIMULÉ tant que Stripe n'est pas branché
   montantTotal, fraisSnowro, montantDeneigeur,   // config/frais : fraisFixe + fraisPct %
@@ -218,6 +220,23 @@ message, remunerationProposee, statut, createdAt
 
 Créé uniquement via `creerOffreCiblee` (valide `consents.offresCiblees.granted`
 avant l'écriture).
+
+### Sous-collection `prive` (client et déneigeur choisi seulement)
+
+- `adresse` : `{ adresse, geohash }`, écrite par `publierDemande`.
+- `photo` : `{ donnees, ajouteeAt, expireAt }`, photo facultative envoyée avec
+  `marquerFaite`. L'app la réduit (1280 px) et la réencode en JPEG, ce qui
+  retire les métadonnées EXIF dont la position GPS ; le serveur n'accepte qu'un
+  JPEG de 700 000 caractères au plus (en base64, loin de la limite de 1 Mio
+  d'un document). `purgerPhotos` (tous les jours) l'efface 30 jours après la
+  job, sauf tant que la job est `signalee`.
+- `evaluation` : `{ note, commentaire, at }`, 1 à 5 étoiles et un mot
+  facultatif (500 caractères) lu par le déneigeur seulement. Donnée par le
+  client en confirmant (`confirmerJob`) ou après coup (`evaluerJob`, une seule
+  fois, dans les 7 jours suivant la confirmation, utile après une confirmation
+  automatique). `ratingAvg`/`ratingCount` du déneigeur sont recalculés dans la
+  même transaction.
+- `avis` : heure du dernier courriel « nouveau message » par destinataire.
 
 ## `messages/{conversationId}/messages/{messageId}`
 

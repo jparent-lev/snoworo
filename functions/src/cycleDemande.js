@@ -34,6 +34,22 @@ const MONTANT_MAX = 1000;
 // L'adresse exacte reste dans demandes/{id}/prive/adresse.
 const PRECISION_GEOHASH_PUBLIC = 7;
 
+// Photo « c'est fait » (facultative, prise par le déneigeur) : réencodée en
+// JPEG par l'app (sans métadonnées EXIF, donc sans position GPS), stockée dans
+// demandes/{id}/prive/photo (lisible par le client et le déneigeur seulement)
+// et effacée PHOTO_CONSERVATION_MS plus tard par purgerPhotos. Taille limitée
+// pour rester loin de la limite de 1 Mio d'un document Firestore.
+export const PHOTO_CONSERVATION_MS = 30 * 24 * 60 * 60 * 1000;
+export const PHOTO_MAX_CARACTERES = 700_000;
+const PREFIXE_PHOTO = "data:image/jpeg;base64,";
+
+// Évaluation du déneigeur par le client : 1 à 5 étoiles, mot facultatif lu
+// par le déneigeur seulement (demandes/{id}/prive/evaluation). Possible en
+// confirmant, ou ensuite pendant EVALUATION_DELAI_MS (utile quand la job a été
+// confirmée automatiquement).
+export const EVALUATION_DELAI_MS = 7 * 24 * 60 * 60 * 1000;
+const COMMENTAIRE_MAX = 500;
+
 // TODO étape 4 (Stripe Connect) : passer à true. Tant que l'onboarding
 // n'existe pas, aucun déneigeur n'a connectStatus « actif » et exiger le
 // compte bloquerait tout test du parcours.
@@ -208,19 +224,62 @@ export const accepterDemande = onCall({ region: REGION }, async (request) => {
   });
 });
 
-// ---- Marquer faite (déneigeur) ----
+export function validerPhoto(photo) {
+  if (photo == null) return null;
+  if (typeof photo !== "string" || !photo.startsWith(PREFIXE_PHOTO)) {
+    throw new HttpsError("invalid-argument", "Photo invalide (JPEG attendu).");
+  }
+  if (photo.length > PHOTO_MAX_CARACTERES) throw new HttpsError("invalid-argument", "Photo trop lourde.");
+  const donnees = photo.slice(PREFIXE_PHOTO.length);
+  if (!/^[A-Za-z0-9+/]+={0,2}$/.test(donnees)) throw new HttpsError("invalid-argument", "Photo invalide.");
+  const octets = Buffer.from(donnees.slice(0, 8), "base64");
+  if (octets[0] !== 0xff || octets[1] !== 0xd8) throw new HttpsError("invalid-argument", "Photo invalide (JPEG attendu).");
+  return photo;
+}
+
+// ---- Marquer faite (déneigeur), photo facultative ----
 export const marquerFaite = onCall({ region: REGION }, async (request) => {
   const uid = exigerConnexion(request);
+  const photo = validerPhoto(request.data?.photo);
   return db.runTransaction(async (tx) => {
     const { ref } = await lireDemande(tx, request.data?.demandeId, { uid, role: "deneigeur", statuts: ["matchee"] });
+    const expireAt = Timestamp.fromMillis(Date.now() + PHOTO_CONSERVATION_MS);
     tx.update(ref, {
       statut: "faite",
       faiteAt: FieldValue.serverTimestamp(),
       confirmationAutoAt: Timestamp.fromMillis(Date.now() + DELAI_CONFIRMATION_MS),
+      photo: Boolean(photo),
+      photoExpireAt: photo ? expireAt : null,
     });
+    if (photo) {
+      tx.set(db.doc(`${ref.path}/prive/photo`), { donnees: photo, ajouteeAt: FieldValue.serverTimestamp(), expireAt });
+    }
     return { ok: true };
   });
 });
+
+function validerEvaluation(data) {
+  const { note } = data ?? {};
+  if (!Number.isInteger(note) || note < 1 || note > 5) {
+    throw new HttpsError("invalid-argument", "Note de 1 à 5 étoiles.");
+  }
+  return { note, commentaire: texte(data.commentaire, { max: COMMENTAIRE_MAX, nom: "Commentaire" }) };
+}
+
+// À appeler après toutes les lectures de la transaction (`profil` = fiche du
+// déneigeur déjà lue) : moyenne recalculée côté serveur seulement
+// (ratingAvg/ratingCount sont protégés dans firestore.rules).
+function evaluer(tx, ref, demande, profil, { note, commentaire }) {
+  const nombre = profil.ratingCount ?? 0;
+  const moyenne = profil.ratingAvg ?? 0;
+  tx.set(
+    db.doc(`users/${demande.deneigeurId}`),
+    { ratingAvg: Math.round(((moyenne * nombre + note) / (nombre + 1)) * 100) / 100, ratingCount: nombre + 1 },
+    { merge: true },
+  );
+  tx.set(db.doc(`${ref.path}/prive/evaluation`), { note, commentaire, at: FieldValue.serverTimestamp() });
+  tx.update(ref, { evaluee: true });
+}
 
 function confirmer(tx, ref, demande, { automatique }) {
   tx.update(ref, {
@@ -232,12 +291,31 @@ function confirmer(tx, ref, demande, { automatique }) {
   tx.set(db.doc(`users/${demande.deneigeurId}`), { nbJobsCompletees: FieldValue.increment(1) }, { merge: true });
 }
 
-// ---- Confirmer (client) ----
+// ---- Confirmer (client), avec évaluation facultative ----
 export const confirmerJob = onCall({ region: REGION }, async (request) => {
   const uid = exigerConnexion(request);
+  const evaluation = request.data?.note == null ? null : validerEvaluation(request.data);
   return db.runTransaction(async (tx) => {
     const { ref, demande } = await lireDemande(tx, request.data?.demandeId, { uid, role: "client", statuts: ["faite"] });
+    const profil = evaluation ? ((await tx.get(db.doc(`users/${demande.deneigeurId}`))).data() ?? {}) : null;
     confirmer(tx, ref, demande, { automatique: false });
+    if (evaluation) evaluer(tx, ref, demande, profil, evaluation);
+    return { ok: true };
+  });
+});
+
+// ---- Évaluer après coup (client), une seule fois, dans les 7 jours ----
+export const evaluerJob = onCall({ region: REGION }, async (request) => {
+  const uid = exigerConnexion(request);
+  const evaluation = validerEvaluation(request.data);
+  return db.runTransaction(async (tx) => {
+    const { ref, demande } = await lireDemande(tx, request.data?.demandeId, { uid, role: "client", statuts: ["completee"] });
+    if (demande.evaluee) throw new HttpsError("already-exists", "Tu as déjà évalué cette job.");
+    if (Date.now() - (demande.confirmeeAt?.toMillis() ?? 0) > EVALUATION_DELAI_MS) {
+      throw new HttpsError("failed-precondition", "Le délai pour évaluer cette job est passé.");
+    }
+    const profil = (await tx.get(db.doc(`users/${demande.deneigeurId}`))).data() ?? {};
+    evaluer(tx, ref, demande, profil, evaluation);
     return { ok: true };
   });
 });
@@ -264,6 +342,27 @@ export const confirmerJobsEchues = onSchedule(
       });
     }
     if (n) logger.info(`${n} job(s) confirmée(s) automatiquement.`);
+  },
+);
+
+// ---- Effacement des photos après 30 jours ----
+// Une photo liée à une job signalée est gardée tant que le signalement n'est
+// pas réglé (preuve) : elle sera effacée au passage suivant une fois la job
+// sortie de « signalee ».
+export const purgerPhotos = onSchedule(
+  { schedule: "every day 03:17", timeZone: "America/Toronto", region: REGION },
+  async () => {
+    const expirees = await db.collection("demandes").where("photoExpireAt", "<=", Timestamp.now()).limit(300).get();
+    let n = 0;
+    for (const doc of expirees.docs) {
+      if (doc.data().statut === "signalee") continue;
+      const batch = db.batch();
+      batch.delete(db.doc(`${doc.ref.path}/prive/photo`));
+      batch.update(doc.ref, { photo: false, photoExpireAt: null });
+      await batch.commit();
+      n += 1;
+    }
+    if (n) logger.info(`${n} photo(s) effacée(s) après 30 jours.`);
   },
 );
 

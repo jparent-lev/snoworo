@@ -3,11 +3,11 @@ import { Link } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import { ecouterMesDemandes } from "../../lib/demandes";
 import { aNouveauMessage, ecouterLectures } from "../../lib/messagerie";
-import { annulerDemande, augmenterOffre, confirmerJob, messageErreur } from "../../lib/cycleDemande";
+import { annulerDemande, augmenterOffre, confirmerJob, evaluerJob, messageErreur } from "../../lib/cycleDemande";
 import { formatArgent } from "../../lib/formatArgent";
-import { dateCourte, dureeRestante, echeance, ilYa } from "../../lib/temps";
+import { dateCourte, dureeRestante, echeance, ilYa, millis } from "../../lib/temps";
 import Rangee from "../../components/Rangee";
-import { Etapes, Modale, ModaleSignalement, Personne } from "./elements";
+import { Etapes, Modale, ModaleEvaluation, ModalePhoto, ModaleSignalement, Personne } from "./elements";
 import Conversation, { BoutonMessages } from "./Conversation";
 import "./Tableau.css";
 
@@ -19,12 +19,15 @@ const FILTRES = [
 ];
 // Ce qui attend une action du client passe en premier.
 const PRIORITE = { faite: 0, signalee: 1, matchee: 2, ouverte: 3 };
+// Même délai que EVALUATION_DELAI_MS (functions/src/cycleDemande.js).
+const DELAI_EVALUATION_MS = 7 * 24 * 60 * 60 * 1000;
 
 export default function TableauClient({ conversation, onConversationFermee }) {
   const { user, profile } = useAuth();
   const [demandes, setDemandes] = useState(null);
   const [lectures, setLectures] = useState({});
   const [filtre, setFiltre] = useState("en_cours");
+  const [maintenant] = useState(() => Date.now());
 
   useEffect(() => ecouterMesDemandes(user.uid, setDemandes), [user.uid]);
   useEffect(() => ecouterLectures(user.uid, setLectures), [user.uid]);
@@ -86,22 +89,13 @@ export default function TableauClient({ conversation, onConversationFermee }) {
           </h2>
           <div className="historique">
             {historique.map((d) => (
-              <div key={d.id} className="historique__rang">
-                <span className="historique__date">{dateCourte(d.confirmeeAt ?? d.annuleeAt ?? d.createdAt)}</span>
-                <span>
-                  {d.titre}
-                  {d.statut === "annulee" ? (
-                    <i> · annulée</i>
-                  ) : (
-                    <>
-                      {" "}
-                      · {d.deneigeurPrenom}
-                      {d.confirmationAuto ? <i> · confirmée automatiquement</i> : null}
-                    </>
-                  )}
-                </span>
-                <b>{formatArgent(d.remunerationOfferte)}</b>
-              </div>
+              <RangHistorique
+                key={d.id}
+                demande={d}
+                evaluable={
+                  d.statut === "completee" && !d.evaluee && maintenant - millis(d.confirmeeAt) < DELAI_EVALUATION_MS
+                }
+              />
             ))}
           </div>
         </section>
@@ -110,21 +104,57 @@ export default function TableauClient({ conversation, onConversationFermee }) {
   );
 }
 
+function RangHistorique({ demande: d, evaluable }) {
+  const [evaluer, setEvaluer] = useState(false);
+  return (
+    <div className="historique__rang">
+      <span className="historique__date">{dateCourte(d.confirmeeAt ?? d.annuleeAt ?? d.createdAt)}</span>
+      <span>
+        {d.titre}
+        {d.statut === "annulee" ? (
+          <i> · annulée</i>
+        ) : (
+          <>
+            {" "}
+            · {d.deneigeurPrenom}
+            {d.confirmationAuto ? <i> · confirmée automatiquement</i> : null}
+            {evaluable && (
+              <>
+                {" · "}
+                <button type="button" className="btn btn--lien" onClick={() => setEvaluer(true)}>
+                  Évaluer {d.deneigeurPrenom}
+                </button>
+              </>
+            )}
+          </>
+        )}
+      </span>
+      <b>{formatArgent(d.remunerationOfferte)}</b>
+      {evaluer && (
+        <ModaleEvaluation
+          titre={`Évaluer ${d.deneigeurPrenom}`}
+          prenom={d.deneigeurPrenom}
+          libelleEnvoyer="Envoyer"
+          noteRequise
+          onEnvoyer={({ note, commentaire }) => evaluerJob({ demandeId: d.id, note, commentaire })}
+          onFermer={() => setEvaluer(false)}
+        />
+      )}
+    </div>
+  );
+}
+
 function CarteDemandeClient({ demande: d, nouveau, conversationOuverte, onConversationFermee }) {
-  // "augmenter" | "annuler" | "signaler" | "messages"
+  // "augmenter" | "annuler" | "signaler" | "messages" | "confirmer" | "photo"
   const [modale, setModale] = useState(conversationOuverte && d.deneigeurId ? "messages" : null);
-  const [enCours, setEnCours] = useState(false);
   const [erreur, setErreur] = useState(null);
 
   async function agir(action) {
-    setEnCours(true);
     setErreur(null);
     try {
       await action();
     } catch (err) {
       setErreur(messageErreur(err));
-    } finally {
-      setEnCours(false);
     }
   }
 
@@ -187,14 +217,14 @@ function CarteDemandeClient({ demande: d, nouveau, conversationOuverte, onConver
         )}
         {d.statut === "faite" && (
           <>
-            <button
-              type="button"
-              className="btn btn--principal btn--petit"
-              disabled={enCours}
-              onClick={() => agir(() => confirmerJob({ demandeId: d.id }))}
-            >
-              {enCours ? "Confirmation…" : "Confirmer"}
+            <button type="button" className="btn btn--principal btn--petit" onClick={() => setModale("confirmer")}>
+              Confirmer
             </button>
+            {d.photo && (
+              <button type="button" className="btn btn--fantome btn--petit" onClick={() => setModale("photo")}>
+                Voir la photo
+              </button>
+            )}
             <button type="button" className="btn btn--fantome btn--petit" onClick={() => setModale("signaler")}>
               Signaler un problème
             </button>
@@ -236,6 +266,19 @@ function CarteDemandeClient({ demande: d, nouveau, conversationOuverte, onConver
         </Modale>
       )}
       {modale === "signaler" && <ModaleSignalement demande={d} par="client" onFermer={() => setModale(null)} />}
+      {modale === "photo" && <ModalePhoto demande={d} onFermer={() => setModale(null)} />}
+      {modale === "confirmer" && (
+        <ModaleEvaluation
+          titre="Confirmer la job ?"
+          intro={`Le paiement de ${formatArgent(d.remunerationOfferte)} sera versé à ${d.deneigeurPrenom}. Si quelque chose cloche, signale plutôt un problème.`}
+          prenom={d.deneigeurPrenom}
+          libelleEnvoyer="Confirmer"
+          onEnvoyer={({ note, commentaire }) =>
+            confirmerJob(note ? { demandeId: d.id, note, commentaire } : { demandeId: d.id })
+          }
+          onFermer={() => setModale(null)}
+        />
+      )}
       {modale === "messages" && (
         <Conversation
           demande={d}
