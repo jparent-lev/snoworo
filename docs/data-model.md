@@ -78,6 +78,7 @@ faiteAt, confirmationAutoAt     // confirmationAutoAt = faiteAt + 12 h
 confirmeeAt, confirmationAuto   // true si confirmée par confirmerJobsEchues
 annuleeAt                       // seulement depuis « ouverte »
 signalement: { par: "client" | "deneigeur", motif, details, statutPrecedent, at } | null
+dernierMessage: { at, par } | null   // recopié par notifierNouveauMessage
 
 paiement: {              // posé à l'acceptation ; SIMULÉ tant que Stripe n'est pas branché
   montantTotal, fraisSnowro, montantDeneigeur,   // config/frais : fraisFixe + fraisPct %
@@ -220,9 +221,36 @@ avant l'écriture).
 
 ## `messages/{conversationId}/messages/{messageId}`
 
-`conversationId == demandeId`. Visible uniquement aux deux parties d'un match
-confirmé (voir `firestore.rules`, `participantAuMatch`). Les coordonnées réelles
-ne sont jamais insérées automatiquement dans `contenu`.
+```
+expediteurId            // == request.auth.uid
+contenu                 // 1 à 1000 caractères, pas seulement des espaces
+createdAt               // heure du serveur (request.time), obligatoire
+```
+
+`conversationId == demandeId`. Écrit directement par l'app, mais seulement par
+les deux personnes du match, et seulement pendant la job (`matchee`, `faite`,
+`signalee`) ; lisible par elles deux aussi après `completee` (voir
+`firestore.rules`). Ni modification ni suppression. Les coordonnées réelles ne
+sont jamais insérées automatiquement dans `contenu`.
+
+`notifierNouveauMessage` (`functions/src/messagerie.js`, déclenché à chaque
+message) :
+- recopie `dernierMessage: { at, par }` dans la demande, pour l'indicateur
+  « Nouveau message » des tableaux de bord ;
+- avertit l'autre personne par courriel (Resend), au plus une fois par
+  15 minutes et par conversation ; l'heure du dernier avis par destinataire
+  est dans `demandes/{id}/prive/avis`. Le lien du courriel
+  (`/tableau-de-bord?conversation=<id>&mode=client|deneigeur`) ouvre la
+  conversation dans le bon mode.
+
+## `users/{userId}/lectures/{demandeId}`
+
+```
+luAt                    // heure du serveur, à l'ouverture de la conversation
+```
+
+Privé au propriétaire. « Nouveau message » = `dernierMessage.at > luAt` et
+`dernierMessage.par` n'est pas soi.
 
 ## Index composites
 

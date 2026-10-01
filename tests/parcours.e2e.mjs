@@ -136,6 +136,52 @@ async function connexion(cle, largeur = 1280) {
     assert.equal((await db.doc("demandes/D1").get()).data().statut, "faite");
   });
   await p.screenshot({ path: `${D}/e2e-marc-apres-1280.png`, fullPage: true });
+  await test("Marc : écrit à Paul depuis la job ; le message s'affiche et la demande note le dernier message", async () => {
+    await p.locator(".carte-job", { hasText: "1234, 3e Avenue" }).getByRole("button", { name: "Écrire à Paul" }).click();
+    const dlg = p.getByRole("dialog", { name: "Conversation avec Paul" });
+    await dlg.getByText("Pas encore de message").waitFor();
+    await dlg.getByRole("textbox").fill("J'arrive vers 7 h 30. La neige à gauche de l'entrée, ça te va ?");
+    await dlg.getByRole("textbox").press("Enter");
+    await dlg.locator(".bulle--moi", { hasText: "J'arrive vers 7 h 30" }).waitFor();
+    assert.equal(await dlg.getByRole("textbox").inputValue(), "");
+    for (let i = 0; i < 40 && !(await db.doc("demandes/D1").get()).data().dernierMessage; i++) await new Promise((r) => setTimeout(r, 500));
+    assert.equal((await db.doc("demandes/D1").get()).data().dernierMessage?.par, uid.marc);
+    await p.screenshot({ path: `${D}/e2e-conversation-1280.png` });
+    await dlg.getByRole("button", { name: "Fermer" }).click();
+    assert.equal(await p.getByRole("dialog").count(), 0);
+  });
+  await ctx.close();
+}
+
+// Paul (client de D1) : le message de Marc l'attend
+{
+  const { p, ctx } = await connexion("paul");
+  await test("Paul : « Nouveau message » sur la job de Marc, puis réponse ; la pastille disparaît", async () => {
+    const carte = p.locator(".carte-job", { hasText: "Entrée double + balcon" });
+    await carte.getByRole("button", { name: /Nouveau message/ }).click();
+    const dlg = p.getByRole("dialog", { name: "Conversation avec Marc" });
+    await dlg.locator(".bulle:not(.bulle--moi)", { hasText: "J'arrive vers 7 h 30" }).waitFor();
+    await dlg.getByRole("textbox").fill("Parfait, merci Marc !");
+    await dlg.getByRole("button", { name: "Envoyer" }).click();
+    await dlg.locator(".bulle--moi", { hasText: "Parfait, merci Marc" }).waitFor();
+    await p.keyboard.press("Escape");
+    await carte.getByRole("button", { name: "Écrire à Marc" }).waitFor();
+  });
+  await ctx.close();
+}
+{
+  // Lien du courriel ouvert sans être connecté : connexion, puis la conversation.
+  const ctx = await b.newContext({ viewport: { width: 1280, height: 900 } });
+  const p = await ctx.newPage();
+  pageCourante = p;
+  await test("Paul (déconnecté) : le lien du courriel mène à la connexion, puis ouvre la conversation", async () => {
+    await p.goto("http://localhost:4190/tableau-de-bord?conversation=D1&mode=client");
+    await p.waitForURL("**/connexion");
+    await p.fill('input[type="email"]', comptes.paul.email);
+    await p.fill('input[type="password"]', "motdepasse");
+    await p.click('button[type="submit"]');
+    await p.getByRole("dialog", { name: "Conversation avec Marc" }).getByText("Parfait, merci Marc").waitFor();
+  });
   await ctx.close();
 }
 
@@ -184,6 +230,16 @@ async function connexion(cle, largeur = 1280) {
   });
   await p.waitForTimeout(800);
   await p.screenshot({ path: `${D}/e2e-julie-deneigeur-390.png`, fullPage: true });
+  await test("Julie : conversation lisible sur mobile, sans défilement horizontal", async () => {
+    await p.locator(".carte-job", { hasText: "Petit stationnement arrière" }).getByRole("button", { name: "Écrire à Mireille" }).click();
+    const dlg = p.getByRole("dialog", { name: "Conversation avec Mireille" });
+    await dlg.getByRole("textbox").fill("Bonjour Mireille ! Je passe demain matin.");
+    await dlg.getByRole("button", { name: "Envoyer" }).click();
+    await dlg.locator(".bulle--moi").waitFor();
+    assert.equal(await p.evaluate(() => document.documentElement.scrollWidth), 390);
+    await p.screenshot({ path: `${D}/e2e-conversation-390.png` });
+    await dlg.getByRole("button", { name: "Fermer" }).click();
+  });
   await test("Julie : le mode choisi est retenu au rechargement", async () => {
     await p.reload();
     await p.getByRole("heading", { name: "Mes jobs" }).waitFor();

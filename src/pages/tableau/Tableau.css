@@ -427,6 +427,124 @@
   color: var(--color-terre);
 }
 
+.modale__entete {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.modale__fermer {
+  flex: none;
+  width: 36px;
+  height: 36px;
+  border-radius: 999px;
+  border: 1.5px solid var(--color-bordure);
+  background: var(--color-surface-secondaire);
+  color: var(--color-terre);
+  font-size: 22px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+/* ---- Messagerie ---- */
+
+.bouton-messages {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.bouton-messages__pastille {
+  width: 9px;
+  height: 9px;
+  border-radius: 999px;
+  background: var(--color-ocre);
+  box-shadow: 0 0 0 2px var(--color-surface-carte);
+}
+
+.modale--conversation {
+  max-width: 520px;
+  height: min(640px, calc(100dvh - 32px));
+  gap: 10px;
+}
+
+.conversation__sujet {
+  margin-top: -8px;
+  font-size: 14px;
+}
+
+.conversation__fil {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px;
+  background: var(--color-surface-secondaire);
+  border: 1px solid var(--color-bordure);
+  border-radius: 14px;
+}
+
+.conversation__vide {
+  margin: auto 0;
+  text-align: center;
+  font-size: 14px;
+}
+
+.bulle {
+  align-self: flex-start;
+  max-width: 82%;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 9px 12px;
+  border-radius: 14px 14px 14px 4px;
+  background: var(--color-surface-carte);
+  border: 1px solid var(--color-bordure);
+  color: var(--color-terre);
+}
+
+.bulle--moi {
+  align-self: flex-end;
+  border-radius: 14px 14px 4px 14px;
+  background: var(--color-argile);
+  border-color: var(--color-argile);
+  color: var(--color-surface-carte);
+}
+
+.bulle__texte {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  font-size: 15px;
+  line-height: 1.4;
+}
+
+.bulle__heure {
+  align-self: flex-end;
+  font-size: 11.5px;
+  opacity: 0.75;
+}
+
+.conversation__saisie {
+  display: flex;
+  gap: 8px;
+  align-items: flex-end;
+}
+
+.conversation__saisie textarea {
+  flex: 1;
+  min-width: 0;
+  resize: none;
+}
+
+.conversation__fermee,
+.conversation__rappel {
+  font-size: 12.5px;
+}
+
 /* ---- Choix des rôles ---- */
 
 .roles {

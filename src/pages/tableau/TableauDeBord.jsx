@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { useOutletContext } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { useOutletContext, useSearchParams } from "react-router-dom";
 import { doc, setDoc } from "firebase/firestore";
 import { db } from "../../lib/firebase";
 import { useAuth } from "../../context/AuthContext";
@@ -12,11 +12,24 @@ import "./Tableau.css";
 // bascule de l'en-tête (Layout). Un compte sans rôle choisit d'abord.
 export default function TableauDeBord() {
   const { profile } = useAuth();
-  const { mode } = useOutletContext();
+  const { mode, changerMode } = useOutletContext();
+  // Lien d'un courriel « Marc t'a écrit » : ?conversation=<demandeId>&mode=client|deneigeur
+  // ouvre la bonne conversation dans le bon mode.
+  const [params, setParams] = useSearchParams();
+  const conversation = params.get("conversation");
+  const modeLien = params.get("mode");
+
+  useEffect(() => {
+    if ((modeLien === "client" || modeLien === "deneigeur") && modeLien !== mode) changerMode(modeLien);
+    // Seulement à l'arrivée par le lien : ensuite, la bascule de l'en-tête décide.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [modeLien]);
+
+  const props = { conversation, onConversationFermee: () => setParams({}, { replace: true }) };
 
   if (!profile) return null;
   if (!(profile.role ?? []).length) return <PremierChoix />;
-  return mode === "deneigeur" ? <TableauDeneigeur /> : <TableauClient />;
+  return mode === "deneigeur" ? <TableauDeneigeur {...props} /> : <TableauClient {...props} />;
 }
 
 function PremierChoix() {

@@ -185,6 +185,13 @@ Accepter une job passe par une fenêtre d'engagement : **aucune annulation
 possible une fois acceptée**. Cycle complet et transitions :
 `docs/data-model.md` § demandes.
 
+Messagerie : une fois la job acceptée, le client et le déneigeur s'écrivent
+depuis la carte de la job (« Écrire à Marc », pastille « Nouveau message »),
+dans une fenêtre de conversation en temps réel (`Conversation.jsx`). L'autre
+personne reçoit un avis par courriel, au plus une fois par 15 minutes. Écriture
+fermée une fois la job confirmée ; la conversation reste lisible. Détails :
+`docs/data-model.md` § messages.
+
 Paiement **simulé** tant que Stripe Connect n'est pas branché (bandeau
 « Période de test » dans les deux tableaux de bord).
 
@@ -195,11 +202,9 @@ Prochaines étapes, dans l'ordre convenu :
 1. Paiement Stripe Connect complet : onboarding Express, webhook, PaymentIntent
    au moment du match, `config/frais`, filtre `connectStatus == 'actif'`
    (voir § Paiement ci-dessus — priorité avant tout lancement public).
-2. Messagerie in-app post-match (collection `messages`, déjà couverte par les
-   Firestore rules mais pas d'UI).
-3. Snowro Pro : abonnement Stripe Billing, tableau de bord `zonesStats`.
-4. Snowro Pro : UI pour `creerOffreCiblee`.
-5. Notifications SMS/push (Twilio + FCM) à l'ouverture d'une demande dans la
+2. Snowro Pro : abonnement Stripe Billing, tableau de bord `zonesStats`.
+3. Snowro Pro : UI pour `creerOffreCiblee`.
+4. Notifications SMS/push (Twilio + FCM) à l'ouverture d'une demande dans la
    ville d'un déneigeur (filtrer par `villeGeoId`, comme `ecouterDemandesOuvertes`).
-6. Intégration Google Maps côté client (carte visuelle, autocomplétion
+5. Intégration Google Maps côté client (carte visuelle, autocomplétion
    d'adresse) — le géocodage inverse serveur pour `ville`/`villeGeoId` est fait.

@@ -42,6 +42,15 @@ service cloud.firestore {
       allow update: if estProprietaire(userId) &&
         !request.resource.data.diff(resource.data).affectedKeys().hasAny(champsProteges());
       allow delete: if false;
+
+      // Dernière lecture de chaque conversation (users/{uid}/lectures/{demandeId}
+      // = { luAt }) : sert à afficher « nouveau message ». Privé au propriétaire.
+      match /lectures/{demandeId} {
+        allow read: if estProprietaire(userId);
+        allow write: if estProprietaire(userId) &&
+          request.resource.data.keys().hasOnly(['luAt']) &&
+          request.resource.data.luAt == request.time;
+      }
     }
 
     // ---- demandes ----
@@ -116,18 +125,33 @@ service cloud.firestore {
     }
 
     // ---- messages ----
-    // conversationId == demandeId : la conversation n'existe qu'après un match confirmé,
-    // et n'est visible qu'aux deux parties du match (jamais avant, jamais à un tiers).
-    function participantAuMatch(demandeId) {
-      let demande = get(/databases/$(database)/documents/demandes/$(demandeId)).data;
-      return demande.statut in ['matchee', 'faite', 'completee', 'signalee'] &&
-        (request.auth.uid == demande.donneurOuvrageId || request.auth.uid == demande.deneigeurId);
+    // conversationId == demandeId : la conversation n'existe qu'après un match
+    // confirmé, et n'est visible qu'aux deux parties du match (jamais avant,
+    // jamais à un tiers). Lecture tant que la job existe, y compris terminée ;
+    // écriture seulement pendant la job (acceptée, faite ou signalée).
+    // L'avis par courriel et `dernierMessage` dans la demande sont gérés par
+    // notifierNouveauMessage (functions/src/messagerie.js).
+    function demandeDuMessage(demandeId) {
+      return get(/databases/$(database)/documents/demandes/$(demandeId)).data;
+    }
+
+    function participant(demande) {
+      return request.auth.uid == demande.donneurOuvrageId || request.auth.uid == demande.deneigeurId;
     }
 
     match /messages/{conversationId}/messages/{messageId} {
-      allow read: if estConnecte() && participantAuMatch(conversationId);
-      allow create: if estConnecte() && participantAuMatch(conversationId) &&
-        request.resource.data.expediteurId == request.auth.uid;
+      allow read: if estConnecte() &&
+        demandeDuMessage(conversationId).statut in ['matchee', 'faite', 'completee', 'signalee'] &&
+        participant(demandeDuMessage(conversationId));
+      allow create: if estConnecte() &&
+        demandeDuMessage(conversationId).statut in ['matchee', 'faite', 'signalee'] &&
+        participant(demandeDuMessage(conversationId)) &&
+        request.resource.data.keys().hasOnly(['expediteurId', 'contenu', 'createdAt']) &&
+        request.resource.data.expediteurId == request.auth.uid &&
+        request.resource.data.contenu is string &&
+        request.resource.data.contenu.trim().size() > 0 &&
+        request.resource.data.contenu.size() <= 1000 &&
+        request.resource.data.createdAt == request.time;
       allow update, delete: if false;
     }
   }

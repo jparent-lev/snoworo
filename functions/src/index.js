@@ -17,3 +17,4 @@ export {
 export { rejoindreListeAttente } from "./listeAttente.js";
 export { confirmerInscriptionListeAttente } from "./confirmationListeAttente.js";
 export { envoyerMessageContact } from "./contact.js";
+export { notifierNouveauMessage } from "./messagerie.js";

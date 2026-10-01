@@ -5,10 +5,11 @@ import { fileURLToPath } from "node:url";
 import { readFileSync } from "node:fs";
 import { createRequire } from "node:module";
 import { initializeTestEnvironment, assertFails, assertSucceeds } from "@firebase/rules-unit-testing";
-import { doc, getDoc, setDoc, updateDoc, addDoc, collection } from "firebase/firestore";
+import { doc, getDoc, getDocs, setDoc, updateDoc, addDoc, collection, serverTimestamp } from "firebase/firestore";
 
 process.env.GCLOUD_PROJECT = "demo-snowro";
 process.env.GOOGLE_GEOCODING_API_KEY = "cle-factice";
+process.env.RESEND_API_KEY = "cle-factice";
 const REPO = fileURLToPath(new URL("..", import.meta.url));
 
 // Géocodage simulé : toute adresse contenant « Lévis » tombe à Lévis, le reste à Québec (Limoilou).
@@ -131,6 +132,44 @@ await test("annuler : permis tant qu'ouverte", async () => {
   assert.equal((await lire(e)).statut, "annulee");
 });
 
+console.log("Messagerie (avis par courriel)");
+const m = await import(`${REPO}functions/src/messagerie.js`);
+const envois = [];
+globalThis.fetch = async (url, options) => {
+  envois.push({ url, corps: JSON.parse(options.body) });
+  return { ok: true, json: async () => ({ id: `resend-${envois.length}` }) };
+};
+await db.doc("users/client1").set({ email: "mireille@exemple.ca" }, { merge: true });
+await db.doc("users/den1").set({ email: "marc@exemple.ca" }, { merge: true });
+await db.doc("demandes/conv1").set({ statut: "matchee", titre: "Entrée double", donneurOuvrageId: "client1", donneurPrenom: "Mireille", deneigeurId: "den1", deneigeurPrenom: "Marc" });
+async function nouveauMessage(expediteurId, contenu) {
+  const ref = await db.collection("messages/conv1/messages").add({ expediteurId, contenu, createdAt: new Date() });
+  await m.notifierNouveauMessage.run({ params: { demandeId: "conv1", messageId: ref.id }, data: await ref.get() });
+}
+await test("message du déneigeur : la cliente reçoit un avis, dernierMessage recopié", async () => {
+  await nouveauMessage("den1", "J'arrive vers 7 h. Je mets la neige à gauche du stationnement ?");
+  assert.equal(envois.length, 1);
+  const { corps } = envois[0];
+  assert.deepEqual(corps.to, ["mireille@exemple.ca"]);
+  assert.match(corps.subject, /Marc t'a écrit à propos de « Entrée double »/);
+  assert.match(corps.text, /J'arrive vers 7 h/);
+  assert.match(corps.text, /conversation=conv1&mode=client/);
+  assert.equal((await lire("conv1")).dernierMessage.par, "den1");
+});
+await test("rafale : un seul avis par 15 min et par destinataire ; l'autre personne a le sien", async () => {
+  await nouveauMessage("den1", "Et le balcon aussi ?");
+  assert.equal(envois.length, 1);
+  await nouveauMessage("client1", "Oui, à gauche, merci !");
+  assert.equal(envois.length, 2);
+  assert.deepEqual(envois[1].corps.to, ["marc@exemple.ca"]);
+  assert.match(envois[1].corps.text, /mode=deneigeur/);
+});
+await test("avis : le contenu est échappé dans le HTML et tronqué s'il est long", async () => {
+  const { html, texte } = m.composerAvis({ expediteurPrenom: "Marc", titreDemande: "Entrée", extrait: "<b>salut</b> " + "x".repeat(400), lien: "https://snowro.com" });
+  assert.ok(html.includes("&lt;b&gt;salut&lt;/b&gt;") && !html.includes("<b>salut"));
+  assert.ok(texte.includes("…") && !texte.includes("x".repeat(300)));
+});
+
 console.log("Firestore rules");
 globalThis.fetch = fetchOriginal;
 const env = await initializeTestEnvironment({ projectId: "demo-snowro", firestore: { rules: readFileSync(`${REPO}firestore.rules`, "utf8"), host: "127.0.0.1", port: 8080 } });
@@ -156,9 +195,32 @@ await test("adresse privée : client et déneigeur choisi seulement", async () =
   await assertSucceeds(getDoc(doc(d1, `demandes/${id}/prive/adresse`)));
   await assertFails(getDoc(doc(d3, `demandes/${id}/prive/adresse`)));
 });
-await test("messages : participants seulement, aussi après « faite » et « completee »", async () => {
-  await assertSucceeds(addDoc(collection(c1, `messages/${id}/messages`), { expediteurId: "client1", contenu: "Merci !" }));
-  await assertFails(addDoc(collection(d3, `messages/${id}/messages`), { expediteurId: "den3", contenu: "Salut" }));
+const msg = (expediteurId, contenu) => ({ expediteurId, contenu, createdAt: serverTimestamp() });
+await test("messages : les deux personnes du match écrivent et lisent, un tiers non", async () => {
+  await assertSucceeds(addDoc(collection(c1, "messages/conv1/messages"), msg("client1", "Merci !")));
+  await assertSucceeds(addDoc(collection(d1, "messages/conv1/messages"), msg("den1", "Avec plaisir")));
+  await assertSucceeds(getDocs(collection(c1, "messages/conv1/messages")));
+  await assertFails(getDocs(collection(d3, "messages/conv1/messages")));
+  await assertFails(addDoc(collection(d3, "messages/conv1/messages"), msg("den3", "Salut")));
+});
+await test("messages : pas d'usurpation, pas de message vide ou trop long, heure du serveur obligatoire", async () => {
+  await assertFails(addDoc(collection(c1, "messages/conv1/messages"), msg("den1", "Je suis Marc")));
+  await assertFails(addDoc(collection(c1, "messages/conv1/messages"), msg("client1", "   ")));
+  await assertFails(addDoc(collection(c1, "messages/conv1/messages"), msg("client1", "x".repeat(1001))));
+  await assertFails(addDoc(collection(c1, "messages/conv1/messages"), { expediteurId: "client1", contenu: "Hier", createdAt: new Date(0) }));
+  await assertFails(addDoc(collection(c1, "messages/conv1/messages"), { ...msg("client1", "Salut"), lu: true }));
+});
+await test("messages : job terminée = lecture seule ; demande encore ouverte = rien", async () => {
+  await assertSucceeds(getDocs(collection(c1, `messages/${id}/messages`)));
+  await assertFails(addDoc(collection(c1, `messages/${id}/messages`), msg("client1", "Encore merci")));
+  await db.doc("demandes/ouverte1").set({ statut: "ouverte", donneurOuvrageId: "client1" });
+  await assertFails(getDocs(collection(c1, "messages/ouverte1/messages")));
+  await assertFails(addDoc(collection(c1, "messages/ouverte1/messages"), msg("client1", "Allo ?")));
+});
+await test("lectures : privées, heure du serveur seulement", async () => {
+  await assertSucceeds(setDoc(doc(c1, "users/client1/lectures/conv1"), { luAt: serverTimestamp() }));
+  await assertFails(setDoc(doc(c1, "users/client1/lectures/conv1"), { luAt: new Date(2100, 0, 1) }));
+  await assertFails(getDoc(doc(d1, "users/client1/lectures/conv1")));
 });
 await env.cleanup();
 console.log(`\n${ok} tests réussis`);
