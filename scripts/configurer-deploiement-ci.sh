@@ -84,6 +84,22 @@ for ROLE in "${ROLES[@]}"; do
   echo "   $ROLE"
 done
 
+# Autorisations des agents de service Google exigées au premier déploiement
+# de fonctions (déclencheurs Firestore et tâches planifiées). Le compte de
+# déploiement n'a pas le droit de les accorder : elles se donnent ici, une
+# fois, par un propriétaire du projet.
+echo "== Agents de service (Pub/Sub, Eventarc, Cloud Run)"
+gcloud beta services identity create --service=pubsub.googleapis.com --project="$PROJECT_ID" >/dev/null 2>&1 || true
+gcloud beta services identity create --service=eventarc.googleapis.com --project="$PROJECT_ID" >/dev/null 2>&1 || true
+reessayer gcloud projects add-iam-policy-binding "$PROJECT_ID" --condition=None \
+  --member="serviceAccount:service-${NUMERO_PROJET}@gcp-sa-pubsub.iam.gserviceaccount.com" \
+  --role=roles/iam.serviceAccountTokenCreator
+for ROLE in roles/run.invoker roles/eventarc.eventReceiver; do
+  reessayer gcloud projects add-iam-policy-binding "$PROJECT_ID" --condition=None \
+    --member="serviceAccount:${NUMERO_PROJET}-compute@developer.gserviceaccount.com" --role="$ROLE"
+  echo "   $ROLE"
+done
+
 echo "== Pool Workload Identity « ${POOL} »"
 if ! gcloud iam workload-identity-pools describe "$POOL" --location=global >/dev/null 2>&1; then
   gcloud iam workload-identity-pools create "$POOL" --location=global \
