@@ -118,3 +118,51 @@
 .parametres__item--colonne > .btn {
   align-self: flex-start;
 }
+
+/* Statut du compte de versement : pastille colorée, crochet vert si actif. */
+.statut-connect {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  align-self: flex-start;
+  width: fit-content;
+  margin: 6px 0 2px;
+  padding: 4px 12px 4px 4px;
+  border-radius: 999px;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.statut-connect__icone {
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 999px;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 900;
+  line-height: 1;
+}
+
+.statut-connect--ok { background: #ddebd8; color: #24521a; }
+.statut-connect--ok .statut-connect__icone { background: #2f7d32; }
+.statut-connect--attente { background: #f6e7c6; color: #6b4a0e; }
+.statut-connect--attente .statut-connect__icone { background: #b07d1a; }
+.statut-connect--alerte { background: var(--color-erreur-fond); color: var(--color-erreur); }
+.statut-connect--alerte .statut-connect__icone { background: var(--color-erreur); }
+.statut-connect--neutre { background: var(--color-surface-secondaire); color: var(--color-terre); border: 1px solid var(--color-bordure); }
+.statut-connect--neutre .statut-connect__icone { background: var(--color-texte-secondaire); }
+
+.parametres__meta strong {
+  color: var(--color-terre);
+}
+
+/* Texte + bouton : le bouton passe sous le texte sur un petit écran. */
+@media (max-width: 600px) {
+  .parametres__item--empile-mobile {
+    flex-direction: column;
+    align-items: stretch;
+    gap: var(--space-4);
+  }
+}

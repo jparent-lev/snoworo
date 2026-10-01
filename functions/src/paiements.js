@@ -87,7 +87,11 @@ export const preparerCarte = onCall({ region: REGION, secrets: [STRIPE_SECRET_KE
   const intent = await stripe().setupIntents.create({
     customer: customerId,
     usage: "off_session",
-    payment_method_types: ["card"],
+    // Moyens de paiement réglés dans le tableau de bord Stripe (Stripe
+    // n'accepte plus payment_method_types). Aucun moyen qui exige une
+    // redirection : la carte doit pouvoir être prélevée plus tard, sans le
+    // client, quand un déneigeur accepte.
+    automatic_payment_methods: { enabled: true, allow_redirects: "never" },
     metadata: { uid },
   });
   return { clientSecret: intent.client_secret };
@@ -110,7 +114,7 @@ export const enregistrerCarte = onCall({ region: REGION, secrets: [STRIPE_SECRET
   await stripe().customers.update(customerId, { invoice_settings: { default_payment_method: pm.id } });
   const carte = {
     paymentMethodId: pm.id,
-    marque: pm.card?.brand ?? "carte",
+    marque: pm.card?.brand ?? pm.type ?? "carte",
     derniers4: pm.card?.last4 ?? "",
     expMois: pm.card?.exp_month ?? null,
     expAnnee: pm.card?.exp_year ?? null,

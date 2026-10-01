@@ -104,7 +104,9 @@ await test("carte : un seul client Stripe, SetupIntent hors session, carte d'un 
   assert.equal(r.clientSecret, "seti_1_secret_x");
   await appel(p.preparerCarte, "payClient", {});
   assert.equal(derniers("customers.create").length, 1);
-  assert.equal(derniers("setupIntents.create")[0].params.usage, "off_session");
+  const intent = derniers("setupIntents.create")[0].params;
+  assert.equal(intent.usage, "off_session"); assert.equal(intent.payment_method_types, undefined);
+  assert.deepEqual(intent.automatic_payment_methods, { enabled: true, allow_redirects: "never" });
   await echoue(appel(p.enregistrerCarte, "payClient", { setupIntentId: "seti_autre" }), "permission-denied", "carte d'un autre");
   await echoue(appel(p.enregistrerCarte, "payClient", { setupIntentId: "pas-un-id" }), "invalid-argument", "id invalide");
 });
