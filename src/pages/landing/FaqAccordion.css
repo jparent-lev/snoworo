@@ -57,3 +57,50 @@
   max-width: 620px;
   text-wrap: pretty;
 }
+
+/* Thèmes : Général, Je fais déneiger, Je déneige. */
+.faq__themes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.faq__theme {
+  padding: 9px 16px;
+  border: 1.5px solid var(--color-bordure);
+  border-radius: 999px;
+  background: var(--color-surface-carte);
+  color: var(--color-terre);
+  font-family: var(--font-corps);
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.faq__theme:hover:not(.faq__theme--actif) {
+  background: var(--color-surface-secondaire);
+}
+
+.faq__theme--actif {
+  border-color: var(--color-terre);
+  background: var(--color-terre);
+  color: var(--color-surface-carte);
+}
+
+.faq__liste {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+@media (max-width: 480px) {
+  .faq__themes {
+    gap: 6px;
+  }
+
+  .faq__theme {
+    padding: 8px 11px;
+    font-size: 14px;
+  }
+}

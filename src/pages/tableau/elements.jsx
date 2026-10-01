@@ -260,21 +260,34 @@ export function ModaleEvaluation({ titre, intro, libelleEnvoyer, noteRequise, pr
   );
 }
 
-// Photo « c'est fait », lue à l'ouverture seulement (document de quelques
-// centaines de Ko).
+// Photos « c'est fait », lues à l'ouverture seulement (quelques centaines de
+// Ko chacune). Anciennes jobs : une seule photo dans prive/photo.
 export function ModalePhoto({ demande, onFermer }) {
-  const [photo, setPhoto] = useState(undefined);
+  const [photos, setPhotos] = useState(undefined);
+  const nb = demande.nbPhotos ?? 0;
   useEffect(() => {
-    lirePrive(demande.id, "photo")
-      .then((p) => setPhoto(p?.donnees ?? null))
-      .catch(() => setPhoto(null));
-  }, [demande.id]);
+    const noms = nb ? Array.from({ length: nb }, (_, i) => `photo-${i}`) : ["photo"];
+    Promise.all(noms.map((n) => lirePrive(demande.id, n).catch(() => null)))
+      .then((docs) => setPhotos(docs.map((d) => d?.donnees).filter(Boolean)))
+      .catch(() => setPhotos([]));
+  }, [demande.id, nb]);
 
   return (
-    <Modale titre={`Photo de ${demande.deneigeurPrenom}`} onFermer={onFermer} classe="modale--photo" fermer>
-      {photo === undefined && <p>Chargement…</p>}
-      {photo === null && <p>La photo n'est plus disponible (elle est effacée 30 jours après la job).</p>}
-      {photo && <img className="modale__photo" src={photo} alt={`Photo prise par ${demande.deneigeurPrenom} : ${demande.titre}`} />}
+    <Modale titre={`Photos de ${demande.deneigeurPrenom}`} onFermer={onFermer} classe="modale--photo" fermer>
+      {photos === undefined && <p>Chargement…</p>}
+      {photos?.length === 0 && <p>Les photos ne sont plus disponibles (elles sont effacées 30 jours après la job).</p>}
+      {photos?.length > 0 && (
+        <div className="modale__photos">
+          {photos.map((src, i) => (
+            <img
+              key={i}
+              className="modale__photo"
+              src={src}
+              alt={`Photo ${i + 1} sur ${photos.length} prise par ${demande.deneigeurPrenom} : ${demande.titre}`}
+            />
+          ))}
+        </div>
+      )}
     </Modale>
   );
 }

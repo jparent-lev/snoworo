@@ -21,6 +21,7 @@ dist-ssr
 !.env.test
 # Paramètres non secrets des Cloud Functions, par projet : versionnés.
 !functions/.env.snowro-app
+!functions/.env.snowro-test
 
 # Firebase
 .firebase

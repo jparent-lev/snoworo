@@ -128,17 +128,22 @@ async function connexion(cle, largeur = 1280) {
     const d = (await db.doc("demandes/D1").get()).data();
     assert.equal(d.statut, "matchee"); assert.equal(d.deneigeurId, uid.marc); assert.equal(d.paiement.montantDeneigeur, 39.4);
   });
-  await test("Marc : « C'est fait » avec photo, puis passe « En attente de confirmation »", async () => {
+  await test("Marc : « C'est fait » exige une photo ; avec 2 photos, passe « En attente de confirmation »", async () => {
     await p.locator(".carte-job", { hasText: "1234, 3e Avenue" }).getByRole("button", { name: "C'est fait" }).click();
-    await p.getByRole("dialog").locator('input[type="file"]').setInputFiles(`${REPO}public/og-snowro.png`);
-    await p.getByRole("img", { name: "Aperçu de ta photo" }).waitFor();
+    const dlg = p.getByRole("dialog");
+    assert.equal(await dlg.getByRole("button", { name: "Photo requise" }).isDisabled(), true);
+    await dlg.locator('input[type="file"]').setInputFiles([`${REPO}public/og-snowro.png`, `${REPO}public/apple-touch-icon.png`]);
+    await dlg.getByRole("img", { name: "Photo 2" }).waitFor();
     await p.screenshot({ path: `${D}/e2e-faite-photo-1280.png` });
     await p.getByRole("button", { name: "Oui, c'est fait" }).click();
     await p.waitForFunction(async () => true);
     for (let i = 0; i < 30 && (await db.doc("demandes/D1").get()).data().statut !== "faite"; i++) await new Promise((r) => setTimeout(r, 500));
     assert.equal((await db.doc("demandes/D1").get()).data().statut, "faite");
-    const photo = (await db.doc("demandes/D1/prive/photo").get()).data().donnees;
-    assert.ok(photo.startsWith("data:image/jpeg;base64,") && photo.length < 650000, `photo ${photo.length}`);
+    assert.equal((await db.doc("demandes/D1").get()).data().nbPhotos, 2);
+    for (const i of [0, 1]) {
+      const photo = (await db.doc(`demandes/D1/prive/photo-${i}`).get()).data().donnees;
+      assert.ok(photo.startsWith("data:image/jpeg;base64,") && photo.length < 650000, `photo ${photo.length}`);
+    }
   });
   await p.screenshot({ path: `${D}/e2e-marc-apres-1280.png`, fullPage: true });
   await test("Marc : écrit à Paul depuis la job ; le message s'affiche et la demande note le dernier message", async () => {
@@ -172,11 +177,12 @@ async function connexion(cle, largeur = 1280) {
     await p.keyboard.press("Escape");
     await carte.getByRole("button", { name: "Écrire à Marc" }).waitFor();
   });
-  await test("Paul : « Voir la photo » affiche la photo de Marc", async () => {
-    await p.locator(".carte-job", { hasText: "Entrée double + balcon" }).getByRole("button", { name: "Voir la photo" }).click();
-    const img = p.getByRole("dialog", { name: "Photo de Marc" }).getByRole("img");
-    await img.waitFor();
-    assert.ok(await img.evaluate((i) => i.complete && i.naturalWidth > 1000), "image chargée");
+  await test("Paul : « Voir les 2 photos » affiche les photos de Marc", async () => {
+    await p.locator(".carte-job", { hasText: "Entrée double + balcon" }).getByRole("button", { name: "Voir les 2 photos" }).click();
+    const imgs = p.getByRole("dialog", { name: "Photos de Marc" }).getByRole("img");
+    await imgs.nth(1).waitFor();
+    assert.equal(await imgs.count(), 2);
+    assert.ok(await imgs.first().evaluate((i) => i.complete && i.naturalWidth > 1000), "image chargée");
     await p.screenshot({ path: `${D}/e2e-photo-1280.png` });
     await p.getByRole("button", { name: "Fermer" }).click();
   });

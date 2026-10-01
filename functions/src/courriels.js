@@ -16,6 +16,9 @@ export const RESEND_API_KEY = defineSecret("RESEND_API_KEY");
 // formulaire Nous écrire.
 export const ADRESSE_SNOWRO = "allo@snowro.com";
 const EXPEDITEUR = `Snowro <${ADRESSE_SNOWRO}>`;
+// Courriels de l'environnement de test (tout autre projet que la production)
+// marqués comme tels, pour ne jamais les confondre avec de vrais avis.
+const PREFIXE_SUJET = (process.env.GCLOUD_PROJECT ?? "snowro-app") === "snowro-app" ? "" : "[Test] ";
 
 // `cleIdempotence` : Resend ignore un deuxième envoi portant la même clé dans
 // les 24 h, ce qui protège contre un double courriel si la fonction est
@@ -35,7 +38,7 @@ export async function envoyerCourriel({ a, sujet, html, texte, cleIdempotence, t
       from: EXPEDITEUR,
       to: [a],
       reply_to: ADRESSE_SNOWRO,
-      subject: sujet,
+      subject: `${PREFIXE_SUJET}${sujet}`,
       html,
       text: texte,
       tags: type ? [{ name: "type", value: type }] : undefined,

@@ -7,6 +7,7 @@ import FeeCalculator from "./landing/FeeCalculator";
 import FaqAccordion from "./landing/FaqAccordion";
 import WaitlistForm from "./landing/WaitlistForm";
 import HeroIllustration from "./landing/HeroIllustration";
+import ApercuTableau from "./landing/ApercuTableau";
 import {
   ApercuZonesPro,
   CapNeige,
@@ -60,6 +61,7 @@ export default function Landing() {
           </button>
           <nav id="landing-nav" className={`landing__nav ${menuOuvert ? "landing__nav--ouvert" : ""}`}>
             <a href="#comment" onClick={fermerMenu}>Comment ça marche</a>
+            <a href="#tableau-de-bord" onClick={fermerMenu}>Tableau de bord</a>
             <a href="#frais" onClick={fermerMenu}>Frais</a>
             <a href="#deneigeur" onClick={fermerMenu}>Déneiger</a>
             <a href="#pro" onClick={fermerMenu}>Pro</a>
@@ -153,6 +155,58 @@ export default function Landing() {
               </div>
             ))}
           </div>
+        </div>
+      </section>
+
+      {/* 3 bis. Dans le tableau de bord : aperçu (Client / Déneigeur) et éléments de confiance */}
+      <section id="tableau-de-bord" className="landing__section">
+        <div className="landing__deux-colonnes landing__dans-app">
+          <div>
+            <span className="eyebrow">Dans le tableau de bord</span>
+            <h2 className="landing__h2">Tout se passe dans ton tableau de bord</h2>
+            <p className="landing__chapeau">
+              Un seul compte, deux modes : Client pour faire déneiger, Déneigeur pour prendre des jobs. Chaque
+              job suit les mêmes étapes, du début à la fin, sous tes yeux.
+            </p>
+            <ul className="landing__confiance">
+              {[
+                {
+                  icone: "photo",
+                  titre: "Des photos avant de partir",
+                  texte: "Le déneigeur prend de 1 à 3 photos du travail fini, sur place, avant de marquer la job faite. Tu les vois tout de suite.",
+                },
+                {
+                  icone: "message",
+                  titre: "Une messagerie privée",
+                  texte: "Dès que la job est acceptée, vous vous écrivez dans Snowro. Pas besoin d'échanger vos numéros de téléphone.",
+                },
+                {
+                  icone: "epingle",
+                  titre: "Ton adresse protégée",
+                  texte: "Seul le déneigeur qui accepte voit l'adresse exacte. Les autres voient le quartier et la distance.",
+                },
+                {
+                  icone: "horloge",
+                  titre: "12 heures pour vérifier",
+                  texte: "Tu confirmes ou tu signales un problème. Le paiement part au déneigeur seulement après.",
+                },
+                {
+                  icone: "engagement",
+                  titre: "Une job acceptée ne s'annule pas",
+                  texte: "Personne ne laisse tomber ta job pour une plus payante : accepter, c'est s'engager.",
+                },
+              ].map((c) => (
+                <li key={c.titre} className="landing__confiance-item">
+                  <Icone nom={c.icone} />
+                  <div>
+                    <span className="landing__mini-carte-titre">{c.titre}</span>
+                    <span className="landing__p">{c.texte}</span>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          </div>
+          <ApercuTableau />
         </div>
       </section>
 

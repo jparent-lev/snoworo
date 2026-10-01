@@ -10,11 +10,15 @@
 #   - un compte de service « deploiement-github » avec les rôles nécessaires
 #     au déploiement (site, fonctions, règles et index Firestore) ;
 #   - un pool Workload Identity Federation « github » dont le fournisseur
-#     n'accepte QUE la branche main du dépôt jparent-lev/snoworo.
+#     n'accepte QUE la branche voulue (main pour la production, test pour
+#     l'environnement de test) du dépôt jparent-lev/snoworo.
 # Peut être relancé sans danger : ce qui existe déjà est conservé.
 set -euo pipefail
 
-PROJECT_ID="snowro-app"
+# Production par défaut ; pour l'environnement de test :
+#   PROJECT_ID=snowro-test BRANCHE=test bash configurer-deploiement-ci.sh
+PROJECT_ID="${PROJECT_ID:-snowro-app}"
+BRANCHE="${BRANCHE:-main}"
 DEPOT="jparent-lev/snoworo"
 SA_NOM="deploiement-github"
 SA_COURRIEL="${SA_NOM}@${PROJECT_ID}.iam.gserviceaccount.com"
@@ -44,6 +48,14 @@ NUMERO_PROJET="$(gcloud projects describe "$PROJECT_ID" --format='value(projectN
 echo "== Activation des API"
 gcloud services enable iam.googleapis.com iamcredentials.googleapis.com sts.googleapis.com \
   cloudresourcemanager.googleapis.com >/dev/null
+# API utilisées par le déploiement : déjà actives en production, à activer
+# dans un projet neuf (environnement de test) pour que le premier
+# déploiement n'échoue pas.
+gcloud services enable cloudfunctions.googleapis.com cloudbuild.googleapis.com \
+  artifactregistry.googleapis.com run.googleapis.com eventarc.googleapis.com \
+  pubsub.googleapis.com secretmanager.googleapis.com cloudscheduler.googleapis.com \
+  firebasehosting.googleapis.com firebaserules.googleapis.com firestore.googleapis.com \
+  firebaseextensions.googleapis.com cloudbilling.googleapis.com >/dev/null
 
 echo "== Compte de service ${SA_COURRIEL}"
 if ! gcloud iam service-accounts describe "$SA_COURRIEL" >/dev/null 2>&1; then
@@ -72,13 +84,29 @@ for ROLE in "${ROLES[@]}"; do
   echo "   $ROLE"
 done
 
+# Autorisations des agents de service Google exigées au premier déploiement
+# de fonctions (déclencheurs Firestore et tâches planifiées). Le compte de
+# déploiement n'a pas le droit de les accorder : elles se donnent ici, une
+# fois, par un propriétaire du projet.
+echo "== Agents de service (Pub/Sub, Eventarc, Cloud Run)"
+gcloud beta services identity create --service=pubsub.googleapis.com --project="$PROJECT_ID" >/dev/null 2>&1 || true
+gcloud beta services identity create --service=eventarc.googleapis.com --project="$PROJECT_ID" >/dev/null 2>&1 || true
+reessayer gcloud projects add-iam-policy-binding "$PROJECT_ID" --condition=None \
+  --member="serviceAccount:service-${NUMERO_PROJET}@gcp-sa-pubsub.iam.gserviceaccount.com" \
+  --role=roles/iam.serviceAccountTokenCreator
+for ROLE in roles/run.invoker roles/eventarc.eventReceiver; do
+  reessayer gcloud projects add-iam-policy-binding "$PROJECT_ID" --condition=None \
+    --member="serviceAccount:${NUMERO_PROJET}-compute@developer.gserviceaccount.com" --role="$ROLE"
+  echo "   $ROLE"
+done
+
 echo "== Pool Workload Identity « ${POOL} »"
 if ! gcloud iam workload-identity-pools describe "$POOL" --location=global >/dev/null 2>&1; then
   gcloud iam workload-identity-pools create "$POOL" --location=global \
     --display-name="GitHub Actions" >/dev/null
 fi
 
-echo "== Fournisseur « ${FOURNISSEUR} » (branche main de ${DEPOT} seulement)"
+echo "== Fournisseur « ${FOURNISSEUR} » (branche ${BRANCHE} de ${DEPOT} seulement)"
 if ! gcloud iam workload-identity-pools providers describe "$FOURNISSEUR" \
   --location=global --workload-identity-pool="$POOL" >/dev/null 2>&1; then
   gcloud iam workload-identity-pools providers create-oidc "$FOURNISSEUR" \
@@ -86,7 +114,7 @@ if ! gcloud iam workload-identity-pools providers describe "$FOURNISSEUR" \
     --display-name="Dépôt snoworo" \
     --issuer-uri="https://token.actions.githubusercontent.com" \
     --attribute-mapping="google.subject=assertion.sub,attribute.repository=assertion.repository,attribute.ref=assertion.ref" \
-    --attribute-condition="assertion.repository == '${DEPOT}' && assertion.ref == 'refs/heads/main'" >/dev/null
+    --attribute-condition="assertion.repository == '${DEPOT}' && assertion.ref == 'refs/heads/${BRANCHE}'" >/dev/null
 fi
 
 echo "== Autorisation du dépôt à utiliser le compte de service"
@@ -94,14 +122,17 @@ reessayer gcloud iam service-accounts add-iam-policy-binding "$SA_COURRIEL" \
   --role="roles/iam.workloadIdentityUser" \
   --member="principalSet://iam.googleapis.com/projects/${NUMERO_PROJET}/locations/global/workloadIdentityPools/${POOL}/attribute.repository/${DEPOT}"
 
+SUFFIXE=""
+[ "$BRANCHE" = "main" ] || SUFFIXE="_$(echo "$BRANCHE" | tr '[:lower:]' '[:upper:]')"
+
 cat <<FIN
 
 Terminé. Ajoute ces deux variables dans GitHub : dépôt ${DEPOT} > Settings >
 Secrets and variables > Actions > onglet Variables > New repository variable
 
-  GCP_WIF_PROVIDER    projects/${NUMERO_PROJET}/locations/global/workloadIdentityPools/${POOL}/providers/${FOURNISSEUR}
-  GCP_SA_DEPLOIEMENT  ${SA_COURRIEL}
+  GCP_WIF_PROVIDER${SUFFIXE}    projects/${NUMERO_PROJET}/locations/global/workloadIdentityPools/${POOL}/providers/${FOURNISSEUR}
+  GCP_SA_DEPLOIEMENT${SUFFIXE}  ${SA_COURRIEL}
 
-(Ce ne sont pas des secrets : sans la branche main de ce dépôt, elles ne
+(Ce ne sont pas des secrets : sans la branche ${BRANCHE} de ce dépôt, elles ne
 donnent accès à rien.)
 FIN

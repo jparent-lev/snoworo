@@ -1,24 +1,27 @@
-# Déploie tout Snowro sur Firebase à chaque fusion dans main : le site
-# (Firebase Hosting), les Cloud Functions, les règles et les index Firestore.
-# Les fonctions inchangées sont sautées par la CLI Firebase.
+# Déploie tout Snowro sur Firebase : le site (Firebase Hosting), les Cloud
+# Functions, les règles et les index Firestore. Les fonctions inchangées sont
+# sautées par la CLI Firebase.
+#   branche main  -> production (snowro-app, snowro.com)
+#   branche test  -> environnement de test (snowro-test, test.snowro.com),
+#                    site compilé avec .env.test (bandeau, noindex)
 # Authentification sans clé : Workload Identity Federation, limitée à la
-# branche main de ce dépôt. Configuration unique côté Google Cloud :
-# scripts/configurer-deploiement-ci.sh, puis deux variables de dépôt GitHub
-# (Settings > Secrets and variables > Actions > Variables) :
-#   GCP_WIF_PROVIDER    projects/<numéro>/locations/global/workloadIdentityPools/github/providers/snoworo
-#   GCP_SA_DEPLOIEMENT  deploiement-github@snowro-app.iam.gserviceaccount.com
+# branche de chaque environnement. Configuration unique côté Google Cloud :
+# scripts/configurer-deploiement-ci.sh, puis deux variables de dépôt GitHub par
+# environnement (Settings > Secrets and variables > Actions > Variables) :
+#   GCP_WIF_PROVIDER, GCP_SA_DEPLOIEMENT            (production)
+#   GCP_WIF_PROVIDER_TEST, GCP_SA_DEPLOIEMENT_TEST  (test)
 name: Déployer Snowro
 
 on:
   push:
-    branches: [main]
+    branches: [main, test]
   # Lancement manuel (onglet Actions > Déployer Snowro > Run workflow).
   workflow_dispatch:
 
 # Jamais deux déploiements en même temps ; un déploiement en cours n'est pas
 # interrompu par le suivant.
 concurrency:
-  group: deployer-firebase
+  group: deployer-firebase-${{ github.ref_name }}
   cancel-in-progress: false
 
 permissions:
@@ -29,8 +32,13 @@ jobs:
   deployer:
     # Ignoré (gris, pas rouge) tant que la configuration Google Cloud n'est
     # pas faite : voir l'en-tête de ce fichier.
-    if: vars.GCP_WIF_PROVIDER != '' && vars.GCP_SA_DEPLOIEMENT != ''
+    if: >-
+      (github.ref_name == 'main' && vars.GCP_WIF_PROVIDER != '' && vars.GCP_SA_DEPLOIEMENT != '') ||
+      (github.ref_name == 'test' && vars.GCP_WIF_PROVIDER_TEST != '' && vars.GCP_SA_DEPLOIEMENT_TEST != '')
     runs-on: ubuntu-latest
+    env:
+      PROJET: ${{ github.ref_name == 'test' && 'snowro-test' || 'snowro-app' }}
+      MODE_SITE: ${{ github.ref_name == 'test' && 'test' || 'production' }}
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@v5
@@ -43,12 +51,12 @@ jobs:
             package-lock.json
             functions/package-lock.json
 
-      # Configuration web lue dans .env.production ; version affichée dans le
-      # pied de page = commit court (vite.config.js).
+      # Configuration web lue dans .env.production ou .env.test ; version
+      # affichée dans le pied de page = commit court (vite.config.js).
       - name: Construire le site
         run: |
           npm ci
-          npm run build
+          npm run build -- --mode "$MODE_SITE"
 
       - name: Installer les dépendances des fonctions
         working-directory: functions
@@ -57,11 +65,14 @@ jobs:
       - name: S'authentifier auprès de Google Cloud
         uses: google-github-actions/auth@v3
         with:
-          workload_identity_provider: ${{ vars.GCP_WIF_PROVIDER }}
-          service_account: ${{ vars.GCP_SA_DEPLOIEMENT }}
+          workload_identity_provider: ${{ github.ref_name == 'test' && vars.GCP_WIF_PROVIDER_TEST || vars.GCP_WIF_PROVIDER }}
+          service_account: ${{ github.ref_name == 'test' && vars.GCP_SA_DEPLOIEMENT_TEST || vars.GCP_SA_DEPLOIEMENT }}
 
+      # --force : en mode non interactif, la CLI exige ce drapeau pour créer
+      # la règle de nettoyage des images de fonctions (projet neuf) et pour
+      # supprimer les fonctions retirées du code.
       - name: Déployer
         run: >-
           npx --yes firebase-tools@15
           deploy --only hosting,functions,firestore:rules,firestore:indexes
-          --project snowro-app --non-interactive
+          --project "$PROJET" --non-interactive --force

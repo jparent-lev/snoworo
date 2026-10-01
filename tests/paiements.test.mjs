@@ -92,6 +92,7 @@ let ok = 0; const test = async (nom, fn) => { await fn(); ok++; console.log("  �
 await db.doc("users/payClient").set({ displayName: "Sophie Roy", email: "sophie@exemple.ca", role: ["donneur_ouvrage"] });
 await db.doc("users/payDen").set({ displayName: "Éric Pelletier", email: "eric@exemple.ca", role: ["deneigeur_x"], villeGeoId: "ID_QUEBEC", connectStatus: "non_demarre" });
 const demain = new Date(Date.now() + 24 * 3600e3).toISOString();
+const photos = ["data:image/jpeg;base64," + Buffer.from([0xff, 0xd8, 0xff, 0xd9]).toString("base64")];
 const base = { adresse: "10, 4e Avenue, Québec", titre: "Entrée simple", typeService: "entree", montant: 50, dateHeureSouhaitee: demain };
 
 console.log("Paiements Stripe (faux Stripe)");
@@ -168,7 +169,7 @@ await test("accepter : 50 $ prélevés hors session sur la carte du client, paie
   assert.equal(d.paiement.montantDeneigeur, 44);
 });
 await test("confirmer : 44 $ virés au compte du déneigeur, liés au prélèvement", async () => {
-  await appel(f.marquerFaite, "payDen", { demandeId: id });
+  await appel(f.marquerFaite, "payDen", { demandeId: id, photos });
   await appel(f.confirmerJob, "payClient", { demandeId: id });
   const [tr] = derniers("transfers.create");
   assert.equal(tr.params.amount, 4400); assert.equal(tr.params.destination, "acct_den");
@@ -209,7 +210,7 @@ await test("relancer : exige une nouvelle carte, puis la demande redevient ouver
 await test("virement en échec : reste « a_verser », réessayé par la tâche planifiée", async () => {
   const { demandeId } = await appel(f.publierDemande, "payClient", base);
   await appel(f.accepterDemande, "payDen", { demandeId });
-  await appel(f.marquerFaite, "payDen", { demandeId });
+  await appel(f.marquerFaite, "payDen", { demandeId, photos });
   const creer = fauxStripe.transfers.create;
   fauxStripe.transfers.create = async () => { throw new Error("Stripe indisponible"); };
   await appel(f.confirmerJob, "payClient", { demandeId });

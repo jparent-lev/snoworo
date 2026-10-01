@@ -1140,3 +1140,34 @@
     text-align: center;
   }
 }
+
+/* ---- Dans le tableau de bord (aperçu Client / Déneigeur) ---- */
+
+.landing__dans-app {
+  align-items: center;
+}
+
+.landing__confiance {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.landing__confiance-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+}
+
+.landing__confiance-item > div {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.landing__confiance-item .landing__mini-carte-titre {
+  color: var(--color-terre);
+}

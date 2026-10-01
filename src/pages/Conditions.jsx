@@ -92,6 +92,10 @@ export default function Conditions() {
           façon sécuritaire, en utilisant ton propre équipement.
         </li>
         <li>
+          Avant de marquer une job faite, tu prends sur place de 1 à 3 photos du travail terminé. Elles ne
+          montrent que l'endroit déneigé : jamais de personne ni de plaque d'immatriculation reconnaissable.
+        </li>
+        <li>
           Tu reçois le montant offert, moins les frais de service de Snowro, dans ton compte de banque après la
           job. Les frais sont toujours affichés avant que tu acceptes (voir aussi la section{" "}
           <a href="/#frais">Frais</a>).

@@ -207,8 +207,8 @@ Accepter une job passe par une fenêtre d'engagement : **aucune annulation
 possible une fois acceptée**. Cycle complet et transitions :
 `docs/data-model.md` § demandes.
 
-Fin de job : le déneigeur peut joindre une photo à « C'est fait » (facultative,
-visible du client et de lui seulement, effacée après 30 jours). En confirmant,
+Fin de job : « C'est fait » exige de 1 à 3 photos prises sur place (visibles du
+client et du déneigeur seulement, effacées après 30 jours). En confirmant,
 le client peut donner de 1 à 5 étoiles et un mot que seul le déneigeur lit ;
 il peut aussi évaluer plus tard, pendant 7 jours. Pas d'avis publics.
 
