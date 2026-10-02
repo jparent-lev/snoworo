@@ -17,8 +17,20 @@ const fetchOriginal = globalThis.fetch;
 globalThis.fetch = async (url) => {
   const u = new URL(url);
   const levis = (u.searchParams.get("address") ?? "").includes("Lévis") || (u.searchParams.get("latlng") ?? "").startsWith("46.803");
-  if (u.searchParams.get("address")) {
-    return { json: async () => ({ status: "OK", results: [{ geometry: { location: levis ? { lat: 46.8032, lng: -71.1779 } : { lat: 46.8263, lng: -71.2206 } } }] }) };
+  const parTexte = u.searchParams.get("address");
+  if (parTexte || u.searchParams.get("place_id")) {
+    // « rue seulement » : Google ne trouve que la rue, sans numéro civique.
+    const imprecise = (parTexte ?? "").includes("rue seulement");
+    return { json: async () => ({ status: "OK", results: [{
+      types: imprecise ? ["route"] : ["street_address"],
+      place_id: u.searchParams.get("place_id") ?? "ChIJ_adresse",
+      formatted_address: imprecise ? "3e Avenue, Québec, QC, Canada" : `${levis ? "10 rue Saint-Laurent, Lévis" : "1234 3e Avenue, Québec"}, QC G1L 2M4, Canada`,
+      address_components: [
+        ...(imprecise ? [] : [{ long_name: "1234", short_name: "1234", types: ["street_number"] }]),
+        { long_name: "Canada", short_name: "CA", types: ["country", "political"] },
+      ],
+      geometry: { location_type: imprecise ? "GEOMETRIC_CENTER" : "ROOFTOP", location: levis ? { lat: 46.8032, lng: -71.1779 } : { lat: 46.8263, lng: -71.2206 } },
+    }] }) };
   }
   return { json: async () => ({ status: "OK", results: [
     { types: ["street_address"], address_components: [{ long_name: "G1L 2M4", types: ["postal_code"] }, { long_name: levis ? "Lauzon" : "Limoilou", types: ["neighborhood"] }] },
@@ -56,8 +68,23 @@ await test("publier : ville, geohash arrondi, adresse privée, rôle client ajou
   assert.equal(d.statut, "ouverte"); assert.equal(d.villeGeoId, "ID_QUEBEC"); assert.equal(d.quartier, "Limoilou");
   assert.equal(d.adresseGeohash.length, 7); assert.equal(d.donneurPrenom, "Mireille"); assert.equal(d.outilsFournis, true);
   const prive = (await db.doc(`demandes/${id}/prive/adresse`).get()).data();
-  assert.equal(prive.adresse, base.adresse);
+  assert.equal(prive.adresse, "1234 3e Avenue, Québec, QC G1L 2M4");
+  assert.equal(prive.saisie, "texte");
   assert.deepEqual((await db.doc("users/client1").get()).data().role, ["donneur_ouvrage"]);
+});
+await test("publier : adresse choisie dans les suggestions (placeId) et appartement, adresse reconnue enregistrée", async () => {
+  const { demandeId, adresse } = await appel(f.publierDemande, "client1", { ...base, adresse: undefined, placeId: "ChIJ_choisie", unite: "3" });
+  assert.equal(adresse, "1234 3e Avenue, Québec, QC G1L 2M4 (app. 3)");
+  const prive = (await db.doc(`demandes/${demandeId}/prive/adresse`).get()).data();
+  assert.equal(prive.placeId, "ChIJ_choisie"); assert.equal(prive.unite, "3"); assert.equal(prive.saisie, "suggestion");
+  assert.equal((await lire(demandeId)).villeGeoId, "ID_QUEBEC");
+});
+await test("publier : adresse sans numéro civique refusée ; « toiture » n'est plus accepté ; « autre » exige une description", async () => {
+  const e = await echoue(appel(f.publierDemande, "client1", { ...base, adresse: "3e Avenue rue seulement, Québec" }), "invalid-argument", "rue seule");
+  assert.match(e.message, /numéro civique/);
+  await echoue(appel(f.publierDemande, "client1", { ...base, typeService: "toiture" }), "invalid-argument", "toiture");
+  await echoue(appel(f.publierDemande, "client1", { ...base, typeService: "autre", description: "" }), "invalid-argument", "autre sans description");
+  await appel(f.publierDemande, "client1", { ...base, typeService: "autre", description: "Escalier extérieur" });
 });
 await test("publier : refus sans connexion, montant hors bornes, heure passée, type invalide", async () => {
   await echoue(appel(f.publierDemande, null, base), "unauthenticated", "sans connexion");
@@ -234,6 +261,32 @@ await test("avis : le contenu est échappé dans le HTML et tronqué s'il est lo
   const { html, texte } = m.composerAvis({ expediteurPrenom: "Marc", titreDemande: "Entrée", extrait: "<b>salut</b> " + "x".repeat(400), lien: "https://snowro.com" });
   assert.ok(html.includes("&lt;b&gt;salut&lt;/b&gt;") && !html.includes("<b>salut"));
   assert.ok(texte.includes("…") && !texte.includes("x".repeat(300)));
+});
+
+console.log("Suggestions d'adresses");
+const sa = await import(`${REPO}functions/src/suggestionsAdresse.js`);
+let requetePlaces;
+globalThis.fetch = async (url, options) => {
+  requetePlaces = { url, corps: JSON.parse(options.body) };
+  return { ok: true, json: async () => ({ suggestions: [
+    { placePrediction: { placeId: "ChIJ_1", structuredFormat: { mainText: { text: "1234 3e Avenue" }, secondaryText: { text: "Québec, QC, Canada" } } } },
+    { queryPrediction: { text: { text: "ignorée" } } },
+  ] }) };
+};
+await test("suggestions : Canada, adresses civiques, en français ; connexion requise ; texte trop court ignoré", async () => {
+  const { suggestions } = await appel(sa.suggererAdresses, "client1", { texte: "1234 3e av", session: "s1" });
+  assert.deepEqual(suggestions, [{ placeId: "ChIJ_1", principal: "1234 3e Avenue", secondaire: "Québec, QC, Canada" }]);
+  assert.match(requetePlaces.url, /places:autocomplete/);
+  assert.deepEqual(requetePlaces.corps.includedRegionCodes, ["ca"]);
+  assert.ok(requetePlaces.corps.includedPrimaryTypes.includes("street_address"));
+  assert.equal(requetePlaces.corps.languageCode, "fr-CA"); assert.equal(requetePlaces.corps.sessionToken, "s1");
+  await echoue(appel(sa.suggererAdresses, null, { texte: "1234 3e av" }), "unauthenticated", "sans connexion");
+  assert.deepEqual((await appel(sa.suggererAdresses, "client1", { texte: "12" })).suggestions, []);
+});
+await test("suggestions : service Google indisponible -> « suggestions-indisponibles » (le site passe en saisie complète)", async () => {
+  globalThis.fetch = async () => ({ ok: false, status: 403, json: async () => ({ error: { message: "Places API (New) has not been used" } }) });
+  const e = await echoue(appel(sa.suggererAdresses, "client1", { texte: "1234 3e av" }), "unavailable", "indisponible");
+  assert.equal(e.message, "suggestions-indisponibles");
 });
 
 console.log("Firestore rules");

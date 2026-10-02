@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
-import { ecouterMesDemandes } from "../../lib/demandes";
+import { ecouterMesDemandes, lireAdressePrivee } from "../../lib/demandes";
 import { aNouveauMessage, ecouterLectures } from "../../lib/messagerie";
 import { PAIEMENT_REEL, relancerDemande } from "../../lib/paiements";
 import CarteDePaiement from "../../components/CarteDePaiement";
@@ -152,6 +152,15 @@ function CarteDemandeClient({ demande: d, nouveau, conversationOuverte, onConver
   // "augmenter" | "annuler" | "signaler" | "messages" | "confirmer" | "photo" | "carte"
   const [modale, setModale] = useState(conversationOuverte && d.deneigeurId ? "messages" : null);
   const [erreur, setErreur] = useState(null);
+  const [adresse, setAdresse] = useState(null);
+
+  // Adresse reconnue (celle que verra le déneigeur), pour que le client la
+  // revérifie.
+  useEffect(() => {
+    lireAdressePrivee(d.id)
+      .then(setAdresse)
+      .catch(() => setAdresse(null));
+  }, [d.id]);
 
   async function agir(action) {
     setErreur(null);
@@ -175,6 +184,7 @@ function CarteDemandeClient({ demande: d, nouveau, conversationOuverte, onConver
         <span className="carte-job__meta">{ilYa(d.statut === "faite" ? d.faiteAt : d.createdAt)}</span>
       </div>
       <div className="carte-job__titre">{d.titre}</div>
+      {adresse && <div className="carte-job__meta">📍 {adresse}</div>}
 
       {d.deneigeurPrenom && (
         <Personne

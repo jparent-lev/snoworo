@@ -1,0 +1,65 @@
+.champ-adresse {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.champ-adresse__liste {
+  position: absolute;
+  top: calc(100% - 4px);
+  left: 0;
+  right: 0;
+  z-index: 30;
+  margin: 0;
+  padding: 6px;
+  list-style: none;
+  background: var(--color-surface-carte);
+  border: 1px solid var(--color-bordure);
+  border-radius: 12px;
+  box-shadow: 0 18px 40px -20px rgba(59, 42, 31, 0.5);
+}
+
+.champ-adresse__option {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  padding: 9px 10px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 400;
+  color: var(--color-terre);
+}
+
+.champ-adresse__option b {
+  font-size: 15px;
+}
+
+.champ-adresse__option span {
+  font-size: 13px;
+  color: var(--color-texte-secondaire);
+}
+
+.champ-adresse__option--actif,
+.champ-adresse__option:hover {
+  background: var(--color-surface-secondaire);
+}
+
+.champ-adresse__info {
+  padding: 9px 10px;
+  font-weight: 400;
+  font-size: 14px;
+  color: var(--color-texte-secondaire);
+}
+
+.champ-adresse__manuel {
+  padding: 8px 10px 4px;
+  border-top: 1px solid var(--color-bordure);
+  margin-top: 4px;
+}
+
+.champ-adresse__ok {
+  font-size: 13.5px;
+  font-weight: 700;
+  color: #24521a;
+}

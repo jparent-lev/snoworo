@@ -183,6 +183,8 @@ Cartes de test : `4242 4242 4242 4242` (fonctionne), `4000 0000 0000 0341`
 | 5 | Tester les deux webhooks de bout en bout | Stripe | « Envoyer des événements de test » (`account.updated`) : livraison attendue 200 |
 | 6 | Certificat de `test.snowro.com` | Firebase Hosting | Attendre, puis tester https://test.snowro.com |
 | 7 | Passage de Stripe en production | Stripe et GCP | Vérification d'entreprise, clés live, webhook de production, nouvelles versions des secrets, TPS/TVQ avec le comptable |
+| 9 | Activer « Places API (New) » | GCP `snowro-test` puis `snowro-app` | Suggestions d'adresses (`suggererAdresses`) ; même clé que le géocodage. Sans elle, le formulaire passe en saisie complète vérifiée |
+| 10 | Désactiver BLIK et les autres moyens non nord-américains | Stripe > Paramètres > Moyens de paiement | Garder Cartes (et Link) ; à refaire en mode production |
 | 8 | DKIM Google Workspace, puis DMARC `quarantine` | Console Workspace, GoDaddy | `google._domainkey` encore absent |
 
 ## 7. Journal

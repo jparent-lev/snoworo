@@ -228,7 +228,12 @@ avant l'écriture).
 
 ### Sous-collection `prive` (client et déneigeur choisi seulement)
 
-- `adresse` : `{ adresse, geohash }`, écrite par `publierDemande`.
+- `adresse` : `{ adresse, adresseNormalisee, unite, placeId, saisie, geohash }`,
+  écrite par `publierDemande`. `adresse` = adresse reconnue par Google (plus
+  l'appartement) : c'est celle que voit le déneigeur. `saisie` : « suggestion »
+  (choisie dans la liste, `suggererAdresses`) ou « texte » (saisie complète).
+  Dans les deux cas, seule une adresse civique précise est acceptée (numéro et
+  rue, position sur le toit ou interpolée).
 - `photo-0`, `photo-1`, `photo-2` : `{ donnees, ajouteeAt, expireAt }`, de 1 à
   3 photos **obligatoires** envoyées avec `marquerFaite` (anciennes jobs : un
   seul document `photo`). L'app la réduit (1280 px) et la réencode en JPEG, ce qui
