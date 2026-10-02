@@ -28,7 +28,7 @@ const FILTRES_DEMANDES = [
   { cle: "toutes", libelle: "Toutes", garde: () => true },
   { cle: "entree", libelle: "Entrée", garde: (d) => d.typeService === "entree" || d.typeService === "entree_balcon" },
   { cle: "stationnement", libelle: "Stationnement", garde: (d) => d.typeService === "stationnement" },
-  { cle: "toiture", libelle: "Toiture", garde: (d) => d.typeService === "toiture" },
+  { cle: "autre", libelle: "Autre", garde: (d) => d.typeService === "autre" || d.typeService === "toiture" },
   { cle: "aujourdhui", libelle: "Aujourd'hui", garde: (d) => estAujourdhui(d.dateHeureSouhaitee) },
   { cle: "outils", libelle: "Outils fournis", garde: (d) => d.outilsFournis },
 ];

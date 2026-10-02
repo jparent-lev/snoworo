@@ -80,3 +80,12 @@ Refaire les étapes 2, 4 et 5 avec les clés du **mode production**
 (`sk_live_…`, `pk_live_…`) et un nouveau webhook en mode production. Prévoir
 avant : conditions d'utilisation à jour (paiement, remboursement), et
 validation fiscale des frais Snowro (TPS/TVQ) avec le comptable.
+
+## Moyens de paiement offerts
+
+Le formulaire de carte affiche la carte en premier (`paymentMethodOrder` dans
+`src/components/CarteDePaiement.jsx`). Les autres moyens proposés viennent des
+réglages du tableau de bord : Paramètres > Moyens de paiement. Pour le marché
+canadien, garder **Cartes** (Apple Pay et Google Pay en découlent) et, au
+besoin, **Link** ; désactiver les moyens européens ou asiatiques (BLIK,
+Bancontact, iDEAL, EPS, Przelewy24, etc.), à refaire en mode production.

@@ -28,3 +28,4 @@ export {
   synchroniserCompteDeneigeur,
   webhookStripe,
 } from "./paiements.js";
+export { suggererAdresses } from "./suggestionsAdresse.js";
