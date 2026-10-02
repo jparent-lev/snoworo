@@ -293,6 +293,41 @@ async function connexion(cle, largeur = 1280) {
   await ctx.close();
 }
 
+// Adresse de service : même champ à suggestions que pour une demande. Les
+// deux fonctions sont simulées (l'émulateur n'a pas de clé Google).
+{
+  const { p, ctx } = await connexion("marc", 390);
+  const appels = [];
+  await p.route("**/suggererAdresses", (r) => r.fulfill({ json: { result: { suggestions: [
+    { placeId: "ChIJ_saules", principal: "155 Rue des Saules Est", secondaire: "Québec, QC, Canada" },
+  ] } } }));
+  await p.route("**/mettreAJourAdresseUtilisateur", (r) => {
+    appels.push(r.request().postDataJSON().data);
+    return r.fulfill({ json: { result: { ville: "Québec", villeGeoId: "ID_QUEBEC" } } });
+  });
+  await test("Marc : adresse de service choisie dans les suggestions, envoyée par placeId", async () => {
+    await p.goto("http://localhost:4190/parametres");
+    const champ = p.getByRole("combobox");
+    await champ.fill("155 rue des Saul");
+    await p.getByRole("option", { name: /155 Rue des Saules Est/ }).click();
+    await p.getByText("✓ Adresse reconnue : 155 Rue des Saules Est, Québec, QC, Canada").waitFor();
+    assert.equal(await p.evaluate(() => document.documentElement.scrollWidth), 390);
+    await p.screenshot({ path: `${D}/e2e-adresse-service-390.png`, fullPage: true });
+    await p.getByRole("button", { name: "Utiliser cette adresse" }).click();
+    await p.getByText("✓ Adresse enregistrée : 155 Rue des Saules Est, Québec, QC, Canada").waitFor();
+    assert.deepEqual(appels, [{ placeId: "ChIJ_saules" }]);
+  });
+  await test("Marc : sans suggestion choisie, rien n'est envoyé", async () => {
+    await p.getByRole("combobox").fill("155 rue des Saul");
+    await p.getByRole("option", { name: /155 Rue des Saules Est/ }).waitFor();
+    await p.getByRole("combobox").press("Escape");
+    await p.getByRole("button", { name: "Utiliser cette adresse" }).click();
+    await p.getByText("Choisis ton adresse dans la liste de suggestions.").waitFor();
+    assert.equal(appels.length, 1);
+  });
+  await ctx.close();
+}
+
 await b.close();
 serveur.kill();
 console.log(`\n${ok} tests réussis`);
