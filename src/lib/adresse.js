@@ -8,11 +8,13 @@ export function mettreAJourAdresseParPosition(geohash) {
   return mettreAJourAdresseCallable({ geohash });
 }
 
-export function mettreAJourAdresseParTexte(adresse) {
-  return mettreAJourAdresseCallable({ adresse });
+// Adresse de service du déneigeur : choisie dans les suggestions (placeId)
+// ou écrite au complet (texte), comme l'adresse d'une demande.
+export function mettreAJourAdresseParSaisie({ placeId, texte }) {
+  return mettreAJourAdresseCallable(placeId ? { placeId } : { adresse: texte.trim() });
 }
 
-// Suggestions d'adresses (formulaire de demande), par le serveur : la clé
+// Suggestions d'adresses (demande et adresse de service), par le serveur : la clé
 // Google n'est jamais dans le site.
 const suggererCallable = httpsCallable(functions, "suggererAdresses");
 export async function suggererAdresses(texte, session) {

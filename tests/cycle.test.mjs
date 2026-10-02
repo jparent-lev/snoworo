@@ -14,7 +14,7 @@ const REPO = fileURLToPath(new URL("..", import.meta.url));
 
 // Géocodage simulé : toute adresse contenant « Lévis » tombe à Lévis, le reste à Québec (Limoilou).
 const fetchOriginal = globalThis.fetch;
-globalThis.fetch = async (url) => {
+const fetchGeocodage = async (url) => {
   const u = new URL(url);
   const levis = (u.searchParams.get("address") ?? "").includes("Lévis") || (u.searchParams.get("latlng") ?? "").startsWith("46.803");
   const parTexte = u.searchParams.get("address");
@@ -37,6 +37,7 @@ globalThis.fetch = async (url) => {
     { types: ["locality", "political"], place_id: levis ? "ID_LEVIS" : "ID_QUEBEC", address_components: [{ long_name: levis ? "Lévis" : "Québec", types: ["locality"] }] },
   ] }) };
 };
+globalThis.fetch = fetchGeocodage;
 
 const f = await import(`${REPO}functions/src/cycleDemande.js`);
 const { db } = await import(`${REPO}functions/src/admin.js`);
@@ -298,6 +299,22 @@ await test("suggestions : noms mal encodés par Google réparés (« Les Ã\uFFF
     structuredFormat: { mainText: { text: "155 Rue des Saules" }, secondaryText: { text: "Les \u00C3\uFFFDBoulements, QC, Canada" } } } }] }) });
   const { suggestions } = await appel(sa.suggererAdresses, "client1", { texte: "155 rue des Saul" });
   assert.equal(suggestions[0].secondaire, "Les Éboulements, QC, Canada");
+});
+
+console.log("Adresse de service du déneigeur");
+const ad = await import(`${REPO}functions/src/adresse.js`);
+await db.doc("users/den9").set({ displayName: "Léa Roy", role: ["deneigeur_x"] });
+await test("adresse de service : suggestion choisie (placeId) ou adresse complète ; rue seule refusée", async () => {
+  globalThis.fetch = fetchGeocodage;
+  assert.deepEqual(await appel(ad.mettreAJourAdresseUtilisateur, "den9", { placeId: "ChIJ_choisie" }), { ville: "Québec", villeGeoId: "ID_QUEBEC" });
+  const u = (await db.doc("users/den9").get()).data();
+  assert.equal(u.addressGeohash.length, 9); assert.equal(u.ville, "Québec");
+  assert.equal((await appel(ad.mettreAJourAdresseUtilisateur, "den9", { adresse: "10 rue Saint-Laurent, Lévis" })).villeGeoId, "ID_LEVIS");
+  const e = await echoue(appel(ad.mettreAJourAdresseUtilisateur, "den9", { adresse: "3e Avenue rue seulement, Québec" }), "invalid-argument", "rue seule");
+  assert.match(e.message, /numéro/i);
+  assert.equal((await db.doc("users/den9").get()).data().villeGeoId, "ID_LEVIS", "adresse précédente gardée");
+  await echoue(appel(ad.mettreAJourAdresseUtilisateur, null, { placeId: "x" }), "unauthenticated", "sans connexion");
+  await echoue(appel(ad.mettreAJourAdresseUtilisateur, "den9", {}), "invalid-argument", "rien");
 });
 
 console.log("Firestore rules");

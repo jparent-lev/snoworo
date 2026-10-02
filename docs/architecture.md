@@ -145,9 +145,11 @@ simple que l'octroi.
 Pas encore de carte visuelle Google Maps. Pour le MVP :
 - Le donneur d'ouvrage publie avec sa position navigateur (`navigator.geolocation`),
   encodée en geohash (`adresseGeohash`).
-- Un déneigeur enregistre son adresse de service (Paramètres → "Utiliser ma
-  position") — même mécanisme de géolocalisation navigateur, encodé en geohash,
-  envoyé à `mettreAJourAdresseUtilisateur`.
+- Un déneigeur enregistre son adresse de service dans Paramètres, envoyée à
+  `mettreAJourAdresseUtilisateur` : soit choisie dans les suggestions
+  d'adresses (`placeId`, même champ que pour une demande), soit écrite au
+  complet (refusée sans numéro civique), soit par sa position navigateur
+  (geohash).
 - `quartier` (sur une demande) est saisi librement par le donneur d'ouvrage —
   purement cosmétique, jamais utilisé pour une décision de matching.
 - `ville`/`villeGeoId` sont dérivés côté serveur par géocodage inverse Google
