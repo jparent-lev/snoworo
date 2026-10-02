@@ -289,6 +289,17 @@ await test("suggestions : service Google indisponible -> « suggestions-indispon
   assert.equal(e.message, "suggestions-indisponibles");
 });
 
+await test("suggestions : noms mal encodés par Google réparés (« Les Ã\uFFFDBoulements » -> « Les Éboulements »)", async () => {
+  const { reparerTexteGoogle } = await import(`${REPO}functions/src/geocoding.js`);
+  assert.equal(reparerTexteGoogle("Les \u00C3\uFFFDBoulements, QC, Canada"), "Les Éboulements, QC, Canada");
+  assert.equal(reparerTexteGoogle("Qu\u00C3\u00A9bec"), "Québec");
+  assert.equal(reparerTexteGoogle("Rue de l'Église, Québec"), "Rue de l'Église, Québec");
+  globalThis.fetch = async () => ({ ok: true, json: async () => ({ suggestions: [{ placePrediction: { placeId: "p1",
+    structuredFormat: { mainText: { text: "155 Rue des Saules" }, secondaryText: { text: "Les \u00C3\uFFFDBoulements, QC, Canada" } } } }] }) });
+  const { suggestions } = await appel(sa.suggererAdresses, "client1", { texte: "155 rue des Saul" });
+  assert.equal(suggestions[0].secondaire, "Les Éboulements, QC, Canada");
+});
+
 console.log("Firestore rules");
 globalThis.fetch = fetchOriginal;
 const env = await initializeTestEnvironment({ projectId: "demo-snowro", firestore: { rules: readFileSync(`${REPO}firestore.rules`, "utf8"), host: "127.0.0.1", port: 8080 } });
