@@ -7,7 +7,7 @@ import geohash from "ngeohash";
 export const GEOCODING_API_KEY = defineSecret("GOOGLE_GEOCODING_API_KEY");
 
 function extraireComposant(components, type) {
-  return components.find((c) => c.types.includes(type))?.long_name ?? null;
+  return reparerTexteGoogle(components.find((c) => c.types.includes(type))?.long_name ?? null);
 }
 
 async function appelerGeocodingApi(params) {
@@ -97,7 +97,7 @@ async function depuisResultat(resultat, { exigerPrecision }) {
     geohash: geohash.encode(lat, lng),
     // Adresse telle que Google la reconnaît (« 1234 3e Avenue, Québec, QC
     // G1L 2M4, Canada ») : c'est elle qu'on montre au déneigeur.
-    adresseNormalisee: resultat.formatted_address,
+    adresseNormalisee: reparerTexteGoogle(resultat.formatted_address),
     placeId: resultat.place_id,
   };
 }
@@ -134,6 +134,24 @@ export async function villeDepuisPlaceId(placeId, { exigerPrecision = true } = {
 // Québec. `session` regroupe les frappes d'une même saisie (facturation).
 const BIAIS_QUEBEC = { rectangle: { low: { latitude: 44.9, longitude: -79.8 }, high: { latitude: 53, longitude: -57 } } };
 
+// Quelques noms de lieux arrivent de Google déjà mal encodés (UTF-8 relu en
+// Latin-1), par exemple « Les Ã�Boulements » pour « Les Éboulements », alors
+// que « Québec » dans la même réponse est correct : l'erreur est dans leurs
+// données, pas dans notre lecture. Si les octets d'origine sont intacts, on
+// les relit en UTF-8. Si le second octet est perdu (caractère de
+// remplacement), on suppose « É », seule majuscule accentuée courante en
+// début de nom au Québec, et on remet en minuscule la lettre suivante, que
+// Google a mise en majuscule en croyant à un début de mot.
+export function reparerTexteGoogle(texte) {
+  if (!texte || !texte.includes("Ã")) return texte;
+  let repare = texte.replace(/Ã\uFFFD(\p{Lu})?/gu, (_, lettre) => "É" + (lettre ? lettre.toLowerCase() : ""));
+  repare = repare.replace(/(?:[ÂÃ][\u0080-\u00BF])+/g, (bout) => {
+    const relu = Buffer.from(bout, "latin1").toString("utf8");
+    return relu.includes("\uFFFD") ? bout : relu;
+  });
+  return repare;
+}
+
 export async function suggestionsAdresses(texte, session) {
   const res = await fetch("https://places.googleapis.com/v1/places:autocomplete", {
     method: "POST",
@@ -155,7 +173,7 @@ export async function suggestionsAdresses(texte, session) {
     .slice(0, 5)
     .map((p) => ({
       placeId: p.placeId,
-      principal: p.structuredFormat?.mainText?.text ?? p.text?.text ?? "",
-      secondaire: p.structuredFormat?.secondaryText?.text ?? "",
+      principal: reparerTexteGoogle(p.structuredFormat?.mainText?.text ?? p.text?.text ?? ""),
+      secondaire: reparerTexteGoogle(p.structuredFormat?.secondaryText?.text ?? ""),
     }));
 }
