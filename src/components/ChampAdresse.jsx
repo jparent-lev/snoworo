@@ -2,12 +2,12 @@ import { useEffect, useId, useRef, useState } from "react";
 import { suggererAdresses } from "../lib/adresse";
 import "./ChampAdresse.css";
 
-// Adresse d'une demande, avec suggestions pendant la saisie (Canada,
+// Adresse d'une demande ou adresse de service, avec suggestions pendant la saisie (Canada,
 // adresses civiques seulement). `valeur` : { texte, placeId, libelle }.
 // Choisir une suggestion fixe placeId ; retaper l'efface. Si le service de
 // suggestions ne répond pas, ou si l'adresse n'est pas dans la liste, on
 // peut l'écrire au complet : le serveur vérifie alors qu'elle est précise.
-export default function ChampAdresse({ valeur, onChange, manuel, onManuel }) {
+export default function ChampAdresse({ valeur, onChange, manuel, onManuel, disabled = false }) {
   const [suggestions, setSuggestions] = useState([]);
   const [ouvert, setOuvert] = useState(false);
   const [actif, setActif] = useState(-1);
@@ -80,6 +80,7 @@ export default function ChampAdresse({ valeur, onChange, manuel, onManuel }) {
         onBlur={() => setTimeout(() => setOuvert(false), 150)}
         placeholder={sansSuggestions ? "1234, 3e Avenue, Québec, G1L 2M4" : "Commence par le numéro et la rue"}
         autoComplete="off"
+        disabled={disabled}
         role="combobox"
         aria-expanded={listeVisible}
         aria-controls={idListe}
@@ -130,7 +131,7 @@ export default function ChampAdresse({ valeur, onChange, manuel, onManuel }) {
       )}
       {manuel && (
         <span className="auth-form__aide">
-          Écris l'adresse au complet, avec le numéro civique et le code postal. On la vérifiera en publiant.{" "}
+          Écris l'adresse au complet, avec le numéro civique et le code postal. On vérifiera qu'elle est précise.{" "}
           <button type="button" className="btn btn--lien" onClick={() => onManuel(false)}>
             Revenir aux suggestions
           </button>

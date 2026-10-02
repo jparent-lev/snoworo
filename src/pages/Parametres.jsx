@@ -8,7 +8,7 @@ import { ROLE_DENEIGEUR } from "../lib/mode";
 import "./tableau/Tableau.css";
 import { useAuth } from "../context/AuthContext";
 import { grantConsent, revokeConsent } from "../lib/consents";
-import { mettreAJourAdresseParPosition, mettreAJourAdresseParTexte } from "../lib/adresse";
+import { mettreAJourAdresseParPosition, mettreAJourAdresseParSaisie } from "../lib/adresse";
 import { encoderGeohash } from "../lib/geo";
 import { messageErreur } from "../lib/cycleDemande";
 import {
@@ -19,6 +19,7 @@ import {
   synchroniserCompteDeneigeur,
 } from "../lib/paiements";
 import CarteDePaiement from "../components/CarteDePaiement";
+import ChampAdresse from "../components/ChampAdresse";
 import "./Parametres.css";
 
 const CONSENTS = [
@@ -39,12 +40,16 @@ const CONSENTS = [
   },
 ];
 
+const ADRESSE_VIDE = { texte: "", placeId: null, libelle: null };
+
 export default function Parametres() {
   const { user, profile } = useAuth();
   const [enCours, setEnCours] = useState(null);
   const [erreurAdresse, setErreurAdresse] = useState(null);
   const [majAdresseEnCours, setMajAdresseEnCours] = useState(false);
-  const [adresseTexte, setAdresseTexte] = useState("");
+  const [adresse, setAdresse] = useState(ADRESSE_VIDE);
+  const [adresseManuelle, setAdresseManuelle] = useState(false);
+  const [adresseEnregistree, setAdresseEnregistree] = useState(null);
 
   async function basculer(type, accorde) {
     setEnCours(type);
@@ -68,6 +73,7 @@ export default function Parametres() {
         try {
           const hash = encoderGeohash(pos.coords.latitude, pos.coords.longitude);
           await mettreAJourAdresseParPosition(hash);
+          setAdresseEnregistree(null);
         } catch {
           setErreurAdresse("Impossible de déterminer ta ville à partir de cette position. Réessaie, ou entre ton adresse manuellement.");
         } finally {
@@ -82,16 +88,31 @@ export default function Parametres() {
     );
   }
 
-  async function mettreAJourParTexte(e) {
+  // Comme pour une demande : une suggestion choisie, ou l'adresse écrite au
+  // complet (« pas dans la liste »), que le serveur vérifie.
+  const adresseManquante = !adresse.placeId && (!adresseManuelle || adresse.texte.trim().length < 8);
+
+  async function mettreAJourParSaisie(e) {
     e.preventDefault();
-    if (!adresseTexte.trim()) return;
+    if (adresseManquante) {
+      setErreurAdresse(
+        adresseManuelle
+          ? "Écris l'adresse au complet, avec le numéro civique."
+          : "Choisis ton adresse dans la liste de suggestions.",
+      );
+      return;
+    }
     setErreurAdresse(null);
     setMajAdresseEnCours(true);
     try {
-      await mettreAJourAdresseParTexte(adresseTexte.trim());
-      setAdresseTexte("");
-    } catch {
-      setErreurAdresse("Adresse introuvable. Vérifie l'orthographe et réessaie.");
+      await mettreAJourAdresseParSaisie(adresse);
+      setAdresseEnregistree(adresse.placeId ? adresse.libelle : adresse.texte.trim());
+      setAdresse(ADRESSE_VIDE);
+      setAdresseManuelle(false);
+    } catch (err) {
+      setErreurAdresse(
+        err?.code === "functions/invalid-argument" ? err.message : "Adresse introuvable. Vérifie l'adresse et réessaie.",
+      );
     } finally {
       setMajAdresseEnCours(false);
     }
@@ -124,6 +145,7 @@ export default function Parametres() {
               ? "Tu vois les demandes ouvertes dans cette ville."
               : "Ajoute ton adresse pour voir les demandes près de chez toi."}
           </p>
+          {adresseEnregistree && <p className="champ-adresse__ok">✓ Adresse enregistrée : {adresseEnregistree}</p>}
           {erreurAdresse && <p className="message-erreur" role="alert">{erreurAdresse}</p>}
         </div>
         <button
@@ -137,19 +159,22 @@ export default function Parametres() {
         </button>
       </div>
 
-      <form className="parametres__adresse-manuelle" onSubmit={mettreAJourParTexte}>
-        <label className="auth-form__champ" style={{ flex: 1 }}>
-          Ou entre ton adresse
-          <input
-            type="text"
-            value={adresseTexte}
-            onChange={(e) => setAdresseTexte(e.target.value)}
-            placeholder="123 rue des Érables, Lévis"
+      <form className="parametres__adresse-manuelle" onSubmit={mettreAJourParSaisie} noValidate>
+        <div className="auth-form__champ" style={{ flex: 1 }}>
+          <span>Ou entre ton adresse</span>
+          <ChampAdresse
+            valeur={adresse}
+            onChange={setAdresse}
+            manuel={adresseManuelle}
+            onManuel={(m) => {
+              setAdresseManuelle(m);
+              setAdresse(ADRESSE_VIDE);
+            }}
             disabled={majAdresseEnCours}
           />
-        </label>
-        <button type="submit" className="auth-form__bouton" disabled={majAdresseEnCours || !adresseTexte.trim()}>
-          {majAdresseEnCours ? "Recherche…" : "Utiliser cette adresse"}
+        </div>
+        <button type="submit" className="auth-form__bouton" disabled={majAdresseEnCours || !adresse.texte.trim()}>
+          {majAdresseEnCours ? "Vérification…" : "Utiliser cette adresse"}
         </button>
       </form>
 

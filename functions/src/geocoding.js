@@ -102,9 +102,9 @@ async function depuisResultat(resultat, { exigerPrecision }) {
   };
 }
 
-// Géocodage direct : adresse saisie -> ville + geohash. Pour un déneigeur
-// (adresse de service), un quartier suffit ; pour une demande,
-// `exigerPrecision` refuse tout ce qui n'est pas un numéro civique.
+// Géocodage direct : adresse saisie -> ville + geohash. `exigerPrecision`
+// refuse tout ce qui n'est pas un numéro civique (demande et adresse de
+// service du déneigeur écrites au complet).
 //
 // Le géocodage direct (forward) d'une adresse précise ne renvoie généralement
 // qu'UN seul résultat, au niveau de l'adresse civique — jamais de résultat
