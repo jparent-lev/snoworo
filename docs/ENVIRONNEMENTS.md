@@ -85,7 +85,11 @@ créer.
 - Paramètres des fonctions (`functions/.env.snowro-app`) : `PAIEMENT_REEL=true`,
   `URL_SITE=https://snowro.com`
 - Secrets (Secret Manager, projet `snowro-app`) :
-  - `GOOGLE_GEOCODING_API_KEY` (2026-09-09)
+  - `GOOGLE_GEOCODING_API_KEY` (2026-09-09) : clé « Snowro-Geo » du projet
+    `snowro-app`, restreinte aux API Geocoding et Places API (New) (cette
+    dernière ajoutée le 2026-10-02). Clé **serveur** seulement (Cloud
+    Functions), jamais envoyée au navigateur : une restriction par site web
+    ne s'applique pas, la restriction par API est la bonne.
   - `RESEND_API_KEY` (2026-09-30)
   - `STRIPE_SECRET_KEY` (2026-10-01) : clé secrète de la **sandbox** Stripe,
     107 caractères vérifiés
@@ -121,7 +125,8 @@ confirmation (Transfer), comptes des déneigeurs créés avec Accounts v2
   (configuration dans `.env.test`)
 - Secrets (Secret Manager, projet `snowro-test`) : `RESEND_API_KEY`,
   `GOOGLE_GEOCODING_API_KEY` et `STRIPE_SECRET_KEY` copiés de la production
-  (mêmes valeurs) ; `STRIPE_WEBHOOK_SECRET` version 1 provisoire
+  (mêmes valeurs : le géocodage et les suggestions d'adresses du test sont
+  donc facturés au projet `snowro-app`) ; `STRIPE_WEBHOOK_SECRET` version 1 provisoire
   (`a-remplacer`, 17 h 11 UTC), version 2 = secret de signature de la
   destination `upbeat-spark` (17 h 42 UTC)
 - Domaine : CNAME `test` vers `snowro-test.web.app` chez GoDaddy (TTL
@@ -154,8 +159,12 @@ du « Mode test » classique.
   (`dashboard: "express"`, pays CA, particulier, configuration
   « recipient ») ; rien à régler dans le tableau de bord pour ça
 - Image de marque Connect : nom Snowro, couleur `#C1652F`, pas encore d'icône
-- Moyens de paiement : réglés dans le tableau de bord (Paramètres > Moyens de
-  paiement) ; les cartes doivent être activées
+- Moyens de paiement (configuration Default de la sandbox, 2026-10-02) :
+  activés Cartes, Cartes bancaires (réseau CB, lié aux cartes), Apple Pay,
+  Google Pay, Link, Solde Stripe ; tous les moyens européens et asiatiques
+  désactivés (BLIK, Bancontact, EPS, MB WAY, Satispay, Pix, Pay by Bank,
+  Affirm, Klarna, etc.). **À refaire en mode production** : la configuration
+  ne s'y transfère pas. Le formulaire affiche la carte en premier.
 - Clé publiable (sandbox) : dans `.env.production` et `.env.test`
   (`VITE_STRIPE_CLE_PUBLIQUE`)
 - Clé secrète : `STRIPE_SECRET_KEY` dans les deux projets
@@ -183,8 +192,8 @@ Cartes de test : `4242 4242 4242 4242` (fonctionne), `4000 0000 0000 0341`
 | 5 | Tester les deux webhooks de bout en bout | Stripe | « Envoyer des événements de test » (`account.updated`) : livraison attendue 200 |
 | 6 | Certificat de `test.snowro.com` | Firebase Hosting | Attendre, puis tester https://test.snowro.com |
 | 7 | Passage de Stripe en production | Stripe et GCP | Vérification d'entreprise, clés live, webhook de production, nouvelles versions des secrets, TPS/TVQ avec le comptable |
-| 9 | Activer « Places API (New) » | GCP `snowro-test` puis `snowro-app` | Suggestions d'adresses (`suggererAdresses`) ; même clé que le géocodage. Sans elle, le formulaire passe en saisie complète vérifiée |
-| 10 | Désactiver BLIK et les autres moyens non nord-américains | Stripe > Paramètres > Moyens de paiement | Garder Cartes (et Link) ; à refaire en mode production |
+| 9 | Clé Google propre au projet de test (facultatif) | GCP `snowro-test` | Aujourd'hui, le test utilise la clé de production (`Snowro-Geo`). Pour séparer quotas et facturation : créer une clé dans `snowro-test`, y activer Geocoding API et Places API (New) (déjà activée), puis une nouvelle version de `GOOGLE_GEOCODING_API_KEY` dans `snowro-test` |
+| 10 | Moyens de paiement en mode production | Stripe, mode production | Refaire le tri fait dans la sandbox le 2026-10-02 |
 | 8 | DKIM Google Workspace, puis DMARC `quarantine` | Console Workspace, GoDaddy | `google._domainkey` encore absent |
 
 ## 7. Journal
@@ -202,3 +211,6 @@ Cartes de test : `4242 4242 4242 4242` (fonctionne), `4000 0000 0000 0341`
   en génération). Webhook de test `upbeat-spark` et son secret (version 2).
   Ce document réunit l'ancien `docs/environnement-test.md` et la note
   `ENVIRONNEMENTS.md` tenue par Cowork.
+- 2026-10-02 : suggestions d'adresses (PR #39) ; Places API (New) activée
+  dans `snowro-app` et `snowro-test`, ajoutée aux API permises de la clé
+  « Snowro-Geo ». Moyens de paiement de la sandbox triés (Canada).
