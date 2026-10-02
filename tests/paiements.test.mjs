@@ -20,7 +20,11 @@ globalThis.fetch = async (url, options) => {
     return { ok: true, json: async () => ({ id: "resend-1" }) };
   }
   const u = new URL(url);
-  if (u.searchParams.get("address")) return { json: async () => ({ status: "OK", results: [{ geometry: { location: { lat: 46.8263, lng: -71.2206 } } }] }) };
+  if (u.searchParams.get("address")) return { json: async () => ({ status: "OK", results: [{
+    types: ["street_address"], place_id: "ChIJ_adresse", formatted_address: "10 4e Avenue, Québec, QC G1L 2M4, Canada",
+    address_components: [{ long_name: "10", short_name: "10", types: ["street_number"] }, { long_name: "Canada", short_name: "CA", types: ["country"] }],
+    geometry: { location_type: "ROOFTOP", location: { lat: 46.8263, lng: -71.2206 } },
+  }] }) };
   return { json: async () => ({ status: "OK", results: [
     { types: ["street_address"], address_components: [{ long_name: "G1L 2M4", types: ["postal_code"] }, { long_name: "Limoilou", types: ["neighborhood"] }] },
     { types: ["locality", "political"], place_id: "ID_QUEBEC", address_components: [{ long_name: "Québec", types: ["locality"] }] },

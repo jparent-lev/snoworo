@@ -64,22 +64,98 @@ export async function villeDepuisGeohash(hash) {
   return villeDepuisCoordonnees(latitude, longitude);
 }
 
-// Géocodage direct : adresse saisie manuellement -> ville + geohash (pour les
-// déneigeurs qui préfèrent taper leur adresse plutôt que partager leur position,
-// ou dont la géolocalisation échoue/est refusée).
+// Précision exigée pour l'adresse d'une demande : un numéro civique réel
+// (résultat de type adresse ou bâtiment, positionné sur le toit ou interpolé
+// sur la rue), au Canada. Une rue seule, un code postal ou une ville sont
+// refusés : c'est là que le déneigeur se présente.
+const TYPES_PRECIS = ["street_address", "premise", "subpremise"];
+const POSITIONS_PRECISES = ["ROOFTOP", "RANGE_INTERPOLATED"];
+
+export class AdresseImprecise extends Error {}
+
+function verifierPrecision(resultat) {
+  const pays = extraireComposantCourt(resultat.address_components, "country");
+  if (pays && pays !== "CA") throw new AdresseImprecise("Adresse hors du Canada.");
+  const precis =
+    resultat.types?.some((t) => TYPES_PRECIS.includes(t)) &&
+    POSITIONS_PRECISES.includes(resultat.geometry?.location_type);
+  if (!precis || !extraireComposant(resultat.address_components, "street_number")) {
+    throw new AdresseImprecise("Adresse incomplète : il faut le numéro civique et la rue.");
+  }
+}
+
+function extraireComposantCourt(components, type) {
+  return components?.find((c) => c.types.includes(type))?.short_name ?? null;
+}
+
+async function depuisResultat(resultat, { exigerPrecision }) {
+  if (exigerPrecision) verifierPrecision(resultat);
+  const { lat, lng } = resultat.geometry.location;
+  const derive = await villeDepuisCoordonnees(lat, lng);
+  return {
+    ...derive,
+    geohash: geohash.encode(lat, lng),
+    // Adresse telle que Google la reconnaît (« 1234 3e Avenue, Québec, QC
+    // G1L 2M4, Canada ») : c'est elle qu'on montre au déneigeur.
+    adresseNormalisee: resultat.formatted_address,
+    placeId: resultat.place_id,
+  };
+}
+
+// Géocodage direct : adresse saisie -> ville + geohash. Pour un déneigeur
+// (adresse de service), un quartier suffit ; pour une demande,
+// `exigerPrecision` refuse tout ce qui n'est pas un numéro civique.
 //
 // Le géocodage direct (forward) d'une adresse précise ne renvoie généralement
 // qu'UN seul résultat, au niveau de l'adresse civique — jamais de résultat
 // séparé "localité" avec son propre place_id (contrairement au géocodage
 // inverse). On récupère donc seulement les coordonnées ici, puis on délègue
 // à villeDepuisCoordonnees (géocodage inverse) pour obtenir un villeGeoId fiable.
-export async function villeDepuisAdresse(adresseTexte) {
-  const body = await appelerGeocodingApi({ address: adresseTexte, region: "ca" });
+export async function villeDepuisAdresse(adresseTexte, { exigerPrecision = false } = {}) {
+  const body = await appelerGeocodingApi({ address: adresseTexte, region: "ca", components: "country:CA" });
   if (body.status !== "OK" || !body.results?.length) {
-    throw new Error(`Adresse introuvable (${body.status}) : ${adresseTexte}`);
+    throw new AdresseImprecise(`Adresse introuvable : ${adresseTexte}`);
   }
+  return depuisResultat(body.results[0], { exigerPrecision });
+}
 
-  const { lat, lng } = body.results[0].geometry.location;
-  const derive = await villeDepuisCoordonnees(lat, lng);
-  return { ...derive, geohash: geohash.encode(lat, lng) };
+// Adresse choisie dans les suggestions (place_id de Google) : aucune
+// ambiguïté de saisie possible.
+export async function villeDepuisPlaceId(placeId, { exigerPrecision = true } = {}) {
+  const body = await appelerGeocodingApi({ place_id: placeId });
+  if (body.status !== "OK" || !body.results?.length) {
+    throw new AdresseImprecise("Adresse introuvable. Choisis-la de nouveau dans la liste.");
+  }
+  return depuisResultat(body.results[0], { exigerPrecision });
+}
+
+// Suggestions d'adresses pendant la saisie (Places API, « Autocomplete (New) ») :
+// Canada seulement, adresses civiques seulement, en français, favorise le
+// Québec. `session` regroupe les frappes d'une même saisie (facturation).
+const BIAIS_QUEBEC = { rectangle: { low: { latitude: 44.9, longitude: -79.8 }, high: { latitude: 53, longitude: -57 } } };
+
+export async function suggestionsAdresses(texte, session) {
+  const res = await fetch("https://places.googleapis.com/v1/places:autocomplete", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", "X-Goog-Api-Key": GEOCODING_API_KEY.value() },
+    body: JSON.stringify({
+      input: texte,
+      sessionToken: session,
+      includedRegionCodes: ["ca"],
+      includedPrimaryTypes: TYPES_PRECIS,
+      languageCode: "fr-CA",
+      locationBias: BIAIS_QUEBEC,
+    }),
+  });
+  const corps = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(`Places API ${res.status} : ${corps.error?.message ?? "réponse inattendue"}`);
+  return (corps.suggestions ?? [])
+    .map((s) => s.placePrediction)
+    .filter(Boolean)
+    .slice(0, 5)
+    .map((p) => ({
+      placeId: p.placeId,
+      principal: p.structuredFormat?.mainText?.text ?? p.text?.text ?? "",
+      secondaire: p.structuredFormat?.secondaryText?.text ?? "",
+    }));
 }

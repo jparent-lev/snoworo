@@ -6,13 +6,14 @@ import { formatArgent } from "../lib/formatArgent";
 import { PAIEMENT_REEL, libelleCarte } from "../lib/paiements";
 import { useAuth } from "../context/AuthContext";
 import CarteDePaiement from "../components/CarteDePaiement";
+import ChampAdresse from "../components/ChampAdresse";
 import "./AuthForm.css";
 
 const TYPES_SERVICE = [
   { value: "entree", label: "Entrée / allée" },
   { value: "entree_balcon", label: "Entrée + balcon" },
   { value: "stationnement", label: "Stationnement" },
-  { value: "toiture", label: "Toiture" },
+  { value: "autre", label: "Autre" },
 ];
 
 const styleChamp = {
@@ -50,7 +51,9 @@ export default function PublierDemande() {
   const [changerCarte, setChangerCarte] = useState(false);
   const carte = carteAjoutee ?? profile?.carte;
   const carteManquante = PAIEMENT_REEL && !carte;
-  const [adresse, setAdresse] = useState("");
+  const [adresse, setAdresse] = useState({ texte: "", placeId: null, libelle: null });
+  const [adresseManuelle, setAdresseManuelle] = useState(false);
+  const [unite, setUnite] = useState("");
   const [typeService, setTypeService] = useState(TYPES_SERVICE[1].value);
   const [titre, setTitre] = useState("");
   const [description, setDescription] = useState("");
@@ -67,15 +70,26 @@ export default function PublierDemande() {
 
   const montantNombre = Number(montant);
   const apercu = montantNombre >= 10 ? calculerPaiement(montantNombre, frais) : null;
-  const titreParDefaut = TYPES_SERVICE.find((t) => t.value === typeService).label;
+  const titreParDefaut = typeService === "autre" ? "Déneigement" : TYPES_SERVICE.find((t) => t.value === typeService).label;
+  // Avec les suggestions, il faut en choisir une ; sinon, le texte complet.
+  const adresseManquante = !adresse.placeId && (!adresseManuelle || adresse.texte.trim().length < 8);
 
   async function onSubmit(e) {
     e.preventDefault();
     setErreur(null);
+    if (adresseManquante) {
+      setErreur(
+        adresseManuelle
+          ? "Écris l'adresse au complet, avec le numéro civique."
+          : "Choisis ton adresse dans la liste des suggestions.",
+      );
+      return;
+    }
     setEnCours(true);
     try {
       await publierDemande({
-        adresse: adresse.trim(),
+        ...(adresse.placeId ? { placeId: adresse.placeId } : { adresse: adresse.texte.trim() }),
+        unite: unite.trim(),
         typeService,
         titre: titre.trim() || titreParDefaut,
         description: description.trim(),
@@ -95,18 +109,25 @@ export default function PublierDemande() {
       <form className="auth-form__carte" onSubmit={onSubmit} style={{ maxWidth: 460 }}>
         <h1 className="auth-form__titre">Publier une demande</h1>
 
-        <label className="auth-form__champ">
-          Adresse à déneiger
-          <input
-            value={adresse}
-            onChange={(e) => setAdresse(e.target.value)}
-            placeholder="1234, 3e Avenue, Québec"
-            autoComplete="street-address"
-            required
+        <div className="auth-form__champ">
+          <span>Adresse à déneiger</span>
+          <ChampAdresse
+            valeur={adresse}
+            onChange={setAdresse}
+            manuel={adresseManuelle}
+            onManuel={(m) => {
+              setAdresseManuelle(m);
+              setAdresse({ texte: "", placeId: null, libelle: null });
+            }}
           />
           <span className="auth-form__aide">
             Montrée seulement au déneigeur de quartier qui accepte. Les autres voient le quartier et la distance.
           </span>
+        </div>
+
+        <label className="auth-form__champ">
+          Appartement ou logement (facultatif)
+          <input value={unite} onChange={(e) => setUnite(e.target.value)} placeholder="Ex. 3, ou 1234-B" maxLength={20} />
         </label>
 
         <label className="auth-form__champ">
@@ -126,13 +147,18 @@ export default function PublierDemande() {
         </label>
 
         <label className="auth-form__champ">
-          Précisions (facultatif)
+          {typeService === "autre" ? "Ce qu'il y a à déneiger" : "Précisions (facultatif)"}
           <textarea
             value={description}
             onChange={(e) => setDescription(e.target.value)}
-            placeholder="Entrée double, marches du balcon, auto dans l'allée…"
+            placeholder={
+              typeService === "autre"
+                ? "Ex. escalier extérieur, accès au cabanon, trottoir devant le commerce…"
+                : "Entrée double, marches du balcon, auto dans l'allée…"
+            }
             rows={3}
             maxLength={600}
+            required={typeService === "autre"}
             style={{ ...styleChamp, resize: "vertical" }}
           />
         </label>

@@ -3,7 +3,7 @@ import { onSchedule } from "firebase-functions/v2/scheduler";
 import { logger } from "firebase-functions/v2";
 import { FieldValue, Timestamp } from "firebase-admin/firestore";
 import { db } from "./admin.js";
-import { GEOCODING_API_KEY, villeDepuisAdresse } from "./geocoding.js";
+import { AdresseImprecise, GEOCODING_API_KEY, villeDepuisAdresse, villeDepuisPlaceId } from "./geocoding.js";
 import { RESEND_API_KEY } from "./courriels.js";
 import { STRIPE_SECRET_KEY, avertirCarteRefusee, paiementReel, prelever, verser } from "./paiements.js";
 
@@ -30,7 +30,9 @@ import { STRIPE_SECRET_KEY, avertirCarteRefusee, paiementReel, prelever, verser 
 const REGION = "northamerica-northeast1";
 export const DELAI_CONFIRMATION_MS = 12 * 60 * 60 * 1000;
 const FRAIS_PAR_DEFAUT = { fraisFixe: 2, fraisPct: 8 }; // mêmes valeurs que src/lib/config.js
-const TYPES_SERVICE = new Set(["entree", "entree_balcon", "toiture", "stationnement"]);
+// « toiture » n'est plus proposé (décision produit) : les anciennes demandes
+// gardent leur type, mais on n'en publie plus. « autre » exige une description.
+const TYPES_SERVICE = new Set(["entree", "entree_balcon", "stationnement", "autre"]);
 const MOTIFS_SIGNALEMENT = new Set(["absent", "incomplet", "acces", "autre"]);
 const MONTANT_MIN = 10;
 const MONTANT_MAX = 1000;
@@ -123,13 +125,22 @@ async function lireDemande(tx, demandeId, { uid, role, statuts }) {
 // ---- Publier ----
 // L'adresse est géocodée ici (jamais la position du téléphone, qui peut être
 // au travail) : ville/villeGeoId en découlent, comme partout ailleurs.
+// De préférence `placeId` (adresse choisie dans les suggestions), sinon
+// `adresse` en texte. Dans les deux cas, seule une adresse civique précise est
+// acceptée, et c'est l'adresse reconnue par Google qui est enregistrée.
+// `unite` : appartement ou logement (fréquent dans les plex), ajouté tel quel.
 export const publierDemande = onCall({ region: REGION, secrets: [GEOCODING_API_KEY] }, async (request) => {
   const uid = exigerConnexion(request);
   const d = request.data ?? {};
-  const adresse = texte(d.adresse, { max: 200, requis: true, nom: "Adresse" });
+  const placeId = typeof d.placeId === "string" && d.placeId ? d.placeId.slice(0, 300) : null;
+  const adresseSaisie = placeId ? "" : texte(d.adresse, { max: 200, requis: true, nom: "Adresse" });
+  const unite = texte(d.unite, { max: 20, nom: "Appartement" });
   const titre = texte(d.titre, { max: 80, requis: true, nom: "Titre" });
   const description = texte(d.description, { max: 600, nom: "Description" });
   if (!TYPES_SERVICE.has(d.typeService)) throw new HttpsError("invalid-argument", "Type de service invalide.");
+  if (d.typeService === "autre" && !description) {
+    throw new HttpsError("invalid-argument", "Décris ce qu'il y a à déneiger.");
+  }
   const montant = validerMontant(d.montant);
   const echeance = new Date(d.dateHeureSouhaitee);
   if (Number.isNaN(echeance.getTime()) || echeance.getTime() < Date.now() + 30 * 60 * 1000) {
@@ -138,10 +149,15 @@ export const publierDemande = onCall({ region: REGION, secrets: [GEOCODING_API_K
 
   let lieu;
   try {
-    lieu = await villeDepuisAdresse(adresse);
+    lieu = placeId
+      ? await villeDepuisPlaceId(placeId)
+      : await villeDepuisAdresse(adresseSaisie, { exigerPrecision: true });
   } catch (err) {
+    if (err instanceof AdresseImprecise) throw new HttpsError("invalid-argument", err.message);
     throw new HttpsError("failed-precondition", `Adresse introuvable : ${err.message}`);
   }
+  const adresseReconnue = lieu.adresseNormalisee.replace(/, Canada$/, "");
+  const adresse = unite ? `${adresseReconnue} (app. ${unite})` : adresseReconnue;
 
   const profil = (await db.doc(`users/${uid}`).get()).data() ?? {};
   // Rien n'est prélevé à la publication, mais il faut une carte pour que
@@ -178,12 +194,19 @@ export const publierDemande = onCall({ region: REGION, secrets: [GEOCODING_API_K
   });
   // Adresse exacte : lisible seulement par le client et, après acceptation,
   // par le déneigeur choisi (firestore.rules).
-  batch.set(db.doc(`demandes/${ref.id}/prive/adresse`), { adresse, geohash: lieu.geohash });
+  batch.set(db.doc(`demandes/${ref.id}/prive/adresse`), {
+    adresse,
+    adresseNormalisee: adresseReconnue,
+    unite,
+    placeId: lieu.placeId ?? null,
+    saisie: placeId ? "suggestion" : "texte",
+    geohash: lieu.geohash,
+  });
   // Publier une demande fait de toi un client, si ce n'était pas déjà le cas.
   batch.set(db.doc(`users/${uid}`), { role: FieldValue.arrayUnion("donneur_ouvrage") }, { merge: true });
   await batch.commit();
 
-  return { demandeId: ref.id, ville: lieu.ville };
+  return { demandeId: ref.id, ville: lieu.ville, adresse };
 });
 
 // ---- Accepter ----

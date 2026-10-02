@@ -76,7 +76,10 @@ function Formulaire({ onEnregistree, libelle }) {
 
   return (
     <div className="carte-paiement">
-      <PaymentElement options={{ layout: "tabs" }} />
+      {/* Carte en premier : la plupart des gens ici paient par carte. Les
+          autres moyens (BLIK, etc., surtout européens) se désactivent dans le
+          tableau de bord Stripe, Paramètres > Moyens de paiement. */}
+      <PaymentElement options={{ layout: "tabs", paymentMethodOrder: ["card", "apple_pay", "google_pay", "link"] }} />
       {erreur && <p className="message-erreur" role="alert">{erreur}</p>}
       <button type="button" className="btn btn--ardoise" disabled={!stripe || enCours} onClick={enregistrer}>
         {enCours ? "Vérification…" : libelle}
