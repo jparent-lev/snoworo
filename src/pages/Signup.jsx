@@ -66,6 +66,11 @@ export default function Signup() {
           <ChoixRoles valeur={roles} onChange={setRoles} />
         </div>
         {erreur && <p className="message-erreur" role="alert">{erreur}</p>}
+        <p className="auth-form__mention">
+          En créant un compte, tu confirmes avoir 18 ans ou plus et tu acceptes les{" "}
+          <Link to="/conditions">conditions d'utilisation</Link>. On traite tes renseignements selon notre{" "}
+          <Link to="/confidentialite">politique de confidentialité</Link>.
+        </p>
         <button type="submit" className="auth-form__bouton" disabled={enCours}>
           {enCours ? "Création…" : "Créer mon compte"}
         </button>

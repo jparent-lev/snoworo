@@ -32,6 +32,7 @@ const comptes = {
   marc: { email: "marc@test.ca", nom: "Marc Tremblay", role: ["deneigeur_x"], ville: "Québec", villeGeoId: "ID_QUEBEC", addressGeohash: geohash.encode(46.8263, -71.2206), ratingAvg: 4.8, ratingCount: 20, nbJobsCompletees: 23 },
   julie: { email: "julie@test.ca", nom: "Julie Lavoie", role: ["donneur_ouvrage", "deneigeur_x"], ville: "Québec", villeGeoId: "ID_QUEBEC", addressGeohash: geohash.encode(46.83, -71.21), ratingAvg: 4.9, ratingCount: 35, nbJobsCompletees: 41 },
   paul: { email: "paul@test.ca", nom: "Paul Bergeron", role: ["donneur_ouvrage"] },
+  zoe: { email: "zoe@test.ca", nom: "Zoé Fermé", role: ["donneur_ouvrage"] },
 };
 const uid = {};
 for (const [cle, c] of Object.entries(comptes)) {
@@ -324,6 +325,37 @@ async function connexion(cle, largeur = 1280) {
     await p.getByRole("button", { name: "Utiliser cette adresse" }).click();
     await p.getByText("Choisis ton adresse dans la liste de suggestions.").waitFor();
     assert.equal(appels.length, 1);
+  });
+  await ctx.close();
+}
+
+// Loi 25 : avis à l'inscription, fermeture du compte par la personne elle-même.
+{
+  const ctx = await b.newContext({ viewport: { width: 390, height: 900 }, deviceScaleFactor: 2 });
+  const p = await ctx.newPage();
+  pageCourante = p;
+  await test("inscription : 18 ans et liens vers les conditions et la politique de confidentialité", async () => {
+    await p.goto("http://localhost:4190/inscription");
+    await p.getByText("tu confirmes avoir 18 ans ou plus").waitFor();
+    assert.equal(await p.getByRole("link", { name: "politique de confidentialité" }).getAttribute("href"), "/confidentialite");
+    assert.equal(await p.getByRole("link", { name: "conditions d'utilisation" }).getAttribute("href"), "/conditions");
+  });
+  await ctx.close();
+}
+{
+  const { p, ctx } = await connexion("zoe", 390);
+  await test("Zoé : ferme son compte depuis Paramètres (confirmation FERMER), compte de connexion supprimé", async () => {
+    await p.goto("http://localhost:4190/parametres");
+    await p.getByRole("button", { name: "Fermer mon compte" }).click();
+    const dlg = p.getByRole("dialog", { name: "Fermer ton compte ?" });
+    const confirmer = dlg.getByRole("button", { name: "Fermer définitivement" });
+    assert.equal(await confirmer.isDisabled(), true);
+    await dlg.getByRole("textbox").fill("fermer");
+    await p.screenshot({ path: `${D}/e2e-fermeture-390.png` });
+    await confirmer.click();
+    await p.waitForURL("http://localhost:4190/");
+    await assert.rejects(auth.getUser(uid.zoe), /no user record|user-not-found/i);
+    assert.equal((await db.doc(`users/${uid.zoe}`).get()).exists, false);
   });
   await ctx.close();
 }

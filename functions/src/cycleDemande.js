@@ -437,10 +437,11 @@ export const confirmerJobsEchues = onSchedule(
   },
 );
 
-// ---- Effacement des photos après 30 jours ----
-// Les photos d'une job signalée sont gardées tant que le signalement n'est
-// pas réglé (preuve) : elle sera effacée au passage suivant une fois la job
-// sortie de « signalee ».
+// ---- Effacement des photos et de la conversation 30 jours après la job ----
+// (politique de confidentialité). Même horloge pour les deux : photoExpireAt,
+// posé quand la job est marquée faite. Une job signalée garde ses photos et
+// ses messages tant que le signalement n'est pas réglé (preuve) : ils sont
+// effacés au passage suivant une fois la job sortie de « signalee ».
 export const purgerPhotos = onSchedule(
   { schedule: "every day 03:17", timeZone: "America/Toronto", region: REGION },
   async () => {
@@ -448,13 +449,14 @@ export const purgerPhotos = onSchedule(
     let n = 0;
     for (const doc of expirees.docs) {
       if (doc.data().statut === "signalee") continue;
+      await db.recursiveDelete(db.collection(`messages/${doc.id}/messages`));
       const batch = db.batch();
-      for (const nom of DOCS_PHOTOS) batch.delete(db.doc(`${doc.ref.path}/prive/${nom}`));
-      batch.update(doc.ref, { photo: false, nbPhotos: 0, photoExpireAt: null });
+      for (const nom of [...DOCS_PHOTOS, "avis"]) batch.delete(db.doc(`${doc.ref.path}/prive/${nom}`));
+      batch.update(doc.ref, { photo: false, nbPhotos: 0, photoExpireAt: null, dernierMessage: null, messagesEffaces: true });
       await batch.commit();
       n += 1;
     }
-    if (n) logger.info(`${n} photo(s) effacée(s) après 30 jours.`);
+    if (n) logger.info(`${n} job(s) : photos et messages effacés après 30 jours.`);
   },
 );
 

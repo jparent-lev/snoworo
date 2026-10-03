@@ -29,3 +29,5 @@ export {
   webhookStripe,
 } from "./paiements.js";
 export { suggererAdresses } from "./suggestionsAdresse.js";
+export { purgerConservation } from "./conservation.js";
+export { fermerCompte } from "./compte.js";

@@ -216,14 +216,21 @@ await test("évaluer après coup : une seule fois, client seulement, dans les 7 
   await db.doc(`demandes/${y}`).update({ confirmeeAt: TS.fromMillis(Date.now() - 8 * 24 * 3600e3) });
   await echoue(appel(f.evaluerJob, "client1", { demandeId: y, note: 5 }), "failed-precondition", "après 7 jours");
 });
-await test("purge : photos effacées après 30 jours, gardées si la job est signalée", async () => {
+await test("purge : photos et messages effacés 30 jours après la job, gardés si la job est signalée", async () => {
   const signalee = await jobFaite("den1");
   await appel(f.signalerProbleme, "client1", { demandeId: signalee, motif: "incomplet" });
-  for (const x of [avecPhoto, signalee]) await db.doc(`demandes/${x}`).update({ photoExpireAt: TS.fromMillis(Date.now() - 1000) });
+  for (const x of [avecPhoto, signalee]) {
+    await db.doc(`demandes/${x}`).update({ photoExpireAt: TS.fromMillis(Date.now() - 1000), dernierMessage: { par: "client1" } });
+    await db.collection(`messages/${x}/messages`).add({ expediteurId: "client1", contenu: "Merci !" });
+  }
   await f.purgerPhotos.run({});
   for (const i of [0, 1, 2]) assert.equal((await db.doc(`demandes/${avecPhoto}/prive/photo-${i}`).get()).exists, false);
-  assert.equal((await lire(avecPhoto)).photo, false); assert.equal((await lire(avecPhoto)).nbPhotos, 0);
+  const purgee = await lire(avecPhoto);
+  assert.equal(purgee.photo, false); assert.equal(purgee.nbPhotos, 0);
+  assert.equal(purgee.messagesEffaces, true); assert.equal(purgee.dernierMessage, null);
+  assert.equal((await db.collection(`messages/${avecPhoto}/messages`).get()).size, 0);
   assert.equal((await db.doc(`demandes/${signalee}/prive/photo-0`).get()).exists, true);
+  assert.equal((await db.collection(`messages/${signalee}/messages`).get()).size, 1);
 });
 
 console.log("Messagerie (avis par courriel)");
@@ -315,6 +322,59 @@ await test("adresse de service : suggestion choisie (placeId) ou adresse complè
   assert.equal((await db.doc("users/den9").get()).data().villeGeoId, "ID_LEVIS", "adresse précédente gardée");
   await echoue(appel(ad.mettreAJourAdresseUtilisateur, null, { placeId: "x" }), "unauthenticated", "sans connexion");
   await echoue(appel(ad.mettreAJourAdresseUtilisateur, "den9", {}), "invalid-argument", "rien");
+});
+
+console.log("Conservation et fermeture de compte (Loi 25)");
+const cons = await import(`${REPO}functions/src/conservation.js`);
+const compte = await import(`${REPO}functions/src/compte.js`);
+const { getAuth } = createRequire(`${REPO}functions/package.json`)("firebase-admin/auth");
+await test("conservation : liste d'attente et « Nous écrire » effacés après 24 mois, le reste gardé", async () => {
+  const vieux = TS.fromMillis(Date.now() - 731 * 24 * 3600e3);
+  await db.doc("listeAttente/vieux@exemple.ca").set({ courriel: "vieux@exemple.ca", createdAt: vieux });
+  await db.doc("listeAttente/recent@exemple.ca").set({ courriel: "recent@exemple.ca", createdAt: TS.now() });
+  await db.doc("messagesContact/vieux").set({ courriel: "a@exemple.ca", createdAt: vieux });
+  await db.doc("messagesContact/recent").set({ courriel: "b@exemple.ca", createdAt: TS.now() });
+  assert.deepEqual(await cons.appliquerConservation(), { listeAttente: 1, messagesContact: 1 });
+  assert.equal((await db.doc("listeAttente/vieux@exemple.ca").get()).exists, false);
+  assert.equal((await db.doc("listeAttente/recent@exemple.ca").get()).exists, true);
+  assert.equal((await db.doc("messagesContact/recent").get()).exists, true);
+});
+await test("fermer son compte : refusé pendant une job en cours ou sans confirmation", async () => {
+  await db.doc("demandes/ferm-encours").set({ statut: "matchee", donneurOuvrageId: "ferme1", deneigeurId: "den1" });
+  await echoue(appel(compte.fermerCompte, "ferme1", {}), "invalid-argument", "sans confirmation");
+  const e = await echoue(appel(compte.fermerCompte, "ferme1", { confirmation: "FERMER" }), "failed-precondition", "job en cours");
+  assert.equal(e.message, "job-en-cours");
+  await db.doc("demandes/ferm-encours").update({ statut: "completee" });
+  await db.doc("demandes/ferm-versement").set({ statut: "completee", donneurOuvrageId: "client1", deneigeurId: "ferme1", paiement: { statutPaiement: "a_verser" } });
+  assert.equal((await echoue(appel(compte.fermerCompte, "ferme1", { confirmation: "FERMER" }), "failed-precondition", "versement")).message, "versement-en-attente");
+  await db.doc("demandes/ferm-versement").delete();
+});
+await test("fermer son compte : profil, connexion, adresses, photos, messages et liste d'attente effacés ; paiement gardé", async () => {
+  const { uid } = await getAuth().createUser({ email: "ferme@exemple.ca", password: "motdepasse" });
+  await db.doc(`users/${uid}`).set({ displayName: "Zoé Fermé", email: "Ferme@exemple.ca", role: ["donneur_ouvrage", "deneigeur_x"] });
+  await db.doc(`users/${uid}/lectures/d1`).set({ luAt: TS.now() });
+  await db.doc("listeAttente/ferme@exemple.ca").set({ courriel: "ferme@exemple.ca", createdAt: TS.now() });
+  await db.doc("demandes/ferm-client").set({ statut: "completee", donneurOuvrageId: uid, donneurPrenom: "Zoé", titre: "Entrée", description: "Code de porte 1234", deneigeurId: "den1", deneigeurPrenom: "Marc", paiement: { montantTotal: 40, statutPaiement: "verse" } });
+  await db.doc("demandes/ferm-client/prive/adresse").set({ adresse: "1 rue X" });
+  await db.collection("messages/ferm-client/messages").add({ expediteurId: uid, contenu: "Salut" });
+  await db.doc("demandes/ferm-ouverte").set({ statut: "ouverte", donneurOuvrageId: uid, donneurPrenom: "Zoé", titre: "Stationnement" });
+  await db.doc("demandes/ferm-deneigeur").set({ statut: "completee", donneurOuvrageId: "client1", donneurPrenom: "Mireille", deneigeurId: uid, deneigeurPrenom: "Zoé", deneigeurNote: { moyenne: 5, nombre: 1 }, paiement: { statutPaiement: "verse" } });
+  await db.doc("demandes/ferm-deneigeur/prive/photo-0").set({ donnees: "x" });
+  assert.deepEqual(await appel(compte.fermerCompte, uid, { confirmation: "FERMER" }), { ok: true });
+  assert.equal((await db.doc(`users/${uid}`).get()).exists, false);
+  assert.equal((await db.doc(`users/${uid}/lectures/d1`).get()).exists, false);
+  assert.equal((await db.doc("listeAttente/ferme@exemple.ca").get()).exists, false);
+  await assert.rejects(getAuth().getUser(uid), /no user record|user-not-found/i);
+  const c = await lire("ferm-client");
+  assert.equal(c.donneurPrenom, "Compte fermé"); assert.equal(c.description, ""); assert.equal(c.titre, "Entrée");
+  assert.equal(c.paiement.montantTotal, 40, "registre de paiement gardé");
+  assert.equal((await db.doc("demandes/ferm-client/prive/adresse").get()).exists, false);
+  assert.equal((await db.collection("messages/ferm-client/messages").get()).size, 0);
+  assert.equal((await lire("ferm-ouverte")).statut, "annulee");
+  const d = await lire("ferm-deneigeur");
+  assert.equal(d.deneigeurPrenom, "Compte fermé"); assert.equal(d.deneigeurNote, null); assert.equal(d.evaluee, true);
+  assert.equal(d.donneurPrenom, "Mireille", "l'autre personne n'est pas touchée");
+  assert.equal((await db.doc("demandes/ferm-deneigeur/prive/photo-0").get()).exists, false);
 });
 
 console.log("Firestore rules");
