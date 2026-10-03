@@ -72,7 +72,10 @@ export default function Conversation({ demande, autrePrenom, onFermer }) {
     <Modale titre={`Conversation avec ${autrePrenom}`} onFermer={onFermer} classe="modale--conversation" fermer>
       <p className="conversation__sujet">{demande.titre}</p>
       <div className="conversation__fil" ref={fil} aria-live="polite">
-        {messages && messages.length === 0 && (
+        {messages && messages.length === 0 && demande.messagesEffaces && (
+          <p className="conversation__vide">Les messages sont effacés 30 jours après la job.</p>
+        )}
+        {messages && messages.length === 0 && !demande.messagesEffaces && (
           <p className="conversation__vide">
             Pas encore de message. Une question sur l'accès, l'endroit où mettre la neige, l'heure d'arrivée ?
             C'est ici.
@@ -113,7 +116,9 @@ export default function Conversation({ demande, autrePrenom, onFermer }) {
           </button>
         </form>
       ) : (
-        <p className="conversation__fermee">La job est terminée : la conversation reste lisible, mais fermée.</p>
+        <p className="conversation__fermee">
+          La job est terminée : la conversation reste lisible 30 jours, puis elle est effacée.
+        </p>
       )}
       <p className="conversation__rappel">
         Pour ta sécurité, garde les échanges et les paiements dans Snowro. {autrePrenom} reçoit un avis par courriel.

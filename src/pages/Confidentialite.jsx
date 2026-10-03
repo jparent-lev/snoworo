@@ -54,11 +54,14 @@ export default function Confidentialite() {
           fournis, ton numéro de téléphone.
         </li>
         <li>
-          <strong>Localisation :</strong> la position de l'adresse à déneiger (pour une demande) ou de ton
-          adresse de service (pour un déneigeur de quartier), enregistrée sous forme de zone approximative, le
-          début de ton code postal et la ville qu'on en déduit. On s'en sert uniquement pour montrer une demande
-          aux déneigeurs de quartier de la même ville. On n'utilise ta position que lorsque tu la partages
-          toi-même, au moment de publier une demande ou d'enregistrer ton adresse; jamais en arrière-plan.
+          <strong>Adresses et localisation :</strong> l'adresse à déneiger d'une demande (avec le numéro
+          d'appartement, si tu le donnes) et, pour un déneigeur de quartier, son adresse de service. On en
+          déduit la position, le début du code postal et la ville. L'adresse exacte d'une demande n'est montrée
+          qu'au déneigeur de quartier qui l'accepte; avant, les autres ne voient qu'une zone approximative et la
+          distance. L'adresse de service d'un déneigeur n'est montrée à personne : elle sert seulement à lui
+          montrer les demandes de sa ville. Pendant que tu tapes une adresse, le texte saisi est envoyé à Google
+          pour te proposer des adresses existantes. Si tu choisis « Utiliser ma position », ta position n'est
+          lue qu'à ce moment-là, jamais en arrière-plan.
         </li>
         <li>
           <strong>Demandes et jobs :</strong> le montant offert, le quartier indiqué, le statut de la demande,
@@ -127,7 +130,8 @@ export default function Confidentialite() {
       <ul>
         <li>
           <strong>Google (Firebase et Google Maps Platform) :</strong> hébergement du site web et de la base de données,
-          authentification, fonctions serveur et conversion d'un code postal ou d'une position en nom de ville.
+          authentification, fonctions serveur, suggestions d'adresses pendant la saisie et conversion d'une
+          adresse, d'un code postal ou d'une position en nom de ville.
         </li>
         <li>
           <strong>Stripe :</strong> traitement des paiements et vérification d'identité des déneigeurs de
@@ -161,21 +165,24 @@ export default function Confidentialite() {
       <h2>Combien de temps on les garde</h2>
       <ul>
         <li>
-          <strong>Liste d'attente :</strong> jusqu'à ce que tu nous demandes de t'en retirer, ou au plus 24 mois après ton
-          inscription si Snowro n'a pas ouvert dans ta ville d'ici là.
+          <strong>Liste d'attente :</strong> jusqu'à ce que tu nous demandes de t'en retirer, ou au plus 24 mois
+          après ton inscription : elle est alors effacée automatiquement.
         </li>
         <li>
-          <strong>Messages envoyés par « Nous écrire » :</strong> 24 mois après le dernier échange.
+          <strong>Messages envoyés par « Nous écrire » :</strong> effacés automatiquement 24 mois après leur
+          envoi.
         </li>
         <li>
-          <strong>Photos de fin de job :</strong> effacées automatiquement 30 jours après la job, sauf si un problème
-          a été signalé : on les garde alors jusqu'à ce qu'il soit réglé. Avant l'envoi, l'app retire des photos
-          les informations cachées qu'ajoute le téléphone (dont la position GPS).
+          <strong>Photos de fin de job et messages échangés :</strong> effacés automatiquement 30 jours après la
+          job, sauf si un problème a été signalé : on les garde alors jusqu'à ce qu'il soit réglé. Avant l'envoi,
+          l'app retire des photos les informations cachées qu'ajoute le téléphone (dont la position GPS).
         </li>
         <li>
-          <strong>Compte :</strong> tant que ton compte est actif. Si tu le fermes, on efface ou on rend anonymes
-          tes renseignements dans les 30 jours, sauf ce que la loi nous oblige à garder plus longtemps (par
-          exemple les registres de transactions, conservés 6 ans pour des raisons fiscales).
+          <strong>Compte :</strong> tant que ton compte est actif. Tu peux le fermer toi-même en tout temps dans
+          les paramètres (sauf pendant une job en cours) : tes renseignements sont alors effacés ou rendus
+          anonymes immédiatement, sauf ce que la loi nous oblige à garder plus longtemps (le registre des
+          paiements, conservé 6 ans pour des raisons fiscales). Stripe conserve de son côté les renseignements
+          de paiement et de vérification d'identité selon ses propres obligations légales.
         </li>
       </ul>
 
@@ -196,7 +203,10 @@ export default function Confidentialite() {
         <li>savoir quels renseignements on détient sur toi et en obtenir une copie;</li>
         <li>les faire corriger s'ils sont inexacts, incomplets ou équivoques;</li>
         <li>retirer un consentement (directement dans les paramètres de ton compte, ou en nous écrivant);</li>
-        <li>demander qu'on cesse de diffuser tes renseignements ou qu'on les efface;</li>
+        <li>
+          demander qu'on cesse de diffuser tes renseignements ou qu'on les efface (tu peux aussi fermer ton
+          compte toi-même dans les paramètres);
+        </li>
         <li>
           obtenir les renseignements que tu nous as fournis dans un format technologique structuré et couramment
           utilisé.

@@ -85,6 +85,8 @@ paiement: { montantTotal, fraisSnowro, montantDeneigeur, statutPaiement,
 // statutPaiement simulé : simule_retenu | simule_verse | simule_bloque
 // statutPaiement réel   : prelevement_en_cours | retenu | a_verser | verse | bloque
 photo, nbPhotos, photoExpireAt   // photos « c'est fait » (1 à 3, obligatoires) dans prive/photo-0…, effacées à photoExpireAt
+messagesEffaces         // true une fois photos et messages effacés (purgerPhotos, 30 jours après la job)
+compteFerme             // ["client"] et/ou ["deneigeur"] : compte fermé, prénom remplacé par « Compte fermé »
 evaluee                 // true une fois le déneigeur évalué (note dans prive/evaluation)
 
 paiement: {              // posé à l'acceptation ; SIMULÉ tant que Stripe n'est pas branché
@@ -290,3 +292,21 @@ Voir `firestore.indexes.json` :
 - `demandes` : (`villeGeoId`, `statut`, `createdAt`) — utilisé par `ecouterDemandesOuvertes`
   (liste temps réel de l'écran X) : filtre dur par ville, tri par date à l'intérieur
 - `offresCiblees` : (`utilisateurCibleId`, `statut`)
+
+## Conservation et fermeture de compte (Loi 25)
+
+Durées promises dans `src/pages/Confidentialite.jsx`, appliquées automatiquement :
+
+| Donnée | Effacée | Par |
+|---|---|---|
+| Photos de fin de job, messages, `prive/avis` | 30 jours après « faite » (`photoExpireAt`), sauf job signalée | `purgerPhotos` (tous les jours, 3 h 17) |
+| `listeAttente` | 24 mois après `createdAt` | `purgerConservation` (tous les jours, 3 h 37) |
+| `messagesContact` | 24 mois après `createdAt` | `purgerConservation` |
+
+`fermerCompte` (callable, `functions/src/compte.js`) : refusé pendant une job
+en cours ou un versement en attente ; annule les demandes ouvertes ; dans
+chaque demande, remplace le prénom par « Compte fermé » et efface
+description, adresse, photos, évaluation et conversation (le registre de
+paiement est gardé 6 ans) ; efface `users/{uid}` (et `lectures`), l'entrée de
+liste d'attente, les offres reçues et le client Stripe ; supprime le compte
+Auth en dernier.

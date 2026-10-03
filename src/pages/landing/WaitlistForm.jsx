@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import { rejoindreListeAttente } from "../../lib/listeAttente";
 import PartageListe from "./PartageListe";
 import "./WaitlistForm.css";
@@ -116,7 +117,8 @@ export default function WaitlistForm() {
         {enCours ? "Envoi…" : "Rejoindre la liste"}
       </button>
       <p className="waitlist-form__mention">
-        On demande ton code postal juste pour savoir quelle ville ouvrir en premier.
+        On demande ton code postal juste pour savoir quelle ville ouvrir en premier. Détails dans la{" "}
+        <Link to="/confidentialite">politique de confidentialité</Link>.
       </p>
     </form>
   );
