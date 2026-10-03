@@ -1,7 +1,7 @@
 import { useState } from "react";
 import "./ApercuTableau.css";
 
-// Aperçu du tableau de bord (section « Dans le tableau de bord ») : la
+// Aperçu du tableau de bord (section « Tableau de bord » de l'accueil) : la
 // bascule Client / Déneigeur fonctionne comme dans l'app. Vue client : une job
 // « À confirmer » avec les photos du déneigeur. Vue déneigeur : une job
 // « À faire » avec l'adresse exacte et les photos à prendre avant de partir.
