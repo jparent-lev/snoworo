@@ -167,7 +167,7 @@ export default function Landing() {
       <section id="tableau-de-bord" className="landing__section">
         <div className="landing__deux-colonnes landing__dans-app">
           <div>
-            <span className="eyebrow">Dans le tableau de bord</span>
+            <span className="eyebrow">Une gestion simple</span>
             <h2 className="landing__h2">Tout se passe dans ton tableau de bord</h2>
             <p className="landing__chapeau">
               Un seul compte, deux modes : Client pour faire déneiger, Déneigeur pour prendre des jobs. Chaque
