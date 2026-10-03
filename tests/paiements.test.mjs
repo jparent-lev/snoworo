@@ -46,6 +46,7 @@ const fauxStripe = {
   customers: {
     create: async (p, o) => (noter("customers.create", p, o), { id: "cus_pay1" }),
     update: async (id, p) => (noter("customers.update", { id, ...p }), { id }),
+    del: async (id) => (noter("customers.del", { id }), { id, deleted: true }),
   },
   setupIntents: {
     create: async (p) => (noter("setupIntents.create", p), { client_secret: "seti_1_secret_x" }),
@@ -235,6 +236,14 @@ await test("erreur Stripe : message lisible renvoyé à l'app", async () => {
   const e = await echoue(appel(p.lienCompteDeneigeur, "payDen2", {}), "failed-precondition", "plateforme incomplète");
   assert.match(e.message, /^Stripe : Please review the responsibilities/);
   fauxStripe.v2.core.accounts.create = creer;
+});
+
+await test("fermer son compte : client Stripe (carte enregistrée) supprimé", async () => {
+  const compte = await import(`${REPO}functions/src/compte.js`);
+  await db.doc("users/payFerme").set({ displayName: "Zoé", email: "zoe@exemple.ca", stripeCustomerId: "cus_ferme" });
+  await compte.fermerCompteUtilisateur("payFerme");
+  assert.deepEqual(derniers("customers.del").at(-1).params, { id: "cus_ferme" });
+  assert.equal((await db.doc("users/payFerme").get()).exists, false);
 });
 
 console.log(`\n${ok} tests réussis`);

@@ -129,6 +129,9 @@ Interrupteur : `PAIEMENT_REEL` (fonctions) et `VITE_STRIPE_CLE_PUBLIQUE`
 - `mettreAJourAdresseUtilisateur` (callable) — seul point d'écriture pour
   l'adresse de service, `ville` et `villeGeoId` d'un déneigeur. Voir
   "Intégrité du matching géographique" ci-dessous.
+- `purgerConservation` (scheduled, quotidien) et `purgerPhotos` : durées de
+  conservation de la politique de confidentialité ; `fermerCompte` (callable) :
+  fermeture du compte par la personne. Voir `docs/data-model.md` § Conservation.
 - `calculerVilleDemande` (trigger Firestore, `onDocumentCreated`) — calcule
   `ville`/`villeGeoId` d'une demande juste après sa création.
 

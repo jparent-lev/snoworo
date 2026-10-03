@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react";
-import { useSearchParams } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { doc, setDoc } from "firebase/firestore";
 import { signOut } from "firebase/auth";
 import { auth, db } from "../lib/firebase";
-import { ChoixRoles } from "./tableau/elements";
+import { ChoixRoles, Modale } from "./tableau/elements";
 import { ROLE_DENEIGEUR } from "../lib/mode";
 import "./tableau/Tableau.css";
 import { useAuth } from "../context/AuthContext";
@@ -19,6 +19,7 @@ import {
   synchroniserCompteDeneigeur,
 } from "../lib/paiements";
 import CarteDePaiement from "../components/CarteDePaiement";
+import { fermerCompte, messageFermeture } from "../lib/compte";
 import ChampAdresse from "../components/ChampAdresse";
 import "./Parametres.css";
 
@@ -222,6 +223,8 @@ export default function Parametres() {
       <button type="button" className="btn btn--fantome" style={{ alignSelf: "flex-start" }} onClick={() => signOut(auth)}>
         Me déconnecter
       </button>
+
+      <SectionFermeture />
     </div>
   );
 }
@@ -309,5 +312,78 @@ function SectionPaiement({ profile, deneigeur }) {
         )}
       </div>
     </>
+  );
+}
+
+// Loi 25 : la personne peut faire effacer ses renseignements elle-même.
+function SectionFermeture() {
+  const naviguer = useNavigate();
+  const [ouverte, setOuverte] = useState(false);
+  const [saisie, setSaisie] = useState("");
+  const [enCours, setEnCours] = useState(false);
+  const [erreur, setErreur] = useState(null);
+
+  async function fermer(e) {
+    e.preventDefault();
+    setEnCours(true);
+    setErreur(null);
+    try {
+      await fermerCompte();
+      await signOut(auth).catch(() => {});
+      naviguer("/", { replace: true });
+    } catch (err) {
+      setErreur(messageFermeture(err));
+      setEnCours(false);
+    }
+  }
+
+  function annuler() {
+    if (enCours) return;
+    setOuverte(false);
+    setSaisie("");
+    setErreur(null);
+  }
+
+  return (
+    <div className="parametres__fermeture">
+      <h2>Fermer mon compte</h2>
+      <p>
+        Tes renseignements sont effacés ou rendus anonymes, sauf le registre des paiements que la loi nous oblige à
+        garder 6 ans. Impossible tant qu'une job est en cours.
+      </p>
+      <button type="button" className="btn btn--fantome parametres__bouton-fermer" onClick={() => setOuverte(true)}>
+        Fermer mon compte
+      </button>
+      {ouverte && (
+        <Modale titre="Fermer ton compte ?" onFermer={annuler}>
+          <p>C'est définitif. On efface :</p>
+          <ul className="parametres__liste-fermeture">
+            <li>ton profil, ton adresse et ta carte enregistrée;</li>
+            <li>dans tes demandes et tes jobs : ton prénom, les adresses, les photos, les évaluations et les messages;</li>
+            <li>ton inscription à la liste d'attente, s'il y en a une.</li>
+          </ul>
+          <p>Tes demandes encore ouvertes sont annulées. Tu pourras créer un nouveau compte plus tard.</p>
+          <form onSubmit={fermer} style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+            <label>
+              Écris FERMER pour confirmer
+              <input value={saisie} onChange={(e) => setSaisie(e.target.value)} autoComplete="off" data-autofocus />
+            </label>
+            {erreur && <p className="message-erreur" role="alert">{erreur}</p>}
+            <div className="modale__actions">
+              <button type="button" className="btn btn--fantome" onClick={annuler} disabled={enCours}>
+                Garder mon compte
+              </button>
+              <button
+                type="submit"
+                className="btn btn--principal parametres__bouton-fermer-confirmer"
+                disabled={enCours || saisie.trim().toUpperCase() !== "FERMER"}
+              >
+                {enCours ? "Fermeture…" : "Fermer définitivement"}
+              </button>
+            </div>
+          </form>
+        </Modale>
+      )}
+    </div>
   );
 }

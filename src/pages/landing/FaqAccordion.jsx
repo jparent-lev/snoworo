@@ -24,7 +24,7 @@ const THEMES = [
       },
       {
         q: "Qu'est-ce que l'autre personne voit de moi ?",
-        r: "Avant qu'une job soit acceptée, les déneigeurs voient seulement le quartier, la distance et ton prénom. L'adresse exacte n'est montrée qu'à celui qui accepte. Vous vous écrivez ensuite dans la messagerie de Snowro, sans échanger vos numéros. Les photos de fin de job ne sont vues que par vous deux, et elles sont effacées après 30 jours.",
+        r: "Avant qu'une job soit acceptée, les déneigeurs voient seulement le quartier, la distance et ton prénom. L'adresse exacte n'est montrée qu'à celui qui accepte. Vous vous écrivez ensuite dans la messagerie de Snowro, sans échanger vos numéros. Vos messages et les photos de fin de job ne sont vus que par vous deux, et ils sont effacés 30 jours après la job.",
       },
       {
         q: "C'est quoi la différence avec Snowro Pro ?",

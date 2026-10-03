@@ -80,6 +80,14 @@
 }
 
 
+.auth-form__mention {
+  font-family: var(--font-corps);
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--color-texte-secondaire);
+  margin: 0;
+}
+
 .auth-form__lien {
   font-family: var(--font-corps);
   font-size: 13.5px;
