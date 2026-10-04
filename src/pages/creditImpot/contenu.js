@@ -2,7 +2,6 @@
 // validés contre Revenu Québec ; ne pas reformuler les chiffres ni les
 // conditions). Pur JavaScript, sans JSX : vite.config.js s'en sert aussi pour
 // le titre, la description et le balisage FAQPage de la version statique.
-// « 1er » est affiché en exposant par la page.
 import { CREDIT_MAD as C, creditPour, dollars, pourcent } from "../../config/creditImpot.js";
 
 const TAUX = pourcent(C.taux);
@@ -25,21 +24,14 @@ export const FAQ = [
   {
     q: "Combien vais-je récupérer exactement?",
     r: [
-      `En ${C.annee}, le crédit correspond à ${TAUX} des dépenses admissibles. Pour un contrat de déneigement de ${dollars(EXEMPLE)}, cela représente ${dollars(creditPour(EXEMPLE))} remboursés. C'est un crédit remboursable : vous le recevez même si vous ne payez pas d'impôt.`,
+      `En ${C.annee}, le crédit correspond à ${TAUX} des dépenses admissibles. Pour ${dollars(EXEMPLE)} de déneigement dans l'année, cela représente ${dollars(creditPour(EXEMPLE))} remboursés. C'est un crédit remboursable : vous le recevez même si vous ne payez pas d'impôt.`,
       `Le crédit est réduit graduellement lorsque le revenu familial dépasse environ ${SEUIL}. Des plafonds annuels de dépenses admissibles s'appliquent aussi à l'ensemble de vos services de maintien à domicile (${dollars(C.plafondSeulAutonome)} pour une personne seule autonome, ${dollars(C.plafondCoupleAutonome)} pour un couple autonome).`,
-    ],
-  },
-  {
-    q: "C'est quoi, les versements anticipés?",
-    r: [
-      "Plutôt que d'attendre votre déclaration de revenus au printemps, vous pouvez demander à Revenu Québec de vous verser le crédit pendant l'année. Pour des services comme le déneigement, le versement arrive dans les 30 jours d'une demande transmise en ligne, par dépôt direct.",
-      `La demande se fait au plus tard le ${C.dateLimiteVersementsAnticipes} de l'année en cours, en ligne via Mon dossier ou avec le formulaire TPZ-1029.MD.9, accompagné de vos factures.`,
     ],
   },
   {
     q: "Quels documents dois-je conserver?",
     r: [
-      "Vos factures et pièces justificatives, pendant six ans. Pour les versements anticipés, le formulaire demande le nom et le numéro de téléphone de chaque fournisseur de services, ainsi que les types de services reçus, à raison d'un formulaire par fournisseur.",
+      "Vos factures et pièces justificatives, pendant six ans.",
       "Snowro conserve vos factures dans votre compte et vous remet en fin de saison une fiche fiscale par déneigeur qui regroupe tous ces renseignements.",
     ],
   },

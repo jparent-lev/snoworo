@@ -8,11 +8,12 @@ export const CREDIT_MAD = {
   seuilReductionRevenu: 72465,
   plafondSeulAutonome: 19500,
   plafondCoupleAutonome: 39000,
-  dateLimiteVersementsAnticipes: "1er décembre",
 };
 
 // Version de la page : à incrémenter à chaque déploiement qui la modifie.
-export const VERSION_PAGE_CREDIT = "credit-impot v1.0";
+// v1.1 : sans les versements anticipés ni la notion de contrat (Snowro
+// fonctionne à la demande) ; le relevé de fin d'année est mis de l'avant.
+export const VERSION_PAGE_CREDIT = "credit-impot v1.1";
 
 export const LIENS_REVENU_QUEBEC = {
   credit: "https://www.revenuquebec.ca/fr/citoyens/credits-dimpot/credit-dimpot-pour-maintien-a-domicile/",
