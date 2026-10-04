@@ -220,6 +220,5 @@ Cartes de test : `4242 4242 4242 4242` (fonctionne), `4000 0000 0000 0341`
   dans `snowro-app` et `snowro-test`, ajoutée aux API permises de la clé
   « Snowro-Geo ». Moyens de paiement de la sandbox triés (Canada).
 - 2026-10-04 : page `/credit-impot` (crédit d'impôt pour maintien à domicile
-  des aînés) avec copie statique `credit-impot.html` ; police Atkinson
-  Hyperlegible ajoutée à `tokens.css`. Aucune mesure d'audience (pas de
-  consentement en place).
+  des aînés) avec copie statique `credit-impot.html`, sur `test` seulement
+  pour l'instant. Aucune mesure d'audience (pas de consentement en place).
