@@ -24,7 +24,8 @@ export function EtapesCredit() {
     },
     {
       titre: `Récupérez vos ${TAUX}`,
-      texte: `Réclamez le crédit dans votre déclaration de revenus (annexe J), ou demandez des versements anticipés avant le ${C.dateLimiteVersementsAnticipes} pour être remboursé pendant l'hiver, par dépôt direct.`,
+      texte:
+        "En fin d'année, Snowro vous remet un relevé qui regroupe vos dépenses de déneigement. Vous l'utilisez pour réclamer le crédit dans votre déclaration de revenus (annexe J).",
     },
   ];
   return (
@@ -242,9 +243,8 @@ export function CtaFinal() {
       <div className="landing__conteneur ci-final__contenu">
         <h2 className="landing__h2 landing__h2--sur-terre">L'hiver s'en vient. Votre remboursement aussi.</h2>
         <p className="landing__chapeau landing__chapeau--sur-terre">
-          Trouvez votre déneigeur maintenant, demandez vos versements anticipés avant le{" "}
-          <Texte>{C.dateLimiteVersementsAnticipes}</Texte>, et recevez votre crédit pendant l'hiver plutôt qu'au
-          printemps.
+          Trouvez votre déneigeur maintenant. En fin d'année, Snowro vous remet un relevé de vos dépenses de
+          déneigement, prêt pour votre déclaration de revenus.
         </p>
         <BoutonDeneigeur emplacement="final" surTerre />
       </div>
@@ -268,7 +268,7 @@ export function AvisCredit() {
           <LienExterne href={LIENS_REVENU_QUEBEC.credit}>Revenu Québec, crédit pour maintien à domicile</LienExterne>
         </li>
         <li>
-          <LienExterne href={LIENS_REVENU_QUEBEC.demande}>Demander le crédit et les versements anticipés</LienExterne>
+          <LienExterne href={LIENS_REVENU_QUEBEC.demande}>Demander le crédit</LienExterne>
         </li>
         <li>
           <Link to="/">snowro.com</Link>

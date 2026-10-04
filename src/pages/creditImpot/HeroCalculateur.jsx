@@ -1,7 +1,7 @@
 import { useRef, useState } from "react";
 import { CREDIT_MAD as C, CURSEUR, creditPour, dollars, pourcent } from "../../config/creditImpot";
 import { mesurer } from "../../lib/mesure";
-import { BoutonDeneigeur, Texte } from "./elements";
+import { BoutonDeneigeur } from "./elements";
 
 // Héros dans la bande de ciel de l'accueil : texte à gauche, calculateur à
 // droite (même carte que le calculateur de frais de l'accueil).
@@ -35,16 +35,14 @@ export default function HeroCalculateur() {
           <BoutonDeneigeur emplacement="hero" />
         </div>
         <p className="ci-badge-date">
-          <span>
-            Versements anticipés&nbsp;: demandez avant le <Texte>{C.dateLimiteVersementsAnticipes}</Texte>
-          </span>
+          <span>Relevé de fin d'année fourni, prêt pour votre déclaration de revenus</span>
         </p>
       </div>
 
       <div className="ci-calc" id="calculateur">
         <p className="ci-calc__question">Combien payez-vous pour votre déneigement cet hiver?</p>
         <p className="ci-calc__indice">
-          Glissez le curseur pour ajuster le montant de votre contrat ou de vos paiements pour la saison.
+          Glissez le curseur pour ajuster le total de vos déneigements pour la saison.
         </p>
         <div className="ci-calc__ligne-haut">
           <span className="eyebrow ci-calc__eyebrow">Vous payez</span>

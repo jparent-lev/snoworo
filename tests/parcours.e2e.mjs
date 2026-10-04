@@ -420,9 +420,9 @@ async function connexion(cle, largeur = 1280) {
     assert.equal(await p.evaluate(() => document.documentElement.scrollWidth), 360);
     await p.screenshot({ path: `${D}/e2e-credit-360.png`, fullPage: true });
   });
-  await test("crédit d'impôt : FAQ au clavier, 8 questions, liens Revenu Québec dans un nouvel onglet, CTA vers l'inscription", async () => {
+  await test("crédit d'impôt : FAQ au clavier, 7 questions, liens Revenu Québec dans un nouvel onglet, CTA vers l'inscription", async () => {
     const questions = p.locator(".faq__question");
-    assert.equal(await questions.count(), 8);
+    assert.equal(await questions.count(), 7);
     await questions.first().focus();
     await p.keyboard.press("Enter");
     assert.equal(await questions.first().getAttribute("aria-expanded"), "true");
@@ -433,7 +433,7 @@ async function connexion(cle, largeur = 1280) {
     const ctas = p.getByRole("link", { name: "Trouver mon déneigeur" });
     assert.equal(await ctas.count(), 2);
     for (const c of await ctas.all()) assert.equal(await c.getAttribute("href"), "/inscription");
-    assert.match(await p.locator(".ci-avis").textContent(), /credit-impot v1\.0/);
+    assert.match(await p.locator(".ci-avis").textContent(), /credit-impot v1\.1/);
   });
   await ctx.close();
   const bureau = await b.newContext({ viewport: { width: 1280, height: 900 }, reducedMotion: "reduce" });
