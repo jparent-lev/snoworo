@@ -45,7 +45,12 @@ export const confirmerInscriptionListeAttente = onDocumentCreated(
 function composerConfirmation({ role, ville }) {
   // `coin` est inséré tel quel : échappé pour la version HTML seulement.
   const paragraphes = (coin) =>
-    role === "deneigeur"
+    role === "pro"
+      ? [
+          `Merci de votre intérêt pour Snowro Pro. Votre entreprise est inscrite pour être avertie en premier.`,
+          `On prépare une offre pour les entreprises de déneigement qui veulent voir où la demande se trouve dans leurs secteurs, à commencer ${coin}. On vous écrit dès que les détails sont prêts.`,
+        ]
+      : role === "deneigeur"
       ? [
           `Merci de vouloir donner un coup de pelle avec Snowro. Ton inscription comme déneigeur de quartier compte pour ouvrir Snowro ${coin}.`,
           "Avant l'ouverture, on t'écrit pour que tu puisses créer ton compte et être prêt à recevoir les premières demandes.",
@@ -60,17 +65,23 @@ function composerConfirmation({ role, ville }) {
 
   const titre = "C'est noté, merci !";
   const pied =
-    "Tu reçois ce courriel parce que cette adresse a été inscrite à la liste d'attente sur snowro.com. " +
-    "Si ce n'est pas toi, ou si tu veux te retirer de la liste, réponds simplement à ce courriel.";
-  const lignes = [...paragraphes(ville ? `à ${ville}` : "dans ton coin"), partage("https://snowro.com")];
+    role === "pro"
+      ? "Vous recevez ce courriel parce que cette adresse a été inscrite à la liste Snowro Pro sur snowro.com. " +
+        "Si ce n'est pas vous, ou pour vous retirer de la liste, répondez simplement à ce courriel."
+      : "Tu reçois ce courriel parce que cette adresse a été inscrite à la liste d'attente sur snowro.com. " +
+        "Si ce n'est pas toi, ou si tu veux te retirer de la liste, réponds simplement à ce courriel.";
+  const pro = role === "pro";
+  const coin = (v) => (v ? `à ${v}` : pro ? "dans votre secteur" : "dans ton coin");
+  // Pas d'invitation au partage pour Pro : elle s'adresse aux voisins.
+  const lignes = [...paragraphes(coin(ville)), ...(pro ? [] : [partage("https://snowro.com")])];
 
   return {
-    sujet: "C'est noté : tu es sur la liste Snowro",
+    sujet: role === "pro" ? "C'est noté : votre entreprise est sur la liste Snowro Pro" : "C'est noté : tu es sur la liste Snowro",
     html: gabaritCourriel({
       titre,
       paragraphes: [
-        ...paragraphes(ville ? `à ${echapperHtml(ville)}` : "dans ton coin"),
-        partage('<a href="https://snowro.com" style="color:#9E4E23;font-weight:700;">snowro.com</a>'),
+        ...paragraphes(coin(ville && echapperHtml(ville))),
+        ...(pro ? [] : [partage('<a href="https://snowro.com" style="color:#9E4E23;font-weight:700;">snowro.com</a>')]),
       ],
       piedDePage: pied,
     }),

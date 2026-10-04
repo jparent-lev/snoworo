@@ -5,6 +5,12 @@ import { GEOCODING_API_KEY, villeDepuisAdresse } from "./geocoding.js";
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const CODE_POSTAL_REGEX = /^[A-Za-z]\d[A-Za-z][ -]?\d[A-Za-z]\d$/;
+// « pro » : entreprise de déneigement intéressée par Snowro Pro. Son entrée
+// est distincte de celle du même courriel comme client ou déneigeur
+// (listeAttente/pro:{courriel}), pour que la liste se segmente sans qu'une
+// inscription écrase l'autre.
+const ROLES = new Set(["client", "deneigeur", "pro"]);
+export const idListeAttente = (courriel, role) => (role === "pro" ? `pro:${courriel}` : courriel);
 
 // Point d'entrée public (aucune authentification requise) du site vitrine de
 // pré-lancement — voir design_handoff_snowro_site/README.md § State Management.
@@ -27,8 +33,12 @@ export const rejoindreListeAttente = onCall(
     if (typeof codePostal !== "string" || !CODE_POSTAL_REGEX.test(codePostal.trim())) {
       throw new HttpsError("invalid-argument", "Code postal invalide.");
     }
-    if (role !== "client" && role !== "deneigeur") {
+    if (!ROLES.has(role)) {
       throw new HttpsError("invalid-argument", "Rôle invalide.");
+    }
+    const entreprise = typeof request.data?.entreprise === "string" ? request.data.entreprise.trim() : "";
+    if (role === "pro" && (entreprise.length < 2 || entreprise.length > 120)) {
+      throw new HttpsError("invalid-argument", "Nom de l'entreprise requis.");
     }
 
     let derive;
@@ -39,14 +49,15 @@ export const rejoindreListeAttente = onCall(
     }
 
     const courrielNormalise = courriel.trim().toLowerCase();
-    // L'email comme identifiant de document : une réinscription (ex. changement
-    // de ville ou de rôle) met à jour l'entrée existante plutôt que d'en créer
-    // une deuxième.
-    await db.doc(`listeAttente/${courrielNormalise}`).set(
+    // L'email comme identifiant de document (préfixé « pro: » pour Pro) : une
+    // réinscription (ex. changement de ville, ou client devenu déneigeur) met
+    // à jour l'entrée existante plutôt que d'en créer une deuxième.
+    await db.doc(`listeAttente/${idListeAttente(courrielNormalise, role)}`).set(
       {
         courriel: courrielNormalise,
         codePostal: codePostal.trim().toUpperCase(),
         role,
+        ...(role === "pro" ? { entreprise } : {}),
         ville: derive.ville,
         villeGeoId: derive.villeGeoId,
         createdAt: FieldValue.serverTimestamp(),

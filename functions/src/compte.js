@@ -3,6 +3,7 @@ import { logger } from "firebase-functions/v2";
 import { getAuth } from "firebase-admin/auth";
 import { FieldValue } from "firebase-admin/firestore";
 import { db } from "./admin.js";
+import { idListeAttente } from "./listeAttente.js";
 import { STRIPE_SECRET_KEY, paiementReel, stripe } from "./paiements.js";
 
 // Fermeture du compte par la personne elle-même (Loi 25 : droit à
@@ -16,7 +17,7 @@ import { STRIPE_SECRET_KEY, paiementReel, stripe } from "./paiements.js";
 //   conversation (le titre, générique, reste). On garde le registre de
 //   paiement (montants, identifiants Stripe), que la loi oblige à conserver
 //   6 ans ;
-// - fiche users/{uid}, inscription à la liste d'attente et offres reçues
+// - fiche users/{uid}, inscriptions à la liste d'attente (et Pro) et offres reçues
 //   effacées ; client Stripe (carte enregistrée) supprimé ;
 // - compte de connexion supprimé en dernier.
 // Le compte de versement Stripe d'un déneigeur n'est pas supprimé : Stripe le
@@ -78,7 +79,10 @@ export async function fermerCompteUtilisateur(uid) {
   const offres = await db.collection("offresCiblees").where("utilisateurCibleId", "==", uid).get();
   const batch = db.batch();
   offres.docs.forEach((o) => batch.delete(o.ref));
-  if (profil.email) batch.delete(db.doc(`listeAttente/${profil.email.trim().toLowerCase()}`));
+  if (profil.email) {
+    const courriel = profil.email.trim().toLowerCase();
+    for (const role of ["client", "pro"]) batch.delete(db.doc(`listeAttente/${idListeAttente(courriel, role)}`));
+  }
   await batch.commit();
   await db.recursiveDelete(refProfil);
 
