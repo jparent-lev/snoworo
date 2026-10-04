@@ -360,6 +360,58 @@ async function connexion(cle, largeur = 1280) {
   await ctx.close();
 }
 
+// Page /credit-impot (publique) : calculs, clavier, liens, mobile, mode sombre.
+{
+  const ctx = await b.newContext({ viewport: { width: 360, height: 800 }, deviceScaleFactor: 2 });
+  const p = await ctx.newPage();
+  p.on("pageerror", (e) => console.log("   [erreur page]", e.message));
+  pageCourante = p;
+  const valeurs = async () => (await p.locator(".ci-valeur").allTextContents()).map((t) => t.replace(/\s/g, " "));
+  await test("crédit d'impôt : calcul exact à 600 $ (défaut), 200 $ et 1 500 $ au clavier", async () => {
+    await p.goto("http://localhost:4190/credit-impot");
+    assert.equal((await p.title()).replace(/\s/g, " "), "Québec rembourse 40 % de votre déneigement | Snowro");
+    assert.deepEqual(await valeurs(), ["240 $", "360 $"]);
+    const curseur = p.getByRole("slider", { name: "Coût annuel de votre déneigement en dollars" });
+    assert.equal(await curseur.getAttribute("aria-valuetext"), "600 dollars");
+    await curseur.focus();
+    await p.keyboard.press("Home");
+    assert.deepEqual(await valeurs(), ["80 $", "120 $"]);
+    await p.keyboard.press("End");
+    assert.deepEqual(await valeurs(), ["600 $", "900 $"]);
+    assert.equal(await curseur.getAttribute("aria-valuetext"), "1500 dollars");
+    await p.keyboard.press("ArrowLeft");
+    assert.deepEqual(await valeurs(), ["590 $", "885 $"]);
+    assert.equal(await p.evaluate(() => document.documentElement.scrollWidth), 360);
+    await p.screenshot({ path: `${D}/e2e-credit-360.png`, fullPage: true });
+  });
+  await test("crédit d'impôt : FAQ au clavier, 8 questions, liens Revenu Québec dans un nouvel onglet, CTA vers l'inscription", async () => {
+    assert.equal(await p.locator(".ci-faq details").count(), 8);
+    const premiere = p.locator(".ci-faq summary").first();
+    await premiere.focus();
+    await p.keyboard.press("Enter");
+    assert.equal(await p.locator(".ci-faq details").first().getAttribute("open"), "");
+    for (const lien of await p.locator('a[href^="https://www.revenuquebec.ca"]').all()) {
+      assert.equal(await lien.getAttribute("target"), "_blank");
+    }
+    const ctas = p.getByRole("link", { name: "Trouver mon déneigeur" });
+    assert.equal(await ctas.count(), 2);
+    for (const c of await ctas.all()) assert.equal(await c.getAttribute("href"), "/inscription");
+    assert.match(await p.locator(".ci-pied").textContent(), /credit-impot v1\.0/);
+  });
+  await ctx.close();
+  const sombre = await b.newContext({ viewport: { width: 1280, height: 900 }, colorScheme: "dark", reducedMotion: "reduce" });
+  const ps = await sombre.newPage();
+  pageCourante = ps;
+  await test("crédit d'impôt : mode sombre et animations réduites (aucun flocon)", async () => {
+    await ps.goto("http://localhost:4190/credit-impot");
+    assert.equal(await ps.locator(".ci-flocon").count(), 0);
+    const fond = await ps.evaluate(() => getComputedStyle(document.querySelector(".credit-impot")).backgroundColor);
+    assert.equal(fond, "rgb(18, 27, 41)");
+    await ps.screenshot({ path: `${D}/e2e-credit-sombre-1280.png`, fullPage: true });
+  });
+  await sombre.close();
+}
+
 await b.close();
 serveur.kill();
 console.log(`\n${ok} tests réussis`);
