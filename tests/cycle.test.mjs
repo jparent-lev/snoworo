@@ -354,6 +354,7 @@ await test("fermer son compte : profil, connexion, adresses, photos, messages et
   await db.doc(`users/${uid}`).set({ displayName: "Zoé Fermé", email: "Ferme@exemple.ca", role: ["donneur_ouvrage", "deneigeur_x"] });
   await db.doc(`users/${uid}/lectures/d1`).set({ luAt: TS.now() });
   await db.doc("listeAttente/ferme@exemple.ca").set({ courriel: "ferme@exemple.ca", createdAt: TS.now() });
+  await db.doc("listeAttente/pro:ferme@exemple.ca").set({ courriel: "ferme@exemple.ca", role: "pro", createdAt: TS.now() });
   await db.doc("demandes/ferm-client").set({ statut: "completee", donneurOuvrageId: uid, donneurPrenom: "Zoé", titre: "Entrée", description: "Code de porte 1234", deneigeurId: "den1", deneigeurPrenom: "Marc", paiement: { montantTotal: 40, statutPaiement: "verse" } });
   await db.doc("demandes/ferm-client/prive/adresse").set({ adresse: "1 rue X" });
   await db.collection("messages/ferm-client/messages").add({ expediteurId: uid, contenu: "Salut" });
@@ -364,6 +365,7 @@ await test("fermer son compte : profil, connexion, adresses, photos, messages et
   assert.equal((await db.doc(`users/${uid}`).get()).exists, false);
   assert.equal((await db.doc(`users/${uid}/lectures/d1`).get()).exists, false);
   assert.equal((await db.doc("listeAttente/ferme@exemple.ca").get()).exists, false);
+  assert.equal((await db.doc("listeAttente/pro:ferme@exemple.ca").get()).exists, false);
   await assert.rejects(getAuth().getUser(uid), /no user record|user-not-found/i);
   const c = await lire("ferm-client");
   assert.equal(c.donneurPrenom, "Compte fermé"); assert.equal(c.description, ""); assert.equal(c.titre, "Entrée");
@@ -375,6 +377,21 @@ await test("fermer son compte : profil, connexion, adresses, photos, messages et
   assert.equal(d.deneigeurPrenom, "Compte fermé"); assert.equal(d.deneigeurNote, null); assert.equal(d.evaluee, true);
   assert.equal(d.donneurPrenom, "Mireille", "l'autre personne n'est pas touchée");
   assert.equal((await db.doc("demandes/ferm-deneigeur/prive/photo-0").get()).exists, false);
+});
+
+console.log("Liste d'attente (Pro distinct)");
+const la = await import(`${REPO}functions/src/listeAttente.js`);
+await test("liste d'attente : Pro a sa propre entrée avec l'entreprise, sans écraser l'inscription client", async () => {
+  globalThis.fetch = fetchGeocodage;
+  const base = { courriel: "Duo@Exemple.ca", codePostal: "G1L 2M4" };
+  await la.rejoindreListeAttente.run({ data: { ...base, role: "client" } });
+  await echoue(la.rejoindreListeAttente.run({ data: { ...base, role: "pro" } }), "invalid-argument", "pro sans entreprise");
+  await la.rejoindreListeAttente.run({ data: { ...base, role: "pro", entreprise: " Déneigement Duo inc. " } });
+  const client = (await db.doc("listeAttente/duo@exemple.ca").get()).data();
+  const pro = (await db.doc("listeAttente/pro:duo@exemple.ca").get()).data();
+  assert.equal(client.role, "client"); assert.equal(client.entreprise, undefined);
+  assert.equal(pro.role, "pro"); assert.equal(pro.entreprise, "Déneigement Duo inc."); assert.equal(pro.ville, "Québec");
+  await echoue(la.rejoindreListeAttente.run({ data: { ...base, role: "admin" } }), "invalid-argument", "rôle inconnu");
 });
 
 console.log("Firestore rules");

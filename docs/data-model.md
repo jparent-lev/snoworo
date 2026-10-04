@@ -170,10 +170,11 @@ la future Cloud Function de paiement ou la console Firebase, voir
 n'existe pas, `src/lib/config.js` sert des valeurs de secours (`fraisFixe: 2,
 fraisPct: 8`, identiques aux valeurs par défaut de la maquette).
 
-## `listeAttente/{courriel}`
+## `listeAttente/{courriel}` et `listeAttente/pro:{courriel}`
 
 ```
-courriel, codePostal, role: "client" | "deneigeur"
+courriel, codePostal, role: "client" | "deneigeur" | "pro"
+entreprise              // nom de l'entreprise, role "pro" seulement
 ville, villeGeoId       // dérivés par géocodage serveur du codePostal
 createdAt
 confirmation: {         // écrit par confirmerInscriptionListeAttente
@@ -192,7 +193,9 @@ en échec n'annule jamais l'inscription ; les documents avec
 
 Site vitrine de pré-lancement (`design_handoff_snowro_site`) — collecte
 d'inscriptions à la liste d'attente. Le document est identifié par le
-courriel normalisé (une réinscription met à jour l'entrée plutôt que d'en
+courriel normalisé, préfixé `pro:` pour Snowro Pro afin que la même personne
+puisse être à la fois cliente et intéressée par Pro (segmentation par `role`)
+(une réinscription met à jour l'entrée plutôt que d'en
 créer une deuxième). Écrit uniquement par la Cloud Function callable
 publique `rejoindreListeAttente` (`functions/src/listeAttente.js`), qui
 valide le format du courriel/code postal, filtre les soumissions de bots

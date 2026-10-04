@@ -329,6 +329,42 @@ async function connexion(cle, largeur = 1280) {
   await ctx.close();
 }
 
+// Accueil : « Être averti pour Pro » présélectionne Pro et demande l'entreprise.
+{
+  const ctx = await b.newContext({ viewport: { width: 390, height: 900 }, deviceScaleFactor: 2 });
+  const p = await ctx.newPage();
+  pageCourante = p;
+  const envois = [];
+  await p.route("**/rejoindreListeAttente", (r) => {
+    envois.push(r.request().postDataJSON().data);
+    return r.fulfill({ json: { result: { ok: true, ville: "Québec" } } });
+  });
+  await test("accueil : « Être averti pour Pro » ouvre le formulaire Pro (entreprise), inscription envoyée avec le rôle pro", async () => {
+    await p.goto("http://localhost:4190/");
+    await p.getByRole("link", { name: "Être averti pour Pro" }).click();
+    await p.getByRole("heading", { name: "Snowro Pro arrive bientôt" }).waitFor();
+    assert.equal(await p.getByRole("radio", { name: "Entreprise (Pro)" }).getAttribute("aria-checked"), "true");
+    await p.getByPlaceholder("Nom de l'entreprise").fill("Déneigement Duo inc.");
+    await p.getByPlaceholder("ton@courriel.com").fill("duo@exemple.ca");
+    await p.getByPlaceholder("Code postal de ton secteur principal").fill("G1L 2M4");
+    assert.equal(await p.evaluate(() => document.documentElement.scrollWidth), 390);
+    await p.locator("#liste").screenshot({ path: `${D}/e2e-liste-pro-390.png` });
+    await p.getByRole("button", { name: "Être averti pour Pro" }).click();
+    await p.getByText("Ton entreprise est sur la liste Snowro Pro").waitFor();
+    assert.equal(envois.length, 1);
+    assert.equal(envois[0].role, "pro"); assert.equal(envois[0].entreprise, "Déneigement Duo inc.");
+  });
+  await test("accueil : retour au rôle Client, le champ entreprise disparaît", async () => {
+    await p.reload();
+    await p.getByRole("radio", { name: "Entreprise (Pro)" }).click();
+    await p.getByPlaceholder("Nom de l'entreprise").waitFor();
+    await p.locator("#liste").getByRole("radio", { name: "Client", exact: true }).click();
+    assert.equal(await p.getByPlaceholder("Nom de l'entreprise").count(), 0);
+    await p.getByRole("heading", { name: "On ouvre où il y a du monde" }).waitFor();
+  });
+  await ctx.close();
+}
+
 // Loi 25 : avis à l'inscription, fermeture du compte par la personne elle-même.
 {
   const ctx = await b.newContext({ viewport: { width: 390, height: 900 }, deviceScaleFactor: 2 });

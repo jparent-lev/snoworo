@@ -26,7 +26,7 @@
 
 .waitlist-form__role-bouton {
   flex: 1;
-  min-width: 120px;
+  min-width: 112px;
   cursor: pointer;
   font-family: var(--font-corps);
   font-weight: 700;

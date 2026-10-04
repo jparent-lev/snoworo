@@ -29,6 +29,9 @@ import "./Landing.css";
 export default function Landing() {
   const { user, loading } = useAuth();
   const [menuOuvert, setMenuOuvert] = useState(false);
+  // Rôle du formulaire de liste d'attente : « Être averti pour Pro » le
+  // présélectionne à « pro ».
+  const [roleListe, setRoleListe] = useState("client");
 
   // Arrivée depuis une autre page par un lien "/#section" (pied de page des
   // pages légales) : le navigateur tente de défiler avant que React ait rendu
@@ -85,7 +88,11 @@ export default function Landing() {
             Pas d'appels à faire, pas d'attente.
           </p>
           <div className="landing__hero-cta">
-            <a href="#liste" className="landing__bouton-primaire landing__bouton-neige landing__bouton-neige--b">
+            <a
+              href="#liste"
+              className="landing__bouton-primaire landing__bouton-neige landing__bouton-neige--b"
+              onClick={() => setRoleListe("client")}
+            >
               Je veux faire déneiger
             </a>
             <a href="#deneigeur" className="landing__bouton-fantome">
@@ -307,7 +314,11 @@ export default function Landing() {
                 Un pro du déneigement qui veut remplir les trous dans sa tournée
               </span>
             </div>
-            <a href="#liste" className="landing__bouton-ocre landing__bouton-neige landing__bouton-neige--d">
+            <a
+              href="#liste"
+              className="landing__bouton-ocre landing__bouton-neige landing__bouton-neige--d"
+              onClick={() => setRoleListe("deneigeur")}
+            >
               M'inscrire comme déneigeur de quartier
             </a>
           </div>
@@ -355,7 +366,11 @@ export default function Landing() {
               trouve dans leurs secteurs. Les détails s'en viennent. Inscris-toi pour être averti en
               premier.
             </p>
-            <a href="#liste" className="landing__bouton-ardoise landing__bouton-neige landing__bouton-neige--e">
+            <a
+              href="#liste"
+              className="landing__bouton-ardoise landing__bouton-neige landing__bouton-neige--e"
+              onClick={() => setRoleListe("pro")}
+            >
               Être averti pour Pro
             </a>
           </div>
@@ -371,13 +386,25 @@ export default function Landing() {
         <div className="landing__bloc-liste">
           <CapNeige className="landing__cap-liste" />
           <div>
-            <h2 className="landing__h2 landing__h2--sur-argile">On ouvre où il y a du monde</h2>
-            <p className="landing__p landing__p--sur-argile-clair">
-              Laisse-nous ton courriel et ton code postal. On te fait signe quand Snowro débarque dans ton
-              coin, et ton inscription fait avancer ta ville dans la file.
-            </p>
+            {roleListe === "pro" ? (
+              <>
+                <h2 className="landing__h2 landing__h2--sur-argile">Snowro Pro arrive bientôt</h2>
+                <p className="landing__p landing__p--sur-argile-clair">
+                  Laisse-nous le nom de ton entreprise, ton courriel et le code postal de ton secteur principal.
+                  On te présente l'offre Pro en premier, avec les données de ta région.
+                </p>
+              </>
+            ) : (
+              <>
+                <h2 className="landing__h2 landing__h2--sur-argile">On ouvre où il y a du monde</h2>
+                <p className="landing__p landing__p--sur-argile-clair">
+                  Laisse-nous ton courriel et ton code postal. On te fait signe quand Snowro débarque dans ton
+                  coin, et ton inscription fait avancer ta ville dans la file.
+                </p>
+              </>
+            )}
           </div>
-          <WaitlistForm />
+          <WaitlistForm role={roleListe} onRole={setRoleListe} />
         </div>
       </section>
 
