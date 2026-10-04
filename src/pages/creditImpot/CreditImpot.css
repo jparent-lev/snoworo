@@ -1,662 +1,326 @@
 /*
- * Page /credit-impot (référence : snowro-credit-impot.html v1.0).
- * Tout est limité à .credit-impot. Les variables --ci-* reprennent les noms du
- * fichier de référence et pointent vers les tokens du site en mode clair
- * (src/styles/tokens.css). Le site n'a pas de mode sombre : celui de cette
- * page reprend les valeurs vérifiées du fichier de référence.
- * Polices : chargées par src/styles/tokens.css (Fraunces, et Atkinson
- * Hyperlegible pour le texte de cette page ; le navigateur ne télécharge une
- * police que là où elle sert).
+ * Page /credit-impot : gabarits de l'accueil (Landing.css, Decors) et tokens
+ * du site. Ajouts propres à cette page seulement, préfixés ci-. Public de 70
+ * ans et plus : texte courant d'au moins 18 px, cibles d'au moins 44 px,
+ * focus de 3 px couleur argile.
  */
 
-.credit-impot {
-  --ci-neige: var(--color-bg-page);
-  --ci-papier: var(--color-surface-carte);
-  --ci-nuit: var(--color-terre);
-  --ci-nuit-2: var(--color-texte-secondaire);
-  --ci-givre: var(--color-bordure);
-  --ci-givre-2: var(--color-surface-secondaire);
-  --ci-braise: var(--color-argile);
-  --ci-braise-fonce: var(--color-argile-foncee);
-  --ci-braise-pale: #f8eadf;
-  --ci-ok: #2e7d4f;
-  --ci-non: #9c8a78;
-  --ci-flocon: var(--color-bordure);
-  --ci-aidants-fond: var(--color-terre);
-  --ci-aidants-texte: var(--color-bg-page);
-
-  --ci-police-titre: "Fraunces", Georgia, "Times New Roman", serif;
-  --ci-police-texte: "Atkinson Hyperlegible", "Segoe UI", Arial, sans-serif;
-  --ci-rayon: 14px;
-  --ci-rayon-petit: 10px;
-
-  min-height: 100vh;
-  background: var(--ci-neige);
-  color: var(--ci-nuit);
-  font-family: var(--ci-police-texte);
-  font-size: 1.125rem;
-  line-height: 1.6;
-}
-
-@media (prefers-color-scheme: dark) {
-  .credit-impot {
-    --ci-neige: #121b29;
-    --ci-papier: #1b2638;
-    --ci-nuit: #eaf1f9;
-    --ci-nuit-2: #a8b8cc;
-    --ci-givre: #2c3a52;
-    --ci-givre-2: #223049;
-    --ci-braise: #e08a52;
-    --ci-braise-fonce: #efa873;
-    --ci-braise-pale: #33261c;
-    --ci-ok: #5bbf8a;
-    --ci-non: #5a6b84;
-    --ci-flocon: #2c3a52;
-    --ci-aidants-fond: #1b2638;
-    --ci-aidants-texte: #eaf1f9;
-    /* Texte du tampon de version (VersionFooter lit ce token du site). */
-    --color-texte-secondaire: #a8b8cc;
-    color-scheme: dark;
-  }
+.credit-impot :focus-visible {
+  outline: 3px solid var(--color-argile);
+  outline-offset: 3px;
+  border-radius: 4px;
 }
 
 html:has(.credit-impot) {
   scroll-behavior: smooth;
 }
-
-.credit-impot a {
-  color: var(--ci-braise);
-}
-.credit-impot a:hover {
-  color: var(--ci-braise-fonce);
-}
-.credit-impot :focus-visible {
-  outline: 3px solid var(--ci-braise);
-  outline-offset: 3px;
-  border-radius: 4px;
-}
-
-.ci-contenant {
-  max-width: 1040px;
-  margin: 0 auto;
-  padding: 0 24px;
-}
-@media (max-width: 400px) {
-  .ci-contenant {
-    padding: 0 16px;
+@media (prefers-reduced-motion: reduce) {
+  html:has(.credit-impot) {
+    scroll-behavior: auto;
   }
+}
+
+/* Texte plus grand que l'accueil (lecture 70+). */
+.credit-impot .landing__p,
+.credit-impot .landing__p-sur-lin,
+.credit-impot .landing__mini-carte-texte,
+.credit-impot .faq__reponse {
+  font-size: 18px;
+  line-height: 1.6;
+}
+.credit-impot .landing__chapeau,
+.credit-impot .landing__hero-chapeau {
+  font-size: 19px;
+}
+.credit-impot .landing__p--sur-ardoise {
+  font-size: 18px;
+}
+.credit-impot .eyebrow {
+  font-size: 13px;
+}
+.credit-impot .landing__bouton-primaire,
+.credit-impot .landing__bouton-ocre,
+.credit-impot .landing__bouton-fantome {
+  font-size: 17px;
+  min-height: 44px;
+}
+
+.ci-liste {
+  list-style: none;
+  margin: 0;
+  padding: 0;
 }
 
 .ci-evitement {
   position: absolute;
   left: 16px;
   top: -60px;
-  z-index: 10;
-  background: var(--ci-papier);
+  z-index: 30;
+  background: var(--color-surface-carte);
   padding: 10px 16px;
-  border-radius: var(--ci-rayon-petit);
+  border-radius: var(--radius-bouton);
 }
 .ci-evitement:focus {
   top: 16px;
 }
 
-/* ---------- En-tête ---------- */
+/* ---- En-tête ---- */
 .ci-entete {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 14px 24px;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 16px;
-  padding: 20px 0;
-}
-.credit-impot .ci-logo {
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-  min-height: 44px;
-  font-family: var(--ci-police-titre);
-  font-weight: 700;
-  font-size: 1.5rem;
-  color: var(--ci-nuit);
-  text-decoration: none;
-  letter-spacing: -0.01em;
 }
 .ci-nav {
   display: flex;
-  gap: 28px;
+  align-items: center;
+  gap: 24px;
 }
-.credit-impot .ci-nav a {
+.ci-nav a:not(.ci-nav__calcul) {
   display: inline-flex;
   align-items: center;
   min-height: 44px;
-  color: var(--ci-nuit-2);
+  color: var(--color-terre);
   text-decoration: none;
   font-weight: 700;
-  font-size: 1rem;
+  font-size: 16px;
 }
-.credit-impot .ci-nav a:hover {
-  color: var(--ci-braise);
+.ci-nav a:not(.ci-nav__calcul):hover {
+  color: var(--color-argile);
 }
-@media (max-width: 640px) {
-  .ci-nav a:not(:last-child) {
-    display: none !important;
-  }
+.credit-impot .ci-nav__calcul {
+  padding: 10px 18px;
+  font-size: 16px;
 }
-
-/* ---------- Héros + calculateur ---------- */
-.ci-hero {
-  position: relative;
-  overflow: hidden;
-  padding: 56px 0 72px;
-}
-.ci-neige {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-}
-.ci-flocon {
-  position: absolute;
-  top: -5%;
-  color: var(--ci-flocon);
-  animation: ci-tomber linear infinite;
-  user-select: none;
-}
-@keyframes ci-tomber {
-  from {
-    transform: translateY(-5vh) rotate(0deg);
-  }
-  to {
-    transform: translateY(110vh) rotate(180deg);
-  }
-}
-@media (prefers-reduced-motion: reduce) {
-  .ci-neige {
+@media (max-width: 760px) {
+  .ci-nav a:not(.ci-nav__calcul) {
     display: none;
   }
-  html:has(.credit-impot) {
-    scroll-behavior: auto;
-  }
-}
-
-.ci-hero h1 {
-  position: relative;
-  font-family: var(--ci-police-titre);
-  font-weight: 600;
-  font-size: clamp(2.1rem, 5.5vw, 3.4rem);
-  line-height: 1.12;
-  letter-spacing: -0.015em;
-  margin: 0 0 16px;
-  max-width: 18ch;
-  color: var(--ci-nuit);
-}
-.ci-hero h1 strong {
-  color: var(--ci-braise);
-  font-weight: 700;
-}
-.ci-sous-titre {
-  position: relative;
-  font-size: 1.25rem;
-  color: var(--ci-nuit-2);
-  max-width: 52ch;
-  margin: 0 0 40px;
-}
-
-.ci-calculateur {
-  position: relative;
-  background: var(--ci-papier);
-  border: 1px solid var(--ci-givre);
-  border-radius: var(--ci-rayon);
-  padding: 36px 32px;
-  box-shadow: 0 12px 32px rgba(59, 42, 31, 0.08);
-  max-width: 720px;
-  scroll-margin-top: 24px;
 }
 @media (max-width: 480px) {
-  .ci-calculateur {
-    padding: 28px 20px;
-  }
-}
-.ci-question {
-  font-weight: 700;
-  font-size: 1.15rem;
-  margin: 0 0 6px;
-}
-.ci-indice {
-  color: var(--ci-nuit-2);
-  font-size: 1rem;
-  margin: 0 0 20px;
-}
-
-.ci-ligne-curseur {
-  display: flex;
-  align-items: center;
-  gap: 20px;
-  margin-bottom: 8px;
-}
-/* Cible tactile de 44 px : la piste est dessinée en fond, l'élément est haut. */
-.credit-impot input[type="range"] {
-  flex: 1;
-  min-width: 0;
-  height: 44px;
-  margin: 0;
-  appearance: none;
-  -webkit-appearance: none;
-  background: transparent;
-  cursor: pointer;
-}
-.credit-impot input[type="range"]::-webkit-slider-runnable-track {
-  height: 10px;
-  border-radius: 999px;
-  background: linear-gradient(
-    to right,
-    var(--ci-braise) 0%,
-    var(--ci-braise) var(--pct, 31%),
-    var(--ci-givre) var(--pct, 31%),
-    var(--ci-givre) 100%
-  );
-}
-.credit-impot input[type="range"]::-moz-range-track {
-  height: 10px;
-  border-radius: 999px;
-  background: var(--ci-givre);
-}
-.credit-impot input[type="range"]::-moz-range-progress {
-  height: 10px;
-  border-radius: 999px;
-  background: var(--ci-braise);
-}
-.credit-impot input[type="range"]::-webkit-slider-thumb {
-  appearance: none;
-  -webkit-appearance: none;
-  width: 34px;
-  height: 34px;
-  margin-top: -12px;
-  border-radius: 50%;
-  background: var(--ci-braise);
-  border: 4px solid var(--ci-papier);
-  box-shadow: 0 2px 8px rgba(34, 50, 74, 0.35);
-}
-.credit-impot input[type="range"]::-moz-range-thumb {
-  width: 26px;
-  height: 26px;
-  border-radius: 50%;
-  background: var(--ci-braise);
-  border: 4px solid var(--ci-papier);
-  box-shadow: 0 2px 8px rgba(34, 50, 74, 0.35);
-}
-.ci-montant-contrat {
-  font-family: var(--ci-police-titre);
-  font-size: 1.9rem;
-  font-weight: 700;
-  min-width: 4.5ch;
-  text-align: right;
-  font-variant-numeric: tabular-nums;
-  white-space: nowrap;
-}
-
-.ci-resultats {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 16px;
-  margin-top: 28px;
-}
-@media (max-width: 560px) {
-  .ci-resultats {
-    grid-template-columns: 1fr;
-  }
-}
-.ci-resultat {
-  border-radius: var(--ci-rayon-petit);
-  padding: 18px 20px;
-  border: 1px solid var(--ci-givre);
-  background: var(--ci-givre-2);
-}
-.ci-etiquette {
-  font-size: 1rem;
-  color: var(--ci-nuit-2);
-  margin: 0 0 2px;
-}
-.ci-valeur {
-  font-family: var(--ci-police-titre);
-  font-weight: 700;
-  font-size: clamp(1.6rem, 4vw, 2.2rem);
-  font-variant-numeric: tabular-nums;
-  margin: 0;
-}
-.ci-resultat--final {
-  background: var(--ci-braise-pale);
-  border-color: var(--ci-braise);
-}
-/* Texte orange : #9E4E23 (argile foncée) sur fond pâle en clair pour un
-   contraste AA (5,5:1) ; la couleur du fichier de référence en sombre. */
-.ci-resultat--final .ci-valeur {
-  color: var(--ci-braise-fonce);
-  font-size: clamp(2rem, 5vw, 2.8rem);
-}
-@media (prefers-color-scheme: dark) {
-  .ci-resultat--final .ci-valeur {
-    color: var(--ci-braise);
+  .ci-nav__suite {
+    display: none;
   }
 }
 
-.ci-note {
-  font-size: 0.95rem;
-  color: var(--ci-nuit-2);
-  margin: 20px 0 0;
-  max-width: 60ch;
-}
-
-.ci-cta-rangee {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 16px;
-  align-items: center;
-  margin-top: 32px;
-}
-.credit-impot .ci-bouton {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 44px;
-  background: var(--ci-braise-fonce);
-  color: #fff;
-  font-family: var(--ci-police-texte);
-  font-weight: 700;
-  font-size: 1.15rem;
-  text-decoration: none;
-  padding: 16px 32px;
-  border-radius: 999px;
-  border: none;
-  cursor: pointer;
-  transition: background-color 0.15s ease;
-}
-.credit-impot .ci-bouton:hover {
-  background: var(--color-terre);
-  color: #fff;
-}
-@media (prefers-color-scheme: dark) {
-  .credit-impot .ci-bouton {
-    background: var(--ci-braise);
-    color: #121b29;
-  }
-  .credit-impot .ci-bouton:hover {
-    background: var(--ci-braise-fonce);
-    color: #121b29;
-  }
+/* ---- Héros ---- */
+.ci-accent {
+  color: var(--color-argile);
 }
 .ci-badge-date {
+  align-self: flex-start;
+  margin: 0;
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  background: var(--ci-papier);
-  border: 1px solid var(--ci-givre);
-  color: var(--ci-nuit-2);
-  border-radius: 999px;
-  padding: 10px 18px;
-  font-size: 0.98rem;
+  gap: 10px;
+  padding: 10px 16px;
+  border-radius: var(--radius-bouton);
+  background: rgba(255, 253, 248, 0.75);
+  border: 1px solid var(--color-bordure);
+  font-size: 16px;
+  color: var(--color-terre);
 }
-.ci-point {
+.ci-badge-date::before {
+  content: "";
   width: 9px;
   height: 9px;
   border-radius: 50%;
-  background: var(--ci-braise);
+  background: var(--color-argile);
   flex: none;
 }
 
-/* ---------- Sections ---------- */
-.ci-section {
-  padding: 72px 0;
+/* Calculateur : même carte que le calculateur de frais de l'accueil. */
+.ci-calc {
+  background: var(--color-surface-carte);
+  border: 1px solid var(--color-bordure);
+  border-radius: var(--radius-carte);
+  padding: 30px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-width: 0;
+  scroll-margin-top: 96px;
+  box-shadow: 0 14px 36px rgba(59, 42, 31, 0.08);
 }
-.ci-section h2 {
-  font-family: var(--ci-police-titre);
-  font-weight: 600;
-  font-size: clamp(1.7rem, 4vw, 2.3rem);
-  line-height: 1.2;
-  margin: 0 0 12px;
-  letter-spacing: -0.01em;
-  color: inherit;
-}
-.ci-section h3 {
-  font-family: var(--ci-police-texte);
-  color: inherit;
-}
-.ci-intro {
-  color: var(--ci-nuit-2);
-  max-width: 58ch;
-  margin: 0 0 40px;
-  font-size: 1.15rem;
-}
-
-/* Étapes */
-.ci-etapes {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 24px;
-}
-@media (max-width: 760px) {
-  .ci-etapes {
-    grid-template-columns: 1fr;
+@media (max-width: 420px) {
+  .ci-calc {
+    padding: 24px 20px;
   }
 }
-.ci-etape {
-  background: var(--ci-papier);
-  border: 1px solid var(--ci-givre);
-  border-radius: var(--ci-rayon);
-  padding: 28px 24px;
+.ci-calc__question {
+  margin: 0;
+  font-family: var(--font-titrage);
+  font-weight: 600;
+  font-size: 22px;
+  line-height: 1.25;
+  color: var(--color-terre);
 }
+.ci-calc__indice {
+  margin: -6px 0 0;
+  font-size: 16px;
+  line-height: 1.5;
+  color: var(--color-texte-secondaire);
+}
+.ci-calc__ligne-haut {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+.ci-calc__eyebrow {
+  color: var(--color-ardoise);
+}
+.ci-calc__montant {
+  font-family: var(--font-titrage);
+  font-weight: 600;
+  font-size: 36px;
+  line-height: 1;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+/* Cible tactile de 44 px de haut, couleur argile comme l'accueil. */
+.ci-calc__curseur {
+  width: 100%;
+  height: 44px;
+  margin: 0;
+  accent-color: var(--color-argile);
+  cursor: pointer;
+}
+.ci-calc__detail {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  border-top: 1px solid var(--color-lin);
+  padding-top: 18px;
+}
+.ci-calc__rangee {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
+  font-size: 17px;
+  color: var(--color-texte-secondaire);
+}
+.ci-calc__valeur {
+  font-family: var(--font-titrage);
+  font-weight: 600;
+  font-size: 26px;
+  color: var(--color-terre);
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+.ci-calc__rangee--final {
+  margin: 0 -14px;
+  padding: 12px 14px;
+  border-radius: var(--radius-panneau);
+  background: var(--color-surface-secondaire);
+}
+/* Argile foncée : contraste AA sur la surface claire. */
+.ci-calc__valeur--net {
+  font-size: 32px;
+  color: var(--color-argile-foncee);
+}
+.ci-calc__note {
+  margin: 0;
+  font-size: 15px;
+  line-height: 1.5;
+  color: var(--color-texte-secondaire);
+}
+
+/* ---- Étapes ---- */
 .ci-numero {
-  font-family: var(--ci-police-titre);
-  font-weight: 700;
-  font-size: 1.1rem;
-  color: var(--ci-braise-fonce);
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 40px;
-  height: 40px;
+  width: 44px;
+  height: 44px;
   border-radius: 50%;
-  background: var(--ci-braise-pale);
-  margin-bottom: 16px;
-}
-.ci-etape h3 {
-  font-size: 1.2rem;
-  margin: 0 0 8px;
-}
-.ci-etape p {
-  margin: 0;
-  color: var(--ci-nuit-2);
-  font-size: 1.05rem;
+  background: var(--color-lin);
+  color: var(--color-argile-foncee);
+  font-family: var(--font-titrage);
+  font-weight: 600;
+  font-size: 20px;
 }
 
-/* Comparaison */
-.ci-comparo {
-  background: var(--ci-givre-2);
-}
-.ci-cartes-comparo {
+/* ---- Comparaison ---- */
+.ci-cartes {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 24px;
+  grid-template-columns: repeat(auto-fit, minmax(min(280px, 100%), 1fr));
+  gap: 22px;
+  align-items: stretch;
 }
-@media (max-width: 820px) {
-  .ci-cartes-comparo {
-    grid-template-columns: 1fr;
-    gap: 32px;
-  }
-}
-.ci-carte-option {
+.ci-carte-vedette {
   position: relative;
-  background: var(--ci-papier);
-  border: 1px solid var(--ci-givre);
-  border-radius: var(--ci-rayon);
-  padding: 28px 24px;
-  display: flex;
-  flex-direction: column;
-}
-.ci-carte-option--vedette {
-  border: 2px solid var(--ci-braise);
+  border: 2px solid var(--color-argile);
 }
 .ci-ruban {
-  position: absolute;
-  top: -14px;
-  left: 24px;
-  background: var(--ci-braise-fonce);
-  color: #fff;
-  font-size: 0.85rem;
-  font-weight: 700;
-  padding: 4px 14px;
+  align-self: flex-start;
+  color: var(--color-surface-carte);
+  background: var(--color-argile-foncee);
+  padding: 5px 12px;
   border-radius: 999px;
 }
-@media (prefers-color-scheme: dark) {
-  .ci-ruban {
-    background: var(--ci-braise);
-    color: #121b29;
-  }
+.ci-lignes {
+  display: flex;
+  flex-direction: column;
+  margin-top: 4px;
 }
-.ci-carte-option h3 {
-  font-size: 1.25rem;
-  margin: 0 0 4px;
-}
-.ci-prix-ligne {
-  color: var(--ci-nuit-2);
-  margin: 0 0 20px;
-  font-size: 1rem;
-}
-.ci-carte-option ul {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-}
-.ci-carte-option li {
+.ci-ligne {
   display: flex;
   gap: 12px;
   align-items: flex-start;
   padding: 10px 0;
-  border-top: 1px solid var(--ci-givre);
-  font-size: 1.02rem;
+  border-top: 1px solid var(--color-bordure);
+  font-size: 17px;
+  line-height: 1.45;
+  color: var(--color-terre);
+}
+.ci-carte-vedette .ci-ligne {
+  border-top-color: var(--color-bordure-sur-lin);
+}
+.ci-ligne--non {
+  color: var(--color-texte-secondaire);
 }
 .ci-coche,
 .ci-croix {
   flex: none;
+  width: 1.3em;
   font-weight: 700;
-  width: 1.4em;
   text-align: center;
 }
 .ci-coche {
-  color: var(--ci-ok);
+  color: #2e6b45;
 }
 .ci-croix {
-  color: var(--ci-non);
-}
-.ci-carte-option li.ci-estompe {
-  color: var(--ci-nuit-2);
+  color: var(--color-texte-secondaire);
 }
 
-/* Proches aidants */
-.ci-aidants {
-  background: var(--ci-aidants-fond);
-  color: var(--ci-aidants-texte);
-  border-radius: var(--ci-rayon);
-  padding: 48px 40px;
-}
-@media (prefers-color-scheme: dark) {
-  .ci-aidants {
-    border: 1px solid var(--ci-givre);
-  }
-}
-.ci-aidants p {
-  max-width: 62ch;
-  font-size: 1.12rem;
-}
-.ci-precision {
-  margin-top: 24px;
-  padding: 18px 20px;
-  border-left: 4px solid var(--ci-braise);
-  background: rgba(255, 255, 255, 0.06);
-  border-radius: 0 var(--ci-rayon-petit) var(--ci-rayon-petit) 0;
-  font-size: 1.02rem;
-}
-@media (max-width: 560px) {
-  .ci-aidants {
-    padding: 32px 24px;
-  }
-}
-
-/* Admissibilité */
+/* ---- Admissibilité ---- */
 .ci-criteres {
-  list-style: none;
-  margin: 0;
-  padding: 0;
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 14px 28px;
-  max-width: 820px;
-}
-@media (max-width: 680px) {
-  .ci-criteres {
-    grid-template-columns: 1fr;
-  }
+  grid-template-columns: repeat(auto-fit, minmax(min(340px, 100%), 1fr));
+  gap: 12px 22px;
 }
 .ci-critere {
   display: flex;
-  gap: 14px;
+  gap: 12px;
   align-items: flex-start;
-  background: var(--ci-papier);
-  border: 1px solid var(--ci-givre);
-  border-radius: var(--ci-rayon-petit);
+  background: var(--color-surface-carte);
+  border: 1px solid var(--color-bordure);
+  border-radius: var(--radius-panneau);
   padding: 16px 18px;
-  font-size: 1.05rem;
-}
-.ci-critere .ci-coche {
-  margin-top: 2px;
+  font-size: 18px;
+  line-height: 1.5;
+  color: var(--color-terre);
 }
 
-/* FAQ */
-.ci-faq details {
-  background: var(--ci-papier);
-  border: 1px solid var(--ci-givre);
-  border-radius: var(--ci-rayon-petit);
-  margin-bottom: 12px;
-  overflow: hidden;
-}
-.ci-faq summary {
-  cursor: pointer;
-  font-weight: 700;
-  font-size: 1.1rem;
+/* ---- FAQ ---- */
+.credit-impot .faq__question {
   min-height: 44px;
-  padding: 20px 56px 20px 22px;
-  list-style: none;
-  position: relative;
-}
-.ci-faq summary::-webkit-details-marker {
-  display: none;
-}
-.ci-faq summary::after {
-  content: "+";
-  position: absolute;
-  right: 22px;
-  top: 50%;
-  transform: translateY(-50%);
-  font-family: var(--ci-police-titre);
-  font-size: 1.6rem;
-  color: var(--ci-braise-fonce);
-}
-@media (prefers-color-scheme: dark) {
-  .ci-faq summary::after {
-    color: var(--ci-braise);
-  }
-}
-.ci-faq details[open] summary::after {
-  content: "–";
-}
-.ci-faq summary:focus-visible {
-  outline-offset: -3px;
-}
-.ci-reponse {
-  padding: 0 22px 22px;
-  color: var(--ci-nuit-2);
-  font-size: 1.05rem;
+  font-size: 20px;
 }
 .ci-reponse p {
   margin: 0 0 12px;
@@ -665,56 +329,44 @@ html:has(.credit-impot) {
   margin-bottom: 0;
 }
 
-/* CTA final */
-.ci-final-cta {
+/* ---- Appel final ---- */
+.ci-final__contenu {
+  position: relative;
+  z-index: 1;
   text-align: center;
-  padding-bottom: 96px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
-.ci-final-cta h2 {
-  max-width: 24ch;
-  margin-left: auto;
-  margin-right: auto;
-}
-.ci-final-cta .ci-intro {
-  margin-left: auto;
-  margin-right: auto;
+.ci-final__contenu .landing__h2 {
+  max-width: 22ch;
 }
 
-/* Pied de page */
-.ci-pied {
-  border-top: 1px solid var(--ci-givre);
-  padding: 40px 0 48px;
-  color: var(--ci-nuit-2);
-  font-size: 0.92rem;
-}
+/* ---- Avis fiscal et version ---- */
 .ci-avis {
-  max-width: 78ch;
-  margin: 0 0 20px;
+  padding-top: 40px;
+  padding-bottom: 8px;
+  color: var(--color-texte-secondaire);
+  font-size: 15px;
+  line-height: 1.55;
 }
-.ci-pied ul {
-  list-style: none;
-  padding: 0;
-  margin: 0 0 20px;
+.ci-avis p {
+  margin: 0 0 14px;
+  max-width: 80ch;
+}
+.ci-avis__liens {
   display: flex;
   flex-wrap: wrap;
-  gap: 4px 20px;
+  gap: 0 24px;
+  margin-bottom: 8px;
 }
-.ci-pied li a {
+.ci-avis__liens a {
   display: inline-flex;
   align-items: center;
   min-height: 44px;
+  color: var(--color-argile-foncee);
+  font-weight: 700;
 }
-.ci-version {
-  font-size: 0.85rem;
-  margin: 0 0 4px;
-}
-
-@media (max-width: 480px) {
-  .ci-badge-date {
-    border-radius: var(--ci-rayon-petit);
-    align-items: flex-start;
-  }
-  .ci-point {
-    margin-top: 9px;
-  }
+.ci-avis .ci-avis__version {
+  font-size: 13px;
 }

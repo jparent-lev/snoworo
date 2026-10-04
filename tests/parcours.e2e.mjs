@@ -366,7 +366,7 @@ async function connexion(cle, largeur = 1280) {
   const p = await ctx.newPage();
   p.on("pageerror", (e) => console.log("   [erreur page]", e.message));
   pageCourante = p;
-  const valeurs = async () => (await p.locator(".ci-valeur").allTextContents()).map((t) => t.replace(/\s/g, " "));
+  const valeurs = async () => (await p.locator(".ci-calc__valeur").allTextContents()).map((t) => t.replace(/\s/g, " "));
   await test("crédit d'impôt : calcul exact à 600 $ (défaut), 200 $ et 1 500 $ au clavier", async () => {
     await p.goto("http://localhost:4190/credit-impot");
     assert.equal((await p.title()).replace(/\s/g, " "), "Québec rembourse 40 % de votre déneigement | Snowro");
@@ -385,31 +385,31 @@ async function connexion(cle, largeur = 1280) {
     await p.screenshot({ path: `${D}/e2e-credit-360.png`, fullPage: true });
   });
   await test("crédit d'impôt : FAQ au clavier, 8 questions, liens Revenu Québec dans un nouvel onglet, CTA vers l'inscription", async () => {
-    assert.equal(await p.locator(".ci-faq details").count(), 8);
-    const premiere = p.locator(".ci-faq summary").first();
-    await premiere.focus();
+    const questions = p.locator(".faq__question");
+    assert.equal(await questions.count(), 8);
+    await questions.first().focus();
     await p.keyboard.press("Enter");
-    assert.equal(await p.locator(".ci-faq details").first().getAttribute("open"), "");
+    assert.equal(await questions.first().getAttribute("aria-expanded"), "true");
+    await p.getByText("Deux exceptions").waitFor();
     for (const lien of await p.locator('a[href^="https://www.revenuquebec.ca"]').all()) {
       assert.equal(await lien.getAttribute("target"), "_blank");
     }
     const ctas = p.getByRole("link", { name: "Trouver mon déneigeur" });
     assert.equal(await ctas.count(), 2);
     for (const c of await ctas.all()) assert.equal(await c.getAttribute("href"), "/inscription");
-    assert.match(await p.locator(".ci-pied").textContent(), /credit-impot v1\.0/);
+    assert.match(await p.locator(".ci-avis").textContent(), /credit-impot v1\.0/);
   });
   await ctx.close();
-  const sombre = await b.newContext({ viewport: { width: 1280, height: 900 }, colorScheme: "dark", reducedMotion: "reduce" });
-  const ps = await sombre.newPage();
-  pageCourante = ps;
-  await test("crédit d'impôt : mode sombre et animations réduites (aucun flocon)", async () => {
-    await ps.goto("http://localhost:4190/credit-impot");
-    assert.equal(await ps.locator(".ci-flocon").count(), 0);
-    const fond = await ps.evaluate(() => getComputedStyle(document.querySelector(".credit-impot")).backgroundColor);
-    assert.equal(fond, "rgb(18, 27, 41)");
-    await ps.screenshot({ path: `${D}/e2e-credit-sombre-1280.png`, fullPage: true });
+  const bureau = await b.newContext({ viewport: { width: 1280, height: 900 }, reducedMotion: "reduce" });
+  const pb = await bureau.newPage();
+  pageCourante = pb;
+  await test("crédit d'impôt : ordinateur, neige immobile si animations réduites", async () => {
+    await pb.goto("http://localhost:4190/credit-impot");
+    const animation = await pb.evaluate(() => getComputedStyle(document.querySelector(".decor-chute__flocon")).animationName);
+    assert.equal(animation, "none");
+    await pb.screenshot({ path: `${D}/e2e-credit-1280.png`, fullPage: true });
   });
-  await sombre.close();
+  await bureau.close();
 }
 
 await b.close();

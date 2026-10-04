@@ -1,10 +1,13 @@
+import { useId, useState } from "react";
 import { Link } from "react-router-dom";
-import VersionFooter from "../../components/VersionFooter";
 import { CREDIT_MAD as C, LIENS_REVENU_QUEBEC, VERSION_PAGE_CREDIT, dollars, pourcent } from "../../config/creditImpot";
 import { mesurer } from "../../lib/mesure";
+import { CapNeige, FloconsFiligrane, Icone } from "../landing/Decors";
 import { FAQ } from "./contenu";
 import { BoutonDeneigeur, LienExterne, Texte } from "./elements";
 
+// Sections de /credit-impot, avec les gabarits de l'accueil (Landing.css) :
+// cartes d'étapes, cartes claires, bloc ardoise, FAQ du site, bande terre.
 const TAUX = pourcent(C.taux);
 
 export function EtapesCredit() {
@@ -25,31 +28,29 @@ export function EtapesCredit() {
     },
   ];
   return (
-    <section className="ci-section" id="comment" aria-labelledby="ci-comment-titre">
-      <div className="ci-contenant">
-        <h2 id="ci-comment-titre">Trois étapes, et l'hiver est réglé</h2>
-        <p className="ci-intro">Pas de paperasse compliquée. Snowro s'occupe des documents, vous profitez du crédit.</p>
-        <ol className="ci-etapes">
-          {etapes.map((e, i) => (
-            <li key={e.titre} className="ci-etape">
-              <span className="ci-numero" aria-hidden="true">
-                {i + 1}
-              </span>
-              <h3>{e.titre}</h3>
-              <p>
-                <Texte>{e.texte}</Texte>
-              </p>
-            </li>
-          ))}
-        </ol>
-      </div>
+    <section id="comment" className="landing__section">
+      <h2 className="landing__h2">Trois étapes, et l'hiver est réglé</h2>
+      <p className="landing__chapeau">Pas de paperasse compliquée. Snowro s'occupe des documents, vous profitez du crédit.</p>
+      <ol className="landing__etapes-grille ci-liste">
+        {etapes.map((e, i) => (
+          <li key={e.titre} className="landing__etape-carte">
+            <span className="ci-numero" aria-hidden="true">
+              {i + 1}
+            </span>
+            <h3 className="landing__h3">{e.titre}</h3>
+            <p className="landing__p">
+              <Texte>{e.texte}</Texte>
+            </p>
+          </li>
+        ))}
+      </ol>
     </section>
   );
 }
 
 function Ligne({ oui, children }) {
   return (
-    <li className={oui ? "" : "ci-estompe"}>
+    <li className={`ci-ligne ${oui ? "" : "ci-ligne--non"}`}>
       <span className={oui ? "ci-coche" : "ci-croix"} aria-hidden="true">
         {oui ? "✓" : "✗"}
       </span>
@@ -96,29 +97,27 @@ export function ComparaisonOptions() {
     },
   ];
   return (
-    <section className="ci-section ci-comparo" aria-labelledby="ci-comparo-titre">
-      <div className="ci-contenant">
-        <h2 id="ci-comparo-titre">Le prix d'un voisin. Le reçu en plus.</h2>
-        <p className="ci-intro">
-          Payer comptant quelqu'un du coin, c'est abordable, mais sans facture, pas de crédit d'impôt. Une compagnie
-          émet une facture, mais à prix commercial. Snowro combine les deux avantages.
-        </p>
-        <div className="ci-cartes-comparo">
-          {options.map((o) => (
-            <div key={o.titre} className={`ci-carte-option ${o.vedette ? "ci-carte-option--vedette" : ""}`}>
-              {o.vedette && <span className="ci-ruban">Snowro</span>}
-              <h3>{o.titre}</h3>
-              <p className="ci-prix-ligne">{o.prix}</p>
-              <ul>
-                {o.lignes.map(([oui, texte]) => (
-                  <Ligne key={texte} oui={oui}>
-                    {texte}
-                  </Ligne>
-                ))}
-              </ul>
-            </div>
-          ))}
-        </div>
+    <section className="landing__section">
+      <h2 className="landing__h2">Le prix d'un voisin. Le reçu en plus.</h2>
+      <p className="landing__chapeau">
+        Payer comptant quelqu'un du coin, c'est abordable, mais sans facture, pas de crédit d'impôt. Une compagnie
+        émet une facture, mais à prix commercial. Snowro combine les deux avantages.
+      </p>
+      <div className="ci-cartes">
+        {options.map((o) => (
+          <div key={o.titre} className={o.vedette ? "landing__carte-lin ci-carte-vedette" : "landing__carte-claire"}>
+            {o.vedette && <span className="eyebrow ci-ruban">Snowro</span>}
+            <h3 className="landing__h3-carte">{o.titre}</h3>
+            <p className={o.vedette ? "landing__p-sur-lin" : "landing__p"}>{o.prix}</p>
+            <ul className="ci-liste ci-lignes">
+              {o.lignes.map(([oui, texte]) => (
+                <Ligne key={texte} oui={oui}>
+                  {texte}
+                </Ligne>
+              ))}
+            </ul>
+          </div>
+        ))}
       </div>
     </section>
   );
@@ -126,20 +125,30 @@ export function ComparaisonOptions() {
 
 export function BlocAidants() {
   return (
-    <section className="ci-section" aria-labelledby="ci-aidants-titre">
-      <div className="ci-contenant">
-        <div className="ci-aidants">
-          <h2 id="ci-aidants-titre">Vous organisez le déneigement d'un parent?</h2>
-          <p>
+    <section className="landing__section">
+      <div className="landing__bloc-paiement">
+        <FloconsFiligrane />
+        <div>
+          <span className="eyebrow landing__bloc-paiement-eyebrow">Proches aidants</span>
+          <h2 className="landing__h2 landing__h2--sur-ardoise">Vous organisez le déneigement d'un parent?</h2>
+          <p className="landing__p landing__p--sur-ardoise">
             Votre mère ou votre père veut rester dans sa maison, et c'est vous qui vous occupez de la logistique. Créez
             son profil Snowro, choisissez le déneigeur avec lui ou elle, et suivez chaque passage à distance. Vous avez
             l'esprit tranquille, votre parent garde son autonomie.
           </p>
-          <p className="ci-precision">
-            Bon à savoir&nbsp;: pour que le crédit s'applique, les dépenses doivent être payées par la personne de 70
-            ans ou plus (ou son conjoint). Snowro vous permet de gérer le compte de votre parent tout en gardant son
-            mode de paiement à son nom.
-          </p>
+        </div>
+        <div className="landing__bloc-paiement-cartes">
+          <div className="landing__mini-carte">
+            <Icone nom="cadenas" />
+            <div className="landing__mini-carte-corps">
+              <span className="landing__mini-carte-titre">Bon à savoir</span>
+              <span className="landing__mini-carte-texte">
+                Pour que le crédit s'applique, les dépenses doivent être payées par la personne de 70 ans ou plus (ou
+                son conjoint). Snowro vous permet de gérer le compte de votre parent tout en gardant son mode de
+                paiement à son nom.
+              </span>
+            </div>
+          </div>
         </div>
       </div>
     </section>
@@ -156,54 +165,71 @@ export function AdmissibiliteBref() {
     `Crédit complet sous environ ${dollars(C.seuilReductionRevenu)} de revenu familial, réduit graduellement au-delà`,
   ];
   return (
-    <section className="ci-section" aria-labelledby="ci-admissibilite-titre">
-      <div className="ci-contenant">
-        <h2 id="ci-admissibilite-titre">L'admissibilité en bref</h2>
-        <p className="ci-intro">
-          Les grandes conditions du crédit d'impôt pour maintien à domicile des aînés, telles que décrites par Revenu
-          Québec.
-        </p>
-        <ul className="ci-criteres">
-          {criteres.map((c) => (
-            <li key={c} className="ci-critere">
-              <span className="ci-coche" aria-hidden="true">
-                ✓
-              </span>
-              <span>{c}</span>
-            </li>
-          ))}
-        </ul>
-      </div>
+    <section className="landing__section">
+      <h2 className="landing__h2">L'admissibilité en bref</h2>
+      <p className="landing__chapeau">
+        Les grandes conditions du crédit d'impôt pour maintien à domicile des aînés, telles que décrites par Revenu
+        Québec.
+      </p>
+      <ul className="ci-liste ci-criteres">
+        {criteres.map((c) => (
+          <li key={c} className="ci-critere">
+            <span className="ci-coche" aria-hidden="true">
+              ✓
+            </span>
+            <span>{c}</span>
+          </li>
+        ))}
+      </ul>
     </section>
   );
 }
 
-// details/summary natifs : clavier (Entrée, Espace) et lecteurs d'écran sans
-// code supplémentaire.
+// Même accordéon que la FAQ de l'accueil : boutons avec aria-expanded et
+// aria-controls, une question ouverte à la fois.
 export function FaqCredit() {
+  const [ouvert, setOuvert] = useState(-1);
+  const base = useId();
+  function basculer(i) {
+    const ouvrir = ouvert !== i;
+    setOuvert(ouvrir ? i : -1);
+    if (ouvrir) mesurer("credit_faq_ouverture", { question: i + 1 });
+  }
   return (
-    <section className="ci-section ci-faq" id="faq" aria-labelledby="ci-faq-titre">
-      <div className="ci-contenant">
-        <h2 id="ci-faq-titre">Vos questions sur le crédit</h2>
-        <p className="ci-intro">
-          Les réponses ci-dessous résument l'information publiée par Revenu Québec. Pour votre situation personnelle,
-          consultez Revenu Québec ou un professionnel.
-        </p>
-        {FAQ.map(({ q, r }, i) => (
-          <details
-            key={q}
-            onToggle={(e) => e.currentTarget.open && mesurer("credit_faq_ouverture", { question: i + 1 })}
-          >
-            <summary>{q}</summary>
-            <div className="ci-reponse">
-              {r.map((p) => (
-                <p key={p}>
-                  <Texte>{p}</Texte>
-                </p>
-              ))}
+    <section id="faq" className="landing__section">
+      <h2 className="landing__h2">Vos questions sur le crédit</h2>
+      <p className="landing__chapeau">
+        Les réponses ci-dessous résument l'information publiée par Revenu Québec. Pour votre situation personnelle,
+        consultez Revenu Québec ou un professionnel.
+      </p>
+      <div className="faq">
+        {FAQ.map(({ q, r }, i) => {
+          const estOuvert = ouvert === i;
+          const idReponse = `${base}-reponse-${i}`;
+          return (
+            <div key={q} className="faq__item">
+              <button
+                type="button"
+                className="faq__question"
+                aria-expanded={estOuvert}
+                aria-controls={idReponse}
+                onClick={() => basculer(i)}
+              >
+                <span className="faq__question-texte">{q}</span>
+                <span className="faq__signe" aria-hidden="true">
+                  {estOuvert ? "–" : "+"}
+                </span>
+              </button>
+              <div id={idReponse} className="faq__reponse ci-reponse" hidden={!estOuvert}>
+                {r.map((p) => (
+                  <p key={p}>
+                    <Texte>{p}</Texte>
+                  </p>
+                ))}
+              </div>
             </div>
-          </details>
-        ))}
+          );
+        })}
       </div>
     </section>
   );
@@ -211,50 +237,44 @@ export function FaqCredit() {
 
 export function CtaFinal() {
   return (
-    <section className="ci-section ci-final-cta" aria-labelledby="ci-final-titre">
-      <div className="ci-contenant">
-        <h2 id="ci-final-titre">L'hiver s'en vient. Votre remboursement aussi.</h2>
-        <p className="ci-intro">
+    <section className="landing__section-pleine-largeur landing__section-terre ci-final">
+      <CapNeige plat className="landing__cap-terre" />
+      <div className="landing__conteneur ci-final__contenu">
+        <h2 className="landing__h2 landing__h2--sur-terre">L'hiver s'en vient. Votre remboursement aussi.</h2>
+        <p className="landing__chapeau landing__chapeau--sur-terre">
           Trouvez votre déneigeur maintenant, demandez vos versements anticipés avant le{" "}
           <Texte>{C.dateLimiteVersementsAnticipes}</Texte>, et recevez votre crédit pendant l'hiver plutôt qu'au
           printemps.
         </p>
-        <BoutonDeneigeur emplacement="final" />
+        <BoutonDeneigeur emplacement="final" surTerre />
       </div>
     </section>
   );
 }
 
-export function PiedCredit() {
+// Avis fiscal, liens vers Revenu Québec et version de la page, juste avant le
+// pied de page du site.
+export function AvisCredit() {
   return (
-    <footer className="ci-pied">
-      <div className="ci-contenant">
-        <p className="ci-avis">
-          L'information présentée sur cette page est de nature générale et ne constitue pas un conseil fiscal. Les
-          paramètres du crédit d'impôt pour maintien à domicile des aînés (taux de {TAUX} en {C.annee}, seuils et
-          plafonds) proviennent de Revenu Québec et peuvent changer. Chaque situation est unique&nbsp;: vérifiez votre
-          admissibilité auprès de Revenu Québec ou d'un professionnel.
-        </p>
-        <ul>
-          <li>
-            <LienExterne href={LIENS_REVENU_QUEBEC.credit}>Revenu Québec, crédit pour maintien à domicile</LienExterne>
-          </li>
-          <li>
-            <LienExterne href={LIENS_REVENU_QUEBEC.demande}>Demander le crédit et les versements anticipés</LienExterne>
-          </li>
-          <li>
-            <Link to="/">snowro.com</Link>
-          </li>
-          <li>
-            <Link to="/confidentialite">Confidentialité</Link>
-          </li>
-          <li>
-            <Link to="/conditions">Conditions</Link>
-          </li>
-        </ul>
-        <p className="ci-version">© Snowro · Québec · {VERSION_PAGE_CREDIT}</p>
-        <VersionFooter className="ci-version-site" />
-      </div>
-    </footer>
+    <section className="landing__conteneur ci-avis">
+      <p>
+        L'information présentée sur cette page est de nature générale et ne constitue pas un conseil fiscal. Les
+        paramètres du crédit d'impôt pour maintien à domicile des aînés (taux de {TAUX} en {C.annee}, seuils et
+        plafonds) proviennent de Revenu Québec et peuvent changer. Chaque situation est unique&nbsp;: vérifiez votre
+        admissibilité auprès de Revenu Québec ou d'un professionnel.
+      </p>
+      <ul className="ci-liste ci-avis__liens">
+        <li>
+          <LienExterne href={LIENS_REVENU_QUEBEC.credit}>Revenu Québec, crédit pour maintien à domicile</LienExterne>
+        </li>
+        <li>
+          <LienExterne href={LIENS_REVENU_QUEBEC.demande}>Demander le crédit et les versements anticipés</LienExterne>
+        </li>
+        <li>
+          <Link to="/">snowro.com</Link>
+        </li>
+      </ul>
+      <p className="ci-avis__version">© Snowro · Québec · {VERSION_PAGE_CREDIT}</p>
+    </section>
   );
 }

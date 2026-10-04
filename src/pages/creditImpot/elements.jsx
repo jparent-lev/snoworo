@@ -16,10 +16,14 @@ export function Texte({ children }) {
     );
 }
 
-// Tous les boutons « Trouver mon déneigeur » mènent à l'inscription.
-export function BoutonDeneigeur({ emplacement }) {
+// Tous les boutons « Trouver mon déneigeur » mènent à l'inscription. Mêmes
+// boutons que l'accueil (argile avec un peu de neige, ou ocre sur terre).
+export function BoutonDeneigeur({ emplacement, surTerre = false }) {
+  const classe = surTerre
+    ? "landing__bouton-ocre landing__bouton-neige landing__bouton-neige--d"
+    : "landing__bouton-primaire landing__bouton-neige landing__bouton-neige--b";
   return (
-    <Link className="ci-bouton" to="/inscription" onClick={() => mesurer("credit_cta_clic", { emplacement })}>
+    <Link className={`${classe} ci-bouton`} to="/inscription" onClick={() => mesurer("credit_cta_clic", { emplacement })}>
       Trouver mon déneigeur
     </Link>
   );
