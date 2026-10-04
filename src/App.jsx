@@ -10,6 +10,7 @@ import Parametres from "./pages/Parametres";
 import Confidentialite from "./pages/Confidentialite";
 import Conditions from "./pages/Conditions";
 import NousEcrire from "./pages/NousEcrire";
+import CreditImpot from "./pages/creditImpot/CreditImpot";
 
 export default function App() {
   return (
@@ -20,6 +21,7 @@ export default function App() {
       <Route path="/confidentialite" element={<Confidentialite />} />
       <Route path="/conditions" element={<Conditions />} />
       <Route path="/nous-ecrire" element={<NousEcrire />} />
+      <Route path="/credit-impot" element={<CreditImpot />} />
 
       <Route element={<Layout />}>
         <Route

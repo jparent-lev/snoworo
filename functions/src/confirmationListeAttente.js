@@ -14,7 +14,10 @@ import { RESEND_API_KEY, echapperHtml, envoyerCourriel, gabaritCourriel } from "
 export const confirmerInscriptionListeAttente = onDocumentCreated(
   { document: "listeAttente/{courriel}", region: "northamerica-northeast1", secrets: [RESEND_API_KEY] },
   async (event) => {
-    const inscription = event.data.data();
+    const inscription = event.data?.data();
+    // Inscription déjà effacée (fermeture de compte, durée de conservation)
+    // avant que l'événement arrive : rien à confirmer.
+    if (!inscription) return;
     const { courriel, role, ville } = inscription;
     const { sujet, html, texte } = composerConfirmation({ role, ville });
 
