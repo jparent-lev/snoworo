@@ -889,6 +889,16 @@
   color: var(--color-surface-carte);
 }
 
+/* ---- Tableau de bord : intro avec aperçu ---- */
+
+.landing__dans-app {
+  align-items: center;
+}
+
+.landing__dans-app .landing__chapeau {
+  margin-bottom: 0;
+}
+
 /* ---- Villes émergentes ---- */
 
 .landing__villes {

@@ -7,6 +7,7 @@ import FeeCalculator from "./landing/FeeCalculator";
 import FaqAccordion from "./landing/FaqAccordion";
 import WaitlistForm from "./landing/WaitlistForm";
 import HeroIllustration from "./landing/HeroIllustration";
+import ApercuTableau from "./landing/ApercuTableau";
 import TableauParallaxe from "./landing/TableauParallaxe";
 import {
   CapNeige,
@@ -185,12 +186,17 @@ export default function Landing() {
 
       {/* 3 bis. Dans le tableau de bord : aperçu (Client / Déneigeur) et éléments de confiance */}
       <section id="tableau-de-bord" className="landing__section">
-        <span className="eyebrow">Une gestion simple</span>
-        <h2 className="landing__h2">Tout se passe dans votre tableau de bord</h2>
-        <p className="landing__chapeau">
-          Un seul compte, deux modes : Client pour faire déneiger, Déneigeur pour prendre des demandes. Chaque
-          demande suit les mêmes étapes, du début à la fin, sous vos yeux.
-        </p>
+        <div className="landing__deux-colonnes landing__dans-app">
+          <div>
+            <span className="eyebrow">Une gestion simple</span>
+            <h2 className="landing__h2">Tout se passe dans votre tableau de bord</h2>
+            <p className="landing__chapeau">
+              Un seul compte, deux modes : Client pour faire déneiger, Déneigeur pour prendre des demandes. Chaque
+              demande suit les mêmes étapes, du début à la fin, sous vos yeux.
+            </p>
+          </div>
+          <ApercuTableau />
+        </div>
         <TableauParallaxe />
       </section>
 

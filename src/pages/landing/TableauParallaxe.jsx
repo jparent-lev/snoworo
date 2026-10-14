@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Icone } from "./Decors";
 import "./TableauParallaxe.css";
 
@@ -174,24 +174,30 @@ const SCENES = [
   },
 ];
 
+const HAUTEUR_ETAPE_VH = 85;
+
 export default function TableauParallaxe() {
   const racine = useRef(null);
+  const [actif, setActif] = useState(0);
 
   useEffect(() => {
     const el = racine.current;
-    if (!el || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return undefined;
-    const scenes = Array.from(el.querySelectorAll(".parallaxe__scene"));
+    if (!el) return undefined;
+    const reduit = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     let image = 0;
+    let dernier = 0;
     const maj = () => {
       image = 0;
-      const h = window.innerHeight;
-      for (const s of scenes) {
-        const r = s.getBoundingClientRect();
-        if (r.bottom < -h || r.top > 2 * h) continue;
-        // 1 quand le centre de la scène est tout en bas de l'écran, -1 tout en haut.
-        const p = (r.top + r.height / 2 - h / 2) / (h / 2 + r.height / 2);
-        s.style.setProperty("--p", Math.max(-1, Math.min(1, p)).toFixed(3));
+      const r = el.getBoundingClientRect();
+      const course = r.height - window.innerHeight;
+      const avance = course > 0 ? Math.max(0, Math.min(0.9999, -r.top / course)) : 0;
+      const pos = avance * SCENES.length;
+      const idx = Math.floor(pos);
+      if (idx !== dernier) {
+        dernier = idx;
+        setActif(idx);
       }
+      if (!reduit) el.style.setProperty("--etape", (pos - idx).toFixed(3));
     };
     const demander = () => {
       if (!image) image = requestAnimationFrame(maj);
@@ -206,25 +212,66 @@ export default function TableauParallaxe() {
     };
   }, []);
 
+  // Clic sur la navigation : on fait défiler la page jusqu'à l'élément voulu.
+  const aller = (i) => {
+    const el = racine.current;
+    if (!el) return;
+    const course = el.offsetHeight - window.innerHeight;
+    const haut = el.getBoundingClientRect().top + window.scrollY;
+    const reduit = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    window.scrollTo({ top: haut + ((i + 0.5) / SCENES.length) * course, behavior: reduit ? "auto" : "smooth" });
+  };
+
   return (
-    <div ref={racine} className="parallaxe">
-      {SCENES.map(({ icone, titre, texte, Visuel }, i) => (
-        <article key={titre} className={`parallaxe__scene${i % 2 ? " parallaxe__scene--inverse" : ""}`}>
-          <span className="parallaxe__numero" aria-hidden="true">
-            {i + 1}
-          </span>
-          <div className="parallaxe__texte">
-            <Icone nom={icone} />
-            <h3 className="parallaxe__titre">{titre}</h3>
-            <p className="parallaxe__p">{texte}</p>
+    <div
+      ref={racine}
+      className="parcours"
+      style={{ height: `${SCENES.length * HAUTEUR_ETAPE_VH}vh`, "--etape": 0 }}
+    >
+      <div className="parcours__collant">
+        <ol className="parcours__nav" aria-label="Éléments du tableau de bord">
+          {SCENES.map((sc, i) => (
+            <li key={sc.titre} className={`parcours__item${i === actif ? " parcours__item--actif" : ""}`}>
+              <button
+                type="button"
+                className="parcours__bouton"
+                aria-current={i === actif ? "step" : undefined}
+                onClick={() => aller(i)}
+              >
+                <span className="parcours__numero">{i + 1}</span>
+                <span className="parcours__corps">
+                  <span className="parcours__titre">{sc.titre}</span>
+                  <span className="parcours__texte">{sc.texte}</span>
+                </span>
+              </button>
+              <span className="parcours__progression" aria-hidden="true" />
+            </li>
+          ))}
+        </ol>
+
+        <div className="parcours__scene">
+          <div className="parcours__points" aria-hidden="true">
+            {SCENES.map((sc, i) => (
+              <span key={sc.titre} className={i === actif ? "parcours__point--actif" : ""} />
+            ))}
           </div>
-          <div className="parallaxe__visuel">
+          <div className="parcours__telephone">
             <Telephone>
-              <Visuel />
+              <div className="parcours__ecrans">
+                {SCENES.map(({ titre, Visuel }, i) => (
+                  <div
+                    key={titre}
+                    className={`parcours__ecran${i === actif ? " parcours__ecran--actif" : ""}`}
+                    aria-hidden={i === actif ? undefined : true}
+                  >
+                    <Visuel />
+                  </div>
+                ))}
+              </div>
             </Telephone>
           </div>
-        </article>
-      ))}
+        </div>
+      </div>
     </div>
   );
 }
