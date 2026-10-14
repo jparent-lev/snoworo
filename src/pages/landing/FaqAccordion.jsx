@@ -19,6 +19,10 @@ const THEMES = [
         r: "Oui. Un seul compte, deux modes : Client pour publier vos demandes, Déneigeur pour prendre des demandes. Vous passez de l'un à l'autre avec la bascule en haut de votre tableau de bord.",
       },
       {
+        q: "Pourquoi pas simplement le groupe Facebook du quartier ?",
+        r: "Pour un coup de pelle entre voisins qui se connaissent, un groupe fait très bien l'affaire. Snowro est utile quand vous ne connaissez personne, que c'est la veille d'une bonne bordée ou que vous partez tôt demain matin. Votre demande est envoyée à tous les déneigeurs de quartier disponibles du secteur en même temps, sans attendre une réponse dans un fil de commentaires. Chaque déneigeur de quartier a une note publique bâtie demande après demande, plutôt qu'un profil anonyme. Et l'entente (prix, heure, outils fournis ou non) est écrite d'avance, sans négociation sur le perron.",
+      },
+      {
         q: "Une demande acceptée peut-elle être annulée ?",
         r: "Non, ni par le client ni par le déneigeur de quartier : accepter, c'est s'engager. Personne ne laisse tomber votre demande pour une plus payante. Si un problème survient (absence, travail inachevé, accès impossible), on utilise « Signaler un problème » : le paiement reste retenu et nous tranchons selon les faits.",
       },

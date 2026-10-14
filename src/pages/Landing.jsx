@@ -210,71 +210,8 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* 5. Objection Facebook (avant / après en images) + villes émergentes */}
+      {/* 5. Villes émergentes */}
       <section className="landing__section">
-        <div className="landing__compare">
-          <div className="landing__compare-intro">
-            <h3 className="landing__h3-carte">« Pourquoi pas juste le groupe Facebook du quartier ? »</h3>
-            <p className="landing__p">
-              Pour un coup de pelle entre voisins qui se connaissent, le groupe fait très bien l'affaire.
-              Snowro sert quand vous ne connaissez personne et que le temps presse.
-            </p>
-          </div>
-          <div className="avant-apres">
-            <figure className="avant-apres__cote">
-              <div className="avant-apres__groupe" aria-hidden="true">
-                <div className="avant-apres__post">
-                  <span className="avant-apres__avatar">J</span>
-                  <div>
-                    <b>Julie · Groupe du quartier</b>
-                    <p>Quelqu'un pour déneiger mon entrée demain matin ? Merci !</p>
-                    <span className="avant-apres__meta">Hier, 21 h 40</span>
-                  </div>
-                </div>
-                <div className="avant-apres__commentaire">
-                  <span className="avant-apres__avatar avant-apres__avatar--gris">P</span>
-                  <p>Moi je peux pas, désolé.</p>
-                </div>
-                <div className="avant-apres__commentaire">
-                  <span className="avant-apres__avatar avant-apres__avatar--gris">S</span>
-                  <p>Combien vous offrez ?</p>
-                </div>
-                <div className="avant-apres__attente">⏳ 12 h plus tard : toujours personne</div>
-              </div>
-              <figcaption>Un fil de commentaires, et on attend.</figcaption>
-            </figure>
-
-            <figure className="avant-apres__cote avant-apres__cote--snowro">
-              <div className="avant-apres__telephone" aria-hidden="true">
-                <div className="avant-apres__ecran">
-                  <div className="avant-apres__encoche" />
-                  <div className="avant-apres__entete">snowro</div>
-                  <div className="avant-apres__carte">
-                    <div className="avant-apres__haut">
-                      <span className="avant-apres__badge">Acceptée</span>
-                      <span className="avant-apres__meta">il y a 4 min</span>
-                    </div>
-                    <b className="avant-apres__titre">Entrée double + balcon</b>
-                    <div className="avant-apres__ligne">
-                      <span className="avant-apres__coche">✓</span>
-                      <span>Demande publiée à 21 h 40</span>
-                    </div>
-                    <div className="avant-apres__ligne">
-                      <span className="avant-apres__coche">✓</span>
-                      <span>Marc, noté 4,8 ★, accepte</span>
-                    </div>
-                    <div className="avant-apres__ligne">
-                      <span className="avant-apres__coche">✓</span>
-                      <span>Prix, heure et outils écrits d'avance</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <figcaption>Une demande, un déneigeur de quartier en quelques minutes.</figcaption>
-            </figure>
-          </div>
-        </div>
-
         <div className="landing__villes">
           <div className="landing__villes-texte">
             <h3 className="landing__h3-carte">Les villes se dessinent toutes seules</h3>
