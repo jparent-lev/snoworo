@@ -1,0 +1,306 @@
+.parallaxe {
+  margin-top: 24px;
+}
+
+.parallaxe__scene {
+  --p: 0;
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(300px, 100%), 1fr));
+  gap: 40px;
+  align-items: center;
+  min-height: 70vh;
+  padding: 40px 0;
+  overflow: hidden;
+}
+
+.parallaxe__scene--inverse .parallaxe__texte {
+  order: 2;
+}
+
+/* Gros chiffre en filigrane : le plus lent des trois plans. */
+.parallaxe__numero {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  z-index: 0;
+  font-family: var(--font-titrage);
+  font-weight: 600;
+  font-size: clamp(180px, 28vw, 340px);
+  line-height: 1;
+  color: var(--color-lin);
+  opacity: 0.7;
+  transform: translateY(calc(-50% + var(--p) * 70px));
+  pointer-events: none;
+  user-select: none;
+}
+
+.parallaxe__scene--inverse .parallaxe__numero {
+  left: auto;
+  right: 0;
+}
+
+.parallaxe__texte,
+.parallaxe__visuel {
+  position: relative;
+  z-index: 1;
+}
+
+.parallaxe__texte {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  max-width: 460px;
+  transform: translateY(calc(var(--p) * -24px));
+}
+
+.parallaxe__titre {
+  margin: 0;
+  font-family: var(--font-titrage);
+  font-weight: 600;
+  font-size: clamp(28px, 3.4vw, 40px);
+  line-height: 1.1;
+  letter-spacing: -0.015em;
+  color: var(--color-terre);
+}
+
+.parallaxe__p {
+  margin: 0;
+  font-size: 17.5px;
+  line-height: 1.55;
+  color: var(--color-texte-secondaire);
+}
+
+/* Le visuel file plus vite que le texte, en sens inverse. */
+.parallaxe__visuel {
+  transform: translateY(calc(var(--p) * 56px));
+}
+
+.parallaxe__carte {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+  max-width: 380px;
+  margin: 0 auto;
+  padding: 20px;
+  background: var(--color-surface-carte);
+  border: 2px solid var(--color-argile);
+  border-radius: 18px;
+  box-shadow: 0 24px 50px -30px rgba(59, 42, 31, 0.55);
+}
+
+.parallaxe__haut,
+.parallaxe__actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.parallaxe__badge {
+  padding: 4px 9px;
+  border-radius: 7px;
+  background: var(--color-argile);
+  color: var(--color-surface-carte);
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.parallaxe__badge--ardoise {
+  background: var(--color-ardoise);
+}
+
+.parallaxe__meta {
+  font-size: 13px;
+  color: var(--color-texte-secondaire);
+}
+
+.parallaxe__carte-titre {
+  font-family: var(--font-titrage);
+  font-weight: 600;
+  font-size: 21px;
+  color: var(--color-terre);
+}
+
+.parallaxe__photos {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.parallaxe__photo {
+  display: block;
+  width: 100%;
+  border-radius: 10px;
+}
+
+.parallaxe__legende {
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--color-ardoise);
+}
+
+.parallaxe__carte--fil {
+  border-color: var(--color-bordure);
+  background: var(--color-surface-secondaire);
+}
+
+.parallaxe__bulle {
+  align-self: flex-start;
+  max-width: 85%;
+  padding: 10px 12px;
+  border-radius: 14px 14px 14px 4px;
+  background: var(--color-surface-carte);
+  border: 1px solid var(--color-bordure);
+  font-size: 14px;
+  line-height: 1.4;
+  color: var(--color-terre);
+}
+
+.parallaxe__bulle--moi {
+  align-self: flex-end;
+  border-radius: 14px 14px 4px 14px;
+  background: var(--color-lin);
+}
+
+.parallaxe__bulle-qui {
+  display: block;
+  margin-bottom: 2px;
+  font-size: 11.5px;
+  font-weight: 700;
+  color: var(--color-ardoise);
+}
+
+.parallaxe__saisie {
+  padding: 10px 14px;
+  border: 1px solid var(--color-bordure);
+  border-radius: 999px;
+  background: var(--color-surface-carte);
+  font-size: 13.5px;
+  color: var(--color-texte-secondaire);
+}
+
+.parallaxe__vue {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 14px;
+  border-radius: 12px;
+  background: var(--color-surface-secondaire);
+  color: var(--color-terre);
+}
+
+.parallaxe__vue--accepte {
+  border: 1.5px solid var(--color-argile);
+  background: var(--color-surface-carte);
+}
+
+.parallaxe__vue-etiquette {
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--color-ardoise);
+}
+
+.parallaxe__minuterie {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+}
+
+.parallaxe__minuterie b {
+  font-family: var(--font-titrage);
+  font-size: 44px;
+  line-height: 1;
+  color: var(--color-argile);
+}
+
+.parallaxe__bouton {
+  padding: 8px 12px;
+  border: 1.5px solid var(--color-bordure-bouton-fantome);
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--color-terre);
+}
+
+.parallaxe__bouton--principal {
+  border-color: var(--color-argile);
+  background: var(--color-argile);
+  color: var(--color-surface-carte);
+}
+
+.parallaxe__etapes {
+  display: flex;
+  gap: 4px;
+  font-size: 11.5px;
+  font-weight: 700;
+  color: var(--color-texte-secondaire);
+}
+
+.parallaxe__etapes span {
+  flex: 1;
+  padding-top: 6px;
+  border-top: 3px solid var(--color-bordure);
+}
+
+.parallaxe__etapes .fait {
+  border-top-color: var(--color-ardoise);
+  color: var(--color-ardoise);
+}
+
+.parallaxe__etapes .encours {
+  border-top-color: var(--color-argile);
+  color: var(--color-argile);
+}
+
+.parallaxe__engage {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px;
+  border-radius: 12px;
+  background: var(--color-surface-secondaire);
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--color-terre);
+}
+
+.parallaxe__montant {
+  font-family: var(--font-titrage);
+  font-size: 28px;
+  color: var(--color-terre);
+}
+
+@media (max-width: 720px) {
+  .parallaxe__scene {
+    min-height: 0;
+    gap: 24px;
+    padding: 32px 0;
+  }
+
+  .parallaxe__scene--inverse .parallaxe__texte {
+    order: 0;
+  }
+
+  .parallaxe__numero {
+    font-size: 160px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .parallaxe__numero,
+  .parallaxe__texte,
+  .parallaxe__visuel {
+    transform: none;
+  }
+
+  .parallaxe__numero {
+    top: 0;
+  }
+}
