@@ -210,7 +210,7 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* 5. Objection Facebook (comparatif visuel) + villes émergentes */}
+      {/* 5. Objection Facebook (avant / après en images) + villes émergentes */}
       <section className="landing__section">
         <div className="landing__compare">
           <div className="landing__compare-intro">
@@ -220,29 +220,58 @@ export default function Landing() {
               Snowro sert quand vous ne connaissez personne et que le temps presse.
             </p>
           </div>
-          <div className="landing__compare-table" role="table" aria-label="Groupe du quartier ou Snowro">
-            <div className="landing__compare-ligne landing__compare-ligne--tete" role="row">
-              <span role="columnheader" />
-              <span role="columnheader" className="landing__compare-col">Groupe du quartier</span>
-              <span role="columnheader" className="landing__compare-col landing__compare-col--snowro">Snowro</span>
-            </div>
-            {[
-              { icone: "horloge", sujet: "La réponse", groupe: "À attendre, un commentaire à la fois", snowro: "Tous les déneigeurs du secteur avertis en même temps" },
-              { icone: "note", sujet: "La confiance", groupe: "Un profil anonyme", snowro: "Une note publique, demande après demande" },
-              { icone: "entente", sujet: "L'entente", groupe: "À discuter sur le perron", snowro: "Prix, heure et outils écrits d'avance" },
-            ].map((l) => (
-              <div key={l.sujet} className="landing__compare-ligne" role="row">
-                <span role="rowheader" className="landing__compare-sujet">
-                  <Icone nom={l.icone} />
-                  {l.sujet}
-                </span>
-                <span role="cell" className="landing__compare-case">{l.groupe}</span>
-                <span role="cell" className="landing__compare-case landing__compare-case--snowro">
-                  <span className="landing__compare-coche" aria-hidden="true">✓</span>
-                  {l.snowro}
-                </span>
+          <div className="avant-apres">
+            <figure className="avant-apres__cote">
+              <div className="avant-apres__groupe" aria-hidden="true">
+                <div className="avant-apres__post">
+                  <span className="avant-apres__avatar">J</span>
+                  <div>
+                    <b>Julie · Groupe du quartier</b>
+                    <p>Quelqu'un pour déneiger mon entrée demain matin ? Merci !</p>
+                    <span className="avant-apres__meta">Hier, 21 h 40</span>
+                  </div>
+                </div>
+                <div className="avant-apres__commentaire">
+                  <span className="avant-apres__avatar avant-apres__avatar--gris">P</span>
+                  <p>Moi je peux pas, désolé.</p>
+                </div>
+                <div className="avant-apres__commentaire">
+                  <span className="avant-apres__avatar avant-apres__avatar--gris">S</span>
+                  <p>Combien vous offrez ?</p>
+                </div>
+                <div className="avant-apres__attente">⏳ 12 h plus tard : toujours personne</div>
               </div>
-            ))}
+              <figcaption>Un fil de commentaires, et on attend.</figcaption>
+            </figure>
+
+            <figure className="avant-apres__cote avant-apres__cote--snowro">
+              <div className="avant-apres__telephone" aria-hidden="true">
+                <div className="avant-apres__ecran">
+                  <div className="avant-apres__encoche" />
+                  <div className="avant-apres__entete">snowro</div>
+                  <div className="avant-apres__carte">
+                    <div className="avant-apres__haut">
+                      <span className="avant-apres__badge">Acceptée</span>
+                      <span className="avant-apres__meta">il y a 4 min</span>
+                    </div>
+                    <b className="avant-apres__titre">Entrée double + balcon</b>
+                    <div className="avant-apres__ligne">
+                      <span className="avant-apres__coche">✓</span>
+                      <span>Demande publiée à 21 h 40</span>
+                    </div>
+                    <div className="avant-apres__ligne">
+                      <span className="avant-apres__coche">✓</span>
+                      <span>Marc, noté 4,8 ★, accepte</span>
+                    </div>
+                    <div className="avant-apres__ligne">
+                      <span className="avant-apres__coche">✓</span>
+                      <span>Prix, heure et outils écrits d'avance</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <figcaption>Une demande, un déneigeur de quartier en quelques minutes.</figcaption>
+            </figure>
           </div>
         </div>
 
