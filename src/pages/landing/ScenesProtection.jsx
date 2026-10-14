@@ -6,20 +6,30 @@ import "./ScenesProtection.css";
 // Les coordonnées du personnage sont celles de HeroIllustration (corps entre
 // x 259–294 et y 198–294) ; chaque scène le place et l'agrandit.
 
-function Personnage({ x, y, echelle = 1.15, bras }) {
+// Le déneigeur (tuque au S, foulard ocre) ou le client (tuque ardoise, foulard
+// lin), éventuellement retourné pour regarder vers la droite.
+const VARIANTES = {
+  deneigeur: { manteau: "var(--color-ardoise)", foulard: "var(--color-ocre)", tuque: "var(--color-argile)", rebord: "var(--color-argile-foncee)", s: true },
+  client: { manteau: "var(--color-argile-foncee)", foulard: "var(--color-lin)", tuque: "var(--color-ardoise)", rebord: "var(--color-terre)", s: false },
+};
+
+function Personnage({ x, y, echelle = 1.15, variante = "deneigeur", miroir = false }) {
+  const v = VARIANTES[variante];
+  const sens = miroir ? -1 : 1;
   return (
-    <g transform={`translate(${x} ${y}) scale(${echelle}) translate(-276 -294)`}>
-      <path d="M262 252 Q262 244 276 243 Q292 244 292 254 L294 294 H260 Z" fill="var(--color-ardoise)" />
-      <path d="M288 250 Q300 256 302 270 L304 280" className="scene__pan" />
-      <rect x="261" y="244" width="32" height="9" rx="4.5" fill="var(--color-ocre)" />
+    <g transform={`translate(${x} ${y}) scale(${echelle * sens} ${echelle}) translate(-276 -294)`}>
+      <path d="M262 252 Q262 244 276 243 Q292 244 292 254 L294 294 H260 Z" fill={v.manteau} />
+      <path d="M288 250 Q300 256 302 270 L304 280" className="scene__pan" stroke={v.foulard} />
+      <rect x="261" y="244" width="32" height="9" rx="4.5" fill={v.foulard} />
       <circle cx="274" cy="232" r="13" fill="#E7C39E" />
       <circle cx="267" cy="231" r="1.6" fill="var(--color-terre)" />
       <path d="M270 237 Q274 240 278 237" className="scene__sourire" />
-      <path d="M261 222 Q262 205 276 205 Q289 206 288 222 Z" fill="var(--color-argile)" />
-      <rect x="259" y="219" width="31" height="6" rx="3" fill="var(--color-argile-foncee)" />
-      <text x="269" y="218.6" textAnchor="middle" className="scene__s">S</text>
+      <path d="M261 222 Q262 205 276 205 Q289 206 288 222 Z" fill={v.tuque} />
+      <rect x="259" y="219" width="31" height="6" rx="3" fill={v.rebord} />
+      {v.s && (
+        <text x="269" y="218.6" textAnchor="middle" className="scene__s">S</text>
+      )}
       <circle cx="276" cy="203" r="5" fill="var(--color-surface-carte)" />
-      {bras}
     </g>
   );
 }
@@ -45,23 +55,26 @@ function SceneNotes() {
 }
 
 function SceneEntente() {
+  const bras = { fill: "none", strokeWidth: 8, strokeLinecap: "round" };
   return (
     <>
-      <Personnage
-        x={52}
-        y={118}
-        bras={<path d="M286 258 Q300 270 312 268" fill="none" stroke="var(--color-ardoise)" strokeWidth="8" strokeLinecap="round" />}
-      />
-      {/* L'entente écrite : feuille tenue devant soi, avec sa coche. */}
+      {/* Le déneigeur (à gauche) et le client (à droite) de part et d'autre du contrat. */}
+      <Personnage x={36} y={118} miroir />
+      <Personnage x={164} y={118} variante="client" />
+      <path d="M46 72 Q62 76 78 66" stroke="var(--color-ardoise)" {...bras} />
+      <path d="M154 72 Q138 76 122 66" stroke="var(--color-argile-foncee)" {...bras} />
       <g className="scene__feuille">
-        <rect x="100" y="20" width="66" height="84" rx="8" fill="var(--color-surface-carte)" />
-        <rect x="111" y="34" width="38" height="5" rx="2.5" fill="var(--color-lin)" />
-        <rect x="111" y="46" width="44" height="4" rx="2" fill="var(--color-lin)" />
-        <rect x="111" y="56" width="30" height="4" rx="2" fill="var(--color-lin)" />
-        <circle cx="146" cy="84" r="11" fill="var(--color-argile)" />
-        <path d="M140 84 L144.5 88.5 L152 80" className="scene__coche" />
-        <path d="M110 90 q5 -8 10 0 t10 0" className="scene__signature" />
+        <rect x="72" y="24" width="56" height="74" rx="7" fill="var(--color-surface-carte)" />
+        <rect x="81" y="35" width="32" height="4.5" rx="2.25" fill="var(--color-lin)" />
+        <rect x="81" y="45" width="38" height="3.5" rx="1.75" fill="var(--color-lin)" />
+        <rect x="81" y="53" width="26" height="3.5" rx="1.75" fill="var(--color-lin)" />
+        <path d="M81 72 q4 -7 8 0 t8 0" className="scene__signature" />
+        <path d="M105 72 q4 -7 8 0 t8 0" className="scene__signature scene__signature--client" />
+        <circle cx="100" cy="88" r="8" fill="var(--color-argile)" />
+        <path d="M95.5 88 L99 91.5 L105 84.5" className="scene__coche" />
       </g>
+      {/* Poignée de main : les mains se rejoignent sous le contrat. */}
+      <circle cx="100" cy="104" r="6" fill="#E7C39E" />
     </>
   );
 }
@@ -69,18 +82,37 @@ function SceneEntente() {
 function ScenePaiement() {
   return (
     <>
-      <Personnage x={52} y={118} />
-      {/* Le paiement retenu : cadenas, pièce qui flotte, jusqu'à confirmation. */}
-      <g className="scene__cadenas">
-        <path d="M112 62 V50 a19 19 0 0 1 38 0 V62" className="scene__anse" />
-        <rect x="102" y="60" width="58" height="46" rx="11" fill="var(--color-surface-carte)" />
-        <circle cx="131" cy="80" r="5.5" fill="var(--color-argile)" />
-        <rect x="128.5" y="82" width="5" height="12" rx="2.5" fill="var(--color-argile)" />
+      <text x="30" y="19" textAnchor="middle" className="scene__etiquette">Vous payez</text>
+      <text x="100" y="19" textAnchor="middle" className="scene__etiquette">Snowro retient</text>
+      <text x="170" y="19" textAnchor="middle" className="scene__etiquette">Versé après</text>
+
+      {/* Vous : la carte enregistrée. */}
+      <g className="scene__carte-bancaire">
+        <rect x="8" y="46" width="44" height="30" rx="6" fill="var(--color-surface-carte)" />
+        <rect x="8" y="53" width="44" height="6" fill="var(--color-terre)" />
+        <rect x="14" y="66" width="16" height="3" rx="1.5" fill="var(--color-lin)" />
+        <rect x="14" y="71" width="10" height="2.5" rx="1.25" fill="var(--color-lin)" />
       </g>
-      <g className="scene__piece">
-        <circle cx="172" cy="30" r="14" fill="var(--color-ocre)" />
-        <circle cx="172" cy="30" r="10" className="scene__piece-bord" />
-        <text x="172" y="35" textAnchor="middle" className="scene__piece-texte">$</text>
+
+      {/* Snowro : le montant est retenu en lieu sûr. */}
+      <g className="scene__coffre">
+        <path d="M100 34 L124 42 V62 C124 78 113 88 100 94 C87 88 76 78 76 62 V42 Z" fill="var(--color-ardoise)" />
+        <path d="M100 41 L118 47 V62 C118 74 110 82 100 87 C90 82 82 74 82 62 V47 Z" fill="none" stroke="#fff" strokeOpacity="0.35" strokeWidth="1.5" />
+        <rect x="90" y="58" width="20" height="16" rx="4" fill="var(--color-surface-carte)" />
+        <path d="M94 58 V54 a6 6 0 0 1 12 0 V58" fill="none" stroke="var(--color-surface-carte)" strokeWidth="3" strokeLinecap="round" />
+        <circle cx="100" cy="66" r="2.6" fill="var(--color-argile)" />
+      </g>
+
+      {/* Le déneigeur reçoit le paiement une fois la demande confirmée. */}
+      <Personnage x={168} y={118} echelle={1} miroir />
+      <circle cx="184" cy="48" r="10" fill="var(--color-ardoise)" />
+      <path d="M179 48 L183 52 L190 44" className="scene__coche" />
+
+      <path d="M56 62 H72" className="scene__trajet" />
+      <path d="M128 62 H146" className="scene__trajet" />
+      <g className="scene__voyage">
+        <circle cx="38" cy="62" r="7" fill="var(--color-ocre)" />
+        <text x="38" y="65.5" textAnchor="middle" className="scene__piece-texte scene__piece-texte--petit">$</text>
       </g>
     </>
   );

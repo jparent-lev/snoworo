@@ -16,7 +16,6 @@
 
 .scene__pan {
   fill: none;
-  stroke: var(--color-ocre);
   stroke-width: 7;
   stroke-linecap: round;
 }
@@ -69,19 +68,6 @@
   stroke-linecap: round;
 }
 
-.scene__anse {
-  fill: none;
-  stroke: var(--color-terre);
-  stroke-width: 8;
-  stroke-linecap: round;
-}
-
-.scene__piece-bord {
-  fill: none;
-  stroke: #fff;
-  stroke-opacity: 0.55;
-  stroke-width: 1.5;
-}
 
 .scene__piece-texte {
   fill: var(--color-terre);
@@ -90,13 +76,45 @@
   font-size: 15px;
 }
 
+.scene__piece-texte--petit {
+  font-size: 9.5px;
+}
+
+.scene__signature--client {
+  stroke: var(--color-argile-foncee);
+}
+
+.scene__etiquette {
+  fill: var(--color-terre);
+  fill-opacity: 0.72;
+  font-family: var(--font-corps);
+  font-weight: 700;
+  font-size: 8.5px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.scene__trajet {
+  fill: none;
+  stroke: var(--color-texte-secondaire);
+  stroke-opacity: 0.55;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-dasharray: 1 5;
+}
+
+.scene__carte-bancaire,
+.scene__coffre {
+  filter: drop-shadow(0 5px 7px rgba(59, 42, 31, 0.22));
+}
+
 @media (prefers-reduced-motion: no-preference) {
   .scene__etoile {
     animation: scene-etoile 2.6s ease-in-out infinite;
   }
 
-  .scene__piece {
-    animation: scene-flotte 2.4s ease-in-out infinite;
+  .scene__voyage {
+    animation: scene-voyage 4.2s ease-in-out infinite;
   }
 
   .scene__coche {
@@ -110,9 +128,13 @@
   30% { transform: scale(1.35); }
 }
 
-@keyframes scene-flotte {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-5px); }
+/* La pièce part de la carte, s'arrête dans le coffre, puis rejoint le déneigeur. */
+@keyframes scene-voyage {
+  0% { transform: translateX(0); opacity: 0; }
+  10% { opacity: 1; }
+  35%, 55% { transform: translateX(62px); opacity: 1; }
+  80% { transform: translateX(132px); opacity: 1; }
+  92%, 100% { transform: translateX(132px); opacity: 0; }
 }
 
 @keyframes scene-trace {
