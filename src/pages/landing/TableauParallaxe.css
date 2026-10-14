@@ -288,13 +288,13 @@
   padding: 0;
   display: flex;
   flex-direction: column;
-  gap: 6px;
-  max-width: 480px;
+  gap: 12px;
+  max-width: 500px;
 }
 
 .parcours__item {
   position: relative;
-  border-radius: 16px;
+  border-radius: 22px;
   transition: background-color 200ms ease-out;
 }
 
@@ -306,9 +306,10 @@
 .parcours__bouton {
   display: flex;
   align-items: flex-start;
-  gap: 14px;
+  gap: 20px;
   width: 100%;
-  padding: 14px 16px;
+  padding: 18px 22px;
+  transition: padding 250ms ease-out;
   border: none;
   background: none;
   font: inherit;
@@ -328,7 +329,12 @@
 .parcours__corps {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 12px;
+  padding-top: 4px;
+}
+
+.parcours__item--actif .parcours__bouton {
+  padding: 28px 30px 36px 24px;
 }
 
 .parcours__titre {
@@ -348,8 +354,8 @@
   display: grid;
   grid-template-rows: 0fr;
   overflow: hidden;
-  font-size: 16.5px;
-  line-height: 1.5;
+  font-size: 17px;
+  line-height: 1.7;
   color: var(--color-texte-secondaire);
   opacity: 0;
   max-height: 0;
@@ -358,15 +364,15 @@
 
 .parcours__item--actif .parcours__texte {
   opacity: 1;
-  max-height: 8em;
+  max-height: 11em;
 }
 
 /* Barre d'avancement de l'élément actif. */
 .parcours__progression {
   position: absolute;
-  left: 16px;
-  right: 16px;
-  bottom: 0;
+  left: 84px;
+  right: 30px;
+  bottom: 18px;
   height: 3px;
   border-radius: 3px;
   background: var(--color-argile);
@@ -393,8 +399,6 @@
 
 .parcours__telephone {
   width: 100%;
-  /* Léger parallaxe : le téléphone flotte pendant qu'on avance dans l'élément. */
-  transform: translateY(calc((0.5 - var(--etape)) * 26px));
 }
 
 .parcours__ecrans {
@@ -408,8 +412,8 @@
   flex-direction: column;
   justify-content: center;
   opacity: 0;
-  transform: translateY(14px);
-  transition: opacity 280ms ease-out, transform 280ms ease-out;
+  transform: scale(0.97);
+  transition: opacity 320ms ease-out, transform 320ms ease-out;
   pointer-events: none;
 }
 
@@ -468,20 +472,25 @@
     background: none;
   }
 
-  .parcours__bouton {
+  .parcours__bouton,
+  .parcours__item--actif .parcours__bouton {
     padding: 4px 0;
     cursor: default;
+  }
+
+  .parcours__progression {
+    display: none;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .parcours__telephone {
-    transform: none;
-  }
-
   .parcours__ecran,
   .parcours__texte,
   .parcours__item,
+  .parcours__bouton,
+  .parcours__icone {
+    transition: none;
+  }
 
   .parcours__ecran {
     transform: none;
