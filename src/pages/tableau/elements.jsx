@@ -43,7 +43,7 @@ export function Personne({ prenom, note, texte }) {
           <div className="carte-job__meta">
             {note.nombre > 0 ? (
               <>
-                <span className="etoile">★</span> {note.moyenne ? note.moyenne.toFixed(1).replace(".", ",") : "Nouveau"} · {note.nombre} job
+                <span className="etoile">★</span> {note.moyenne ? note.moyenne.toFixed(1).replace(".", ",") : "Nouveau"} · {note.nombre} demande
                 {note.nombre > 1 ? "s" : ""}
               </>
             ) : (
@@ -92,7 +92,7 @@ export function Modale({ titre, onFermer, children, classe = "", fermer = false 
 const MOTIFS = {
   client: [
     { cle: "absent", libelle: "Personne n'est venu" },
-    { cle: "incomplet", libelle: "La job n'est pas faite au complet" },
+    { cle: "incomplet", libelle: "La demande n'est pas faite au complet" },
     { cle: "autre", libelle: "Autre chose" },
   ],
   deneigeur: [
@@ -101,7 +101,7 @@ const MOTIFS = {
   ],
 };
 
-// Seul recours une fois une job acceptée (pas d'annulation, décision produit).
+// Seul recours une fois une demande acceptée (pas d'annulation, décision produit).
 export function ModaleSignalement({ demande, par, onFermer }) {
   const [motif, setMotif] = useState(MOTIFS[par][0].cle);
   const [details, setDetails] = useState("");
@@ -124,7 +124,7 @@ export function ModaleSignalement({ demande, par, onFermer }) {
   return (
     <Modale titre="Signaler un problème" onFermer={onFermer}>
       <p>
-        Nous mettons la job en pause, et aucun versement n'est effectué tant que nous n'avons pas examiné la
+        Nous mettons la demande en pause, et aucun versement n'est effectué tant que nous n'avons pas examiné la
         situation. Nous vous répondrons par courriel.
       </p>
       <form onSubmit={envoyer} style={{ display: "flex", flexDirection: "column", gap: 12 }}>
@@ -158,7 +158,7 @@ export function ModaleSignalement({ demande, par, onFermer }) {
 
 const CHOIX_ROLES = [
   { role: ROLE_CLIENT, titre: "Je veux faire déneiger", texte: "Publier des demandes pour chez moi ou pour un proche." },
-  { role: ROLE_DENEIGEUR, titre: "Je veux déneiger", texte: "Prendre des jobs près de chez moi, selon mes disponibilités." },
+  { role: ROLE_DENEIGEUR, titre: "Je veux déneiger", texte: "Prendre des demandes près de chez moi, selon mes disponibilités." },
 ];
 
 // Sélection multiple : on peut cocher les deux.
@@ -261,7 +261,7 @@ export function ModaleEvaluation({ titre, intro, libelleEnvoyer, noteRequise, pr
 }
 
 // Photos « c'est fait », lues à l'ouverture seulement (quelques centaines de
-// Ko chacune). Anciennes jobs : une seule photo dans prive/photo.
+// Ko chacune). Anciennes demandes : une seule photo dans prive/photo.
 export function ModalePhoto({ demande, onFermer }) {
   const [photos, setPhotos] = useState(undefined);
   const nb = demande.nbPhotos ?? 0;
@@ -275,7 +275,7 @@ export function ModalePhoto({ demande, onFermer }) {
   return (
     <Modale titre={`Photos de ${demande.deneigeurPrenom}`} onFermer={onFermer} classe="modale--photo" fermer>
       {photos === undefined && <p>Chargement…</p>}
-      {photos?.length === 0 && <p>Les photos ne sont plus disponibles (elles sont effacées 30 jours après la job).</p>}
+      {photos?.length === 0 && <p>Les photos ne sont plus disponibles (elles sont effacées 30 jours après la demande).</p>}
       {photos?.length > 0 && (
         <div className="modale__photos">
           {photos.map((src, i) => (

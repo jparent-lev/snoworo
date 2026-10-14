@@ -138,7 +138,7 @@ await test("confirmer (client) : completee, versement simulé, compteur du déne
   assert.equal(d.statut, "completee"); assert.equal(d.confirmationAuto, false); assert.equal(d.paiement.statutPaiement, "simule_verse");
   assert.equal((await db.doc("users/den1").get()).data().nbJobsCompletees, 24);
 });
-await test("confirmation automatique : seulement les jobs faites dont les 12 h sont écoulées", async () => {
+await test("confirmation automatique : seulement les demandes faites dont les 12 h sont écoulées", async () => {
   const { demandeId: a } = await appel(f.publierDemande, "client1", base);
   const { demandeId: b } = await appel(f.publierDemande, "client1", base);
   for (const x of [a, b]) { await appel(f.accepterDemande, "den3", { demandeId: x }); await appel(f.marquerFaite, "den3", { demandeId: x, photos }); }
@@ -216,7 +216,7 @@ await test("évaluer après coup : une seule fois, client seulement, dans les 7 
   await db.doc(`demandes/${y}`).update({ confirmeeAt: TS.fromMillis(Date.now() - 8 * 24 * 3600e3) });
   await echoue(appel(f.evaluerJob, "client1", { demandeId: y, note: 5 }), "failed-precondition", "après 7 jours");
 });
-await test("purge : photos et messages effacés 30 jours après la job, gardés si la job est signalée", async () => {
+await test("purge : photos et messages effacés 30 jours après la demande, gardés si la demande est signalée", async () => {
   const signalee = await jobFaite("den1");
   await appel(f.signalerProbleme, "client1", { demandeId: signalee, motif: "incomplet" });
   for (const x of [avecPhoto, signalee]) {
@@ -339,7 +339,7 @@ await test("conservation : liste d'attente et « Nous écrire » effacés après
   assert.equal((await db.doc("listeAttente/recent@exemple.ca").get()).exists, true);
   assert.equal((await db.doc("messagesContact/recent").get()).exists, true);
 });
-await test("fermer son compte : refusé pendant une job en cours ou sans confirmation", async () => {
+await test("fermer son compte : refusé pendant une demande en cours ou sans confirmation", async () => {
   await db.doc("demandes/ferm-encours").set({ statut: "matchee", donneurOuvrageId: "ferme1", deneigeurId: "den1" });
   await echoue(appel(compte.fermerCompte, "ferme1", {}), "invalid-argument", "sans confirmation");
   const e = await echoue(appel(compte.fermerCompte, "ferme1", { confirmation: "FERMER" }), "failed-precondition", "job en cours");
@@ -442,7 +442,7 @@ await test("messages : pas d'usurpation, pas de message vide ou trop long, heure
   await assertFails(addDoc(collection(c1, "messages/conv1/messages"), { expediteurId: "client1", contenu: "Hier", createdAt: new Date(0) }));
   await assertFails(addDoc(collection(c1, "messages/conv1/messages"), { ...msg("client1", "Salut"), lu: true }));
 });
-await test("messages : job terminée = lecture seule ; demande encore ouverte = rien", async () => {
+await test("messages : demande terminée = lecture seule ; demande encore ouverte = rien", async () => {
   await assertSucceeds(getDocs(collection(c1, `messages/${id}/messages`)));
   await assertFails(addDoc(collection(c1, `messages/${id}/messages`), msg("client1", "Encore merci")));
   await db.doc("demandes/ouverte1").set({ statut: "ouverte", donneurOuvrageId: "client1" });

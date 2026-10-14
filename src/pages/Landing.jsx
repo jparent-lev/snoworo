@@ -127,7 +127,7 @@ export default function Landing() {
             },
             {
               titre: "C'est pelleté, c'est payé",
-              texte: "Nous retenons votre paiement le temps que la job soit réalisée, puis nous le versons au déneigeur de quartier. Un reçu est transmis automatiquement aux deux parties.",
+              texte: "Nous retenons votre paiement le temps que la demande soit réalisée, puis nous le versons au déneigeur de quartier. Un reçu est transmis automatiquement aux deux parties.",
             },
           ].map((etape, i) => (
             <div key={etape.titre} className="landing__etape-carte">
@@ -149,14 +149,14 @@ export default function Landing() {
             <p className="landing__p landing__p--sur-ardoise">
               Aller vite, c'est bien, mais Snowro ajoute trois garanties que le groupe Facebook du quartier
               ne vous offre pas : une note publique sur chaque déneigeur de quartier, une entente écrite avant
-              le début du travail, et un paiement qui reste sécurisé jusqu'à ce que la job soit faite.
+              le début du travail, et un paiement qui reste sécurisé jusqu'à ce que la demande soit faite.
             </p>
           </div>
           <div className="landing__bloc-paiement-cartes">
             {[
-              { icone: "note", titre: "Des déneigeurs de quartier notés", texte: "Chaque job donne lieu à une appréciation. Un travail bâclé se sait, et cela ferme des portes." },
+              { icone: "note", titre: "Des déneigeurs de quartier notés", texte: "Chaque demande donne lieu à une appréciation. Un travail bâclé se sait, et cela ferme des portes." },
               { icone: "entente", titre: "Une entente claire dès le départ", texte: "Prix, heure souhaitée, outils fournis ou non : tout est écrit avant que quelqu'un accepte." },
-              { icone: "cadenas", titre: "Paiement sécurisé", texte: "Traité par Stripe, retenu jusqu'à ce que la job soit confirmée faite." },
+              { icone: "cadenas", titre: "Paiement sécurisé", texte: "Traité par Stripe, retenu jusqu'à ce que la demande soit confirmée faite." },
             ].map((c) => (
               <div key={c.titre} className="landing__mini-carte">
                 <Icone nom={c.icone} />
@@ -175,8 +175,8 @@ export default function Landing() {
         <span className="eyebrow">Une gestion simple</span>
         <h2 className="landing__h2">Tout se passe dans votre tableau de bord</h2>
         <p className="landing__chapeau">
-          Un seul compte, deux modes : Client pour faire déneiger, Déneigeur pour prendre des jobs. Chaque
-          job suit les mêmes étapes, du début à la fin, sous vos yeux.
+          Un seul compte, deux modes : Client pour faire déneiger, Déneigeur pour prendre des demandes. Chaque
+          demande suit les mêmes étapes, du début à la fin, sous vos yeux.
         </p>
         <TableauParallaxe />
       </section>
@@ -187,7 +187,7 @@ export default function Landing() {
           <div>
             <h2 className="landing__h2">Nos frais, en toutes lettres</h2>
             <p className="landing__chapeau">
-              Un montant fixe plus un pourcentage du contrat, prélevé une seule fois, au moment où la job
+              Un montant fixe plus un pourcentage du contrat, prélevé une seule fois, au moment où la demande
               est confirmée. Rien d'autre : pas d'abonnement, pas de frais d'affichage, pas de frais si
               personne accepte.
             </p>
@@ -213,7 +213,7 @@ export default function Landing() {
                 de quartier disponibles du secteur en même temps.
               </span>
               <span className="landing__p-sur-lin">
-                <strong>Vous savez à qui vous avez affaire.</strong> Une note publique, bâtie job après job,
+                <strong>Vous savez à qui vous avez affaire.</strong> Une note publique, bâtie demande après demande,
                 plutôt qu'un profil anonyme dans un fil de commentaires.
               </span>
               <span className="landing__p-sur-lin">
@@ -255,7 +255,7 @@ export default function Landing() {
             <span className="eyebrow landing__eyebrow-sur-terre">Vous avez une pelle et du temps</span>
             <h2 className="landing__h2 landing__h2--sur-terre">Gagnez de l'argent avec la tempête</h2>
             <p className="landing__chapeau landing__chapeau--sur-terre">
-              Vous choisissez les jobs qui vous conviennent : chaque demande indique l'heure souhaitée, et vous
+              Vous choisissez les demandes qui vous conviennent : chaque demande indique l'heure souhaitée, et vous
               acceptez seulement celles qui entrent dans votre journée. Vous êtes libre de votre horaire, sans
               quota ni contrat de saison, et vous êtes payé dans les jours qui suivent, directement dans votre compte.
             </p>

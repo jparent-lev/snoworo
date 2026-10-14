@@ -10,7 +10,7 @@ export function fermerCompte() {
 
 export function messageFermeture(err) {
   if (err?.message === "job-en-cours") {
-    return "Vous avez une job en cours (acceptée, faite ou signalée). Terminez-la d'abord, puis revenez fermer votre compte.";
+    return "Vous avez une demande en cours (acceptée, faite ou signalée). Terminez-la d'abord, puis revenez fermer votre compte.";
   }
   if (err?.message === "versement-en-attente") {
     return "Un versement est encore en route vers votre compte bancaire. Réessayez une fois qu'il est reçu.";

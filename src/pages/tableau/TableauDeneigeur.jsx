@@ -104,10 +104,10 @@ export default function TableauDeneigeur({ conversation, onConversationFermee })
       {(!villeGeoId || !compteActif) && (
         <div className="bandeau">
           <div>
-            <h3>{villeGeoId ? "Une étape avant d'accepter des jobs" : "Une étape avant de voir les demandes"}</h3>
+            <h3>{villeGeoId ? "Une étape avant d'accepter des demandes" : "Une étape avant de voir les demandes"}</h3>
             <p className="carte-job__meta" style={{ marginTop: 4 }}>
               {villeGeoId
-                ? "Votre compte de versement Stripe reçoit l'argent de vos jobs. Cette étape ne se fait qu'une seule fois."
+                ? "Votre compte de versement Stripe reçoit l'argent de vos demandes. Cette étape ne se fait qu'une seule fois."
                 : "Votre adresse de service détermine votre ville : vous ne voyez jamais de demandes ailleurs."}
             </p>
             <div className="bandeau__etapes">
@@ -131,7 +131,7 @@ export default function TableauDeneigeur({ conversation, onConversationFermee })
           <span className="eyebrow">Cette semaine</span>
           <div className="chiffre__valeur">{formatArgent(chiffres.semaine)}</div>
           <div className="chiffre__sous">
-            {chiffres.nbSemaine} job{chiffres.nbSemaine > 1 ? "s" : ""} confirmée{chiffres.nbSemaine > 1 ? "s" : ""}, frais déjà déduits
+            {chiffres.nbSemaine} demande{chiffres.nbSemaine > 1 ? "s" : ""} confirmée{chiffres.nbSemaine > 1 ? "s" : ""}, frais déjà déduits
           </div>
         </div>
         <div className="chiffre">
@@ -153,19 +153,19 @@ export default function TableauDeneigeur({ conversation, onConversationFermee })
             )}
           </div>
           <div className="chiffre__sous">
-            {nbJobs} job{nbJobs > 1 ? "s" : ""} terminée{nbJobs > 1 ? "s" : ""}
+            {nbJobs} demande{nbJobs > 1 ? "s" : ""} terminée{nbJobs > 1 ? "s" : ""}
           </div>
         </div>
       </div>
 
       {jobs && (
         <Rangee
-          titre="Mes jobs"
+          titre="Mes demandes acceptées"
           compte={listeJobs.length}
           filtres={filtresJobs}
           filtreActif={filtreJobs}
           onFiltre={setFiltreJobs}
-          vide={listeJobs.length ? "Rien dans cette catégorie pour l'instant." : "Vos jobs acceptées apparaîtront ici."}
+          vide={listeJobs.length ? "Rien dans cette catégorie pour l'instant." : "Vos demandes acceptées apparaîtront ici."}
           pied={`${jobsAffichees.length} affichée${jobsAffichees.length > 1 ? "s" : ""}, triées par heure`}
         >
           {jobsAffichees.map((j) => (
@@ -261,7 +261,7 @@ function CarteJob({ job: j, nouveau, conversationOuverte, onConversationFermee }
       {j.statut === "faite" && (
         <p className="carte-job__note">
           {j.donneurPrenom} a jusqu'à <b>{j.confirmationAutoAt ? heure(j.confirmationAutoAt.toDate()) : "…"}</b> pour confirmer ou
-          signaler un problème. Sans réponse, la job est confirmée automatiquement et votre versement est effectué.
+          signaler un problème. Sans réponse, la demande est confirmée automatiquement et votre versement est effectué.
         </p>
       )}
       {j.statut === "signalee" && (
@@ -336,11 +336,11 @@ function ModaleFaite({ job: j, net, onConfirmer, onFermer }) {
   }
 
   return (
-    <Modale titre="La job est terminée ?" onFermer={onFermer}>
+    <Modale titre="La demande est terminée ?" onFermer={onFermer}>
       <p>
         Avant de partir, prenez <b>au moins une photo</b> du travail terminé (jusqu'à {PHOTOS_MAX}) : l'entrée, le
         balcon, le stationnement. {j.donneurPrenom} la voit tout de suite et a 12 heures pour confirmer ou signaler un
-        problème. Sans réponse, la job est confirmée automatiquement et votre versement de {formatArgent(net ?? 0)} part.
+        problème. Sans réponse, la demande est confirmée automatiquement et votre versement de {formatArgent(net ?? 0)} part.
       </p>
       <div className="photos-faite">
         {photos.map((photo, i) => (
@@ -365,7 +365,7 @@ function ModaleFaite({ job: j, net, onConfirmer, onFermer }) {
         )}
       </div>
       <span className="modale__aide">
-        Seuls vous deux voyez les photos. Elles sont effacées 30 jours après la job.
+        Seuls vous deux voyez les photos. Elles sont effacées 30 jours après la demande.
       </span>
       {erreur && <p className="message-erreur" role="alert">{erreur}</p>}
       <div className="modale__actions">
@@ -422,7 +422,7 @@ function CarteDemandeOuverte({ demande: d, frais, compteActif }) {
     try {
       await accepterDemande({ demandeId: d.id });
       // La carte disparaît d'elle-même de la liste (plus « ouverte ») et
-      // réapparaît dans « Mes jobs ».
+      // réapparaît dans « Mes demandes acceptées ».
     } catch (err) {
       setEtat(err.message === "deja-prise" ? "prise" : "erreur");
       setErreur(messageErreur(err));
@@ -461,12 +461,12 @@ function CarteDemandeOuverte({ demande: d, frais, compteActif }) {
           : etat === "prise"
             ? "Déjà prise"
             : compteActif
-              ? "Je prends la job"
+              ? "Je prends la demande"
               : "Compte de versement requis"}
       </button>
 
       {engagement && (
-        <Modale titre="Prenez-vous cette job ?" onFermer={() => setEngagement(false)}>
+        <Modale titre="Prenez-vous cette demande ?" onFermer={() => setEngagement(false)}>
           <div className="modale__resume">
             <b>{d.titre}</b>
             <span className="carte-job__meta">
@@ -478,10 +478,10 @@ function CarteDemandeOuverte({ demande: d, frais, compteActif }) {
             </span>
           </div>
           <p className="modale__engagement">
-            Vous vous engagez à faire cette job {echeance(d.dateHeureSouhaitee).toLowerCase()}. Une fois acceptée, pas
+            Vous vous engagez à faire cette demande {echeance(d.dateHeureSouhaitee).toLowerCase()}. Une fois acceptée, pas
             d'annulation possible : {d.donneurPrenom} compte sur vous.
           </p>
-          <p>L'adresse exacte s'affiche dans « Mes jobs » dès que vous acceptez.</p>
+          <p>L'adresse exacte s'affiche dans « Mes demandes acceptées » dès que vous acceptez.</p>
           <div className="modale__actions">
             <button type="button" className="btn btn--fantome" onClick={() => setEngagement(false)}>
               Pas maintenant

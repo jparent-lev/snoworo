@@ -2,7 +2,7 @@ import SnowroSymbol from "../../components/brand/SnowroSymbol";
 import "./HeroIllustration.css";
 
 // Illustration animée du héros : un déneigeur de quartier pellette devant un
-// triplex de Limoilou pendant que son téléphone raconte la même job. Une seule
+// triplex de Limoilou pendant que son téléphone raconte la même demande. Une seule
 // boucle de 8 s (--hero-cycle) pilote la scène ET les écrans du téléphone, pour
 // que les deux restent raccord :
 //   0 à 33 %   demande reçue, puis acceptée (le bouton passe à « C'est à vous »)
@@ -212,7 +212,7 @@ export default function HeroIllustration() {
                 </div>
               </div>
               <div className="hero-illu__boutons">
-                <span className="landing__hero-phone-bouton hero-illu__bouton hero-illu__bouton--prendre">Je prends la job</span>
+                <span className="landing__hero-phone-bouton hero-illu__bouton hero-illu__bouton--prendre">Je prends la demande</span>
                 <span className="landing__hero-phone-bouton hero-illu__bouton hero-illu__bouton--prise">C'est à vous ✓</span>
               </div>
             </div>
@@ -243,7 +243,7 @@ export default function HeroIllustration() {
             {/* 4. Appréciation */}
             <div className="hero-illu__ecran hero-illu__ecran--note">
               <div className="landing__hero-phone-carte hero-illu__carte-centree">
-                <span className="landing__hero-phone-surtitre">JOB CONFIRMÉE FAITE</span>
+                <span className="landing__hero-phone-surtitre">DEMANDE CONFIRMÉE FAITE</span>
                 <svg className="hero-illu__etoiles" viewBox="0 0 110 20">
                   {[0, 1, 2, 3, 4].map((i) => (
                     <Etoile key={i} x={11 + i * 22} y={10.5} />

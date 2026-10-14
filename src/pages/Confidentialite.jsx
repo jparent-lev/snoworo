@@ -64,9 +64,9 @@ export default function Confidentialite() {
           lue qu'à ce moment-là, jamais en arrière-plan.
         </li>
         <li>
-          <strong>Demandes et jobs :</strong> le montant offert, le quartier indiqué, le statut de la demande,
+          <strong>Demandes et demandes :</strong> le montant offert, le quartier indiqué, le statut de la demande,
           les messages échangés avec l'autre personne une fois le jumelage confirmé, les photos (de 1 à 3) prises
-          par le déneigeur de quartier à la fin de la job (visibles seulement par vous deux) et l'appréciation
+          par le déneigeur de quartier à la fin de la demande (visibles seulement par vous deux) et l'appréciation
           laissée par le client (des étoiles et, s'il le souhaite, un mot lu seulement par le déneigeur).
         </li>
         <li>
@@ -135,9 +135,9 @@ export default function Confidentialite() {
       </ul>
       <p>
         Entre utilisateurs : une fois un jumelage confirmé, le client et le déneigeur de quartier voient ce qu'il
-        faut pour faire la job (prénom, adresse à déneiger, messages échangés). Avant un jumelage, une demande
+        faut pour faire la demande (prénom, adresse à déneiger, messages échangés). Avant un jumelage, une demande
         ouverte est montrée aux déneigeurs de quartier de la même ville avec votre prénom, le quartier, la
-        description de la job, le montant offert et la distance approximative. Votre note, elle, est visible des
+        description de la demande, le montant offert et la distance approximative. Votre note, elle, est visible des
         autres utilisateurs.
       </p>
       <p>
@@ -164,13 +164,13 @@ export default function Confidentialite() {
           envoi.
         </li>
         <li>
-          <strong>Photos de fin de job et messages échangés :</strong> effacés automatiquement 30 jours après la
-          job, sauf si un problème a été signalé : nous les conservons alors jusqu'à ce qu'il soit réglé. Avant l'envoi,
+          <strong>Photos de fin de demande et messages échangés :</strong> effacés automatiquement 30 jours après la
+          demande, sauf si un problème a été signalé : nous les conservons alors jusqu'à ce qu'il soit réglé. Avant l'envoi,
           l'app retire des photos les informations cachées qu'ajoute le téléphone (dont la position GPS).
         </li>
         <li>
           <strong>Compte :</strong> tant que votre compte est actif. Vous pouvez le fermer vous-même en tout temps dans
-          les paramètres (sauf pendant une job en cours) : vos renseignements sont alors effacés ou rendus
+          les paramètres (sauf pendant une demande en cours) : vos renseignements sont alors effacés ou rendus
           anonymes immédiatement, sauf ce que la loi nous oblige à conserver plus longtemps (le registre des
           paiements, conservé 6 ans pour des raisons fiscales). Stripe conserve de son côté les renseignements
           de paiement et de vérification d'identité selon ses propres obligations légales.

@@ -16,7 +16,7 @@ import { STRIPE_SECRET_KEY, avertirCarteRefusee, paiementReel, prelever, verser 
 //    └─annuler─> annulee     └──────signaler──────────┴──> signalee
 //
 // Pas d'annulation une fois la demande acceptée, ni par le client ni par le
-// déneigeur (décision produit : pas de porte de sortie pour laisser une job
+// déneigeur (décision produit : pas de porte de sortie pour laisser une demande
 // en plan au profit d'une plus payante). Après l'acceptation, le seul recours
 // est « Signaler un problème ».
 //
@@ -24,7 +24,7 @@ import { STRIPE_SECRET_KEY, avertirCarteRefusee, paiementReel, prelever, verser 
 // PAIEMENT_REEL est vrai, sinon SIMULÉ : mêmes montants (config/frais), mais
 // aucun argent ne circule et statutPaiement porte le préfixe « simule_ » pour
 // qu'aucune donnée de test ne soit confondue avec un vrai paiement.
-// statutPaiement réel : retenu (prélevé à l'acceptation) > a_verser (job
+// statutPaiement réel : retenu (prélevé à l'acceptation) > a_verser (demande
 // confirmée) > verse (virement fait au déneigeur) ; bloque si signalée.
 
 const REGION = "northamerica-northeast1";
@@ -51,13 +51,13 @@ const PRECISION_GEOHASH_PUBLIC = 7;
 export const PHOTO_CONSERVATION_MS = 30 * 24 * 60 * 60 * 1000;
 export const PHOTO_MAX_CARACTERES = 700_000;
 export const PHOTOS_MAX = 3;
-// Anciennes jobs (photo unique facultative) : document « photo ».
+// Anciennes demandes (photo unique facultative) : document « photo ».
 const DOCS_PHOTOS = ["photo", ...Array.from({ length: PHOTOS_MAX }, (_, i) => `photo-${i}`)];
 const PREFIXE_PHOTO = "data:image/jpeg;base64,";
 
 // Évaluation du déneigeur par le client : 1 à 5 étoiles, mot facultatif lu
 // par le déneigeur seulement (demandes/{id}/prive/evaluation). Possible en
-// confirmant, ou ensuite pendant EVALUATION_DELAI_MS (utile quand la job a été
+// confirmant, ou ensuite pendant EVALUATION_DELAI_MS (utile quand la demande a été
 // confirmée automatiquement).
 export const EVALUATION_DELAI_MS = 7 * 24 * 60 * 60 * 1000;
 const COMMENTAIRE_MAX = 500;
@@ -237,7 +237,7 @@ export const accepterDemande = onCall({ region: REGION, secrets: [STRIPE_SECRET_
       throw new HttpsError("permission-denied", "Cette demande est hors de votre ville de service.");
     }
     if (reel && profil.connectStatus !== "actif") {
-      throw new HttpsError("failed-precondition", "Configurez votre compte de paiement avant d'accepter des jobs.");
+      throw new HttpsError("failed-precondition", "Configurez votre compte de paiement avant d'accepter des demandes.");
     }
 
     tx.update(ref, {
@@ -399,9 +399,9 @@ export const evaluerJob = onCall({ region: REGION }, async (request) => {
   const evaluation = validerEvaluation(request.data);
   return db.runTransaction(async (tx) => {
     const { ref, demande } = await lireDemande(tx, request.data?.demandeId, { uid, role: "client", statuts: ["completee"] });
-    if (demande.evaluee) throw new HttpsError("already-exists", "Vous avez déjà évalué cette job.");
+    if (demande.evaluee) throw new HttpsError("already-exists", "Vous avez déjà évalué cette demande.");
     if (Date.now() - (demande.confirmeeAt?.toMillis() ?? 0) > EVALUATION_DELAI_MS) {
-      throw new HttpsError("failed-precondition", "Le délai pour évaluer cette job est passé.");
+      throw new HttpsError("failed-precondition", "Le délai pour évaluer cette demande est passé.");
     }
     const profil = (await tx.get(db.doc(`users/${demande.deneigeurId}`))).data() ?? {};
     evaluer(tx, ref, demande, profil, evaluation);
@@ -431,17 +431,17 @@ export const confirmerJobsEchues = onSchedule(
         n += 1;
       });
     }
-    if (n) logger.info(`${n} job(s) confirmée(s) automatiquement.`);
+    if (n) logger.info(`${n} demande(s) confirmée(s) automatiquement.`);
     const aVerser = await db.collection("demandes").where("paiement.statutPaiement", "==", "a_verser").limit(100).get();
     for (const doc of aVerser.docs) await verser(doc.id);
   },
 );
 
-// ---- Effacement des photos et de la conversation 30 jours après la job ----
+// ---- Effacement des photos et de la conversation 30 jours après la demande ----
 // (politique de confidentialité). Même horloge pour les deux : photoExpireAt,
-// posé quand la job est marquée faite. Une job signalée garde ses photos et
+// posé quand la demande est marquée faite. Une demande signalée garde ses photos et
 // ses messages tant que le signalement n'est pas réglé (preuve) : ils sont
-// effacés au passage suivant une fois la job sortie de « signalee ».
+// effacés au passage suivant une fois la demande sortie de « signalee ».
 export const purgerPhotos = onSchedule(
   { schedule: "every day 03:17", timeZone: "America/Toronto", region: REGION },
   async () => {
@@ -456,7 +456,7 @@ export const purgerPhotos = onSchedule(
       await batch.commit();
       n += 1;
     }
-    if (n) logger.info(`${n} job(s) : photos et messages effacés après 30 jours.`);
+    if (n) logger.info(`${n} demande(s) : photos et messages effacés après 30 jours.`);
   },
 );
 

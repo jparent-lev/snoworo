@@ -4,7 +4,7 @@ import { LONGUEUR_MAX, STATUTS_ECRITURE, ecouterMessages, envoyerMessage, marque
 import { dateCourte, estAujourdhui, heure } from "../../lib/temps";
 import { Modale } from "./elements";
 
-// Bouton « Écrire à Marc » d'une carte de job, avec pastille si un message
+// Bouton « Écrire à Marc » d'une carte de demande, avec pastille si un message
 // non lu attend.
 export function BoutonMessages({ prenom, nouveau, onClick }) {
   return (
@@ -73,7 +73,7 @@ export default function Conversation({ demande, autrePrenom, onFermer }) {
       <p className="conversation__sujet">{demande.titre}</p>
       <div className="conversation__fil" ref={fil} aria-live="polite">
         {messages && messages.length === 0 && demande.messagesEffaces && (
-          <p className="conversation__vide">Les messages sont effacés 30 jours après la job.</p>
+          <p className="conversation__vide">Les messages sont effacés 30 jours après la demande.</p>
         )}
         {messages && messages.length === 0 && !demande.messagesEffaces && (
           <p className="conversation__vide">
@@ -117,7 +117,7 @@ export default function Conversation({ demande, autrePrenom, onFermer }) {
         </form>
       ) : (
         <p className="conversation__fermee">
-          La job est terminée : la conversation reste lisible 30 jours, puis elle est effacée.
+          La demande est terminée : la conversation reste lisible 30 jours, puis elle est effacée.
         </p>
       )}
       <p className="conversation__rappel">

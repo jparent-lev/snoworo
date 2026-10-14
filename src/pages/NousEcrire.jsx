@@ -50,7 +50,7 @@ export default function NousEcrire() {
   return (
     <PageLegale surtitre="Contact" titre="Nous écrire">
       <p>
-        Une question, une idée, un problème avec une job ? Écrivez-nous : nous répondons habituellement en un ou deux
+        Une question, une idée, un problème avec une demande ? Écrivez-nous : nous répondons habituellement en un ou deux
         jours ouvrables.
       </p>
 

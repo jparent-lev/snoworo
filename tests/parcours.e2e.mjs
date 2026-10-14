@@ -115,15 +115,15 @@ async function connexion(cle, largeur = 1280) {
     await p.selectOption(".rangee__tri select", "proches");
   });
   await p.screenshot({ path: `${D}/e2e-marc-1280.png`, fullPage: true });
-  await test("Marc : « Je prends la job » ouvre l'engagement ; « Pas maintenant » n'accepte rien", async () => {
-    await carteD1(p).getByRole("button", { name: "Je prends la job" }).click();
+  await test("Marc : « Je prends la demande » ouvre l'engagement ; « Pas maintenant » n'accepte rien", async () => {
+    await carteD1(p).getByRole("button", { name: "Je prends la demande" }).click();
     await p.getByRole("dialog").getByText("Une fois acceptée, pas d'annulation possible", { exact: false }).waitFor();
     await p.screenshot({ path: `${D}/e2e-engagement.png` });
     await p.getByRole("button", { name: "Pas maintenant" }).click();
     assert.equal((await db.doc("demandes/D1").get()).data().statut, "ouverte");
   });
-  await test("Marc : « Je m'engage » : la job passe dans Mes jobs avec l'adresse exacte", async () => {
-    await carteD1(p).getByRole("button", { name: "Je prends la job" }).click();
+  await test("Marc : « Je m'engage » : la demande passe dans Mes demandes acceptées avec l'adresse exacte", async () => {
+    await carteD1(p).getByRole("button", { name: "Je prends la demande" }).click();
     await p.getByRole("button", { name: "Je m'engage" }).click();
     await p.getByText("1234, 3e Avenue, Québec").waitFor({ timeout: 15000 });
     const d = (await db.doc("demandes/D1").get()).data();
@@ -147,7 +147,7 @@ async function connexion(cle, largeur = 1280) {
     }
   });
   await p.screenshot({ path: `${D}/e2e-marc-apres-1280.png`, fullPage: true });
-  await test("Marc : écrit à Paul depuis la job ; le message s'affiche et la demande note le dernier message", async () => {
+  await test("Marc : écrit à Paul depuis la demande ; le message s'affiche et la demande note le dernier message", async () => {
     await p.locator(".carte-job", { hasText: "1234, 3e Avenue" }).getByRole("button", { name: "Écrire à Paul" }).click();
     const dlg = p.getByRole("dialog", { name: "Conversation avec Paul" });
     await dlg.getByText("Aucun message pour l'instant").waitFor();
@@ -167,7 +167,7 @@ async function connexion(cle, largeur = 1280) {
 // Paul (client de D1) : le message de Marc l'attend
 {
   const { p, ctx } = await connexion("paul");
-  await test("Paul : « Nouveau message » sur la job de Marc, puis réponse ; la pastille disparaît", async () => {
+  await test("Paul : « Nouveau message » sur la demande de Marc, puis réponse ; la pastille disparaît", async () => {
     const carte = p.locator(".carte-job", { hasText: "Entrée double + balcon" });
     await carte.getByRole("button", { name: /Nouveau message/ }).click();
     const dlg = p.getByRole("dialog", { name: "Conversation avec Marc" });
@@ -209,7 +209,7 @@ async function connexion(cle, largeur = 1280) {
 {
   const { p, ctx } = await connexion("mireille");
   await test("Mireille : tableau client, « À confirmer » en premier", async () => {
-    await p.getByRole("heading", { name: "Mes demandes" }).waitFor();
+    await p.getByRole("heading", { name: "Mes demandes acceptées" }).waitFor();
     await p.waitForFunction(() => document.querySelectorAll(".rangee .carte-job").length === 3);
     assert.equal(await p.locator(".rangee .badge").first().textContent(), "À confirmer");
     assert.equal(await p.locator(".historique__rang").count(), 1);
@@ -230,7 +230,7 @@ async function connexion(cle, largeur = 1280) {
   });
   await test("Mireille : « Confirmer » avec 5 étoiles et un mot : historique, versement simulé, note de Marc", async () => {
     await p.locator(".carte-job", { hasText: "À confirmer" }).getByRole("button", { name: "Confirmer" }).click();
-    const dlg = p.getByRole("dialog", { name: "Confirmer la job ?" });
+    const dlg = p.getByRole("dialog", { name: "Confirmer la demande ?" });
     await dlg.getByRole("radio", { name: /5 étoiles/ }).click();
     await dlg.getByRole("textbox").fill("Impeccable, merci Marc !");
     await p.screenshot({ path: `${D}/e2e-evaluation-1280.png` });
@@ -241,7 +241,7 @@ async function connexion(cle, largeur = 1280) {
     const marc = (await db.doc(`users/${uid.marc}`).get()).data();
     assert.equal(marc.ratingCount, 21); assert.equal(marc.ratingAvg, 4.81);
   });
-  await test("Mireille : la job de Julie confirmée automatiquement il y a 4 jours peut encore être évaluée", async () => {
+  await test("Mireille : la demande de Julie confirmée automatiquement il y a 4 jours peut encore être évaluée", async () => {
     await db.doc("demandes/M4").update({ confirmeeAt: ts(-96 * H) });
     await p.reload();
     await p.getByRole("button", { name: "Évaluer Julie" }).click();
@@ -253,10 +253,10 @@ async function connexion(cle, largeur = 1280) {
   await ctx.close();
 }
 
-// Marc revient : l'évaluation de Mireille est sur sa job terminée
+// Marc revient : l'évaluation de Mireille est sur sa demande terminée
 {
   const { p, ctx } = await connexion("marc");
-  await test("Marc : la job terminée affiche les 5 étoiles et le mot de Mireille", async () => {
+  await test("Marc : la demande terminée affiche les 5 étoiles et le mot de Mireille", async () => {
     await p.getByRole("tab", { name: /Terminées/ }).click();
     await p.locator(".evaluation-recue", { hasText: "Impeccable, merci Marc" }).waitFor();
   });
@@ -269,10 +269,10 @@ async function connexion(cle, largeur = 1280) {
   const { p, ctx } = await connexion("julie", 390);
   await test("Julie (deux rôles) : bascule visible, passe du mode client au mode déneigeur", async () => {
     await p.locator(".layout__bascule").waitFor();
-    await p.getByRole("heading", { name: "Mes demandes" }).waitFor();
+    await p.getByRole("heading", { name: "Mes demandes acceptées" }).waitFor();
     await p.screenshot({ path: `${D}/e2e-julie-client-390.png`, fullPage: true });
     await p.getByRole("radio", { name: "Déneigeur" }).click();
-    await p.getByRole("heading", { name: "Mes jobs" }).waitFor();
+    await p.getByRole("heading", { name: "Mes demandes acceptées" }).waitFor();
     assert.equal(await p.evaluate(() => document.documentElement.scrollWidth), 390);
   });
   await p.waitForTimeout(800);
@@ -289,7 +289,7 @@ async function connexion(cle, largeur = 1280) {
   });
   await test("Julie : le mode choisi est retenu au rechargement", async () => {
     await p.reload();
-    await p.getByRole("heading", { name: "Mes jobs" }).waitFor();
+    await p.getByRole("heading", { name: "Mes demandes acceptées" }).waitFor();
   });
   await ctx.close();
 }

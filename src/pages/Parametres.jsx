@@ -295,7 +295,7 @@ function SectionPaiement({ profile, deneigeur }) {
               </span>
               <p>{infoStatut.texte}</p>
               <p className="parametres__meta">
-                Géré par Stripe : identité et compte bancaire, une seule fois. <strong>Obligatoire pour accepter des jobs.</strong>
+                Géré par Stripe : identité et compte bancaire, une seule fois. <strong>Obligatoire pour accepter des demandes.</strong>
               </p>
               {erreur && <p className="message-erreur" role="alert">{erreur}</p>}
             </div>
@@ -343,7 +343,7 @@ function SectionFermeture() {
       <h2>Fermer mon compte</h2>
       <p>
         Vos renseignements sont effacés ou rendus anonymes, sauf le registre des paiements que la loi nous oblige à
-        conserver 6 ans. Impossible tant qu'une job est en cours.
+        conserver 6 ans. Impossible tant qu'une demande est en cours.
       </p>
       <button type="button" className="btn btn--fantome parametres__bouton-fermer" onClick={() => setOuverte(true)}>
         Fermer mon compte
@@ -353,7 +353,7 @@ function SectionFermeture() {
           <p>Cette action est définitive. Nous effaçons :</p>
           <ul className="parametres__liste-fermeture">
             <li>votre profil, votre adresse et votre carte enregistrée;</li>
-            <li>dans vos demandes et vos jobs : votre prénom, les adresses, les photos, les évaluations et les messages;</li>
+            <li>dans vos demandes publiées et acceptées : votre prénom, les adresses, les photos, les évaluations et les messages;</li>
             <li>votre inscription à la liste d'attente, s'il y a lieu.</li>
           </ul>
           <p>Vos demandes encore ouvertes sont annulées. Vous pourrez créer un nouveau compte plus tard.</p>

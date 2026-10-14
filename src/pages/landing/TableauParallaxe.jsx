@@ -115,7 +115,7 @@ function VisuelEngagement() {
       <div className="parallaxe__carte-titre">Entrée double + balcon</div>
       <div className="parallaxe__engage">
         <Icone nom="engagement" />
-        <span>Engagement du déneigeur : la job ne s'annule pas.</span>
+        <span>Engagement du déneigeur : la demande ne s'annule pas.</span>
       </div>
       <b className="parallaxe__montant">39,40 $</b>
     </div>
@@ -127,14 +127,14 @@ const SCENES = [
     icone: "photo",
     titre: "Des photos avant de partir",
     texte:
-      "Le déneigeur prend de 1 à 3 photos du travail fini, sur place, avant de marquer la job faite. Vous les voyez tout de suite.",
+      "Le déneigeur prend de 1 à 3 photos du travail fini, sur place, avant de marquer la demande faite. Vous les voyez tout de suite.",
     Visuel: VisuelPhotos,
   },
   {
     icone: "message",
     titre: "Une messagerie privée",
     texte:
-      "Dès que la job est acceptée, vous vous écrivez dans Snowro. Inutile d'échanger vos numéros de téléphone.",
+      "Dès que la demande est acceptée, vous vous écrivez dans Snowro. Inutile d'échanger vos numéros de téléphone.",
     Visuel: VisuelMessagerie,
   },
   {
@@ -151,8 +151,8 @@ const SCENES = [
   },
   {
     icone: "engagement",
-    titre: "Une job acceptée ne s'annule pas",
-    texte: "Personne ne laisse tomber votre job pour une plus payante : accepter, c'est s'engager.",
+    titre: "Une demande acceptée ne s'annule pas",
+    texte: "Personne ne laisse tomber votre demande pour une plus payante : accepter, c'est s'engager.",
     Visuel: VisuelEngagement,
   },
 ];

@@ -34,7 +34,7 @@ export function libelleCarte(carte) {
 
 // Statut du compte de versement : pastille (Paramètres) et phrase d'explication.
 export const STATUTS_CONNECT = {
-  non_demarre: { pastille: "Pas configuré", ton: "neutre", texte: "Configurez-le une fois pour pouvoir accepter des jobs." },
+  non_demarre: { pastille: "Pas configuré", ton: "neutre", texte: "Configurez-le une fois pour pouvoir accepter des demandes." },
   en_attente: {
     pastille: "À terminer",
     ton: "attente",

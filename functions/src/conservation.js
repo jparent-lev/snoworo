@@ -4,7 +4,7 @@ import { Timestamp } from "firebase-admin/firestore";
 import { db } from "./admin.js";
 
 // Durées de conservation promises dans la politique de confidentialité
-// (src/pages/Confidentialite.jsx). Les photos et les messages d'une job ont
+// (src/pages/Confidentialite.jsx). Les photos et les messages d'une demande ont
 // leur propre effacement (purgerPhotos, functions/src/cycleDemande.js).
 export const CONSERVATION_LISTE_ATTENTE_MS = 730 * 24 * 60 * 60 * 1000; // 24 mois
 export const CONSERVATION_MESSAGES_CONTACT_MS = 730 * 24 * 60 * 60 * 1000; // 24 mois

@@ -182,7 +182,7 @@ await test("confirmer : 44 $ virés au compte du déneigeur, liés au prélèvem
   const d = await lire(id);
   assert.equal(d.paiement.statutPaiement, "verse"); assert.equal(d.paiement.stripeTransferId, "tr_1");
 });
-await test("signaler une job payée : virement bloqué", async () => {
+await test("signaler une demande payée : virement bloqué", async () => {
   const { demandeId } = await appel(f.publierDemande, "payClient", base);
   await appel(f.accepterDemande, "payDen", { demandeId });
   await appel(f.signalerProbleme, "payClient", { demandeId, motif: "absent" });

@@ -2,9 +2,9 @@ import { addDoc, collection, doc, limitToLast, onSnapshot, orderBy, query, serve
 import { db } from "./firebase";
 import { millis } from "./temps";
 
-// Messagerie entre le client et le déneigeur d'une job acceptée.
+// Messagerie entre le client et le déneigeur d'une demande acceptée.
 // messages/{demandeId}/messages : lecture et écriture réservées aux deux
-// personnes du match (firestore.rules) ; écriture seulement pendant la job.
+// personnes du match (firestore.rules) ; écriture seulement pendant la demande.
 export const LONGUEUR_MAX = 1000;
 export const STATUTS_ECRITURE = ["matchee", "faite", "signalee"];
 

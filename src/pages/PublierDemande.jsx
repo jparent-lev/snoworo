@@ -185,7 +185,7 @@ export default function PublierDemande() {
           {apercu && (
             <span className="auth-form__aide">
               Vous payez {formatArgent(apercu.montantTotal)}, le déneigeur reçoit {formatArgent(apercu.montantDeneigeur)} (frais
-              Snowro {formatArgent(apercu.fraisSnowro)}). Paiement retenu jusqu'à ce que la job soit confirmée.
+              Snowro {formatArgent(apercu.fraisSnowro)}). Paiement retenu jusqu'à ce que la demande soit confirmée.
             </span>
           )}
         </label>
@@ -210,7 +210,7 @@ export default function PublierDemande() {
             )}
             <span className="auth-form__aide">
               Rien n'est prélevé maintenant. Le montant est prélevé quand un déneigeur de quartier accepte, puis
-              versé une fois la job confirmée.
+              versé une fois la demande confirmée.
             </span>
           </div>
         )}

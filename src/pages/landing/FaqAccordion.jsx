@@ -16,15 +16,15 @@ const THEMES = [
       },
       {
         q: "Est-ce que je peux faire déneiger et déneiger avec le même compte ?",
-        r: "Oui. Un seul compte, deux modes : Client pour publier vos demandes, Déneigeur pour prendre des jobs. Vous passez de l'un à l'autre avec la bascule en haut de votre tableau de bord.",
+        r: "Oui. Un seul compte, deux modes : Client pour publier vos demandes, Déneigeur pour prendre des demandes. Vous passez de l'un à l'autre avec la bascule en haut de votre tableau de bord.",
       },
       {
-        q: "Une job acceptée peut-elle être annulée ?",
-        r: "Non, ni par le client ni par le déneigeur de quartier : accepter, c'est s'engager. Personne ne laisse tomber votre job pour une plus payante. Si un problème survient (absence, travail inachevé, accès impossible), on utilise « Signaler un problème » : le paiement reste retenu et nous tranchons selon les faits.",
+        q: "Une demande acceptée peut-elle être annulée ?",
+        r: "Non, ni par le client ni par le déneigeur de quartier : accepter, c'est s'engager. Personne ne laisse tomber votre demande pour une plus payante. Si un problème survient (absence, travail inachevé, accès impossible), on utilise « Signaler un problème » : le paiement reste retenu et nous tranchons selon les faits.",
       },
       {
         q: "Qu'est-ce que l'autre personne voit de moi ?",
-        r: "Avant qu'une job soit acceptée, les déneigeurs voient seulement le quartier, la distance et votre prénom. L'adresse exacte n'est montrée qu'à celui qui accepte. Vous vous écrivez ensuite dans la messagerie de Snowro, sans échanger vos numéros. Vos messages et les photos de fin de job ne sont vus que par vous deux, et ils sont effacés 30 jours après la job.",
+        r: "Avant qu'une demande soit acceptée, les déneigeurs voient seulement le quartier, la distance et votre prénom. L'adresse exacte n'est montrée qu'à celui qui accepte. Vous vous écrivez ensuite dans la messagerie de Snowro, sans échanger vos numéros. Vos messages et les photos de fin de demande ne sont vus que par vous deux, et ils sont effacés 30 jours après la demande.",
       },
     ],
   },
@@ -38,19 +38,19 @@ const THEMES = [
       },
       {
         q: "Quand ma carte est-elle débitée ?",
-        r: "Vous enregistrez votre carte en publiant, mais rien n'est prélevé à ce moment-là. Le montant est prélevé lorsqu'un déneigeur de quartier accepte votre demande, puis Snowro le conserve jusqu'à ce que la job soit confirmée. Vous recevez un reçu par courriel. Tant que personne n'a accepté, vous pouvez annuler sans frais.",
+        r: "Vous enregistrez votre carte en publiant, mais rien n'est prélevé à ce moment-là. Le montant est prélevé lorsqu'un déneigeur de quartier accepte votre demande, puis Snowro le conserve jusqu'à ce que la demande soit confirmée. Vous recevez un reçu par courriel. Tant que personne n'a accepté, vous pouvez annuler sans frais.",
       },
       {
         q: "Comment savoir que le travail est vraiment fait ?",
-        r: "Avant de partir, le déneigeur de quartier prend de 1 à 3 photos du travail fini : impossible de marquer la job comme faite sans cela. Vous les voyez tout de suite dans votre tableau de bord. Vous avez ensuite 12 heures pour confirmer ou signaler un problème ; sans réponse de votre part, la job est confirmée automatiquement.",
+        r: "Avant de partir, le déneigeur de quartier prend de 1 à 3 photos du travail fini : impossible de marquer la demande comme faite sans cela. Vous les voyez tout de suite dans votre tableau de bord. Vous avez ensuite 12 heures pour confirmer ou signaler un problème ; sans réponse de votre part, la demande est confirmée automatiquement.",
       },
       {
         q: "Et si le déneigeur de quartier ne se présente pas ?",
-        r: "Votre paiement est retenu tant que la job n'est pas confirmée. S'il ne se présente pas, signalez-le : vous êtes remboursé au complet et il perd l'accès à la demande. Rien à réclamer, rien à négocier.",
+        r: "Votre paiement est retenu tant que la demande n'est pas confirmée. S'il ne se présente pas, signalez-le : vous êtes remboursé au complet et il perd l'accès à la demande. Rien à réclamer, rien à négocier.",
       },
       {
         q: "Puis-je choisir mon déneigeur de quartier ?",
-        r: "Pas dans la première version : le premier qui accepte prend la job, pour que tout aille vite lorsqu'il tombe 30 cm. Nous laissons aussi à chaque déneigeur de quartier le temps de réaliser quelques jobs et de bâtir sa note avant d'ajouter des façons de choisir selon la réputation. Cette option s'en vient.",
+        r: "Pas dans la première version : le premier qui accepte prend la demande, pour que tout aille vite lorsqu'il tombe 30 cm. Nous laissons aussi à chaque déneigeur de quartier le temps de réaliser quelques demandes et de bâtir sa note avant d'ajouter des façons de choisir selon la réputation. Cette option s'en vient.",
       },
     ],
   },
@@ -60,26 +60,26 @@ const THEMES = [
     questions: [
       {
         q: "Comment suis-je payé ?",
-        r: "Vous créez votre compte de versement une seule fois, avec Stripe (identité et compte bancaire). Aucune entreprise n'est requise : vous vous inscrivez comme particulier. Ensuite, l'argent arrive directement dans votre compte bancaire après chaque job, sans facture à envoyer ni virement à réclamer.",
+        r: "Vous créez votre compte de versement une seule fois, avec Stripe (identité et compte bancaire). Aucune entreprise n'est requise : vous vous inscrivez comme particulier. Ensuite, l'argent arrive directement dans votre compte bancaire après chaque demande, sans facture à envoyer ni virement à réclamer.",
       },
       {
         // Délais : confirmation automatique de 12 h (décision produit) et
         // délais Stripe au Canada (premier versement d'un nouveau compte
         // autour de 7 jours). À revalider avec les premiers vrais versements.
-        q: "Une fois la job faite, après combien de temps suis-je payé ?",
-        r: "Lorsque vous marquez la job comme faite, le client dispose de 12 heures pour confirmer ou signaler un problème. S'il ne fait rien, la job est confirmée automatiquement. Dès la confirmation, nous déclenchons votre versement : l'argent arrive dans votre compte bancaire en général en 2 à 4 jours ouvrables. Votre tout premier versement prend un peu plus de temps, environ 7 jours : il s'agit d'une vérification standard de Stripe pour les nouveaux comptes.",
+        q: "Une fois la demande faite, après combien de temps suis-je payé ?",
+        r: "Lorsque vous marquez la demande comme faite, le client dispose de 12 heures pour confirmer ou signaler un problème. S'il ne fait rien, la demande est confirmée automatiquement. Dès la confirmation, nous déclenchons votre versement : l'argent arrive dans votre compte bancaire en général en 2 à 4 jours ouvrables. Votre tout premier versement prend un peu plus de temps, environ 7 jours : il s'agit d'une vérification standard de Stripe pour les nouveaux comptes.",
       },
       {
-        q: "Combien est-ce que je conserve sur une job ?",
+        q: "Combien est-ce que je conserve sur une demande ?",
         r: "Chaque demande affiche votre montant, frais Snowro déjà déduits, avant même que vous l'acceptiez. Aucune surprise : ce que vous voyez est ce que vous recevez. Le calcul des frais est présenté dans la section Frais plus haut.",
       },
       {
-        q: "Pourquoi des photos à la fin de chaque job ?",
+        q: "Pourquoi des photos à la fin de chaque demande ?",
         r: "Elles sont votre preuve que le travail est fait, et elles rassurent le client. Avant de partir, vous prenez de 1 à 3 photos du travail terminé, sur place, directement dans l'application. Montrez seulement l'endroit déneigé : jamais de personne ni de plaque d'immatriculation.",
       },
       {
-        q: "Et si j'ai un imprévu sérieux après avoir accepté une job ?",
-        r: "Une job acceptée ne s'annule pas : le client compte sur vous. Si un imprévu sérieux vous empêche d'y aller, écrivez immédiatement au client dans la messagerie et utilisez « Signaler un problème » : nous examinerons la situation avec vous deux. Pour éviter cela, n'acceptez que les jobs que vous êtes certain de pouvoir faire à l'heure.",
+        q: "Et si j'ai un imprévu sérieux après avoir accepté une demande ?",
+        r: "Une demande acceptée ne s'annule pas : le client compte sur vous. Si un imprévu sérieux vous empêche d'y aller, écrivez immédiatement au client dans la messagerie et utilisez « Signaler un problème » : nous examinerons la situation avec vous deux. Pour éviter cela, n'acceptez que les demandes que vous êtes certain de pouvoir faire à l'heure.",
       },
     ],
   },

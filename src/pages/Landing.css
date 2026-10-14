@@ -347,7 +347,7 @@
   opacity: 0;
 }
 
-/* c — « Je prends la job » : neige étalée au centre du rebord, pas dans un coin */
+/* c — « Je prends la demande » : neige étalée au centre du rebord, pas dans un coin */
 .landing__bouton-neige--c::before {
   top: -6px;
   left: 50%;

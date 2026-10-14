@@ -84,7 +84,7 @@ export function composerAvis({ expediteurPrenom, titreDemande, extrait, lien }) 
   const court = extrait.length > EXTRAIT_MAX ? `${extrait.slice(0, EXTRAIT_MAX).trimEnd()}…` : extrait;
   const titre = `${qui} vous a écrit`;
   const pied =
-    "Vous recevez ce courriel parce que vous avez une job en cours sur Snowro. " +
+    "Vous recevez ce courriel parce que vous avez une demande en cours sur Snowro. " +
     "Pour votre sécurité, gardez les échanges et les paiements dans Snowro.";
   return {
     sujet: `${qui} vous a écrit à propos de « ${titreDemande} »`,

@@ -206,7 +206,7 @@ function CarteDemandeClient({ demande: d, nouveau, conversationOuverte, onConver
         </p>
       )}
       {d.statut === "matchee" && (
-        <p className="carte-job__note">Paiement retenu par Snowro jusqu'à ce que la job soit confirmée.</p>
+        <p className="carte-job__note">Paiement retenu par Snowro jusqu'à ce que la demande soit confirmée.</p>
       )}
       {d.statut === "faite" && (
         <p className="carte-job__note">
@@ -307,7 +307,7 @@ function CarteDemandeClient({ demande: d, nouveau, conversationOuverte, onConver
       )}
       {modale === "confirmer" && (
         <ModaleEvaluation
-          titre="Confirmer la job ?"
+          titre="Confirmer la demande ?"
           intro={`Le paiement de ${formatArgent(d.remunerationOfferte)} sera versé à ${d.deneigeurPrenom}. Si quelque chose ne va pas, signalez plutôt un problème.`}
           prenom={d.deneigeurPrenom}
           libelleEnvoyer="Confirmer"

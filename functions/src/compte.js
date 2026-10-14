@@ -9,7 +9,7 @@ import { STRIPE_SECRET_KEY, paiementReel, stripe } from "./paiements.js";
 // Fermeture du compte par la personne elle-même (Loi 25 : droit à
 // l'effacement ; politique de confidentialité, « Combien de temps on les
 // garde »). Tout est fait immédiatement :
-// - refusé tant qu'une job est en cours ou qu'un versement reste à faire
+// - refusé tant qu'une demande est en cours ou qu'un versement reste à faire
 //   (l'autre personne compte dessus) ;
 // - demandes encore ouvertes annulées ;
 // - dans chaque demande où la personne apparaît : prénom et description

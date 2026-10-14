@@ -37,7 +37,7 @@ export default function Conditions() {
         Snowro n'est pas une entreprise de déneigement. Nous ne faisons pas le déneigement nous-mêmes, et les
         déneigeurs de quartier ne sont ni nos employés, ni nos sous-traitants, ni nos mandataires : chacun
         décide librement des demandes qu'il accepte, sans horaire imposé ni obligation de notre part. Il n'y a pas de
-        contrat de saison : chaque job est une entente ponctuelle entre le client et le déneigeur de quartier.
+        contrat de saison : chaque demande est une entente ponctuelle entre le client et le déneigeur de quartier.
       </p>
 
       <h2>3. Votre compte</h2>
@@ -63,7 +63,7 @@ export default function Conditions() {
         <li>
           Vous enregistrez une carte en publiant votre demande; rien n'est prélevé à ce moment-là. Le montant
           offert est prélevé quand un déneigeur de quartier accepte, puis retenu par Snowro jusqu'à ce que la
-          job soit confirmée faite. Il est alors versé au déneigeur de quartier. Vous recevez un reçu par
+          demande soit confirmée faite. Il est alors versé au déneigeur de quartier. Vous recevez un reçu par
           courriel au moment du prélèvement.
         </li>
         <li>
@@ -88,16 +88,16 @@ export default function Conditions() {
           vérifie votre identité.
         </li>
         <li>
-          En acceptant une demande, vous vous engagez à faire la job décrite, au moment convenu, avec soin et de
+          En acceptant une demande, vous vous engagez à faire la demande décrite, au moment convenu, avec soin et de
           façon sécuritaire, en utilisant votre propre équipement.
         </li>
         <li>
-          Avant de marquer une job faite, vous prenez sur place de 1 à 3 photos du travail terminé. Elles ne
+          Avant de marquer une demande faite, vous prenez sur place de 1 à 3 photos du travail terminé. Elles ne
           montrent que l'endroit déneigé : jamais de personne ni de plaque d'immatriculation reconnaissable.
         </li>
         <li>
           Vous recevez le montant offert, moins les frais de service de Snowro, dans votre compte bancaire après la
-          job. Les frais sont toujours affichés avant que vous acceptiez (voir aussi la section{" "}
+          demande. Les frais sont toujours affichés avant que vous acceptiez (voir aussi la section{" "}
           <a href="/#frais">Frais</a>).
         </li>
         <li>
@@ -120,16 +120,16 @@ export default function Conditions() {
 
       <h2>7. Appréciations</h2>
       <p>
-        Après chaque job, le client peut laisser une appréciation. Elle doit être honnête et porter sur la job
-        elle-même. Nous pouvons retirer une appréciation fausse, injurieuse ou sans lien avec la job.
+        Après chaque demande, le client peut laisser une appréciation. Elle doit être honnête et porter sur la demande
+        elle-même. Nous pouvons retirer une appréciation fausse, injurieuse ou sans lien avec la demande.
       </p>
 
       <h2>8. Ce qui n'est pas permis</h2>
       <ul>
         <li>Fournir de faux renseignements ou vous faire passer pour quelqu'un d'autre.</li>
         <li>
-          Contourner la plateforme pour le paiement d'une job trouvée sur Snowro, ou utiliser les coordonnées
-          d'un autre utilisateur pour autre chose que cette job.
+          Contourner la plateforme pour le paiement d'une demande trouvée sur Snowro, ou utiliser les coordonnées
+          d'un autre utilisateur pour autre chose que cette demande.
         </li>
         <li>Harceler, menacer ou discriminer un autre utilisateur.</li>
         <li>
@@ -144,8 +144,8 @@ export default function Conditions() {
 
       <h2>9. Dommages et litiges entre utilisateurs</h2>
       <p>
-        Le déneigeur de quartier est responsable de la job qu'il fait et des dommages qu'il cause en la
-        faisant. Si un problème survient (job mal faite, bris, désaccord sur ce qui était prévu), écrivez-nous :
+        Le déneigeur de quartier est responsable de la demande qu'il fait et des dommages qu'il cause en la
+        faisant. Si un problème survient (demande mal faite, bris, désaccord sur ce qui était prévu), écrivez-nous :
         nous pouvons retenir le paiement le temps d'examiner la situation, et rembourser le client en tout ou en
         partie selon les faits.
       </p>

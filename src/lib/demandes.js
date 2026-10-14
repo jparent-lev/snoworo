@@ -23,7 +23,7 @@ export function ecouterMesDemandes(uid, onChange) {
   return onSnapshot(q, versListe(onChange));
 }
 
-// Mode déneigeur : les jobs que j'ai acceptées, par heure souhaitée.
+// Mode déneigeur : les demandes que j'ai acceptées, par heure souhaitée.
 export function ecouterMesJobs(uid, onChange) {
   const q = query(collection(db, "demandes"), where("deneigeurId", "==", uid), orderBy("dateHeureSouhaitee", "asc"));
   return onSnapshot(q, versListe(onChange));
