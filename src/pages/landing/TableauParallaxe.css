@@ -76,18 +76,74 @@
   transform: translateY(calc(var(--p) * 56px));
 }
 
+.parallaxe__telephone {
+  width: 100%;
+  max-width: 300px;
+  margin: 0 auto;
+  padding: 10px;
+  border-radius: 44px;
+  background: var(--color-terre);
+  box-shadow: 0 22px 34px -26px rgba(59, 42, 31, 0.6), inset 0 0 0 2px #5a4435;
+}
+
+.parallaxe__telephone-ecran {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-height: 460px;
+  overflow: hidden;
+  border-radius: 34px;
+  background: var(--color-bg-page);
+}
+
+.parallaxe__telephone-encoche {
+  align-self: center;
+  width: 84px;
+  height: 22px;
+  margin-top: 8px;
+  border-radius: 999px;
+  background: var(--color-terre);
+}
+
+.parallaxe__telephone-entete {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 18px 10px;
+  border-bottom: 1px solid var(--color-bordure);
+}
+
+.parallaxe__telephone-logo {
+  font-family: var(--font-titrage);
+  font-weight: 600;
+  font-size: 17px;
+  color: var(--color-terre);
+}
+
+.parallaxe__telephone-pastille {
+  width: 26px;
+  height: 26px;
+  border-radius: 999px;
+  background: var(--color-lin);
+}
+
+.parallaxe__telephone-contenu {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  justify-content: center;
+  padding: 16px 14px 22px;
+}
+
 .parallaxe__carte {
   display: flex;
   flex-direction: column;
   gap: 12px;
   width: 100%;
-  max-width: 380px;
-  margin: 0 auto;
-  padding: 20px;
+  padding: 14px;
   background: var(--color-surface-carte);
   border: 2px solid var(--color-argile);
-  border-radius: 18px;
-  box-shadow: 0 24px 50px -30px rgba(59, 42, 31, 0.55);
+  border-radius: 16px;
 }
 
 .parallaxe__haut,
@@ -147,6 +203,11 @@
 .parallaxe__carte--fil {
   border-color: var(--color-bordure);
   background: var(--color-surface-secondaire);
+}
+
+.parallaxe__carte--adresse,
+.parallaxe__carte--engagement {
+  border-color: var(--color-bordure);
 }
 
 .parallaxe__bulle {
@@ -214,6 +275,7 @@
 }
 
 .parallaxe__minuterie b {
+  white-space: nowrap;
   font-family: var(--font-titrage);
   font-size: 44px;
   line-height: 1;

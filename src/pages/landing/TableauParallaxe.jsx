@@ -32,6 +32,23 @@ function PhotoNeige({ variante }) {
   );
 }
 
+// Cadre de téléphone autour de chaque visuel : barre d'état, en-tête de
+// l'app Snowro, puis l'écran de la fonctionnalité.
+function Telephone({ children }) {
+  return (
+    <div className="parallaxe__telephone" aria-hidden="true">
+      <div className="parallaxe__telephone-ecran">
+        <div className="parallaxe__telephone-encoche" />
+        <div className="parallaxe__telephone-entete">
+          <span className="parallaxe__telephone-logo">snowro</span>
+          <span className="parallaxe__telephone-pastille" />
+        </div>
+        <div className="parallaxe__telephone-contenu">{children}</div>
+      </div>
+    </div>
+  );
+}
+
 function VisuelPhotos() {
   return (
     <div className="parallaxe__carte">
@@ -202,7 +219,9 @@ export default function TableauParallaxe() {
             <p className="parallaxe__p">{texte}</p>
           </div>
           <div className="parallaxe__visuel">
-            <Visuel />
+            <Telephone>
+              <Visuel />
+            </Telephone>
           </div>
         </article>
       ))}
