@@ -889,6 +889,147 @@
   color: var(--color-surface-carte);
 }
 
+/* ---- Objection Facebook : comparatif visuel, puis villes ---- */
+
+.landing__compare {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.landing__compare-intro {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-width: 760px;
+}
+
+.landing__compare-table {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.landing__compare-ligne {
+  display: grid;
+  grid-template-columns: minmax(130px, 0.7fr) 1fr 1.2fr;
+  gap: 10px;
+  align-items: stretch;
+}
+
+.landing__compare-ligne--tete {
+  align-items: end;
+}
+
+.landing__compare-col {
+  padding: 0 18px;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--color-texte-secondaire);
+}
+
+.landing__compare-col--snowro {
+  color: var(--color-argile-foncee);
+}
+
+.landing__compare-sujet {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-family: var(--font-titrage);
+  font-weight: 600;
+  font-size: 19px;
+  color: var(--color-terre);
+}
+
+.landing__compare-case {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 16px 18px;
+  border-radius: 14px;
+  background: var(--color-lin);
+  font-size: 15px;
+  line-height: 1.4;
+  color: var(--color-texte-sur-lin);
+}
+
+.landing__compare-case--snowro {
+  background: var(--color-surface-carte);
+  border: 2px solid var(--color-argile);
+  font-weight: 700;
+  color: var(--color-terre);
+  box-shadow: 0 14px 28px -22px rgba(59, 42, 31, 0.5);
+}
+
+.landing__compare-coche {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 999px;
+  background: var(--color-argile);
+  color: var(--color-surface-carte);
+  font-size: 13px;
+}
+
+.landing__villes {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr);
+  gap: 40px;
+  align-items: center;
+  margin-top: 56px;
+  padding: 36px;
+  border-radius: 18px;
+  background: var(--color-surface-carte);
+  border: 1px solid var(--color-bordure);
+}
+
+.landing__villes-texte {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  min-width: 0;
+}
+
+.landing__villes .decor-villes {
+  max-width: none;
+  margin: 0;
+}
+
+@media (max-width: 760px) {
+  .landing__compare-ligne {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .landing__compare-ligne--tete {
+    display: none;
+  }
+
+  .landing__compare-sujet {
+    grid-column: 1 / -1;
+    margin-top: 8px;
+  }
+
+  .landing__compare-case {
+    padding: 14px 12px;
+    font-size: 14px;
+  }
+
+  .landing__compare-coche {
+    display: none;
+  }
+
+  .landing__villes {
+    grid-template-columns: 1fr;
+    gap: 20px;
+    padding: 24px;
+  }
+}
+
 /* ---- Devenir déneigeur ---- */
 
 .landing__section-pleine-largeur {

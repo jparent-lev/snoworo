@@ -210,39 +210,49 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* 5. Objection Facebook + villes émergentes */}
+      {/* 5. Objection Facebook (comparatif visuel) + villes émergentes */}
       <section className="landing__section">
-        <div className="landing__deux-cartes">
-          <div className="landing__carte-lin">
-            <h3 className="landing__h3-carte">« Pourquoi pas juste le groupe Facebook du quartier ? »</h3>
-            <p className="landing__p-sur-lin">
-              Bonne question, et honnêtement : pour un coup de pelle entre voisins qui se connaissent, le
-              groupe fait très bien l'affaire. Snowro est utile quand vous ne connaissez personne, que c'est la
-              veille d'une bonne bordée, que vous partez tôt demain matin et que vous n'avez pas le temps de pelleter.
+        <div className="landing__compare">
+          <div className="landing__compare-intro">
+            <h3 className="landing__h3-carte">« Pourquoi pas juste le groupe Facebook du quartier ? »</h3>
+            <p className="landing__p">
+              Pour un coup de pelle entre voisins qui se connaissent, le groupe fait très bien l'affaire.
+              Snowro sert quand vous ne connaissez personne et que le temps presse.
             </p>
-            <div className="landing__arguments">
-              <span className="landing__p-sur-lin">
-                <strong>Vous n'attendez pas une réponse.</strong> Votre demande est envoyée à tous les déneigeurs
-                de quartier disponibles du secteur en même temps.
-              </span>
-              <span className="landing__p-sur-lin">
-                <strong>Vous savez à qui vous avez affaire.</strong> Une note publique, bâtie demande après demande,
-                plutôt qu'un profil anonyme dans un fil de commentaires.
-              </span>
-              <span className="landing__p-sur-lin">
-                <strong>L'entente est claire avant que ça commence.</strong> Prix, heure, outils fournis ou
-                non : écrit d'avance, sans négociation sur le perron.
-              </span>
-            </div>
           </div>
-          <div className="landing__carte-claire">
+          <div className="landing__compare-table" role="table" aria-label="Groupe du quartier ou Snowro">
+            <div className="landing__compare-ligne landing__compare-ligne--tete" role="row">
+              <span role="columnheader" />
+              <span role="columnheader" className="landing__compare-col">Groupe du quartier</span>
+              <span role="columnheader" className="landing__compare-col landing__compare-col--snowro">Snowro</span>
+            </div>
+            {[
+              { icone: "horloge", sujet: "La réponse", groupe: "À attendre, un commentaire à la fois", snowro: "Tous les déneigeurs du secteur avertis en même temps" },
+              { icone: "note", sujet: "La confiance", groupe: "Un profil anonyme", snowro: "Une note publique, demande après demande" },
+              { icone: "entente", sujet: "L'entente", groupe: "À discuter sur le perron", snowro: "Prix, heure et outils écrits d'avance" },
+            ].map((l) => (
+              <div key={l.sujet} className="landing__compare-ligne" role="row">
+                <span role="rowheader" className="landing__compare-sujet">
+                  <Icone nom={l.icone} />
+                  {l.sujet}
+                </span>
+                <span role="cell" className="landing__compare-case">{l.groupe}</span>
+                <span role="cell" className="landing__compare-case landing__compare-case--snowro">
+                  <span className="landing__compare-coche" aria-hidden="true">✓</span>
+                  {l.snowro}
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="landing__villes">
+          <div className="landing__villes-texte">
             <h3 className="landing__h3-carte">Les villes se dessinent toutes seules</h3>
             <p className="landing__p">
-              Nous n'avons pas de liste de villes desservies à vous présenter. Votre ville apparaît dans Snowro
-              dès que des personnes s'y inscrivent, et une demande est toujours montrée aux déneigeurs de
-              quartier de votre ville, jamais à quelqu'un qui habite à l'autre bout de la région.
+              Votre ville apparaît dans Snowro dès que des personnes s'y inscrivent. Votre demande est toujours
+              montrée aux déneigeurs de quartier de votre ville.
             </p>
-            <CarteVilles />
             <div className="landing__jetons">
               <span className="landing__jeton">Québec</span>
               <span className="landing__jeton">Montréal</span>
@@ -252,10 +262,11 @@ export default function Landing() {
               </a>
             </div>
             <p className="landing__p landing__p--legende">
-              Nous ouvrons une ville lorsqu'elle compte assez de déneigeurs de quartier pour que le service
-              soit fiable. C'est pourquoi la liste d'attente compte.
+              Nous ouvrons une ville lorsqu'elle compte assez de déneigeurs de quartier : c'est pourquoi la
+              liste d'attente compte.
             </p>
           </div>
+          <CarteVilles />
         </div>
       </section>
 
