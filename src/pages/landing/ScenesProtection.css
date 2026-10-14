@@ -76,6 +76,13 @@
   font-size: 15px;
 }
 
+.scene__s-cadenas {
+  fill: var(--color-argile);
+  font-family: var(--font-titrage);
+  font-weight: 900;
+  font-size: 14px;
+}
+
 .scene__piece-texte--petit {
   font-size: 9.5px;
 }

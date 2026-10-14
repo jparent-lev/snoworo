@@ -104,7 +104,7 @@ function ScenePaiement() {
         <path d="M100 41 L118 47 V62 C118 74 110 82 100 87 C90 82 82 74 82 62 V47 Z" fill="none" stroke="#fff" strokeOpacity="0.35" strokeWidth="1.5" />
         <rect x="90" y="58" width="20" height="16" rx="4" fill="var(--color-surface-carte)" />
         <path d="M94 58 V54 a6 6 0 0 1 12 0 V58" fill="none" stroke="var(--color-surface-carte)" strokeWidth="3" strokeLinecap="round" />
-        <circle cx="100" cy="66" r="2.6" fill="var(--color-argile)" />
+        <text x="100" y="71.5" textAnchor="middle" className="scene__s-cadenas">S</text>
       </g>
 
       {/* Le déneigeur reçoit le paiement une fois la demande confirmée. */}
