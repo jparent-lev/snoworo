@@ -28,7 +28,15 @@ function Personnage({ x, y, echelle = 1.15, variante = "deneigeur", miroir = fal
       <path d="M261 222 Q262 205 276 205 Q289 206 288 222 Z" fill={v.tuque} />
       <rect x="259" y="219" width="31" height="6" rx="3" fill={v.rebord} />
       {v.s && (
-        <text x="269" y="218.6" textAnchor="middle" className="scene__s">S</text>
+        <text
+          x="269"
+          y="218.6"
+          textAnchor="middle"
+          className="scene__s"
+          transform={miroir ? "translate(538 0) scale(-1 1)" : undefined}
+        >
+          S
+        </text>
       )}
       <circle cx="276" cy="203" r="5" fill="var(--color-surface-carte)" />
     </g>
