@@ -9,6 +9,7 @@ import WaitlistForm from "./landing/WaitlistForm";
 import HeroIllustration from "./landing/HeroIllustration";
 import ApercuTableau from "./landing/ApercuTableau";
 import TableauParallaxe from "./landing/TableauParallaxe";
+import SceneProtection from "./landing/ScenesProtection";
 import {
   CapNeige,
   CarteVilles,
@@ -169,12 +170,12 @@ export default function Landing() {
           </div>
           <div className="landing__bloc-paiement-cartes">
             {[
-              { icone: "note", titre: "Des déneigeurs de quartier notés", texte: "Chaque demande donne lieu à une appréciation. Un travail bâclé se sait, et cela ferme des portes." },
-              { icone: "entente", titre: "Une entente claire dès le départ", texte: "Prix, heure souhaitée, outils fournis ou non : tout est écrit avant que quelqu'un accepte." },
-              { icone: "cadenas", titre: "Paiement sécurisé", texte: "Traité par Stripe, retenu jusqu'à ce que la demande soit confirmée faite." },
+              { scene: "notes", titre: "Des déneigeurs de quartier notés", texte: "Chaque demande donne lieu à une appréciation. Un travail bâclé se sait, et cela ferme des portes." },
+              { scene: "entente", titre: "Une entente claire dès le départ", texte: "Prix, heure souhaitée, outils fournis ou non : tout est écrit avant que quelqu'un accepte." },
+              { scene: "paiement", titre: "Paiement sécurisé", texte: "Traité par Stripe, retenu jusqu'à ce que la demande soit confirmée faite." },
             ].map((c) => (
-              <div key={c.titre} className="landing__mini-carte">
-                <Icone nom={c.icone} />
+              <div key={c.titre} className="landing__mini-carte landing__mini-carte--scene">
+                <SceneProtection nom={c.scene} />
                 <div className="landing__mini-carte-corps">
                   <span className="landing__mini-carte-titre">{c.titre}</span>
                   <span className="landing__mini-carte-texte">{c.texte}</span>

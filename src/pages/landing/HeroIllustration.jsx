@@ -135,6 +135,8 @@ export default function HeroIllustration() {
               <rect x="261" y="244" width="32" height="9" rx="4.5" className="hero-illu__foulard" />
               <circle cx="274" cy="232" r="13" className="hero-illu__peau" />
               <circle cx="267" cy="231" r="1.6" className="hero-illu__oeil" />
+              <circle cx="279" cy="231" r="1.6" className="hero-illu__oeil" />
+              <path d="M270 237 Q274 240 278 237" className="hero-illu__bouche" />
               <path d="M261 222 Q262 205 276 205 Q289 206 288 222 Z" className="hero-illu__tuque" />
               <rect x="259" y="219" width="31" height="6" rx="3" className="hero-illu__tuque-rebord" />
               {/* S du symbole sur le devant de la tuque (le personnage regarde à gauche) */}

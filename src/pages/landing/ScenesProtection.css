@@ -1,0 +1,141 @@
+.scene {
+  display: block;
+  flex: none;
+  width: 190px;
+  height: auto;
+}
+
+.scene__fond {
+  fill: var(--color-lin);
+}
+
+.scene__neige {
+  fill: #fff;
+  opacity: 0.8;
+}
+
+.scene__pan {
+  fill: none;
+  stroke-width: 7;
+  stroke-linecap: round;
+}
+
+.scene__sourire {
+  fill: none;
+  stroke: var(--color-terre);
+  stroke-width: 1.4;
+  stroke-linecap: round;
+}
+
+.scene__s {
+  fill: var(--color-surface-carte);
+  font-family: var(--font-titrage);
+  font-weight: 900;
+  font-size: 11px;
+}
+
+.scene__carte-note,
+.scene__feuille,
+.scene__cadenas {
+  filter: drop-shadow(0 6px 8px rgba(59, 42, 31, 0.22));
+}
+
+.scene__etoile {
+  fill: var(--color-ocre);
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+.scene__note-texte {
+  fill: var(--color-terre);
+  font-family: var(--font-corps);
+  font-weight: 700;
+  font-size: 9.5px;
+}
+
+.scene__coche {
+  fill: none;
+  stroke: var(--color-surface-carte);
+  stroke-width: 2.6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.scene__signature {
+  fill: none;
+  stroke: var(--color-ardoise);
+  stroke-width: 1.8;
+  stroke-linecap: round;
+}
+
+
+.scene__piece-texte {
+  fill: var(--color-terre);
+  font-family: var(--font-titrage);
+  font-weight: 700;
+  font-size: 15px;
+}
+
+.scene__s-cadenas {
+  fill: var(--color-argile);
+  font-family: var(--font-titrage);
+  font-weight: 900;
+  font-size: 14px;
+}
+
+.scene__piece-texte--petit {
+  font-size: 9.5px;
+}
+
+.scene__signature--client {
+  stroke: var(--color-argile-foncee);
+}
+
+.scene__trajet {
+  fill: none;
+  stroke: var(--color-texte-secondaire);
+  stroke-opacity: 0.55;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-dasharray: 1 5;
+}
+
+.scene__carte-bancaire,
+.scene__coffre {
+  filter: drop-shadow(0 5px 7px rgba(59, 42, 31, 0.22));
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .scene__etoile {
+    animation: scene-etoile 2.6s ease-in-out infinite;
+  }
+
+  .scene__voyage {
+    animation: scene-voyage 4.2s ease-in-out infinite;
+  }
+
+  .scene__coche {
+    stroke-dasharray: 20;
+    animation: scene-trace 3.2s ease-in-out infinite;
+  }
+}
+
+@keyframes scene-etoile {
+  0%, 60%, 100% { transform: scale(1); }
+  30% { transform: scale(1.35); }
+}
+
+/* La pièce part de la carte, s'arrête dans le coffre, puis rejoint le déneigeur. */
+@keyframes scene-voyage {
+  0% { transform: translateX(0); opacity: 0; }
+  10% { opacity: 1; }
+  35%, 55% { transform: translateX(62px); opacity: 1; }
+  80% { transform: translateX(96px); opacity: 1; }
+  92%, 100% { transform: translateX(96px); opacity: 0; }
+}
+
+@keyframes scene-trace {
+  0% { stroke-dashoffset: 20; }
+  35%, 85% { stroke-dashoffset: 0; }
+  100% { stroke-dashoffset: 20; }
+}

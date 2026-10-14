@@ -48,6 +48,7 @@
 .hero-illu__foulard-pan { fill: none; stroke: var(--color-ocre); stroke-width: 7; stroke-linecap: round; }
 .hero-illu__peau { fill: #E7C39E; }
 .hero-illu__oeil { fill: var(--color-terre); }
+.hero-illu__bouche { fill: none; stroke: var(--color-terre); stroke-width: 1.4; stroke-linecap: round; }
 .hero-illu__tuque { fill: var(--color-argile); }
 .hero-illu__tuque-rebord { fill: var(--color-argile-foncee); }
 .hero-illu__tuque-s {
