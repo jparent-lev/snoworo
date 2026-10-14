@@ -84,14 +84,6 @@
   stroke: var(--color-argile-foncee);
 }
 
-.scene__etiquette {
-  fill: var(--color-terre);
-  fill-opacity: 0.72;
-  font-family: var(--font-corps);
-  font-weight: 700;
-  font-size: 8px;
-}
-
 .scene__trajet {
   fill: none;
   stroke: var(--color-texte-secondaire);

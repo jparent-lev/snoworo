@@ -10,7 +10,7 @@ import "./ScenesProtection.css";
 // lin), éventuellement retourné pour regarder vers la droite.
 const VARIANTES = {
   deneigeur: { manteau: "var(--color-ardoise)", foulard: "var(--color-ocre)", tuque: "var(--color-argile)", rebord: "var(--color-argile-foncee)", s: true },
-  client: { manteau: "var(--color-argile-foncee)", foulard: "var(--color-lin)", tuque: "var(--color-ardoise)", rebord: "var(--color-terre)", s: false },
+  client: { manteau: "var(--color-argile-foncee)", foulard: "var(--color-surface-carte)", tuque: "var(--color-ardoise)", rebord: "var(--color-terre)", s: false },
 };
 
 function Personnage({ x, y, echelle = 1.15, variante = "deneigeur", miroir = false }) {
@@ -89,9 +89,6 @@ function SceneEntente() {
 function ScenePaiement() {
   return (
     <>
-      <text x="30" y="19" textAnchor="middle" className="scene__etiquette">Vous payez</text>
-      <text x="100" y="19" textAnchor="middle" className="scene__etiquette">Snowro retient</text>
-      <text x="164" y="19" textAnchor="middle" className="scene__etiquette">Versé ensuite</text>
 
       {/* Vous : la carte enregistrée. */}
       <g className="scene__carte-bancaire">
