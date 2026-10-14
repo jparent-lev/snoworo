@@ -81,10 +81,7 @@ export default function Landing() {
         <ChuteDeNeige className="decor-chute--ciel" />
       <section id="haut" className="landing__hero">
         <div className="landing__hero-texte">
-          <h1 className="landing__hero-titre">
-            Besoin d'aide pour dégager vos marches, votre voiture ou votre cour ? Trouvez un déneigeur de
-            quartier en quelques minutes.
-          </h1>
+          <h1 className="landing__hero-titre">Trouvez un déneigeur de quartier en quelques minutes.</h1>
           <p className="landing__hero-chapeau">
             Un escalier glacé, l'accès au cabanon bloqué ou une entrée à souffler après la tempête ? Publiez
             votre besoin, votre quartier et le montant proposé : un voisin équipé d'une pelle ou d'une
