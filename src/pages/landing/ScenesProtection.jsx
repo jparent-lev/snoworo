@@ -73,8 +73,6 @@ function SceneEntente() {
         <circle cx="100" cy="88" r="8" fill="var(--color-argile)" />
         <path d="M95.5 88 L99 91.5 L105 84.5" className="scene__coche" />
       </g>
-      {/* Poignée de main : les mains se rejoignent sous le contrat. */}
-      <circle cx="100" cy="104" r="6" fill="#E7C39E" />
     </>
   );
 }
@@ -84,7 +82,7 @@ function ScenePaiement() {
     <>
       <text x="30" y="19" textAnchor="middle" className="scene__etiquette">Vous payez</text>
       <text x="100" y="19" textAnchor="middle" className="scene__etiquette">Snowro retient</text>
-      <text x="170" y="19" textAnchor="middle" className="scene__etiquette">Versé après</text>
+      <text x="164" y="19" textAnchor="middle" className="scene__etiquette">Versé ensuite</text>
 
       {/* Vous : la carte enregistrée. */}
       <g className="scene__carte-bancaire">
@@ -104,12 +102,10 @@ function ScenePaiement() {
       </g>
 
       {/* Le déneigeur reçoit le paiement une fois la demande confirmée. */}
-      <Personnage x={168} y={118} echelle={1} miroir />
-      <circle cx="184" cy="48" r="10" fill="var(--color-ardoise)" />
-      <path d="M179 48 L183 52 L190 44" className="scene__coche" />
+      <Personnage x={162} y={118} echelle={1} miroir />
 
       <path d="M56 62 H72" className="scene__trajet" />
-      <path d="M128 62 H146" className="scene__trajet" />
+      <path d="M128 62 H136" className="scene__trajet" />
       <g className="scene__voyage">
         <circle cx="38" cy="62" r="7" fill="var(--color-ocre)" />
         <text x="38" y="65.5" textAnchor="middle" className="scene__piece-texte scene__piece-texte--petit">$</text>
