@@ -32,7 +32,7 @@ est ouvert sous allo@snowro.com (alias de la boîte Google Workspace Numino).
 
 | | Production | Test |
 |---|---|---|
-| Configuration du site | `.env.production` | `.env.test` (bandeau « Environnement de test », balise `noindex`) |
+| Configuration du site | `.env.production` | `.env.test` (balise `noindex` ; le bandeau « Environnement de test » a été retiré) |
 | Paramètres des fonctions | `functions/.env.snowro-app` | `functions/.env.snowro-test` |
 | Paiement | réel, sandbox Stripe (pour l'instant) | réel, sandbox Stripe |
 | Courriels | normaux | sujet préfixé « [Test] » |
