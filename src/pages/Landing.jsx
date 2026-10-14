@@ -127,8 +127,8 @@ export default function Landing() {
 
       {/* 2. Comment ça marche */}
       <section id="comment" className="landing__section">
-        <h2 className="landing__h2">Trois étapes simples, de la demande au travail terminé</h2>
-        <p className="landing__chapeau">Publiez votre demande, un déneigeur de quartier l'accepte, et vous confirmez le travail : simple, rapide, sans engagement.</p>
+        <h2 className="landing__h2 landing__h2--centre">Trois étapes simples, de la demande au travail terminé</h2>
+        <p className="landing__chapeau landing__chapeau--centre">Publiez votre demande, un déneigeur de quartier l'accepte, et vous confirmez le travail : simple, rapide, sans engagement.</p>
         <div className="landing__etapes-grille">
           {[
             {
@@ -144,7 +144,8 @@ export default function Landing() {
               texte: "Nous retenons votre paiement le temps que la demande soit réalisée, puis nous le versons au déneigeur de quartier. Un reçu est transmis automatiquement aux deux parties.",
             },
           ].map((etape, i) => (
-            <div key={etape.titre} className="landing__etape-carte">
+            <div key={etape.titre} className={`landing__etape-carte landing__etape-carte--${i + 1}`}>
+              <span className="landing__etape-pastille">Étape {i + 1}</span>
               <IllustrationEtape etape={i + 1} />
               <h3 className="landing__h3">{etape.titre}</h3>
               <p className="landing__p">{etape.texte}</p>
