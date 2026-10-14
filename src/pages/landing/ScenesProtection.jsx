@@ -23,6 +23,7 @@ function Personnage({ x, y, echelle = 1.15, variante = "deneigeur", miroir = fal
       <rect x="261" y="244" width="32" height="9" rx="4.5" fill={v.foulard} />
       <circle cx="274" cy="232" r="13" fill="#E7C39E" />
       <circle cx="267" cy="231" r="1.6" fill="var(--color-terre)" />
+      <circle cx="279" cy="231" r="1.6" fill="var(--color-terre)" />
       <path d="M270 237 Q274 240 278 237" className="scene__sourire" />
       <path d="M261 222 Q262 205 276 205 Q289 206 288 222 Z" fill={v.tuque} />
       <rect x="259" y="219" width="31" height="6" rx="3" fill={v.rebord} />
