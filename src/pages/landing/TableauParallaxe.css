@@ -317,23 +317,12 @@
   cursor: pointer;
 }
 
-.parcours__numero {
-  flex: none;
-  display: grid;
-  place-items: center;
-  width: 32px;
-  height: 32px;
-  border-radius: 999px;
-  background: var(--color-lin);
-  font-weight: 700;
-  font-size: 14px;
-  color: var(--color-terre);
-  transition: background-color 200ms ease-out, color 200ms ease-out;
+.parcours__icone {
+  transition: background-color 200ms ease-out, transform 200ms ease-out;
 }
 
-.parcours__item--actif .parcours__numero {
-  background: var(--color-argile);
-  color: var(--color-surface-carte);
+.parcours__item--actif .parcours__icone {
+  transform: scale(1.08);
 }
 
 .parcours__corps {
@@ -493,9 +482,6 @@
   .parcours__ecran,
   .parcours__texte,
   .parcours__item,
-  .parcours__numero {
-    transition: none;
-  }
 
   .parcours__ecran {
     transform: none;

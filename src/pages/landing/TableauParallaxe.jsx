@@ -238,7 +238,7 @@ export default function TableauParallaxe() {
                 aria-current={i === actif ? "step" : undefined}
                 onClick={() => aller(i)}
               >
-                <span className="parcours__numero">{i + 1}</span>
+                <Icone nom={sc.icone} className={`parcours__icone${i === actif ? " decor-icone--ocre" : ""}`} />
                 <span className="parcours__corps">
                   <span className="parcours__titre">{sc.titre}</span>
                   <span className="parcours__texte">{sc.texte}</span>
