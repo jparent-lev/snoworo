@@ -4,11 +4,11 @@ import PageLegale from "../components/PageLegale";
 import { envoyerMessageContact } from "../lib/contact";
 import "./NousEcrire.css";
 
-// Doit rester aligné sur SUJETS dans functions/src/contact.js.
+// Doit rester aligné sur SUJETS dans functions/src/contact.js (qui accepte
+// toujours « pro », retiré ici jusqu'à la V2 de Snowro Pro).
 const SUJETS = [
   { valeur: "question", libelle: "Une question sur Snowro" },
   { valeur: "deneigeur", libelle: "Devenir déneigeur de quartier" },
-  { valeur: "pro", libelle: "Snowro Pro (entreprises de déneigement)" },
   { valeur: "renseignements", libelle: "Mes renseignements personnels" },
   { valeur: "autre", libelle: "Autre chose" },
 ];

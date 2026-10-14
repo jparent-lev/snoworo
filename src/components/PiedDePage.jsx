@@ -25,10 +25,6 @@ export default function PiedDePage() {
           <a href="/#comment">Comment ça marche</a>
           <a href="/#frais">Frais</a>
           <a href="/#deneigeur">Devenir déneigeur de quartier</a>
-        </div>
-        <div className="pied__colonne">
-          <span className="eyebrow pied__titre">Snowro Pro</span>
-          <a href="/#pro">Données de zones</a>
           <a href="/#liste">Liste d'attente</a>
         </div>
         <div className="pied__colonne">

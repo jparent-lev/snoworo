@@ -26,10 +26,6 @@ const THEMES = [
         q: "Qu'est-ce que l'autre personne voit de moi ?",
         r: "Avant qu'une job soit acceptée, les déneigeurs voient seulement le quartier, la distance et ton prénom. L'adresse exacte n'est montrée qu'à celui qui accepte. Vous vous écrivez ensuite dans la messagerie de Snowro, sans échanger vos numéros. Vos messages et les photos de fin de job ne sont vus que par vous deux, et ils sont effacés 30 jours après la job.",
       },
-      {
-        q: "C'est quoi la différence avec Snowro Pro ?",
-        r: "Snowro, c'est le service entre déneigeurs de quartier : publier ou prendre des jobs, gratuit à installer. Snowro Pro s'adresse aux déneigeurs professionnels : les entreprises de déneigement qui veulent voir où la demande se trouve. Les détails s'en viennent.",
-      },
     ],
   },
   {

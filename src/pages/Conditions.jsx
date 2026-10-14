@@ -159,26 +159,20 @@ export default function Conditions() {
         consommateur, ni notre responsabilité pour notre propre faute.
       </p>
 
-      <h2>11. Snowro Pro</h2>
-      <p>
-        L'abonnement Snowro Pro, destiné aux entreprises de déneigement, sera encadré par des conditions
-        distinctes, présentées au moment de s'abonner.
-      </p>
-
-      <h2>12. Changements à ces conditions</h2>
+      <h2>11. Changements à ces conditions</h2>
       <p>
         On peut modifier ces conditions. La nouvelle version est publiée ici avec sa date de mise à jour et,
         pour un changement important, on t'avise par courriel ou dans l'application au moins 30 jours avant
         qu'il s'applique. Tu peux alors fermer ton compte sans frais si tu n'es pas d'accord.
       </p>
 
-      <h2>13. Loi applicable</h2>
+      <h2>12. Loi applicable</h2>
       <p>
         Ces conditions sont régies par les lois du Québec et les lois du Canada qui s'y appliquent. Tu conserves
         tous les recours que la loi te reconnaît, y compris devant les tribunaux de ton lieu de résidence.
       </p>
 
-      <h2>14. Nous joindre</h2>
+      <h2>13. Nous joindre</h2>
       <p>
         Une question sur ces conditions ? Écris-nous par la page <Link to="/nous-ecrire">Nous écrire</Link>.
       </p>

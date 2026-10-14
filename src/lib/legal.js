@@ -6,5 +6,5 @@ export const INFOS_LEGALES = {
   // Nom légal de la société (ajouter « inc. » ou le NEQ ici si voulu).
   nomLegal: "Snowro",
   responsableRenseignements: "Jonathan Parent",
-  miseAJour: "4 octobre 2026",
+  miseAJour: "14 octobre 2026",
 };

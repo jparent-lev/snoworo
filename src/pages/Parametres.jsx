@@ -23,17 +23,11 @@ import { fermerCompte, messageFermeture } from "../lib/compte";
 import ChampAdresse from "../components/ChampAdresse";
 import "./Parametres.css";
 
+// Les consentements liés à Snowro Pro (zonesAgregees, offresCiblees) sont
+// masqués jusqu'à la V2 : le modèle de données et les functions les gèrent
+// toujours, il suffira de remettre les deux entrées ici et dans la politique
+// de confidentialité (Confidentialite.jsx) pour les réactiver.
 const CONSENTS = [
-  {
-    type: "zonesAgregees",
-    titre: "Statistiques de zone (Snowro Pro)",
-    description: "Permet d'inclure tes demandes, de façon anonyme et agrégée, dans les statistiques vues par les déneigeurs professionnels abonnés.",
-  },
-  {
-    type: "offresCiblees",
-    titre: "Offres ciblées",
-    description: "Permet à un déneigeur professionnel de te contacter directement avec une offre. Toujours révocable.",
-  },
   {
     type: "notificationsSMS",
     titre: "Notifications SMS",
@@ -186,8 +180,8 @@ export default function Parametres() {
 
       <h1>Tes consentements</h1>
       <p className="parametres__intro">
-        Chacun de ces consentements est indépendant, daté, et retirable en tout temps, et le retrait est aussi
-        simple que l'octroi.
+        Chaque consentement est indépendant, daté, et retirable en tout temps, et le retrait est aussi simple
+        que l'octroi.
       </p>
 
       <div className="parametres__liste">

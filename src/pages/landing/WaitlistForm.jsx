@@ -7,13 +7,14 @@ import "./WaitlistForm.css";
 const CODE_POSTAL_REGEX = /^[A-Za-z]\d[A-Za-z][ -]?\d[A-Za-z]\d$/;
 
 // Pro (entreprises de déneigement) a sa propre entrée dans la liste, avec le
-// nom de l'entreprise : la liste se segmente par rôle. Le bouton « Être averti
-// pour Pro » de l'accueil présélectionne ce rôle (role / onRole contrôlés par
-// Landing).
+// nom de l'entreprise : la liste se segmente par rôle (role / onRole contrôlés
+// par Landing). L'offre Pro est retirée du site jusqu'à la V2 : le rôle n'est
+// plus proposé ici, mais sa logique (champ entreprise, textes) reste en place
+// pour le rétablir en remettant la ligne dans ROLES.
 const ROLES = [
   ["client", "Client"],
   ["deneigeur", "Déneigeur de quartier"],
-  ["pro", "Entreprise (Pro)"],
+  // ["pro", "Entreprise (Pro)"],
 ];
 
 export default function WaitlistForm({ role: roleControle, onRole }) {

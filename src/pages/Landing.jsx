@@ -9,7 +9,6 @@ import WaitlistForm from "./landing/WaitlistForm";
 import HeroIllustration from "./landing/HeroIllustration";
 import ApercuTableau from "./landing/ApercuTableau";
 import {
-  ApercuZonesPro,
   CapNeige,
   CarteVilles,
   BancDeNeige,
@@ -29,8 +28,10 @@ import "./Landing.css";
 export default function Landing() {
   const { user, loading } = useAuth();
   const [menuOuvert, setMenuOuvert] = useState(false);
-  // Rôle du formulaire de liste d'attente : « Être averti pour Pro » le
-  // présélectionne à « pro ».
+  // Rôle du formulaire de liste d'attente (client ou déneigeur), présélectionné
+  // par les boutons de l'accueil. Le rôle « pro » existe toujours dans le
+  // formulaire et les functions, mais l'offre Snowro Pro est retirée du site
+  // jusqu'à la V2 (section, lien du menu, bouton « Être averti pour Pro »).
   const [roleListe, setRoleListe] = useState("client");
 
   // Arrivée depuis une autre page par un lien "/#section" (pied de page des
@@ -68,7 +69,6 @@ export default function Landing() {
             <a href="#tableau-de-bord" onClick={fermerMenu}>Tableau de bord</a>
             <a href="#frais" onClick={fermerMenu}>Frais</a>
             <a href="#deneigeur" onClick={fermerMenu}>Déneiger</a>
-            <a href="#pro" onClick={fermerMenu}>Pro</a>
             <a href="#liste" className="landing__nav-cta landing__bouton-neige landing__bouton-neige--a" onClick={fermerMenu}>
               Rejoindre la liste
             </a>
@@ -81,11 +81,14 @@ export default function Landing() {
         <ChuteDeNeige className="decor-chute--ciel" />
       <section id="haut" className="landing__hero">
         <div className="landing__hero-texte">
-          <h1 className="landing__hero-titre">Déneigement à la demande, sans contrat.</h1>
+          <h1 className="landing__hero-titre">
+            Besoin d'aide pour dégager vos marches, votre voiture ou votre cour ? Trouvez un déneigeur de
+            quartier en quelques minutes.
+          </h1>
           <p className="landing__hero-chapeau">
-            Tu publies ta demande : l'adresse, le prix, le moment qui te convient. Les déneigeurs de quartier
-            disponibles dans ton secteur sont avertis tout de suite, et le premier qui accepte s'en occupe.
-            Pas d'appels à faire, pas d'attente.
+            Un escalier glacé, l'accès au cabanon bloqué ou une entrée à souffler après la tempête ? Publiez
+            votre besoin, votre quartier et le montant proposé : un voisin équipé d'une pelle ou d'une
+            souffleuse prend la tâche et s'en occupe. Simple, rapide, sans engagement.
           </p>
           <div className="landing__hero-cta">
             <a
@@ -349,34 +352,8 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* 7. Snowro Pro — détails de l'offre à préciser, section volontairement sobre pour l'instant */}
-      <section id="pro" className="landing__section">
-        <div className="landing__pro-entete">
-          <SnowroSymbol variant="pro" neige surTuile size={50} />
-          <div className="landing__pro-lockup-texte">
-            <span className="landing__pro-lockup-nom">snowro</span>
-            <span className="eyebrow landing__pro-lockup-qualifiant">PRO</span>
-          </div>
-        </div>
-        <div className="landing__pro-grille">
-          <div className="landing__pro-simple">
-            <h2 className="landing__h2">Pour ceux qui sont des professionnels du déneigement</h2>
-            <p className="landing__chapeau">
-              On prépare une offre pour les entreprises de déneigement qui veulent voir où la demande se
-              trouve dans leurs secteurs. Les détails s'en viennent. Inscris-toi pour être averti en
-              premier.
-            </p>
-            <a
-              href="#liste"
-              className="landing__bouton-ardoise landing__bouton-neige landing__bouton-neige--e"
-              onClick={() => setRoleListe("pro")}
-            >
-              Être averti pour Pro
-            </a>
-          </div>
-          <ApercuZonesPro />
-        </div>
-      </section>
+      {/* 7. Snowro Pro : section retirée temporairement (V2). Les styles
+          landing__pro-* restent dans Landing.css et ApercuZonesPro dans Decors.jsx. */}
 
       {/* Témoignages retirés en attendant de vrais verbatims — voir Landing.css
           pour les styles landing__temoignage* laissés en place pour ce retour. */}
@@ -386,23 +363,11 @@ export default function Landing() {
         <div className="landing__bloc-liste">
           <CapNeige className="landing__cap-liste" />
           <div>
-            {roleListe === "pro" ? (
-              <>
-                <h2 className="landing__h2 landing__h2--sur-argile">Snowro Pro arrive bientôt</h2>
-                <p className="landing__p landing__p--sur-argile-clair">
-                  Laisse-nous le nom de ton entreprise, ton courriel et le code postal de ton secteur principal.
-                  On te présente l'offre Pro en premier, avec les données de ta région.
-                </p>
-              </>
-            ) : (
-              <>
-                <h2 className="landing__h2 landing__h2--sur-argile">On ouvre où il y a du monde</h2>
-                <p className="landing__p landing__p--sur-argile-clair">
-                  Laisse-nous ton courriel et ton code postal. On te fait signe quand Snowro débarque dans ton
-                  coin, et ton inscription fait avancer ta ville dans la file.
-                </p>
-              </>
-            )}
+            <h2 className="landing__h2 landing__h2--sur-argile">On ouvre où il y a du monde</h2>
+            <p className="landing__p landing__p--sur-argile-clair">
+              Laisse-nous ton courriel et ton code postal. On te fait signe quand Snowro débarque dans ton
+              coin, et ton inscription fait avancer ta ville dans la file.
+            </p>
           </div>
           <WaitlistForm role={roleListe} onRole={setRoleListe} />
         </div>

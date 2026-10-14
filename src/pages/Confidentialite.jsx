@@ -36,10 +36,9 @@ export default function Confidentialite() {
 
       <h3>Liste d'attente</h3>
       <p>
-        Ton courriel, ton code postal et ton rôle (client, déneigeur de quartier ou entreprise intéressée par
-        Snowro Pro; pour une entreprise, aussi son nom). À partir du code postal, on déduit ta ville. Ça sert à
-        savoir quelles villes ouvrir en premier et à t'écrire quand Snowro ouvre dans ton secteur, ou quand
-        l'offre Pro est prête. Rien d'autre.
+        Ton courriel, ton code postal et ton rôle (client ou déneigeur de quartier). À partir du code postal,
+        on déduit ta ville. Ça sert à savoir quelles villes ouvrir en premier et à t'écrire quand Snowro ouvre
+        dans ton secteur. Rien d'autre.
       </p>
 
       <h3>Formulaire « Nous écrire »</h3>
@@ -82,22 +81,13 @@ export default function Confidentialite() {
         </li>
       </ul>
 
-      <h3>Utilisations optionnelles, avec ton consentement</h3>
+      <h3>Utilisation optionnelle, avec ton consentement</h3>
       <p>
-        Par défaut, elles sont toutes désactivées. Tu les actives ou les retires une à une, en tout temps, dans
-        les paramètres de ton compte. Refuser n'empêche pas d'utiliser Snowro.
+        Par défaut, elle est désactivée. Tu l'actives ou la retires en tout temps, dans les paramètres de ton
+        compte. Refuser n'empêche pas d'utiliser Snowro. Si on ajoute un jour une autre utilisation
+        optionnelle, elle apparaîtra ici et dans tes paramètres, désactivée par défaut.
       </p>
       <ul>
-        <li>
-          <strong>Statistiques de zone (Snowro Pro) :</strong> inclure tes demandes, de façon anonyme et
-          agrégée, dans les statistiques par secteur vues par les entreprises de déneigement abonnées. Ces
-          statistiques ne contiennent ni ton nom, ni ton adresse, ni aucun identifiant qui permette de remonter
-          jusqu'à toi.
-        </li>
-        <li>
-          <strong>Offres ciblées :</strong> permettre à une entreprise de déneigement abonnée à Snowro Pro de te
-          faire une offre directement.
-        </li>
         <li>
           <strong>Notifications SMS :</strong> recevoir un texto quand une demande ouvre près de toi ou quand
           ton match est confirmé.

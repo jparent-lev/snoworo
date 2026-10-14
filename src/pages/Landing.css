@@ -203,8 +203,11 @@
 }
 
 .landing__hero-titre {
-  font-size: clamp(38px, 5.6vw, 62px);
-  line-height: 1.02;
+  /* Titre long (deux phrases) : un cran plus petit que l'ancien slogan, et
+     une espace insécable devant le « ? » dans le JSX pour qu'il ne se
+     retrouve pas seul en début de ligne. */
+  font-size: clamp(32px, 4.4vw, 50px);
+  line-height: 1.08;
   letter-spacing: -0.02em;
 }
 
