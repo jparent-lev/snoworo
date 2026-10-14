@@ -13,7 +13,7 @@ import "./Tableau.css";
 export default function TableauDeBord() {
   const { profile } = useAuth();
   const { mode, changerMode } = useOutletContext();
-  // Lien d'un courriel « Marc t'a écrit » : ?conversation=<demandeId>&mode=client|deneigeur
+  // Lien d'un courriel « Marc vous a écrit » : ?conversation=<demandeId>&mode=client|deneigeur
   // ouvre la bonne conversation dans le bon mode.
   const [params, setParams] = useSearchParams();
   const conversation = params.get("conversation");
@@ -45,9 +45,9 @@ function PremierChoix() {
   return (
     <div className="tableau" style={{ maxWidth: 640 }}>
       <div>
-        <h1 style={{ fontSize: 30 }}>Comment veux-tu utiliser Snowro ?</h1>
+        <h1 style={{ fontSize: 30 }}>Comment souhaitez-vous utiliser Snowro ?</h1>
         <p className="carte-job__meta" style={{ marginTop: 6, fontSize: 15 }}>
-          Tu peux choisir les deux, et changer d'idée en tout temps dans tes paramètres.
+          Vous pouvez choisir les deux et changer d'avis en tout temps dans vos paramètres.
         </p>
       </div>
       <ChoixRoles valeur={roles} onChange={setRoles} />

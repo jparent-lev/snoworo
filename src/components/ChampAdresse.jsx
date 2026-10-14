@@ -78,7 +78,7 @@ export default function ChampAdresse({ valeur, onChange, manuel, onManuel, disab
         onKeyDown={clavier}
         onFocus={() => setOuvert(true)}
         onBlur={() => setTimeout(() => setOuvert(false), 150)}
-        placeholder={sansSuggestions ? "1234, 3e Avenue, Québec, G1L 2M4" : "Commence par le numéro et la rue"}
+        placeholder={sansSuggestions ? "1234, 3e Avenue, Québec, G1L 2M4" : "Commencez par le numéro et la rue"}
         autoComplete="off"
         disabled={disabled}
         role="combobox"
@@ -92,7 +92,7 @@ export default function ChampAdresse({ valeur, onChange, manuel, onManuel, disab
         <ul id={idListe} role="listbox" className="champ-adresse__liste">
           {recherche && !suggestions.length && <li className="champ-adresse__info">Recherche…</li>}
           {!recherche && !suggestions.length && (
-            <li className="champ-adresse__info">Aucune adresse trouvée. Vérifie le numéro et la rue.</li>
+            <li className="champ-adresse__info">Aucune adresse trouvée. Vérifiez le numéro et la rue.</li>
           )}
           {suggestions.map((s, i) => (
             <li
@@ -127,11 +127,11 @@ export default function ChampAdresse({ valeur, onChange, manuel, onManuel, disab
       )}
       {choisie && <span className="champ-adresse__ok">✓ Adresse reconnue : {valeur.libelle}</span>}
       {indisponible && !manuel && (
-        <span className="auth-form__aide">Suggestions indisponibles : écris l'adresse au complet, avec le code postal.</span>
+        <span className="auth-form__aide">Suggestions indisponibles : écrivez l'adresse au complet, avec le code postal.</span>
       )}
       {manuel && (
         <span className="auth-form__aide">
-          Écris l'adresse au complet, avec le numéro civique et le code postal. On vérifiera qu'elle est précise.{" "}
+          Écrivez l'adresse au complet, avec le numéro civique et le code postal. Nous vérifierons qu'elle est précise.{" "}
           <button type="button" className="btn btn--lien" onClick={() => onManuel(false)}>
             Revenir aux suggestions
           </button>

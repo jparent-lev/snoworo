@@ -108,7 +108,7 @@ export const enregistrerCarte = onCall({ region: REGION, secrets: [STRIPE_SECRET
   }
   const { customerId } = await clientStripe(uid);
   const intent = await stripe().setupIntents.retrieve(setupIntentId, { expand: ["payment_method"] });
-  if (intent.customer !== customerId) throw new HttpsError("permission-denied", "Cette carte n'est pas la tienne.");
+  if (intent.customer !== customerId) throw new HttpsError("permission-denied", "Cette carte ne vous appartient pas.");
   if (intent.status !== "succeeded") throw new HttpsError("failed-precondition", "La carte n'a pas été confirmée.");
   const pm = intent.payment_method;
   await stripe().customers.update(customerId, { invoice_settings: { default_payment_method: pm.id } });
@@ -162,20 +162,20 @@ export async function avertirCarteRefusee(demande) {
   if (!client?.email) return;
   const lien = `${URL_SITE.value()}/tableau-de-bord?mode=client`;
   const paragraphes = [
-    `Un déneigeur de quartier voulait prendre ta demande « ${demande.titre} », mais ta carte a été refusée.`,
-    "Ta demande est en pause : mets ta carte à jour et elle redevient visible tout de suite.",
+    `Un déneigeur de quartier voulait prendre votre demande « ${demande.titre} », mais votre carte a été refusée.`,
+    "Votre demande est en pause : mettez votre carte à jour et elle redeviendra visible immédiatement.",
   ];
   try {
     await envoyerCourriel({
       a: client.email,
-      sujet: "Ta carte a été refusée : ta demande est en pause",
+      sujet: "Votre carte a été refusée : votre demande est en pause",
       html: gabaritCourriel({
-        titre: "Ta carte a été refusée",
+        titre: "Votre carte a été refusée",
         paragraphes: [
           ...paragraphes.map(echapperHtml),
           `<a href="${lien}" style="display:inline-block;padding:12px 20px;background:#C1652F;color:#FFFDF8;border-radius:999px;font-weight:700;text-decoration:none;">Mettre ma carte à jour</a>`,
         ],
-        piedDePage: "Tu reçois ce courriel parce que tu as publié une demande sur Snowro.",
+        piedDePage: "Vous recevez ce courriel parce que vous avez publié une demande sur Snowro.",
       }),
       texte: [...paragraphes, "", `Mettre ma carte à jour : ${lien}`].join("\n"),
       type: "carte_refusee",
@@ -275,7 +275,7 @@ export const lienCompteDeneigeur = onCall({ region: REGION, secrets: [STRIPE_SEC
   const ref = db.doc(`users/${uid}`);
   const profil = (await ref.get()).data() ?? {};
   if (!(profil.role ?? []).includes("deneigeur_x")) {
-    throw new HttpsError("permission-denied", "Active le mode déneigeur dans tes paramètres.");
+    throw new HttpsError("permission-denied", "Activez le mode déneigeur dans vos paramètres.");
   }
   let compteId = profil.stripeConnectAccountId;
   if (!compteId) {

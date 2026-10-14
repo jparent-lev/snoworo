@@ -63,10 +63,10 @@ export default function PartageListe({ role, ville }) {
 
   return (
     <div className="partage">
-      <span className="partage__titre">Fais avancer {ville ? ville : "ton quartier"}</span>
+      <span className="partage__titre">Faites avancer {ville ? ville : "votre quartier"}</span>
       <p className="partage__texte">
-        Plus il y a de voisins inscrits dans ton secteur, plus vite Snowro ouvre. Un message à tes contacts ou
-        dans le groupe du quartier, ça fait toute la différence.
+        Plus il y a de voisins inscrits dans votre secteur, plus vite Snowro ouvre. Un message à vos contacts ou
+        dans le groupe du quartier fait toute la différence.
       </p>
 
       <blockquote className="partage__apercu">

@@ -48,35 +48,35 @@ function composerConfirmation({ role, ville }) {
     role === "pro"
       ? [
           `Merci de votre intérêt pour Snowro Pro. Votre entreprise est inscrite pour être avertie en premier.`,
-          `On prépare une offre pour les entreprises de déneigement qui veulent voir où la demande se trouve dans leurs secteurs, à commencer ${coin}. On vous écrit dès que les détails sont prêts.`,
+          `Nous préparons une offre pour les entreprises de déneigement qui souhaitent savoir où se trouve la demande dans leurs secteurs, à commencer ${coin}. Nous vous écrirons dès que les détails sont prêts.`,
         ]
       : role === "deneigeur"
       ? [
-          `Merci de vouloir donner un coup de pelle avec Snowro. Ton inscription comme déneigeur de quartier compte pour ouvrir Snowro ${coin}.`,
-          "Avant l'ouverture, on t'écrit pour que tu puisses créer ton compte et être prêt à recevoir les premières demandes.",
+          `Merci de vouloir donner un coup de pelle avec Snowro. Votre inscription comme déneigeur de quartier contribue à l'ouverture de Snowro ${coin}.`,
+          "Avant l'ouverture, nous vous écrirons afin que vous puissiez créer votre compte et être en mesure de recevoir les premières demandes.",
         ]
       : [
-          `Ton inscription compte pour ouvrir Snowro ${coin} : on ouvre quartier par quartier, là où il y a du monde.`,
-          "On t'écrit dès que Snowro débarque dans ton secteur. Pas de spam, promis : juste ça.",
+          `Votre inscription contribue à l'ouverture de Snowro ${coin} : nous ouvrons quartier par quartier, là où la demande est présente.`,
+          "Nous vous écrirons dès que Snowro sera offert dans votre secteur. Aucun pourriel : uniquement cet avis.",
         ];
   // Partage simple (même lien pour tout le monde), comme sur le site.
   const partage = (lien) =>
-    `Tu connais des voisins qui voudraient faire déneiger ou donner un coup de pelle ? Partage-leur ${lien} : plus on est nombreux dans ton secteur, plus vite on ouvre.`;
+    `Connaissez-vous des voisins qui aimeraient faire déneiger ou donner un coup de pelle ? Partagez-leur ${lien} : plus nous sommes nombreux dans votre secteur, plus tôt nous ouvrirons.`;
 
   const titre = "C'est noté, merci !";
   const pied =
     role === "pro"
       ? "Vous recevez ce courriel parce que cette adresse a été inscrite à la liste Snowro Pro sur snowro.com. " +
         "Si ce n'est pas vous, ou pour vous retirer de la liste, répondez simplement à ce courriel."
-      : "Tu reçois ce courriel parce que cette adresse a été inscrite à la liste d'attente sur snowro.com. " +
-        "Si ce n'est pas toi, ou si tu veux te retirer de la liste, réponds simplement à ce courriel.";
+      : "Vous recevez ce courriel parce que cette adresse a été inscrite à la liste d'attente sur snowro.com. " +
+        "Si ce n'est pas vous, ou si vous souhaitez vous retirer de la liste, répondez simplement à ce courriel.";
   const pro = role === "pro";
-  const coin = (v) => (v ? `à ${v}` : pro ? "dans votre secteur" : "dans ton coin");
+  const coin = (v) => (v ? `à ${v}` : pro ? "dans votre secteur" : "dans votre secteur");
   // Pas d'invitation au partage pour Pro : elle s'adresse aux voisins.
   const lignes = [...paragraphes(coin(ville)), ...(pro ? [] : [partage("https://snowro.com")])];
 
   return {
-    sujet: role === "pro" ? "C'est noté : votre entreprise est sur la liste Snowro Pro" : "C'est noté : tu es sur la liste Snowro",
+    sujet: role === "pro" ? "C'est noté : votre entreprise est sur la liste Snowro Pro" : "C'est noté : vous êtes sur la liste Snowro",
     html: gabaritCourriel({
       titre,
       paragraphes: [

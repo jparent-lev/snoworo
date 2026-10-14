@@ -252,7 +252,7 @@ await test("message du déneigeur : la cliente reçoit un avis, dernierMessage r
   assert.equal(envois.length, 1);
   const { corps } = envois[0];
   assert.deepEqual(corps.to, ["mireille@exemple.ca"]);
-  assert.match(corps.subject, /Marc t'a écrit à propos de « Entrée double »/);
+  assert.match(corps.subject, /Marc vous a écrit à propos de « Entrée double »/);
   assert.match(corps.text, /J'arrive vers 7 h/);
   assert.match(corps.text, /conversation=conv1&mode=client/);
   assert.equal((await lire("conv1")).dernierMessage.par, "den1");

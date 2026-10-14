@@ -18,104 +18,104 @@ export default function Confidentialite() {
     <PageLegale surtitre="Légal" titre="Politique de confidentialité" miseAJour={miseAJour}>
       <div className="page-legale__encadre">
         <p>
-          <strong>En bref :</strong> on collecte le minimum pour te mettre en contact avec un déneigeur de
-          quartier (ou avec des clients), te payer ou encaisser ton paiement de façon sécuritaire, et savoir
-          quelles villes ouvrir. On ne vend jamais tes renseignements. Tout ce qui est optionnel se retire en
-          un clic, et tu peux nous demander en tout temps de voir, corriger ou effacer ce qu'on a sur toi.
+          <strong>En bref :</strong> nous collectons le minimum de renseignements pour vous mettre en contact avec un déneigeur de
+          quartier (ou avec des clients), vous payer ou encaisser votre paiement de façon sécuritaire, et savoir
+          quelles villes ouvrir. Nous ne vendons jamais vos renseignements. Tout ce qui est optionnel se retire en
+          un clic, et vous pouvez nous demander en tout temps de consulter, de corriger ou d'effacer ce que nous détenons à votre sujet.
         </p>
       </div>
 
-      <h2>Qui est responsable de tes renseignements</h2>
+      <h2>Qui est responsable de vos renseignements</h2>
       <p>
         Snowro est exploité à Québec par la société {nomLegal}. La personne responsable de la protection des
         renseignements personnels est {responsableRenseignements}. Pour toute question ou demande liée à
-        tes renseignements, écris-lui par le {lienFormulaire} (sujet « Mes renseignements personnels »).
+        vos renseignements, écrivez-lui par le {lienFormulaire} (sujet « Mes renseignements personnels »).
       </p>
 
-      <h2>Ce qu'on collecte, et pourquoi</h2>
+      <h2>Ce que nous collectons, et pourquoi</h2>
 
       <h3>Liste d'attente</h3>
       <p>
-        Ton courriel, ton code postal et ton rôle (client ou déneigeur de quartier). À partir du code postal,
-        on déduit ta ville. Ça sert à savoir quelles villes ouvrir en premier et à t'écrire quand Snowro ouvre
-        dans ton secteur. Rien d'autre.
+        Votre courriel, votre code postal et votre rôle (client ou déneigeur de quartier). À partir du code postal,
+        nous déduisons votre ville. Ces renseignements servent à savoir quelles villes ouvrir en premier et à vous écrire lorsque Snowro ouvre
+        dans votre secteur. Rien d'autre.
       </p>
 
       <h3>Formulaire « Nous écrire »</h3>
       <p>
-        Ton nom (si tu le donnes), ton courriel, le sujet et ton message, pour te répondre et assurer le suivi
-        de ta demande.
+        Votre nom (si vous le donnez), votre courriel, le sujet et votre message, pour vous répondre et assurer le suivi
+        de votre demande.
       </p>
 
       <h3>Compte Snowro</h3>
       <ul>
         <li>
-          <strong>Identité et contact :</strong> ton nom ou prénom d'affichage, ton courriel et, si tu le
-          fournis, ton numéro de téléphone.
+          <strong>Identité et contact :</strong> votre nom ou prénom d'affichage, votre courriel et, si vous le
+          fournissez, votre numéro de téléphone.
         </li>
         <li>
           <strong>Adresses et localisation :</strong> l'adresse à déneiger d'une demande (avec le numéro
-          d'appartement, si tu le donnes) et, pour un déneigeur de quartier, son adresse de service. On en
-          déduit la position, le début du code postal et la ville. L'adresse exacte d'une demande n'est montrée
+          d'appartement, si vous le donnez) et, pour un déneigeur de quartier, son adresse de service. Nous en
+          déduisons la position, le début du code postal et la ville. L'adresse exacte d'une demande n'est montrée
           qu'au déneigeur de quartier qui l'accepte; avant, les autres ne voient qu'une zone approximative et la
           distance. L'adresse de service d'un déneigeur n'est montrée à personne : elle sert seulement à lui
-          montrer les demandes de sa ville. Pendant que tu tapes une adresse, le texte saisi est envoyé à Google
-          pour te proposer des adresses existantes. Si tu choisis « Utiliser ma position », ta position n'est
+          montrer les demandes de sa ville. Pendant que vous saisissez une adresse, le texte saisi est envoyé à Google
+          pour vous proposer des adresses existantes. Si vous choisissez « Utiliser ma position », votre position n'est
           lue qu'à ce moment-là, jamais en arrière-plan.
         </li>
         <li>
           <strong>Demandes et jobs :</strong> le montant offert, le quartier indiqué, le statut de la demande,
-          les messages échangés avec l'autre personne une fois le match confirmé, les photos (de 1 à 3) prises
+          les messages échangés avec l'autre personne une fois le jumelage confirmé, les photos (de 1 à 3) prises
           par le déneigeur de quartier à la fin de la job (visibles seulement par vous deux) et l'appréciation
           laissée par le client (des étoiles et, s'il le souhaite, un mot lu seulement par le déneigeur).
         </li>
         <li>
           <strong>Paiement :</strong> le paiement est traité par Stripe. Snowro ne voit ni ne conserve jamais
-          ton numéro de carte. Pour un déneigeur de quartier, c'est aussi Stripe qui vérifie ton identité et
-          conserve tes informations bancaires; on garde seulement l'identifiant de ton compte Stripe, son
+          votre numéro de carte. Pour un déneigeur de quartier, c'est aussi Stripe qui vérifie son identité et
+          conserve ses renseignements bancaires; nous conservons seulement l'identifiant de son compte Stripe, son
           statut et le détail de chaque paiement (montant, frais, versement).
         </li>
         <li>
-          <strong>Tes consentements :</strong> pour chaque consentement optionnel, s'il est accordé ou retiré,
-          la date et la version du texte que tu as accepté.
+          <strong>Vos consentements :</strong> pour chaque consentement optionnel, s'il est accordé ou retiré,
+          la date et la version du texte que vous avez accepté.
         </li>
       </ul>
 
-      <h3>Utilisation optionnelle, avec ton consentement</h3>
+      <h3>Utilisation optionnelle, avec votre consentement</h3>
       <p>
-        Par défaut, elle est désactivée. Tu l'actives ou la retires en tout temps, dans les paramètres de ton
-        compte. Refuser n'empêche pas d'utiliser Snowro. Si on ajoute un jour une autre utilisation
-        optionnelle, elle apparaîtra ici et dans tes paramètres, désactivée par défaut.
+        Par défaut, elle est désactivée. Vous l'activez ou la retirez en tout temps, dans les paramètres de votre
+        compte. Refuser n'empêche pas d'utiliser Snowro. Si nous ajoutons un jour une autre utilisation
+        optionnelle, elle apparaîtra ici et dans vos paramètres, désactivée par défaut.
       </p>
       <ul>
         <li>
-          <strong>Notifications SMS :</strong> recevoir un texto quand une demande ouvre près de toi ou quand
-          ton match est confirmé.
+          <strong>Notifications SMS :</strong> recevoir un message texte lorsqu'une demande est publiée près de chez vous ou lorsque
+          votre jumelage est confirmé.
         </li>
       </ul>
 
-      <h2>Ce qu'on ne fait pas</h2>
+      <h2>Ce que nous ne faisons pas</h2>
       <ul>
-        <li>On ne vend pas, ne loue pas et n'échange pas tes renseignements personnels.</li>
-        <li>On n'utilise pas de témoins (cookies) publicitaires ni d'outils de pistage publicitaire.</li>
+        <li>Nous ne vendons pas, ne louons pas et n'échangeons pas vos renseignements personnels.</li>
+        <li>Nous n'utilisons pas de témoins (cookies) publicitaires ni d'outils de pistage publicitaire.</li>
         <li>
-          On ne prend aucune décision fondée exclusivement sur un traitement automatisé qui te concerne sans
-          te le dire. La mise en contact avec un déneigeur de quartier se fait selon la ville et l'ordre
+          Nous ne prenons aucune décision fondée exclusivement sur un traitement automatisé qui vous concerne sans
+          vous en informer. La mise en contact avec un déneigeur de quartier se fait selon la ville et l'ordre
           d'acceptation, pas selon un profil.
         </li>
       </ul>
 
-      <h2>Témoins et stockage dans ton navigateur</h2>
+      <h2>Témoins et stockage dans votre navigateur</h2>
       <p>
-        Snowro utilise le stockage de ton navigateur uniquement pour ce qui est nécessaire au fonctionnement
-        du site, par exemple garder ta session ouverte une fois connecté. Aucun témoin de mesure d'audience ou
+        Snowro utilise le stockage de votre navigateur uniquement pour ce qui est nécessaire au fonctionnement
+        du site, par exemple garder votre session ouverte une fois connecté. Aucun témoin de mesure d'audience ou
         de publicité n'est utilisé.
       </p>
 
       <h2>Qui d'autre y a accès</h2>
       <p>
-        Seules les personnes de Snowro qui en ont besoin pour faire fonctionner le service ont accès à tes
-        renseignements. On fait aussi affaire avec des fournisseurs qui les traitent pour nous, selon nos
+        Seules les personnes de Snowro qui en ont besoin pour faire fonctionner le service ont accès à vos
+        renseignements. Nous faisons aussi affaire avec des fournisseurs qui les traitent pour nous, selon nos
         instructions et pour ces seules fins :
       </p>
       <ul>
@@ -129,35 +129,35 @@ export default function Confidentialite() {
           quartier.
         </li>
         <li>
-          <strong>Resend :</strong> envoi des courriels de Snowro (confirmation d'inscription, avis liés à tes
+          <strong>Resend :</strong> envoi des courriels de Snowro (confirmation d'inscription, avis liés à vos
           demandes).
         </li>
       </ul>
       <p>
-        Entre utilisateurs : une fois un match confirmé, le client et le déneigeur de quartier voient ce qu'il
-        faut pour faire la job (prénom, adresse à déneiger, messages échangés). Avant un match, une demande
-        ouverte est montrée aux déneigeurs de quartier de la même ville avec ton prénom, le quartier, la
-        description de la job, le montant offert et la distance approximative. Ta note, elle, est visible des
+        Entre utilisateurs : une fois un jumelage confirmé, le client et le déneigeur de quartier voient ce qu'il
+        faut pour faire la job (prénom, adresse à déneiger, messages échangés). Avant un jumelage, une demande
+        ouverte est montrée aux déneigeurs de quartier de la même ville avec votre prénom, le quartier, la
+        description de la job, le montant offert et la distance approximative. Votre note, elle, est visible des
         autres utilisateurs.
       </p>
       <p>
-        On peut aussi devoir communiquer des renseignements lorsque la loi l'exige, par exemple à la suite
+        Nous pouvons aussi devoir communiquer des renseignements lorsque la loi l'exige, par exemple à la suite
         d'une ordonnance d'un tribunal.
       </p>
 
       <h2>Renseignements conservés à l'extérieur du Québec</h2>
       <p>
-        Nos fonctions serveur roulent à Montréal. Certains de nos fournisseurs (Google, Stripe, Resend)
+        Nos fonctions serveur sont hébergées à Montréal. Certains de nos fournisseurs (Google, Stripe, Resend)
         peuvent toutefois conserver ou traiter des renseignements ailleurs au Canada et aux États-Unis. Avant de
-        le faire, on a évalué que la protection offerte par ces fournisseurs est adéquate, notamment par leurs
+        le faire, nous avons évalué que la protection offerte par ces fournisseurs est adéquate, notamment par leurs
         engagements contractuels de confidentialité et de sécurité, comme l'exige la Loi 25.
       </p>
 
-      <h2>Combien de temps on les garde</h2>
+      <h2>Combien de temps nous les conservons</h2>
       <ul>
         <li>
-          <strong>Liste d'attente :</strong> jusqu'à ce que tu nous demandes de t'en retirer, ou au plus 24 mois
-          après ton inscription : elle est alors effacée automatiquement.
+          <strong>Liste d'attente :</strong> jusqu'à ce que vous nous demandiez de vous en retirer, ou au plus 24 mois
+          après votre inscription : elle est alors effacée automatiquement.
         </li>
         <li>
           <strong>Messages envoyés par « Nous écrire » :</strong> effacés automatiquement 24 mois après leur
@@ -165,47 +165,47 @@ export default function Confidentialite() {
         </li>
         <li>
           <strong>Photos de fin de job et messages échangés :</strong> effacés automatiquement 30 jours après la
-          job, sauf si un problème a été signalé : on les garde alors jusqu'à ce qu'il soit réglé. Avant l'envoi,
+          job, sauf si un problème a été signalé : nous les conservons alors jusqu'à ce qu'il soit réglé. Avant l'envoi,
           l'app retire des photos les informations cachées qu'ajoute le téléphone (dont la position GPS).
         </li>
         <li>
-          <strong>Compte :</strong> tant que ton compte est actif. Tu peux le fermer toi-même en tout temps dans
-          les paramètres (sauf pendant une job en cours) : tes renseignements sont alors effacés ou rendus
-          anonymes immédiatement, sauf ce que la loi nous oblige à garder plus longtemps (le registre des
+          <strong>Compte :</strong> tant que votre compte est actif. Vous pouvez le fermer vous-même en tout temps dans
+          les paramètres (sauf pendant une job en cours) : vos renseignements sont alors effacés ou rendus
+          anonymes immédiatement, sauf ce que la loi nous oblige à conserver plus longtemps (le registre des
           paiements, conservé 6 ans pour des raisons fiscales). Stripe conserve de son côté les renseignements
           de paiement et de vérification d'identité selon ses propres obligations légales.
         </li>
       </ul>
 
-      <h2>Comment on les protège</h2>
+      <h2>Comment nous les protégeons</h2>
       <p>
         Les échanges avec le site sont chiffrés (HTTPS). L'accès à la base de données est réservé aux
         utilisateurs connectés et encadré par des règles de sécurité : les renseignements sensibles (ville,
         consentements, statut de paiement) ne peuvent être modifiés que par nos fonctions serveur, jamais
-        directement depuis ton appareil, et la liste d'attente comme les messages « Nous écrire » ne sont
+        directement depuis votre appareil, et la liste d'attente comme les messages « Nous écrire » ne sont
         accessibles à aucun utilisateur. Si un incident de confidentialité présentant un risque sérieux de
-        préjudice survenait, on t'aviserait, ainsi que la Commission d'accès à l'information, comme le prévoit
+        préjudice survenait, nous vous en aviserions, ainsi que la Commission d'accès à l'information, comme le prévoit
         la loi.
       </p>
 
-      <h2>Tes droits</h2>
-      <p>Tu peux en tout temps :</p>
+      <h2>Vos droits</h2>
+      <p>Vous pouvez en tout temps :</p>
       <ul>
-        <li>savoir quels renseignements on détient sur toi et en obtenir une copie;</li>
+        <li>savoir quels renseignements nous détenons à votre sujet et en obtenir une copie;</li>
         <li>les faire corriger s'ils sont inexacts, incomplets ou équivoques;</li>
-        <li>retirer un consentement (directement dans les paramètres de ton compte, ou en nous écrivant);</li>
+        <li>retirer un consentement (directement dans les paramètres de votre compte, ou en nous écrivant);</li>
         <li>
-          demander qu'on cesse de diffuser tes renseignements ou qu'on les efface (tu peux aussi fermer ton
-          compte toi-même dans les paramètres);
+          demander que nous cessions de diffuser vos renseignements ou que nous les effacions (vous pouvez aussi fermer votre
+          compte vous-même dans les paramètres);
         </li>
         <li>
-          obtenir les renseignements que tu nous as fournis dans un format technologique structuré et couramment
+          obtenir les renseignements que vous nous avez fournis dans un format technologique structuré et couramment
           utilisé.
         </li>
       </ul>
       <p>
-        Pour exercer ces droits, écris-nous par le {lienFormulaire} (sujet « Mes renseignements personnels »). On te répond dans un délai de 30 jours. Si tu n'es pas
-        satisfait de notre réponse, tu peux porter plainte auprès de la{" "}
+        Pour exercer ces droits, écrivez-nous par le {lienFormulaire} (sujet « Mes renseignements personnels »). Nous vous répondons dans un délai de 30 jours. Si vous n'êtes pas
+        satisfait de notre réponse, vous pouvez porter plainte auprès de la{" "}
         <a href="https://www.cai.gouv.qc.ca/" target="_blank" rel="noreferrer">
           Commission d'accès à l'information du Québec
         </a>
@@ -215,15 +215,15 @@ export default function Confidentialite() {
       <h2>Âge minimum</h2>
       <p>
         Snowro s'adresse aux personnes de 14 ans et plus pour la liste d'attente, et de 18 ans et plus pour
-        créer un compte, publier une demande ou déneiger. On ne collecte pas sciemment de renseignements sur
+        créer un compte, publier une demande ou déneiger. Nous ne collectons pas sciemment de renseignements sur
         des enfants de moins de 14 ans.
       </p>
 
       <h2>Changements à cette politique</h2>
       <p>
-        Si on modifie cette politique, la nouvelle version est publiée ici avec sa date de mise à jour. Pour un
-        changement important (un nouvel usage de tes renseignements, par exemple), on t'avise par courriel ou
-        dans l'application avant qu'il s'applique, et on te demande ton consentement lorsque la loi l'exige.
+        Si nous modifions cette politique, la nouvelle version est publiée ici avec sa date de mise à jour. Pour un
+        changement important (un nouvel usage de vos renseignements, par exemple), nous vous avisons par courriel ou
+        dans l'application avant qu'il s'applique, et nous vous demandons votre consentement lorsque la loi l'exige.
       </p>
     </PageLegale>
   );

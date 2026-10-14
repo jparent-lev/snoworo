@@ -31,7 +31,7 @@ const CONSENTS = [
   {
     type: "notificationsSMS",
     titre: "Notifications SMS",
-    description: "Reçois un texto quand une demande ouvre près de toi ou quand ton match est confirmé.",
+    description: "Recevez un message texte lorsqu'une demande est publiée près de chez vous ou lorsque votre jumelage est confirmé.",
   },
 ];
 
@@ -70,13 +70,13 @@ export default function Parametres() {
           await mettreAJourAdresseParPosition(hash);
           setAdresseEnregistree(null);
         } catch {
-          setErreurAdresse("Impossible de déterminer ta ville à partir de cette position. Réessaie, ou entre ton adresse manuellement.");
+          setErreurAdresse("Impossible de déterminer votre ville à partir de cette position. Réessayez, ou entrez votre adresse manuellement.");
         } finally {
           setMajAdresseEnCours(false);
         }
       },
       () => {
-        setErreurAdresse("Localisation refusée ou indisponible : entre ton adresse manuellement ci-dessous.");
+        setErreurAdresse("Localisation refusée ou indisponible : entrez votre adresse manuellement ci-dessous.");
         setMajAdresseEnCours(false);
       },
       { timeout: 10000 },
@@ -92,8 +92,8 @@ export default function Parametres() {
     if (adresseManquante) {
       setErreurAdresse(
         adresseManuelle
-          ? "Écris l'adresse au complet, avec le numéro civique."
-          : "Choisis ton adresse dans la liste de suggestions.",
+          ? "Écrivez l'adresse au complet, avec le numéro civique."
+          : "Choisissez votre adresse dans la liste de suggestions.",
       );
       return;
     }
@@ -106,7 +106,7 @@ export default function Parametres() {
       setAdresseManuelle(false);
     } catch (err) {
       setErreurAdresse(
-        err?.code === "functions/invalid-argument" ? err.message : "Adresse introuvable. Vérifie l'adresse et réessaie.",
+        err?.code === "functions/invalid-argument" ? err.message : "Adresse introuvable. Vérifiez l'adresse et réessayez.",
       );
     } finally {
       setMajAdresseEnCours(false);
@@ -120,16 +120,16 @@ export default function Parametres() {
 
   return (
     <div className="parametres__page">
-      <h1>Comment tu utilises Snowro</h1>
-      <p className="parametres__intro">Tu peux avoir les deux rôles : une bascule Client / Déneigeur apparaît alors en haut.</p>
+      <h1>Comment vous utilisez Snowro</h1>
+      <p className="parametres__intro">Vous pouvez avoir les deux rôles : une bascule Client / Déneigeur apparaît alors en haut de la page.</p>
       <ChoixRoles valeur={roles} onChange={changerRoles} />
 
       {roles.includes(ROLE_DENEIGEUR) && (
         <>
-      <h1>Ton adresse de service</h1>
+      <h1>Votre adresse de service</h1>
       <p className="parametres__intro">
-        Détermine les demandes que tu peux voir : jamais hors de ta ville, même si la distance semble
-        raisonnable.
+        Elle détermine les demandes que vous pouvez voir : jamais hors de votre ville, même si la distance
+        semble raisonnable.
       </p>
 
       <div className="parametres__item">
@@ -137,8 +137,8 @@ export default function Parametres() {
           <h3>{profile.ville ? profile.ville : "Aucune adresse enregistrée"}</h3>
           <p>
             {profile.ville
-              ? "Tu vois les demandes ouvertes dans cette ville."
-              : "Ajoute ton adresse pour voir les demandes près de chez toi."}
+              ? "Vous voyez les demandes ouvertes dans cette ville."
+              : "Ajoutez votre adresse pour voir les demandes près de chez vous."}
           </p>
           {adresseEnregistree && <p className="champ-adresse__ok">✓ Adresse enregistrée : {adresseEnregistree}</p>}
           {erreurAdresse && <p className="message-erreur" role="alert">{erreurAdresse}</p>}
@@ -156,7 +156,7 @@ export default function Parametres() {
 
       <form className="parametres__adresse-manuelle" onSubmit={mettreAJourParSaisie} noValidate>
         <div className="auth-form__champ" style={{ flex: 1 }}>
-          <span>Ou entre ton adresse</span>
+          <span>Ou entrez votre adresse</span>
           <ChampAdresse
             valeur={adresse}
             onChange={setAdresse}
@@ -178,9 +178,9 @@ export default function Parametres() {
 
       {PAIEMENT_REEL && <SectionPaiement profile={profile} deneigeur={roles.includes(ROLE_DENEIGEUR)} />}
 
-      <h1>Tes consentements</h1>
+      <h1>Vos consentements</h1>
       <p className="parametres__intro">
-        Chaque consentement est indépendant, daté, et retirable en tout temps, et le retrait est aussi simple
+        Chaque consentement est indépendant, daté et révocable en tout temps, et le retrait est aussi simple
         que l'octroi.
       </p>
 
@@ -262,11 +262,11 @@ function SectionPaiement({ profile, deneigeur }) {
       <div className="parametres__liste">
         <div className="parametres__item parametres__item--colonne">
           <div className="parametres__item-texte">
-            <h3>Carte pour tes demandes</h3>
+            <h3>Carte pour vos demandes</h3>
             <p>
               {carte
-                ? `${libelleCarte(carte)}. Prélevée seulement quand un déneigeur de quartier accepte ta demande.`
-                : "Aucune carte enregistrée. Tu pourras en ajouter une en publiant ta première demande."}
+                ? `${libelleCarte(carte)}. Elle n'est prélevée que lorsqu'un déneigeur de quartier accepte votre demande.`
+                : "Aucune carte enregistrée. Vous pourrez en ajouter une en publiant votre première demande."}
             </p>
           </div>
           {changerCarte ? (
@@ -342,24 +342,24 @@ function SectionFermeture() {
     <div className="parametres__fermeture">
       <h2>Fermer mon compte</h2>
       <p>
-        Tes renseignements sont effacés ou rendus anonymes, sauf le registre des paiements que la loi nous oblige à
-        garder 6 ans. Impossible tant qu'une job est en cours.
+        Vos renseignements sont effacés ou rendus anonymes, sauf le registre des paiements que la loi nous oblige à
+        conserver 6 ans. Impossible tant qu'une job est en cours.
       </p>
       <button type="button" className="btn btn--fantome parametres__bouton-fermer" onClick={() => setOuverte(true)}>
         Fermer mon compte
       </button>
       {ouverte && (
-        <Modale titre="Fermer ton compte ?" onFermer={annuler}>
-          <p>C'est définitif. On efface :</p>
+        <Modale titre="Fermer votre compte ?" onFermer={annuler}>
+          <p>Cette action est définitive. Nous effaçons :</p>
           <ul className="parametres__liste-fermeture">
-            <li>ton profil, ton adresse et ta carte enregistrée;</li>
-            <li>dans tes demandes et tes jobs : ton prénom, les adresses, les photos, les évaluations et les messages;</li>
-            <li>ton inscription à la liste d'attente, s'il y en a une.</li>
+            <li>votre profil, votre adresse et votre carte enregistrée;</li>
+            <li>dans vos demandes et vos jobs : votre prénom, les adresses, les photos, les évaluations et les messages;</li>
+            <li>votre inscription à la liste d'attente, s'il y a lieu.</li>
           </ul>
-          <p>Tes demandes encore ouvertes sont annulées. Tu pourras créer un nouveau compte plus tard.</p>
+          <p>Vos demandes encore ouvertes sont annulées. Vous pourrez créer un nouveau compte plus tard.</p>
           <form onSubmit={fermer} style={{ display: "flex", flexDirection: "column", gap: 12 }}>
             <label>
-              Écris FERMER pour confirmer
+              Écrivez FERMER pour confirmer
               <input value={saisie} onChange={(e) => setSaisie(e.target.value)} autoComplete="off" data-autofocus />
             </label>
             {erreur && <p className="message-erreur" role="alert">{erreur}</p>}

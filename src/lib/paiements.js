@@ -34,12 +34,12 @@ export function libelleCarte(carte) {
 
 // Statut du compte de versement : pastille (Paramètres) et phrase d'explication.
 export const STATUTS_CONNECT = {
-  non_demarre: { pastille: "Pas configuré", ton: "neutre", texte: "Configure-le une fois pour pouvoir accepter des jobs." },
+  non_demarre: { pastille: "Pas configuré", ton: "neutre", texte: "Configurez-le une fois pour pouvoir accepter des jobs." },
   en_attente: {
     pastille: "À terminer",
     ton: "attente",
-    texte: "Ton inscription chez Stripe n'est pas terminée, ou Stripe vérifie encore tes informations.",
+    texte: "Votre inscription chez Stripe n'est pas terminée, ou Stripe vérifie encore vos renseignements.",
   },
-  actif: { pastille: "Actif", ton: "ok", texte: "Tes versements arrivent dans ton compte bancaire." },
-  restreint: { pastille: "Action requise", ton: "alerte", texte: "Stripe a besoin d'informations de plus avant tes prochains versements." },
+  actif: { pastille: "Actif", ton: "ok", texte: "Vos versements sont déposés dans votre compte bancaire." },
+  restreint: { pastille: "Action requise", ton: "alerte", texte: "Stripe a besoin de renseignements supplémentaires avant vos prochains versements." },
 };

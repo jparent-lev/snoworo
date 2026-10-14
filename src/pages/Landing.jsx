@@ -100,7 +100,7 @@ export default function Landing() {
             </a>
           </div>
           <p className="landing__hero-mention">
-            Pas encore lancé. On ouvre quartier par quartier : la liste d'attente décide de l'ordre.
+            Pas encore lancé. Nous ouvrons quartier par quartier : la liste d'attente détermine l'ordre.
           </p>
         </div>
 
@@ -113,21 +113,21 @@ export default function Landing() {
 
       {/* 2. Comment ça marche */}
       <section id="comment" className="landing__section">
-        <h2 className="landing__h2">Trois étapes, pas douze</h2>
-        <p className="landing__chapeau">Pas de soumission, pas de contrat de saison, pas d'attente au téléphone.</p>
+        <h2 className="landing__h2">Trois étapes simples, de la demande au travail terminé</h2>
+        <p className="landing__chapeau">Publiez votre demande, un déneigeur de quartier l'accepte, et vous confirmez le travail : simple, rapide, sans engagement.</p>
         <div className="landing__etapes-grille">
           {[
             {
-              titre: "Tu publies",
-              texte: "Ton adresse, ce qu'il y a à pelleter, les outils fournis ou non, quand tu le veux, combien tu offres. Deux minutes sur le bord de la fenêtre.",
+              titre: "Vous publiez",
+              texte: "Votre adresse, ce qu'il y a à pelleter, les outils fournis ou non, le moment souhaité et le montant offert. Deux minutes suffisent.",
             },
             {
               titre: "Le quartier reçoit l'appel",
-              texte: "Tous les déneigeurs de quartier disponibles dans ton secteur sont avertis en même temps. Le premier qui accepte, c'est le tien : pas besoin de magasiner.",
+              texte: "Tous les déneigeurs de quartier disponibles dans votre secteur sont avertis en même temps. Le premier qui accepte prend la demande : aucune comparaison à faire.",
             },
             {
               titre: "C'est pelleté, c'est payé",
-              texte: "On garde ton paiement le temps que la job se fasse, puis on le verse au déneigeur de quartier. Reçu automatique des deux bords.",
+              texte: "Nous retenons votre paiement le temps que la job soit réalisée, puis nous le versons au déneigeur de quartier. Un reçu est transmis automatiquement aux deux parties.",
             },
           ].map((etape, i) => (
             <div key={etape.titre} className="landing__etape-carte">
@@ -144,17 +144,17 @@ export default function Landing() {
         <div className="landing__bloc-paiement">
           <FloconsFiligrane />
           <div>
-            <span className="eyebrow landing__bloc-paiement-eyebrow">Ce qui te protège</span>
-            <h2 className="landing__h2 landing__h2--sur-ardoise">Tu sais avec qui tu traites, pis à quoi t'attendre</h2>
+            <span className="eyebrow landing__bloc-paiement-eyebrow">Ce qui vous protège</span>
+            <h2 className="landing__h2 landing__h2--sur-ardoise">Vous savez avec qui vous traitez et à quoi vous attendre</h2>
             <p className="landing__p landing__p--sur-ardoise">
-              Aller vite, c'est bien, mais Snowro ajoute trois affaires que le groupe Facebook du quartier
-              t'offre pas : une note publique sur chaque déneigeur de quartier, une entente écrite avant que ça
-              commence, et un paiement qui reste sécurisé jusqu'à ce que la job soit faite.
+              Aller vite, c'est bien, mais Snowro ajoute trois garanties que le groupe Facebook du quartier
+              ne vous offre pas : une note publique sur chaque déneigeur de quartier, une entente écrite avant
+              le début du travail, et un paiement qui reste sécurisé jusqu'à ce que la job soit faite.
             </p>
           </div>
           <div className="landing__bloc-paiement-cartes">
             {[
-              { icone: "note", titre: "Des déneigeurs de quartier notés", texte: "Chaque job donne lieu à une appréciation. Un travail bâclé, ça se sait, et ça ferme des portes." },
+              { icone: "note", titre: "Des déneigeurs de quartier notés", texte: "Chaque job donne lieu à une appréciation. Un travail bâclé se sait, et cela ferme des portes." },
               { icone: "entente", titre: "Une entente claire dès le départ", texte: "Prix, heure souhaitée, outils fournis ou non : tout est écrit avant que quelqu'un accepte." },
               { icone: "cadenas", titre: "Paiement sécurisé", texte: "Traité par Stripe, retenu jusqu'à ce que la job soit confirmée faite." },
             ].map((c) => (
@@ -173,10 +173,10 @@ export default function Landing() {
       {/* 3 bis. Dans le tableau de bord : aperçu (Client / Déneigeur) et éléments de confiance */}
       <section id="tableau-de-bord" className="landing__section">
         <span className="eyebrow">Une gestion simple</span>
-        <h2 className="landing__h2">Tout se passe dans ton tableau de bord</h2>
+        <h2 className="landing__h2">Tout se passe dans votre tableau de bord</h2>
         <p className="landing__chapeau">
           Un seul compte, deux modes : Client pour faire déneiger, Déneigeur pour prendre des jobs. Chaque
-          job suit les mêmes étapes, du début à la fin, sous tes yeux.
+          job suit les mêmes étapes, du début à la fin, sous vos yeux.
         </p>
         <TableauParallaxe />
       </section>
@@ -191,7 +191,7 @@ export default function Landing() {
               est confirmée. Rien d'autre : pas d'abonnement, pas de frais d'affichage, pas de frais si
               personne accepte.
             </p>
-            <p className="landing__p">Bouge le montant pour voir ce que ça donne.</p>
+            <p className="landing__p">Bougez le montant pour voir le résultat.</p>
           </div>
           <FeeCalculator />
         </div>
@@ -204,30 +204,30 @@ export default function Landing() {
             <h3 className="landing__h3-carte">« Pourquoi pas juste le groupe Facebook du quartier ? »</h3>
             <p className="landing__p-sur-lin">
               Bonne question, et honnêtement : pour un coup de pelle entre voisins qui se connaissent, le
-              groupe fait la job. Snowro sert quand tu connais personne, que c'est la veille d'une bonne
-              bordée, que tu pars tôt demain matin et que t'as pas le temps de pelleter.
+              groupe fait très bien l'affaire. Snowro est utile quand vous ne connaissez personne, que c'est la
+              veille d'une bonne bordée, que vous partez tôt demain matin et que vous n'avez pas le temps de pelleter.
             </p>
             <div className="landing__arguments">
               <span className="landing__p-sur-lin">
-                <strong>Tu attends pas après une réponse.</strong> Ta demande sonne chez tous les déneigeurs
+                <strong>Vous n'attendez pas une réponse.</strong> Votre demande est envoyée à tous les déneigeurs
                 de quartier disponibles du secteur en même temps.
               </span>
               <span className="landing__p-sur-lin">
-                <strong>Tu sais à qui tu as affaire.</strong> Une note publique, bâtie job après job, pas
-                un profil anonyme dans un fil de commentaires.
+                <strong>Vous savez à qui vous avez affaire.</strong> Une note publique, bâtie job après job,
+                plutôt qu'un profil anonyme dans un fil de commentaires.
               </span>
               <span className="landing__p-sur-lin">
                 <strong>L'entente est claire avant que ça commence.</strong> Prix, heure, outils fournis ou
-                non : écrit d'avance, pas négocié sur le perron.
+                non : écrit d'avance, sans négociation sur le perron.
               </span>
             </div>
           </div>
           <div className="landing__carte-claire">
             <h3 className="landing__h3-carte">Les villes se dessinent toutes seules</h3>
             <p className="landing__p">
-              On a pas de liste de villes desservies à te faire lire. Ta ville apparaît dans Snowro dès
-              qu'il y a du monde qui s'inscrit, et une demande est toujours montrée aux déneigeurs de quartier
-              de ta ville, jamais à quelqu'un à trois autoroutes de là.
+              Nous n'avons pas de liste de villes desservies à vous présenter. Votre ville apparaît dans Snowro
+              dès que des personnes s'y inscrivent, et une demande est toujours montrée aux déneigeurs de
+              quartier de votre ville, jamais à quelqu'un qui habite à l'autre bout de la région.
             </p>
             <CarteVilles />
             <div className="landing__jetons">
@@ -235,12 +235,12 @@ export default function Landing() {
               <span className="landing__jeton">Montréal</span>
               <span className="landing__jeton">Trois-Rivières</span>
               <a href="#liste" className="landing__jeton landing__jeton--tienne">
-                + La tienne ?
+                + La vôtre ?
               </a>
             </div>
             <p className="landing__p landing__p--legende">
-              On ouvre une ville quand il y a assez de déneigeurs de quartier dedans pour que ça vaille la
-              peine. C'est pour ça que la liste d'attente compte.
+              Nous ouvrons une ville lorsqu'elle compte assez de déneigeurs de quartier pour que le service
+              soit fiable. C'est pourquoi la liste d'attente compte.
             </p>
           </div>
         </div>
@@ -252,25 +252,25 @@ export default function Landing() {
         <ChuteDeNeige />
         <div className="landing__deux-colonnes landing__conteneur">
           <div>
-            <span className="eyebrow landing__eyebrow-sur-terre">Tu as une pelle et du temps</span>
-            <h2 className="landing__h2 landing__h2--sur-terre">Fais de l'argent avec la tempête</h2>
+            <span className="eyebrow landing__eyebrow-sur-terre">Vous avez une pelle et du temps</span>
+            <h2 className="landing__h2 landing__h2--sur-terre">Gagnez de l'argent avec la tempête</h2>
             <p className="landing__chapeau landing__chapeau--sur-terre">
-              Tu choisis les jobs qui te conviennent : chaque demande indique l'heure souhaitée, et tu acceptes
-              seulement celles qui entrent dans ta journée. Pas de quota, pas de quarts de travail, pas de
-              contrat de saison. Tu es payé dans les jours qui suivent, directement dans ton compte.
+              Vous choisissez les jobs qui vous conviennent : chaque demande indique l'heure souhaitée, et vous
+              acceptez seulement celles qui entrent dans votre journée. Vous êtes libre de votre horaire, sans
+              quota ni contrat de saison, et vous êtes payé dans les jours qui suivent, directement dans votre compte.
             </p>
             <div className="landing__profils">
               <span>
                 <Icone nom="etudiant" className="decor-icone--ocre" />
-                Étudiant qui veut arrondir ses fins de mois entre deux sessions
+                Étudiant qui souhaite arrondir ses fins de mois entre deux sessions
               </span>
               <span>
                 <Icone nom="souffleuse" className="decor-icone--ocre" />
-                Gars du coin avec une souffleuse qui dort dans le garage
+                Résident du quartier dont la souffleuse dort dans le garage
               </span>
               <span>
                 <Icone nom="camion" className="decor-icone--ocre" />
-                Un pro du déneigement qui veut remplir les trous dans sa tournée
+                Un professionnel du déneigement qui souhaite combler les temps libres de sa tournée
               </span>
             </div>
             <a
@@ -283,7 +283,7 @@ export default function Landing() {
           </div>
           <div className="landing__carte-revenus-wrap">
             <div className="landing__carte-revenus">
-              <span className="eyebrow landing__carte-revenus-eyebrow">Ta semaine, en gros</span>
+              <span className="eyebrow landing__carte-revenus-eyebrow">Votre semaine, en bref</span>
               <div className="landing__revenus-lignes">
                 <div className="landing__revenu-ligne">
                   <span>Mardi : 3 entrées</span>
@@ -299,7 +299,7 @@ export default function Landing() {
                 </div>
               </div>
               <div className="landing__revenu-total">
-                <span>Dans ton compte</span>
+                <span>Dans votre compte</span>
                 <span className="landing__revenu-total-montant">282 $</span>
               </div>
               <span className="landing__revenu-note">Exemple d'une semaine de tempête à Limoilou, frais déjà déduits.</span>
@@ -319,10 +319,10 @@ export default function Landing() {
         <div className="landing__bloc-liste">
           <CapNeige className="landing__cap-liste" />
           <div>
-            <h2 className="landing__h2 landing__h2--sur-argile">On ouvre où il y a du monde</h2>
+            <h2 className="landing__h2 landing__h2--sur-argile">Nous ouvrons là où il y a du monde</h2>
             <p className="landing__p landing__p--sur-argile-clair">
-              Laisse-nous ton courriel et ton code postal. On te fait signe quand Snowro débarque dans ton
-              coin, et ton inscription fait avancer ta ville dans la file.
+              Laissez-nous votre courriel et votre code postal. Nous vous écrirons lorsque Snowro sera offert dans
+              votre secteur, et votre inscription fera avancer votre ville dans la file.
             </p>
           </div>
           <WaitlistForm role={roleListe} onRole={setRoleListe} />
@@ -342,12 +342,12 @@ export default function Landing() {
             <span className="eyebrow landing__eyebrow-ardoise">D'où vient le nom</span>
             <h2 className="landing__h2 landing__h2--petit">Snow + snoreau</h2>
             <p className="landing__p-sur-lin">
-              Un snoreau, chez nous, c'est un petit vaurien sympathique, celui qui te joue un tour pis qui
-              vient te donner un coup de main dix minutes après. C'est pas mal l'esprit qu'on cherche.
+              Un snoreau, chez nous, c'est un petit vaurien sympathique, celui qui vous joue un tour et qui
+              vient vous donner un coup de main dix minutes après. C'est assez bien l'esprit que nous cherchons.
             </p>
             <p className="landing__p-sur-lin">
-              Snowro est parti d'une entrée bloquée à Limoilou et d'une soirée à texter du monde. On bâtit
-              ça d'ici, pour l'hiver d'ici.
+              Snowro est né d'une entrée bloquée à Limoilou et d'une soirée passée à écrire à des voisins. Nous le
+              bâtissons ici, pour l'hiver d'ici.
             </p>
           </div>
           <div className="landing__apropos-symbole">

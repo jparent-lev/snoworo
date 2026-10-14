@@ -76,7 +76,7 @@ function Formulaire({ onEnregistree, libelle }) {
 
   return (
     <div className="carte-paiement">
-      {/* Carte en premier : la plupart des gens ici paient par carte. Les
+      {/* Carte en premier : la plupart des utilisateurs paient par carte. Les
           autres moyens (BLIK, etc., surtout européens) se désactivent dans le
           tableau de bord Stripe, Paramètres > Moyens de paiement. */}
       <PaymentElement options={{ layout: "tabs", paymentMethodOrder: ["card", "apple_pay", "google_pay", "link"] }} />
@@ -84,7 +84,7 @@ function Formulaire({ onEnregistree, libelle }) {
       <button type="button" className="btn btn--ardoise" disabled={!stripe || enCours} onClick={enregistrer}>
         {enCours ? "Vérification…" : libelle}
       </button>
-      <p className="carte-paiement__aide">🔒 Carte gérée par Stripe. Snowro ne voit jamais ton numéro de carte.</p>
+      <p className="carte-paiement__aide">🔒 Carte gérée par Stripe. Snowro ne voit jamais votre numéro de carte.</p>
     </div>
   );
 }

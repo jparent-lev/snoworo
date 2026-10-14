@@ -115,7 +115,7 @@ async function lireDemande(tx, demandeId, { uid, role, statuts }) {
   if (!snap.exists) throw new HttpsError("not-found", "Demande introuvable.");
   const demande = snap.data();
   const champ = role === "client" ? "donneurOuvrageId" : "deneigeurId";
-  if (demande[champ] !== uid) throw new HttpsError("permission-denied", "Cette demande n'est pas la tienne.");
+  if (demande[champ] !== uid) throw new HttpsError("permission-denied", "Cette demande ne vous appartient pas.");
   if (!statuts.includes(demande.statut)) {
     throw new HttpsError("failed-precondition", `Action impossible au statut « ${demande.statut} ».`);
   }
@@ -139,7 +139,7 @@ export const publierDemande = onCall({ region: REGION, secrets: [GEOCODING_API_K
   const description = texte(d.description, { max: 600, nom: "Description" });
   if (!TYPES_SERVICE.has(d.typeService)) throw new HttpsError("invalid-argument", "Type de service invalide.");
   if (d.typeService === "autre" && !description) {
-    throw new HttpsError("invalid-argument", "Décris ce qu'il y a à déneiger.");
+    throw new HttpsError("invalid-argument", "Décrivez ce qu'il y a à déneiger.");
   }
   const montant = validerMontant(d.montant);
   const echeance = new Date(d.dateHeureSouhaitee);
@@ -202,7 +202,7 @@ export const publierDemande = onCall({ region: REGION, secrets: [GEOCODING_API_K
     saisie: placeId ? "suggestion" : "texte",
     geohash: lieu.geohash,
   });
-  // Publier une demande fait de toi un client, si ce n'était pas déjà le cas.
+  // Publier une demande fait de vous un client, si ce n'était pas déjà le cas.
   batch.set(db.doc(`users/${uid}`), { role: FieldValue.arrayUnion("donneur_ouvrage") }, { merge: true });
   await batch.commit();
 
@@ -229,15 +229,15 @@ export const accepterDemande = onCall({ region: REGION, secrets: [STRIPE_SECRET_
     const profil = userSnap.data() ?? {};
 
     if (demande.statut !== "ouverte") throw new HttpsError("already-exists", "deja-prise");
-    if (demande.donneurOuvrageId === uid) throw new HttpsError("permission-denied", "C'est ta propre demande.");
+    if (demande.donneurOuvrageId === uid) throw new HttpsError("permission-denied", "Il s'agit de votre propre demande.");
     if (!(profil.role ?? []).includes("deneigeur_x")) {
-      throw new HttpsError("permission-denied", "Active le mode déneigeur dans tes paramètres.");
+      throw new HttpsError("permission-denied", "Activez le mode déneigeur dans vos paramètres.");
     }
     if (!profil.villeGeoId || profil.villeGeoId !== demande.villeGeoId) {
-      throw new HttpsError("permission-denied", "Cette demande est hors de ta ville de service.");
+      throw new HttpsError("permission-denied", "Cette demande est hors de votre ville de service.");
     }
     if (reel && profil.connectStatus !== "actif") {
-      throw new HttpsError("failed-precondition", "Configure ton compte de paiement avant d'accepter des jobs.");
+      throw new HttpsError("failed-precondition", "Configurez votre compte de paiement avant d'accepter des jobs.");
     }
 
     tx.update(ref, {
@@ -399,7 +399,7 @@ export const evaluerJob = onCall({ region: REGION }, async (request) => {
   const evaluation = validerEvaluation(request.data);
   return db.runTransaction(async (tx) => {
     const { ref, demande } = await lireDemande(tx, request.data?.demandeId, { uid, role: "client", statuts: ["completee"] });
-    if (demande.evaluee) throw new HttpsError("already-exists", "Tu as déjà évalué cette job.");
+    if (demande.evaluee) throw new HttpsError("already-exists", "Vous avez déjà évalué cette job.");
     if (Date.now() - (demande.confirmeeAt?.toMillis() ?? 0) > EVALUATION_DELAI_MS) {
       throw new HttpsError("failed-precondition", "Le délai pour évaluer cette job est passé.");
     }
@@ -473,7 +473,7 @@ export const signalerProbleme = onCall({ region: REGION }, async (request) => {
     if (!snap.exists) throw new HttpsError("not-found", "Demande introuvable.");
     const demande = snap.data();
     const par = demande.donneurOuvrageId === uid ? "client" : demande.deneigeurId === uid ? "deneigeur" : null;
-    if (!par) throw new HttpsError("permission-denied", "Cette demande n'est pas la tienne.");
+    if (!par) throw new HttpsError("permission-denied", "Cette demande ne vous appartient pas.");
     if (!["matchee", "faite"].includes(demande.statut)) {
       throw new HttpsError("failed-precondition", `Action impossible au statut « ${demande.statut} ».`);
     }

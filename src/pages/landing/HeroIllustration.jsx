@@ -5,7 +5,7 @@ import "./HeroIllustration.css";
 // triplex de Limoilou pendant que son téléphone raconte la même job. Une seule
 // boucle de 8 s (--hero-cycle) pilote la scène ET les écrans du téléphone, pour
 // que les deux restent raccord :
-//   0 à 33 %   demande reçue, puis acceptée (le bouton passe à « C'est à toi »)
+//   0 à 33 %   demande reçue, puis acceptée (le bouton passe à « C'est à vous »)
 //   34 à 63 %  pelletage : quatre coups de pelle, l'amas fond, barre de progression
 //   64 à 80 %  paiement versé : bulle $ au-dessus du personnage
 //   81 à 97 %  appréciation 5 étoiles, étincelles au-dessus de l'immeuble
@@ -213,7 +213,7 @@ export default function HeroIllustration() {
               </div>
               <div className="hero-illu__boutons">
                 <span className="landing__hero-phone-bouton hero-illu__bouton hero-illu__bouton--prendre">Je prends la job</span>
-                <span className="landing__hero-phone-bouton hero-illu__bouton hero-illu__bouton--prise">C'est à toi ✓</span>
+                <span className="landing__hero-phone-bouton hero-illu__bouton hero-illu__bouton--prise">C'est à vous ✓</span>
               </div>
             </div>
 
@@ -235,7 +235,7 @@ export default function HeroIllustration() {
               <div className="landing__hero-phone-carte hero-illu__carte-centree">
                 <span className="hero-illu__pastille">✓</span>
                 <span className="landing__hero-phone-prix">39,40 $</span>
-                <span className="landing__hero-phone-desc">versé dans ton compte</span>
+                <span className="landing__hero-phone-desc">versé dans votre compte</span>
                 <span className="landing__hero-phone-par">45 $ moins les frais Snowro (5,60 $)</span>
               </div>
             </div>
@@ -249,7 +249,7 @@ export default function HeroIllustration() {
                     <Etoile key={i} x={11 + i * 22} y={10.5} />
                   ))}
                 </svg>
-                <span className="landing__hero-phone-desc">Mireille t'a donné 5 étoiles.</span>
+                <span className="landing__hero-phone-desc">Mireille vous a donné 5 étoiles.</span>
               </div>
             </div>
           </div>

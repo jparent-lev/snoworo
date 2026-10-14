@@ -97,7 +97,7 @@ async function connexion(cle, largeur = 1280) {
 {
   const { p, ctx } = await connexion("marc");
   await test("Marc : tableau déneigeur, sans bascule (un seul rôle)", async () => {
-    await p.getByRole("heading", { name: "Demandes près de toi" }).waitFor();
+    await p.getByRole("heading", { name: "Demandes près de chez vous" }).waitFor();
     assert.equal(await p.locator(".layout__bascule").count(), 0);
   });
   await test("Marc : 4 demandes de Québec, jamais celle de Lévis, triées par distance", async () => {
@@ -150,8 +150,8 @@ async function connexion(cle, largeur = 1280) {
   await test("Marc : écrit à Paul depuis la job ; le message s'affiche et la demande note le dernier message", async () => {
     await p.locator(".carte-job", { hasText: "1234, 3e Avenue" }).getByRole("button", { name: "Écrire à Paul" }).click();
     const dlg = p.getByRole("dialog", { name: "Conversation avec Paul" });
-    await dlg.getByText("Pas encore de message").waitFor();
-    await dlg.getByRole("textbox").fill("J'arrive vers 7 h 30. La neige à gauche de l'entrée, ça te va ?");
+    await dlg.getByText("Aucun message pour l'instant").waitFor();
+    await dlg.getByRole("textbox").fill("J'arrive vers 7 h 30. La neige à gauche de l'entrée, est-ce que ça vous convient ?");
     await dlg.getByRole("textbox").press("Enter");
     await dlg.locator(".bulle--moi", { hasText: "J'arrive vers 7 h 30" }).waitFor();
     assert.equal(await dlg.getByRole("textbox").inputValue(), "");
@@ -323,7 +323,7 @@ async function connexion(cle, largeur = 1280) {
     await p.getByRole("option", { name: /155 Rue des Saules Est/ }).waitFor();
     await p.getByRole("combobox").press("Escape");
     await p.getByRole("button", { name: "Utiliser cette adresse" }).click();
-    await p.getByText("Choisis ton adresse dans la liste de suggestions.").waitFor();
+    await p.getByText("Choisissez votre adresse dans la liste des suggestions.").waitFor();
     assert.equal(appels.length, 1);
   });
   await ctx.close();
@@ -337,7 +337,7 @@ async function connexion(cle, largeur = 1280) {
   pageCourante = p;
   await test("accueil : aucune mention de Snowro Pro (menu, section, liste d'attente, FAQ, pied de page)", async () => {
     await p.goto("http://localhost:4190/");
-    await p.getByRole("heading", { name: "On ouvre où il y a du monde" }).waitFor();
+    await p.getByRole("heading", { name: "Nous ouvrons là où il y a du monde" }).waitFor();
     assert.equal(await p.locator("#pro").count(), 0);
     assert.equal(await p.getByRole("link", { name: "Être averti pour Pro" }).count(), 0);
     assert.equal(await p.getByRole("radio", { name: "Entreprise (Pro)" }).count(), 0);
@@ -356,7 +356,7 @@ async function connexion(cle, largeur = 1280) {
   pageCourante = p;
   await test("inscription : 18 ans et liens vers les conditions et la politique de confidentialité", async () => {
     await p.goto("http://localhost:4190/inscription");
-    await p.getByText("tu confirmes avoir 18 ans ou plus").waitFor();
+    await p.getByText("vous confirmez avoir 18 ans ou plus").waitFor();
     assert.equal(await p.getByRole("link", { name: "politique de confidentialité" }).getAttribute("href"), "/confidentialite");
     assert.equal(await p.getByRole("link", { name: "conditions d'utilisation" }).getAttribute("href"), "/conditions");
   });
@@ -367,7 +367,7 @@ async function connexion(cle, largeur = 1280) {
   await test("Zoé : ferme son compte depuis Paramètres (confirmation FERMER), compte de connexion supprimé", async () => {
     await p.goto("http://localhost:4190/parametres");
     await p.getByRole("button", { name: "Fermer mon compte" }).click();
-    const dlg = p.getByRole("dialog", { name: "Fermer ton compte ?" });
+    const dlg = p.getByRole("dialog", { name: "Fermer votre compte ?" });
     const confirmer = dlg.getByRole("button", { name: "Fermer définitivement" });
     assert.equal(await confirmer.isDisabled(), true);
     await dlg.getByRole("textbox").fill("fermer");

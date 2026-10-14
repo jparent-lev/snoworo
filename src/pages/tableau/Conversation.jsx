@@ -62,7 +62,7 @@ export default function Conversation({ demande, autrePrenom, onFermer }) {
       await envoyerMessage(demande.id, user.uid, contenu);
     } catch {
       setTexte(contenu);
-      setErreur("Le message n'est pas parti. Réessaie dans un instant.");
+      setErreur("Le message n'est pas parti. Veuillez réessayer dans un instant.");
     } finally {
       setEnCours(false);
     }
@@ -77,8 +77,8 @@ export default function Conversation({ demande, autrePrenom, onFermer }) {
         )}
         {messages && messages.length === 0 && !demande.messagesEffaces && (
           <p className="conversation__vide">
-            Pas encore de message. Une question sur l'accès, l'endroit où mettre la neige, l'heure d'arrivée ?
-            C'est ici.
+            Aucun message pour l'instant. Une question sur l'accès, l'endroit où déposer la neige ou l'heure
+            d'arrivée ? Vous pouvez l'écrire ici.
           </p>
         )}
         {messages?.map((m) => {
@@ -86,7 +86,7 @@ export default function Conversation({ demande, autrePrenom, onFermer }) {
           const date = m.createdAt?.toDate?.();
           return (
             <div key={m.id} className={`bulle ${moi ? "bulle--moi" : ""}`}>
-              <span className="sr-only">{moi ? "Toi" : autrePrenom} : </span>
+              <span className="sr-only">{moi ? "Vous" : autrePrenom} : </span>
               <span className="bulle__texte">{m.contenu}</span>
               <span className="bulle__heure">{quand(date)}</span>
             </div>
@@ -121,7 +121,7 @@ export default function Conversation({ demande, autrePrenom, onFermer }) {
         </p>
       )}
       <p className="conversation__rappel">
-        Pour ta sécurité, garde les échanges et les paiements dans Snowro. {autrePrenom} reçoit un avis par courriel.
+        Pour votre sécurité, gardez les échanges et les paiements dans Snowro. {autrePrenom} reçoit un avis par courriel.
       </p>
     </Modale>
   );

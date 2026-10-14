@@ -93,8 +93,8 @@ export default function TableauDeneigeur({ conversation, onConversationFermee })
     <div className="tableau">
       <div className="tableau__salut">
         <div>
-          <h1>Salut{prenom ? ` ${prenom}` : ""}</h1>
-          <p>{profile?.ville ? `Tu déneiges à ${profile.ville}` : "Ajoute ton adresse de service pour voir les demandes"}</p>
+          <h1>Bonjour{prenom ? ` ${prenom}` : ""}</h1>
+          <p>{profile?.ville ? `Vous déneigez à ${profile.ville}` : "Ajoutez votre adresse de service pour voir les demandes"}</p>
         </div>
       </div>
       {!PAIEMENT_REEL && (
@@ -107,8 +107,8 @@ export default function TableauDeneigeur({ conversation, onConversationFermee })
             <h3>{villeGeoId ? "Une étape avant d'accepter des jobs" : "Une étape avant de voir les demandes"}</h3>
             <p className="carte-job__meta" style={{ marginTop: 4 }}>
               {villeGeoId
-                ? "Ton compte de versement Stripe reçoit l'argent de tes jobs. Ça se fait une seule fois."
-                : "Ton adresse de service détermine ta ville : tu ne vois jamais de demandes ailleurs."}
+                ? "Votre compte de versement Stripe reçoit l'argent de vos jobs. Cette étape ne se fait qu'une seule fois."
+                : "Votre adresse de service détermine votre ville : vous ne voyez jamais de demandes ailleurs."}
             </p>
             <div className="bandeau__etapes">
               <span className="bandeau__ok">✓ Profil</span>
@@ -142,7 +142,7 @@ export default function TableauDeneigeur({ conversation, onConversationFermee })
           </div>
         </div>
         <div className="chiffre">
-          <span className="eyebrow">Ta note</span>
+          <span className="eyebrow">Votre note</span>
           <div className="chiffre__valeur">
             {nbJobs > 0 && profile?.ratingAvg ? (
               <>
@@ -165,7 +165,7 @@ export default function TableauDeneigeur({ conversation, onConversationFermee })
           filtres={filtresJobs}
           filtreActif={filtreJobs}
           onFiltre={setFiltreJobs}
-          vide={listeJobs.length ? "Rien dans cette catégorie pour l'instant." : "Tes jobs acceptées apparaîtront ici."}
+          vide={listeJobs.length ? "Rien dans cette catégorie pour l'instant." : "Vos jobs acceptées apparaîtront ici."}
           pied={`${jobsAffichees.length} affichée${jobsAffichees.length > 1 ? "s" : ""}, triées par heure`}
         >
           {jobsAffichees.map((j) => (
@@ -182,7 +182,7 @@ export default function TableauDeneigeur({ conversation, onConversationFermee })
 
       {villeGeoId && (
         <Rangee
-          titre="Demandes près de toi"
+          titre="Demandes près de chez vous"
           compte={demandes.length}
           filtres={FILTRES_DEMANDES}
           filtreActif={filtreDemandes}
@@ -255,21 +255,21 @@ function CarteJob({ job: j, nouveau, conversationOuverte, onConversationFermee }
 
       <div className="carte-job__ligne">
         <span className="carte-job__prix">{net != null ? formatArgent(net) : ""}</span>
-        <span className="carte-job__meta">pour toi ({formatArgent(j.remunerationOfferte)} moins les frais)</span>
+        <span className="carte-job__meta">pour vous ({formatArgent(j.remunerationOfferte)} moins les frais)</span>
       </div>
 
       {j.statut === "faite" && (
         <p className="carte-job__note">
           {j.donneurPrenom} a jusqu'à <b>{j.confirmationAutoAt ? heure(j.confirmationAutoAt.toDate()) : "…"}</b> pour confirmer ou
-          signaler un problème. Sans réponse, c'est confirmé tout seul et ton versement part.
+          signaler un problème. Sans réponse, la job est confirmée automatiquement et votre versement est effectué.
         </p>
       )}
       {j.statut === "signalee" && (
-        <p className="carte-job__note">Un problème a été signalé. On regarde ça et on vous revient par courriel, toi et le client.</p>
+        <p className="carte-job__note">Un problème a été signalé. Nous examinons la situation et nous vous répondrons par courriel, à vous et au client.</p>
       )}
       {j.statut === "completee" && (
         <p className="carte-job__note">
-          {j.confirmationAuto ? "Confirmée automatiquement." : `Confirmée par ${j.donneurPrenom}.`} Versement en route vers ton compte.
+          {j.confirmationAuto ? "Confirmée automatiquement." : `Confirmée par ${j.donneurPrenom}.`} Versement en route vers votre compte.
         </p>
       )}
       {j.statut === "completee" && j.evaluee && <EvaluationRecue demandeId={j.id} prenom={j.donneurPrenom} />}
@@ -338,9 +338,9 @@ function ModaleFaite({ job: j, net, onConfirmer, onFermer }) {
   return (
     <Modale titre="La job est terminée ?" onFermer={onFermer}>
       <p>
-        Avant de partir, prends <b>au moins une photo</b> du travail terminé (jusqu'à {PHOTOS_MAX}) : l'entrée, le
+        Avant de partir, prenez <b>au moins une photo</b> du travail terminé (jusqu'à {PHOTOS_MAX}) : l'entrée, le
         balcon, le stationnement. {j.donneurPrenom} la voit tout de suite et a 12 heures pour confirmer ou signaler un
-        problème. Sans réponse, c'est confirmé tout seul et ton versement de {formatArgent(net ?? 0)} part.
+        problème. Sans réponse, la job est confirmée automatiquement et votre versement de {formatArgent(net ?? 0)} part.
       </p>
       <div className="photos-faite">
         {photos.map((photo, i) => (
@@ -446,14 +446,14 @@ function CarteDemandeOuverte({ demande: d, frais, compteActif }) {
       {d.outilsFournis && <span className="carte-job__etiquette" style={{ alignSelf: "flex-start" }}>Outils fournis sur place</span>}
       <div className="carte-job__ligne">
         <span className="carte-job__prix">{formatArgent(d.remunerationOfferte)}</span>
-        <span className="carte-job__meta">{formatArgent(net)} pour toi</span>
+        <span className="carte-job__meta">{formatArgent(net)} pour vous</span>
       </div>
       {erreur && <p className="message-erreur" role="alert">{erreur}</p>}
       <button
         type="button"
         className="btn btn--principal btn--petit"
         disabled={etat === "envoi" || etat === "prise" || !compteActif}
-        title={compteActif ? undefined : "Configure ton compte de versement dans tes paramètres"}
+        title={compteActif ? undefined : "Configurez votre compte de versement dans vos paramètres"}
         onClick={() => setEngagement(true)}
       >
         {etat === "envoi"
@@ -466,7 +466,7 @@ function CarteDemandeOuverte({ demande: d, frais, compteActif }) {
       </button>
 
       {engagement && (
-        <Modale titre="Tu prends cette job ?" onFermer={() => setEngagement(false)}>
+        <Modale titre="Prenez-vous cette job ?" onFermer={() => setEngagement(false)}>
           <div className="modale__resume">
             <b>{d.titre}</b>
             <span className="carte-job__meta">
@@ -474,14 +474,14 @@ function CarteDemandeOuverte({ demande: d, frais, compteActif }) {
               {echeance(d.dateHeureSouhaitee)}
             </span>
             <span>
-              <b>{formatArgent(net)}</b> pour toi
+              <b>{formatArgent(net)}</b> pour vous
             </span>
           </div>
           <p className="modale__engagement">
-            Tu t'engages à faire cette job {echeance(d.dateHeureSouhaitee).toLowerCase()}. Une fois acceptée, pas
-            d'annulation possible : {d.donneurPrenom} compte sur toi.
+            Vous vous engagez à faire cette job {echeance(d.dateHeureSouhaitee).toLowerCase()}. Une fois acceptée, pas
+            d'annulation possible : {d.donneurPrenom} compte sur vous.
           </p>
-          <p>L'adresse exacte s'affiche dans « Mes jobs » dès que tu acceptes.</p>
+          <p>L'adresse exacte s'affiche dans « Mes jobs » dès que vous acceptez.</p>
           <div className="modale__actions">
             <button type="button" className="btn btn--fantome" onClick={() => setEngagement(false)}>
               Pas maintenant

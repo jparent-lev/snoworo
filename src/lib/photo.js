@@ -22,7 +22,7 @@ function chargerImage(fichier) {
 }
 
 export async function preparerPhoto(fichier) {
-  if (!fichier.type.startsWith("image/")) throw new Error("Choisis une photo.");
+  if (!fichier.type.startsWith("image/")) throw new Error("Choisissez une photo.");
   const img = await chargerImage(fichier);
   let cote = COTE_MAX;
   for (let essai = 0; essai < 6; essai++) {
@@ -35,5 +35,5 @@ export async function preparerPhoto(fichier) {
     if (donnees.length <= CARACTERES_MAX) return donnees;
     if (essai >= 2) cote = Math.round(cote * 0.75);
   }
-  throw new Error("Photo trop lourde, même réduite. Essaie-en une autre.");
+  throw new Error("Photo trop lourde, même réduite. Essayez-en une autre.");
 }

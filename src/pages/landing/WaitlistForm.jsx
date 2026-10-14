@@ -51,8 +51,8 @@ export default function WaitlistForm({ role: roleControle, onRole }) {
     } catch {
       setErreur(
         pro
-          ? "Quelque chose a bloqué. Vérifie le nom de l'entreprise, le courriel et le code postal, puis réessaie."
-          : "Quelque chose a bloqué. Vérifie ton courriel et ton code postal, puis réessaie.",
+          ? "Quelque chose a bloqué. Vérifiez le nom de l'entreprise, le courriel et le code postal, puis réessayez."
+          : "Quelque chose a bloqué. Vérifiez votre courriel et votre code postal, puis réessayez.",
       );
     } finally {
       setEnCours(false);
@@ -64,7 +64,7 @@ export default function WaitlistForm({ role: roleControle, onRole }) {
       <div className="waitlist-form waitlist-form--succes">
         <span className="waitlist-form__succes-titre">C'est noté, merci !</span>
         <span className="waitlist-form__succes-texte">
-          Ton entreprise est sur la liste Snowro Pro. On t'écrit dès que les détails de l'offre sont prêts.
+          Votre entreprise est sur la liste Snowro Pro. Nous vous écrirons dès que les détails de l'offre sont prêts.
         </span>
       </div>
     );
@@ -75,7 +75,7 @@ export default function WaitlistForm({ role: roleControle, onRole }) {
       <div className="waitlist-form waitlist-form--succes">
         <span className="waitlist-form__succes-titre">C'est noté, merci !</span>
         <span className="waitlist-form__succes-texte">
-          On t'écrit dès qu'on ouvre dans ton secteur. Pas de spam, promis : juste ça.
+          Nous vous écrirons dès l'ouverture dans votre secteur. Aucun pourriel : uniquement cette communication.
         </span>
         <PartageListe role={role} ville={inscription.ville} />
       </div>
@@ -124,7 +124,7 @@ export default function WaitlistForm({ role: roleControle, onRole }) {
         <input
           type="email"
           required
-          placeholder="ton@courriel.com"
+          placeholder="votre@courriel.com"
           value={courriel}
           onChange={(e) => setCourriel(e.target.value)}
           className="waitlist-form__input"
@@ -132,11 +132,11 @@ export default function WaitlistForm({ role: roleControle, onRole }) {
       </label>
 
       <label className="waitlist-form__label">
-        <span className="sr-only">{pro ? "Code postal de ton secteur principal" : "Code postal"}</span>
+        <span className="sr-only">{pro ? "Code postal de votre secteur principal" : "Code postal"}</span>
         <input
           type="text"
           required
-          placeholder={pro ? "Code postal de ton secteur principal" : "Code postal (ex. G1L 2M4)"}
+          placeholder={pro ? "Code postal de votre secteur principal" : "Code postal (ex. G1L 2M4)"}
           value={codePostal}
           onChange={(e) => setCodePostal(e.target.value)}
           className="waitlist-form__input"
@@ -165,8 +165,8 @@ export default function WaitlistForm({ role: roleControle, onRole }) {
       </button>
       <p className="waitlist-form__mention">
         {pro
-          ? "On demande ton secteur pour te présenter les données de ta région en premier."
-          : "On demande ton code postal juste pour savoir quelle ville ouvrir en premier."}{" "}
+          ? "Nous demandons votre secteur pour vous présenter en premier les données de votre région."
+          : "Nous demandons votre code postal uniquement pour savoir quelle ville ouvrir en premier."}{" "}
         Détails dans la{" "}
         <Link to="/confidentialite">politique de confidentialité</Link>.
       </p>

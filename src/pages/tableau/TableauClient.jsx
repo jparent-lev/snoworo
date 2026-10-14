@@ -50,15 +50,15 @@ export default function TableauClient({ conversation, onConversationFermee }) {
     <div className="tableau">
       <div className="tableau__salut">
         <div>
-          <h1>Salut{prenom ? ` ${prenom}` : ""}</h1>
-          <p>Tes demandes de déneigement</p>
+          <h1>Bonjour{prenom ? ` ${prenom}` : ""}</h1>
+          <p>Vos demandes de déneigement</p>
         </div>
         <Link to="/publier" className="btn btn--principal">
           + Publier une demande
         </Link>
       </div>
       {!PAIEMENT_REEL && (
-        <p className="tableau__simulation">Période de test : aucun paiement réel n'est fait pour l'instant.</p>
+        <p className="tableau__simulation">Période de test : aucun paiement réel n'est effectué pour l'instant.</p>
       )}
 
       {demandes && (
@@ -70,7 +70,7 @@ export default function TableauClient({ conversation, onConversationFermee }) {
           onFiltre={setFiltre}
           vide={
             enCours.length === 0
-              ? "Aucune demande en cours. Publie-en une : les déneigeurs de quartier de ta ville sont avertis tout de suite."
+              ? "Aucune demande en cours. Publiez-en une : les déneigeurs de quartier de votre ville en sont avisés immédiatement."
               : "Rien dans cette catégorie pour l'instant."
           }
         >
@@ -201,8 +201,8 @@ function CarteDemandeClient({ demande: d, nouveau, conversationOuverte, onConver
 
       {d.statut === "ouverte" && (
         <p className="carte-job__note">
-          Visible par les déneigeurs de quartier de <b>{d.ville}</b>. Personne encore ? Une offre un peu plus haute
-          part souvent plus vite.
+          Visible par les déneigeurs de quartier de <b>{d.ville}</b>. Personne encore ? Une offre un peu plus élevée
+          trouve souvent preneur plus rapidement.
         </p>
       )}
       {d.statut === "matchee" && (
@@ -210,17 +210,17 @@ function CarteDemandeClient({ demande: d, nouveau, conversationOuverte, onConver
       )}
       {d.statut === "faite" && (
         <p className="carte-job__note">
-          Confirmée automatiquement dans <b>{dureeRestante(d.confirmationAutoAt)}</b> si tu ne fais rien. Le paiement de{" "}
+          Confirmée automatiquement dans <b>{dureeRestante(d.confirmationAutoAt)}</b> si vous n'intervenez pas. Le paiement de{" "}
           <b>{formatArgent(d.remunerationOfferte)}</b> sera alors versé à {d.deneigeurPrenom}.
         </p>
       )}
       {d.statut === "signalee" && (
-        <p className="carte-job__note">On regarde ça et on te revient par courriel. Aucun versement ne part d'ici là.</p>
+        <p className="carte-job__note">Nous examinons la situation et nous vous répondrons par courriel. Aucun versement n'est effectué d'ici là.</p>
       )}
       {d.statut === "paiement_refuse" && (
         <p className="carte-job__note">
-          Un déneigeur de quartier voulait la prendre, mais ta carte a été refusée. Ta demande est en pause :
-          mets ta carte à jour et elle redevient visible tout de suite.
+          Un déneigeur de quartier voulait la prendre, mais votre carte a été refusée. Votre demande est en pause :
+          mettez votre carte à jour et elle redeviendra visible immédiatement.
         </p>
       )}
       {erreur && <p className="message-erreur" role="alert">{erreur}</p>}
@@ -273,7 +273,7 @@ function CarteDemandeClient({ demande: d, nouveau, conversationOuverte, onConver
       )}
       {modale === "annuler" && (
         <Modale titre="Annuler cette demande ?" onFermer={() => setModale(null)}>
-          <p>Personne ne l'a encore prise : tu peux l'annuler sans frais. Elle disparaît de la liste des déneigeurs.</p>
+          <p>Personne ne l'a encore prise : vous pouvez l'annuler sans frais. Elle disparaît de la liste des déneigeurs.</p>
           <div className="modale__actions">
             <button type="button" className="btn btn--fantome" onClick={() => setModale(null)}>
               La garder
@@ -295,7 +295,7 @@ function CarteDemandeClient({ demande: d, nouveau, conversationOuverte, onConver
       {modale === "photo" && <ModalePhoto demande={d} onFermer={() => setModale(null)} />}
       {modale === "carte" && (
         <Modale titre="Mettre ma carte à jour" onFermer={() => setModale(null)} fermer>
-          <p>Ta demande redevient visible dès que la nouvelle carte est enregistrée. Rien n'est prélevé maintenant.</p>
+          <p>Votre demande redevient visible dès que la nouvelle carte est enregistrée. Rien n'est prélevé maintenant.</p>
           <CarteDePaiement
             libelle="Enregistrer et relancer ma demande"
             onEnregistree={() => {
@@ -308,7 +308,7 @@ function CarteDemandeClient({ demande: d, nouveau, conversationOuverte, onConver
       {modale === "confirmer" && (
         <ModaleEvaluation
           titre="Confirmer la job ?"
-          intro={`Le paiement de ${formatArgent(d.remunerationOfferte)} sera versé à ${d.deneigeurPrenom}. Si quelque chose cloche, signale plutôt un problème.`}
+          intro={`Le paiement de ${formatArgent(d.remunerationOfferte)} sera versé à ${d.deneigeurPrenom}. Si quelque chose ne va pas, signalez plutôt un problème.`}
           prenom={d.deneigeurPrenom}
           libelleEnvoyer="Confirmer"
           onEnvoyer={({ note, commentaire }) =>
@@ -351,7 +351,7 @@ function ModaleAugmenter({ demande, onFermer }) {
 
   return (
     <Modale titre="Augmenter l'offre" onFermer={onFermer}>
-      <p>Offre actuelle : {formatArgent(demande.remunerationOfferte)}. La nouvelle offre est montrée tout de suite aux déneigeurs.</p>
+      <p>Offre actuelle : {formatArgent(demande.remunerationOfferte)}. La nouvelle offre est présentée immédiatement aux déneigeurs.</p>
       <form onSubmit={envoyer} style={{ display: "flex", flexDirection: "column", gap: 12 }}>
         <label>
           Nouvelle offre ($)

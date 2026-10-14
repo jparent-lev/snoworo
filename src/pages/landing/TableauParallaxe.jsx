@@ -2,7 +2,7 @@ import { useEffect, useRef } from "react";
 import { Icone } from "./Decors";
 import "./TableauParallaxe.css";
 
-// Section « Tout se passe dans ton tableau de bord » : une scène par élément de
+// Section « Tout se passe dans votre tableau de bord » : une scène par élément de
 // confiance, chacune avec son visuel. Au défilement, le visuel et le texte se
 // déplacent à des vitesses différentes (parallaxe) : la variable --p va de -1
 // (scène sous l'écran) à 1 (scène au-dessus). Sans mouvement si l'utilisateur
@@ -71,7 +71,7 @@ function VisuelAdresse() {
       <div className="parallaxe__vue">
         <span className="parallaxe__vue-etiquette">Ce que les autres voient</span>
         <b>Vieux-Limoilou</b>
-        <span className="parallaxe__meta">à 1,4 km de toi</span>
+        <span className="parallaxe__meta">à 1,4 km de vous</span>
       </div>
       <div className="parallaxe__vue parallaxe__vue--accepte">
         <span className="parallaxe__vue-etiquette">Seulement après avoir accepté</span>
@@ -127,32 +127,32 @@ const SCENES = [
     icone: "photo",
     titre: "Des photos avant de partir",
     texte:
-      "Le déneigeur prend de 1 à 3 photos du travail fini, sur place, avant de marquer la job faite. Tu les vois tout de suite.",
+      "Le déneigeur prend de 1 à 3 photos du travail fini, sur place, avant de marquer la job faite. Vous les voyez tout de suite.",
     Visuel: VisuelPhotos,
   },
   {
     icone: "message",
     titre: "Une messagerie privée",
     texte:
-      "Dès que la job est acceptée, vous vous écrivez dans Snowro. Pas besoin d'échanger vos numéros de téléphone.",
+      "Dès que la job est acceptée, vous vous écrivez dans Snowro. Inutile d'échanger vos numéros de téléphone.",
     Visuel: VisuelMessagerie,
   },
   {
     icone: "epingle",
-    titre: "Ton adresse protégée",
+    titre: "Votre adresse protégée",
     texte: "Seul le déneigeur qui accepte voit l'adresse exacte. Les autres voient le quartier et la distance.",
     Visuel: VisuelAdresse,
   },
   {
     icone: "horloge",
     titre: "12 heures pour vérifier",
-    texte: "Tu confirmes ou tu signales un problème. Le paiement part au déneigeur seulement après.",
+    texte: "Vous confirmez ou signalez un problème. Le paiement part au déneigeur seulement après.",
     Visuel: VisuelVerification,
   },
   {
     icone: "engagement",
     titre: "Une job acceptée ne s'annule pas",
-    texte: "Personne ne laisse tomber ta job pour une plus payante : accepter, c'est s'engager.",
+    texte: "Personne ne laisse tomber votre job pour une plus payante : accepter, c'est s'engager.",
     Visuel: VisuelEngagement,
   },
 ];

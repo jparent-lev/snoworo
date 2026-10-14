@@ -41,7 +41,7 @@ export default function NousEcrire() {
       });
       setEnvoye(true);
     } catch {
-      setErreur("Ton message n'est pas parti. Vérifie ton courriel et réessaie dans quelques minutes.");
+      setErreur("Votre message n'a pas été envoyé. Vérifiez votre courriel et réessayez dans quelques minutes.");
     } finally {
       setEnCours(false);
     }
@@ -50,19 +50,19 @@ export default function NousEcrire() {
   return (
     <PageLegale surtitre="Contact" titre="Nous écrire">
       <p>
-        Une question, une idée, un problème avec une job ? Écris-nous : on répond habituellement en un ou deux
+        Une question, une idée, un problème avec une job ? Écrivez-nous : nous répondons habituellement en un ou deux
         jours ouvrables.
       </p>
 
       {envoye ? (
         <div className="nous-ecrire nous-ecrire--succes" role="status">
           <span className="nous-ecrire__succes-titre">Message reçu, merci !</span>
-          <span className="nous-ecrire__succes-texte">On te répond à {courriel.trim()} dès qu'on peut.</span>
+          <span className="nous-ecrire__succes-texte">Nous vous répondrons à {courriel.trim()} dès que possible.</span>
         </div>
       ) : (
         <form className="nous-ecrire" onSubmit={onSubmit}>
           <label className="nous-ecrire__champ">
-            <span className="eyebrow nous-ecrire__libelle">Ton nom (optionnel)</span>
+            <span className="eyebrow nous-ecrire__libelle">Votre nom (facultatif)</span>
             <input
               type="text"
               autoComplete="name"
@@ -74,12 +74,12 @@ export default function NousEcrire() {
           </label>
 
           <label className="nous-ecrire__champ">
-            <span className="eyebrow nous-ecrire__libelle">Ton courriel</span>
+            <span className="eyebrow nous-ecrire__libelle">Votre courriel</span>
             <input
               type="email"
               required
               autoComplete="email"
-              placeholder="ton@courriel.com"
+              placeholder="votre@courriel.com"
               value={courriel}
               onChange={(e) => setCourriel(e.target.value)}
               className="nous-ecrire__input"
@@ -98,7 +98,7 @@ export default function NousEcrire() {
           </label>
 
           <label className="nous-ecrire__champ">
-            <span className="eyebrow nous-ecrire__libelle">Ton message</span>
+            <span className="eyebrow nous-ecrire__libelle">Votre message</span>
             <textarea
               required
               rows={6}
@@ -128,7 +128,7 @@ export default function NousEcrire() {
             {enCours ? "Envoi…" : "Envoyer"}
           </button>
           <p className="nous-ecrire__mention">
-            On utilise ton courriel seulement pour te répondre. Voir notre{" "}
+            Nous utilisons votre courriel seulement pour vous répondre. Voir notre{" "}
             <Link to="/confidentialite">politique de confidentialité</Link>.
           </p>
         </form>

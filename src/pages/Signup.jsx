@@ -21,7 +21,7 @@ export default function Signup() {
     e.preventDefault();
     setErreur(null);
     if (!roles.length) {
-      setErreur("Choisis au moins une façon d'utiliser Snowro.");
+      setErreur("Choisissez au moins une façon d'utiliser Snowro.");
       return;
     }
     setEnCours(true);
@@ -67,8 +67,8 @@ export default function Signup() {
         </div>
         {erreur && <p className="message-erreur" role="alert">{erreur}</p>}
         <p className="auth-form__mention">
-          En créant un compte, tu confirmes avoir 18 ans ou plus et tu acceptes les{" "}
-          <Link to="/conditions">conditions d'utilisation</Link>. On traite tes renseignements selon notre{" "}
+          En créant un compte, vous confirmez avoir 18 ans ou plus et acceptez les{" "}
+          <Link to="/conditions">conditions d'utilisation</Link>. Nous traitons vos renseignements selon notre{" "}
           <Link to="/confidentialite">politique de confidentialité</Link>.
         </p>
         <button type="submit" className="auth-form__bouton" disabled={enCours}>
@@ -92,6 +92,6 @@ function traduireErreur(code) {
     case "auth/invalid-email":
       return "Ce courriel n'est pas valide.";
     default:
-      return "Une erreur est survenue. Réessaie.";
+      return "Une erreur est survenue. Veuillez réessayer.";
   }
 }

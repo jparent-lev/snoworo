@@ -124,8 +124,8 @@ export function ModaleSignalement({ demande, par, onFermer }) {
   return (
     <Modale titre="Signaler un problème" onFermer={onFermer}>
       <p>
-        On met la job sur pause et aucun versement ne part tant qu'on n'a pas regardé ça. On te revient par
-        courriel.
+        Nous mettons la job en pause, et aucun versement n'est effectué tant que nous n'avons pas examiné la
+        situation. Nous vous répondrons par courriel.
       </p>
       <form onSubmit={envoyer} style={{ display: "flex", flexDirection: "column", gap: 12 }}>
         <label>
@@ -158,7 +158,7 @@ export function ModaleSignalement({ demande, par, onFermer }) {
 
 const CHOIX_ROLES = [
   { role: ROLE_CLIENT, titre: "Je veux faire déneiger", texte: "Publier des demandes pour chez moi ou pour un proche." },
-  { role: ROLE_DENEIGEUR, titre: "Je veux déneiger", texte: "Prendre des jobs près de chez moi, quand ça me convient." },
+  { role: ROLE_DENEIGEUR, titre: "Je veux déneiger", texte: "Prendre des jobs près de chez moi, selon mes disponibilités." },
 ];
 
 // Sélection multiple : on peut cocher les deux.
@@ -186,7 +186,7 @@ export function ChoixRoles({ valeur, onChange }) {
   );
 }
 
-const LIBELLES_NOTES = ["", "Décevant", "Bof", "Correct", "Très bien", "Impeccable"];
+const LIBELLES_NOTES = ["", "Décevant", "Passable", "Correct", "Très bien", "Impeccable"];
 
 // Choix de 1 à 5 étoiles (groupe de boutons radio, utilisable au clavier).
 export function ChoixEtoiles({ valeur, onChange }) {

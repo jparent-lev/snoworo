@@ -82,12 +82,12 @@ export const notifierNouveauMessage = onDocumentCreated(
 export function composerAvis({ expediteurPrenom, titreDemande, extrait, lien }) {
   const qui = expediteurPrenom || "L'autre personne";
   const court = extrait.length > EXTRAIT_MAX ? `${extrait.slice(0, EXTRAIT_MAX).trimEnd()}…` : extrait;
-  const titre = `${qui} t'a écrit`;
+  const titre = `${qui} vous a écrit`;
   const pied =
-    "Tu reçois ce courriel parce que tu as une job en cours sur Snowro. " +
-    "Pour ta sécurité, garde les échanges et les paiements dans Snowro.";
+    "Vous recevez ce courriel parce que vous avez une job en cours sur Snowro. " +
+    "Pour votre sécurité, gardez les échanges et les paiements dans Snowro.";
   return {
-    sujet: `${qui} t'a écrit à propos de « ${titreDemande} »`,
+    sujet: `${qui} vous a écrit à propos de « ${titreDemande} »`,
     html: gabaritCourriel({
       titre: echapperHtml(titre),
       paragraphes: [

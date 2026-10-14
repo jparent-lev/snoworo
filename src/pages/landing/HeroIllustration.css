@@ -317,7 +317,7 @@
   98%, 100% { opacity: 0; transform: translateY(-8px); }
 }
 
-/* Le « tap » sur Je prends la job, puis le bouton devient C'est à toi. */
+/* Le « tap » sur Je prends la job, puis le bouton devient C'est à vous. */
 @keyframes hero-bouton-prendre {
   0%, 17% { opacity: 1; transform: scale(1); }
   19% { opacity: 1; transform: scale(0.94); }

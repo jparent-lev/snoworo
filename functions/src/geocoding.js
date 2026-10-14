@@ -124,7 +124,7 @@ export async function villeDepuisAdresse(adresseTexte, { exigerPrecision = false
 export async function villeDepuisPlaceId(placeId, { exigerPrecision = true } = {}) {
   const body = await appelerGeocodingApi({ place_id: placeId });
   if (body.status !== "OK" || !body.results?.length) {
-    throw new AdresseImprecise("Adresse introuvable. Choisis-la de nouveau dans la liste.");
+    throw new AdresseImprecise("Adresse introuvable. Choisissez-la de nouveau dans la liste.");
   }
   return depuisResultat(body.results[0], { exigerPrecision });
 }

@@ -80,8 +80,8 @@ export default function PublierDemande() {
     if (adresseManquante) {
       setErreur(
         adresseManuelle
-          ? "Écris l'adresse au complet, avec le numéro civique."
-          : "Choisis ton adresse dans la liste des suggestions.",
+          ? "Écrivez l'adresse au complet, avec le numéro civique."
+          : "Choisissez votre adresse dans la liste des suggestions.",
       );
       return;
     }
@@ -184,7 +184,7 @@ export default function PublierDemande() {
           <input type="number" min="10" max="1000" step="1" value={montant} onChange={(e) => setMontant(e.target.value)} required />
           {apercu && (
             <span className="auth-form__aide">
-              Tu paies {formatArgent(apercu.montantTotal)}, le déneigeur reçoit {formatArgent(apercu.montantDeneigeur)} (frais
+              Vous payez {formatArgent(apercu.montantTotal)}, le déneigeur reçoit {formatArgent(apercu.montantDeneigeur)} (frais
               Snowro {formatArgent(apercu.fraisSnowro)}). Paiement retenu jusqu'à ce que la job soit confirmée.
             </span>
           )}

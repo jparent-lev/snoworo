@@ -169,7 +169,7 @@ export function IllustrationEtape({ etape }) {
   );
 }
 
-/* ---- Icônes (bloc « Ce qui te protège », profils de déneigeurs) ---- */
+/* ---- Icônes (bloc « Ce qui vous protège », profils de déneigeurs) ---- */
 
 const ICONES = {
   note: (
@@ -282,7 +282,7 @@ export function CarteVilles() {
       <Epingle x={62} y={92} nom="Montréal" delai={0} />
       <Epingle x={152} y={66} nom="Trois-Rivières" delai={0.5} />
       <Epingle x={258} y={34} nom="Québec" delai={1} />
-      <Epingle x={214} y={104} nom="la tienne ?" delai={0} fantome />
+      <Epingle x={214} y={104} nom="la vôtre ?" delai={0} fantome />
     </svg>
   );
 }

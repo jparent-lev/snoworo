@@ -19,7 +19,7 @@ export default function FeeCalculator() {
   return (
     <div className="fee-calc">
       <div className="fee-calc__ligne-haut">
-        <span className="eyebrow fee-calc__eyebrow">Tu offres</span>
+        <span className="eyebrow fee-calc__eyebrow">Vous offrez</span>
         <span className="fee-calc__montant">{montant} $</span>
       </div>
       <input
