@@ -7,7 +7,9 @@
   display: flex;
   flex-direction: column;
   min-height: 100svh;
-  overflow-x: hidden;
+  /* clip (et non hidden) : hidden ferait de .landing un conteneur de
+     défilement et l'en-tête sticky ne collerait jamais à l'écran. */
+  overflow-x: clip;
 }
 
 .landing__conteneur,
@@ -29,9 +31,24 @@
   position: sticky;
   top: 0;
   z-index: 20;
+  /* Hauteur fixe : le passage à la barre compacte ne décale pas la page. */
+  height: 73px;
+  pointer-events: none;
+}
+
+.landing__entete::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 0 0;
   background: rgba(247, 241, 230, 0.94);
   backdrop-filter: blur(8px);
   border-bottom: 1px solid var(--color-bordure);
+  transition: height 180ms ease-out, box-shadow 180ms ease-out;
+}
+
+.landing__entete--compact::before {
+  height: 54px;
+  box-shadow: 0 6px 18px -14px rgba(59, 42, 31, 0.5);
 }
 
 .landing__entete-inner {
@@ -43,6 +60,35 @@
   align-items: center;
   justify-content: space-between;
   gap: 20px;
+  pointer-events: auto;
+  transition: padding 180ms ease-out;
+}
+
+.landing__nav-cta {
+  flex: none;
+  font-size: 15px;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+/* Barre minimaliste : logo + « Rejoindre la liste », sur tous les écrans. */
+.landing__entete--compact .landing__entete-inner {
+  padding-top: 11px;
+  padding-bottom: 11px;
+}
+
+.landing__entete--compact .landing__nav,
+.landing__entete--compact .landing__menu-bouton {
+  display: none;
+}
+
+.landing__entete--compact .landing__logo-texte {
+  font-size: 18px;
+}
+
+.landing__entete--compact .landing__nav-cta {
+  padding: 7px 14px;
+  font-size: 14px;
 }
 
 .landing__logo {
@@ -174,9 +220,15 @@
     font-size: 16px;
   }
 
+  /* Le bouton reste visible à côté du menu hamburger. */
   .landing__nav-cta {
-    margin-top: 10px;
-    text-align: center;
+    margin-left: auto;
+    padding: 9px 14px;
+    font-size: 14px;
+  }
+
+  .landing__entete-inner {
+    gap: 12px;
   }
 }
 

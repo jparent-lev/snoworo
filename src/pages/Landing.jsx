@@ -28,6 +28,8 @@ import "./Landing.css";
 export default function Landing() {
   const { user, loading } = useAuth();
   const [menuOuvert, setMenuOuvert] = useState(false);
+  // Barre minimaliste (logo + « Rejoindre la liste ») dès que la page défile.
+  const [compact, setCompact] = useState(false);
   // Rôle du formulaire de liste d'attente (client ou déneigeur), présélectionné
   // par les boutons de l'accueil. Le rôle « pro » existe toujours dans le
   // formulaire et les functions, mais l'offre Snowro Pro est retirée du site
@@ -42,17 +44,37 @@ export default function Landing() {
     document.getElementById(window.location.hash.slice(1))?.scrollIntoView();
   }, [loading]);
 
+  useEffect(() => {
+    const maj = () => {
+      const bas = window.scrollY > 80;
+      setCompact(bas);
+      if (bas) setMenuOuvert(false);
+    };
+    maj();
+    window.addEventListener("scroll", maj, { passive: true });
+    return () => window.removeEventListener("scroll", maj);
+  }, []);
+
   if (!loading && user) return <Navigate to="/tableau-de-bord" replace />;
 
   const fermerMenu = () => setMenuOuvert(false);
 
   return (
     <div className="landing">
-      <header className="landing__entete">
+      <header className={`landing__entete${compact ? " landing__entete--compact" : ""}`}>
         <div className="landing__entete-inner">
           <a href="#haut" className="landing__logo" onClick={fermerMenu}>
-            <SnowroSymbol variant="x" neige surTuile size={44} />
+            <SnowroSymbol variant="x" neige surTuile size={compact ? 32 : 44} />
             <span className="landing__logo-texte">snowro</span>
+          </a>
+          <nav id="landing-nav" className={`landing__nav ${menuOuvert ? "landing__nav--ouvert" : ""}`}>
+            <a href="#comment" onClick={fermerMenu}>Comment ça marche</a>
+            <a href="#tableau-de-bord" onClick={fermerMenu}>Tableau de bord</a>
+            <a href="#frais" onClick={fermerMenu}>Frais</a>
+            <a href="#deneigeur" onClick={fermerMenu}>Déneiger</a>
+          </nav>
+          <a href="#liste" className="landing__nav-cta landing__bouton-neige landing__bouton-neige--a" onClick={fermerMenu}>
+            Rejoindre la liste
           </a>
           <button
             type="button"
@@ -64,15 +86,6 @@ export default function Landing() {
           >
             <span className={`landing__menu-icone ${menuOuvert ? "landing__menu-icone--ouvert" : ""}`} />
           </button>
-          <nav id="landing-nav" className={`landing__nav ${menuOuvert ? "landing__nav--ouvert" : ""}`}>
-            <a href="#comment" onClick={fermerMenu}>Comment ça marche</a>
-            <a href="#tableau-de-bord" onClick={fermerMenu}>Tableau de bord</a>
-            <a href="#frais" onClick={fermerMenu}>Frais</a>
-            <a href="#deneigeur" onClick={fermerMenu}>Déneiger</a>
-            <a href="#liste" className="landing__nav-cta landing__bouton-neige landing__bouton-neige--a" onClick={fermerMenu}>
-              Rejoindre la liste
-            </a>
-          </nav>
         </div>
       </header>
 
