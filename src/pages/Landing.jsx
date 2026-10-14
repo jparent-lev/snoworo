@@ -210,14 +210,14 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* 5. Comparatif avec un groupe de quartier (visuel) + villes émergentes */}
+      {/* 5. Objection Facebook (comparatif visuel) + villes émergentes */}
       <section className="landing__section">
         <div className="landing__compare">
           <div className="landing__compare-intro">
-            <h3 className="landing__h3-carte">L'entraide de quartier, en plus fiable</h3>
+            <h3 className="landing__h3-carte">« Pourquoi pas juste le groupe Facebook du quartier ? »</h3>
             <p className="landing__p">
-              Entre voisins qui se connaissent, un groupe de quartier suffit. Snowro prend le relais quand vous
-              ne connaissez personne et que le temps presse.
+              Pour un coup de pelle entre voisins qui se connaissent, le groupe fait très bien l'affaire.
+              Snowro sert quand vous ne connaissez personne et que le temps presse.
             </p>
           </div>
           <div className="landing__compare-table" role="table" aria-label="Groupe du quartier ou Snowro">
