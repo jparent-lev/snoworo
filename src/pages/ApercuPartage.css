@@ -1,0 +1,84 @@
+/* Gabarit 1200 x 630 de l'image d'aperçu partagée (voir ApercuPartage.jsx).
+   Les couleurs, la police et l'illustration viennent du héros : seul le cadrage
+   est propre à ce gabarit. */
+
+.apercu-partage {
+  width: 1200px;
+  height: 630px;
+  min-height: 0;
+  overflow: hidden;
+  display: block;
+}
+
+.apercu-partage__contenu {
+  position: relative;
+  z-index: 1;
+  height: 100%;
+  box-sizing: border-box;
+  padding: 64px 72px 0;
+  display: grid;
+  grid-template-columns: 470px 1fr;
+  gap: 48px;
+  align-items: center;
+}
+
+.apercu-partage__texte {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  padding-bottom: 36px;
+}
+
+.apercu-partage__marque {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.apercu-partage__marque .landing__logo-texte {
+  font-size: 30px;
+}
+
+.apercu-partage__titre {
+  font-size: 54px;
+  line-height: 1.06;
+}
+
+.apercu-partage__chapeau {
+  margin: 0;
+  font-size: 23px;
+  line-height: 1.5;
+  color: var(--color-texte-secondaire);
+}
+
+.apercu-partage__url {
+  font-family: var(--font-titrage);
+  font-weight: 700;
+  font-size: 24px;
+  color: var(--color-argile);
+}
+
+.apercu-partage__illustration {
+  align-self: end;
+  padding-bottom: 44px;
+}
+
+.apercu-partage__illustration .hero-illu {
+  max-width: 560px;
+  padding-bottom: 20px;
+}
+
+.apercu-partage .decor-banc {
+  height: 64px;
+}
+
+/* Le téléphone est un peu plus large que dans le héros pour que la carte de la
+   demande reste lisible une fois l'image réduite dans un fil d'actualité. */
+.apercu-partage .hero-illu .hero-illu__phone {
+  width: 44%;
+  max-width: 250px;
+}
+
+.apercu-partage .hero-illu__phone .landing__hero-phone-prix {
+  white-space: nowrap;
+}
