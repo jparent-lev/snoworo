@@ -32,7 +32,12 @@ structure figées par `design_handoff_snowro_site`.
   politique de confidentialité). Aperçu des liens partagés : balises Open
   Graph et Twitter (`twitter:title`, `twitter:description`, `twitter:image`)
   dans `index.html`, image `public/og-snowro.png` (1200 x 630) ; icône
-  `public/apple-touch-icon.png` (180 x 180, fond plein) pour iOS.
+  `public/apple-touch-icon.png` (180 x 180, fond plein) pour iOS. L'image
+  d'aperçu est une capture du gabarit `src/pages/ApercuPartage.jsx` (route
+  `/apercu-partage`, servie en développement seulement) qui reprend le héros
+  de l'accueil ; `npm run og` la régénère (Playwright). Quand elle change,
+  incrémenter le `?v=` des balises `og:image` et `twitter:image` pour que
+  Facebook et compagnie la rechargent.
 
 ## Stack
 
