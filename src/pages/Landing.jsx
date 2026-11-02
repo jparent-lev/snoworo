@@ -103,14 +103,13 @@ export default function Landing() {
             souffleuse prend la tâche et s'en occupe. Simple, rapide, sans engagement.
           </p>
           <div className="landing__hero-cta">
+            {/* Un seul appel à l'action : l'inscription est la même pour tout le monde
+                (ce que la personne veut faire se précise après l'envoi). */}
             <a
               href="#liste"
               className="landing__bouton-primaire landing__bouton-neige landing__bouton-neige--b"
             >
-              Je veux faire déneiger
-            </a>
-            <a href="#deneigeur" className="landing__bouton-fantome">
-              Je veux déneiger
+              Rejoindre la liste
             </a>
           </div>
           <p className="landing__hero-mention">
@@ -274,7 +273,7 @@ export default function Landing() {
               href="#liste"
               className="landing__bouton-ocre landing__bouton-neige landing__bouton-neige--d"
             >
-              M'inscrire comme déneigeur de quartier
+              Rejoindre la liste
             </a>
           </div>
           <div className="landing__carte-revenus-wrap">
