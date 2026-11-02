@@ -173,7 +173,8 @@ fraisPct: 8`, identiques aux valeurs par défaut de la maquette).
 ## `listeAttente/{courriel}` et `listeAttente/pro:{courriel}`
 
 ```
-courriel, codePostal, role: "client" | "deneigeur" | "pro"
+courriel, codePostal
+role: "client" | "deneigeur" | "les_deux" | "pro"   // facultatif : précisé après l'inscription
 entreprise              // nom de l'entreprise, role "pro" seulement
 ville, villeGeoId       // dérivés par géocodage serveur du codePostal
 createdAt
