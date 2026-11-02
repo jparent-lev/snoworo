@@ -400,6 +400,10 @@ async function connexion(cle, largeur = 1280) {
     await p.getByRole("checkbox", { name: /Je veux déneiger/ }).click();
     await p.getByRole("button", { name: "Continuer" }).click();
     await p.getByRole("heading", { name: "Une étape avant de voir les demandes" }).waitFor();
+    // Bouton-lien lisible au survol (texte clair sur fond argile).
+    const bouton = p.getByRole("link", { name: "Ajouter mon adresse" });
+    await bouton.hover();
+    assert.equal(await bouton.evaluate((el) => getComputedStyle(el).color), "rgb(255, 253, 248)");
     const { uid: idLeo } = await auth.getUserByEmail("leo@test.ca");
     assert.deepEqual((await db.doc(`users/${idLeo}`).get()).data().role, ["deneigeur_x"]);
   });
