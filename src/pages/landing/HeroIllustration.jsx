@@ -210,7 +210,7 @@ export default function HeroIllustration() {
                 <span className="landing__hero-phone-desc">Avant 8 h demain matin.</span>
                 <div className="landing__hero-phone-prix-ligne">
                   <span className="landing__hero-phone-prix">45 $</span>
-                  <span className="landing__hero-phone-par">offert par Mireille G.</span>
+                  <span className="landing__hero-phone-par">offert par Mireille&nbsp;G.</span>
                 </div>
               </div>
               <div className="hero-illu__boutons">

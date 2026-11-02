@@ -612,13 +612,17 @@
 }
 
 .landing__hero-phone-prix {
+  flex: none;
   font-family: var(--font-titrage);
   font-weight: 600;
   font-size: 27px;
   line-height: 1;
+  /* « 45 $ » ne se coupe jamais entre le montant et le symbole. */
+  white-space: nowrap;
 }
 
 .landing__hero-phone-par {
+  min-width: 0;
   font-size: 12.5px;
   color: var(--color-texte-secondaire);
 }
