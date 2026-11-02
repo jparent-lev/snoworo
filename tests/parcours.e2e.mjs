@@ -209,7 +209,7 @@ async function connexion(cle, largeur = 1280) {
 {
   const { p, ctx } = await connexion("mireille");
   await test("Mireille : tableau client, « À confirmer » en premier", async () => {
-    await p.getByRole("heading", { name: "Mes demandes acceptées" }).waitFor();
+    await p.getByRole("heading", { name: /^Mes demandes(?! acceptées)/ }).waitFor();
     await p.waitForFunction(() => document.querySelectorAll(".rangee .carte-job").length === 3);
     assert.equal(await p.locator(".rangee .badge").first().textContent(), "À confirmer");
     assert.equal(await p.locator(".historique__rang").count(), 1);
@@ -269,7 +269,7 @@ async function connexion(cle, largeur = 1280) {
   const { p, ctx } = await connexion("julie", 390);
   await test("Julie (deux rôles) : bascule visible, passe du mode client au mode déneigeur", async () => {
     await p.locator(".layout__bascule").waitFor();
-    await p.getByRole("heading", { name: "Mes demandes acceptées" }).waitFor();
+    await p.getByRole("heading", { name: /^Mes demandes(?! acceptées)/ }).waitFor();
     await p.screenshot({ path: `${D}/e2e-julie-client-390.png`, fullPage: true });
     await p.getByRole("radio", { name: "Déneigeur" }).click();
     await p.getByRole("heading", { name: "Mes demandes acceptées" }).waitFor();
@@ -323,7 +323,7 @@ async function connexion(cle, largeur = 1280) {
     await p.getByRole("option", { name: /155 Rue des Saules Est/ }).waitFor();
     await p.getByRole("combobox").press("Escape");
     await p.getByRole("button", { name: "Utiliser cette adresse" }).click();
-    await p.getByText("Choisissez votre adresse dans la liste des suggestions.").waitFor();
+    await p.getByText("Choisissez votre adresse dans la liste de suggestions.").waitFor();
     assert.equal(appels.length, 1);
   });
   await ctx.close();
@@ -359,6 +359,19 @@ async function connexion(cle, largeur = 1280) {
     await p.getByText("vous confirmez avoir 18 ans ou plus").waitFor();
     assert.equal(await p.getByRole("link", { name: "politique de confidentialité" }).getAttribute("href"), "/confidentialite");
     assert.equal(await p.getByRole("link", { name: "conditions d'utilisation" }).getAttribute("href"), "/conditions");
+  });
+  await test("inscription simple : aucun choix de rôle, le tableau de bord le demande à la première visite", async () => {
+    assert.equal(await p.getByText("Je veux…").count(), 0);
+    await p.getByLabel("Nom").fill("Léo Neuf");
+    await p.getByLabel("Courriel").fill("leo@test.ca");
+    await p.getByLabel("Mot de passe").fill("motdepasse");
+    await p.getByRole("button", { name: "Créer mon compte" }).click();
+    await p.getByRole("heading", { name: "Comment souhaitez-vous utiliser Snowro ?" }).waitFor();
+    await p.getByRole("checkbox", { name: /Je veux déneiger/ }).click();
+    await p.getByRole("button", { name: "Continuer" }).click();
+    await p.getByRole("heading", { name: "Une étape avant de voir les demandes" }).waitFor();
+    const { uid: idLeo } = await auth.getUserByEmail("leo@test.ca");
+    assert.deepEqual((await db.doc(`users/${idLeo}`).get()).data().role, ["deneigeur_x"]);
   });
   await ctx.close();
 }

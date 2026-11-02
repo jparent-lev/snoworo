@@ -3,8 +3,10 @@ import "./ParcoursDemande.css";
 
 // Section « Tout se passe dans votre tableau de bord » : le parcours d'une
 // demande en quatre étapes (les mêmes que dans l'app), avec chaque garantie
-// rattachée au moment où elle s'applique. Frise horizontale sur ordinateur,
-// verticale sur mobile ; aucune animation liée au défilement.
+// rattachée au moment où elle s'applique. Sur ordinateur : un panneau lin,
+// la frise en haut et les cinq garanties sur une rangée de cartes de même
+// hauteur, chacune sous son étape (l'étape à deux garanties occupe deux
+// colonnes). Sur mobile : frise verticale. Aucune animation au défilement.
 const ETAPES = [
   {
     nom: "Publiée",
@@ -61,7 +63,11 @@ export default function ParcoursDemande() {
   return (
     <ol className="parcours-demande" aria-label="Le parcours d'une demande">
       {ETAPES.map((etape, i) => (
-        <li key={etape.nom} className="parcours-demande__etape">
+        <li
+          key={etape.nom}
+          className="parcours-demande__etape"
+          style={{ "--garanties": etape.garanties.length }}
+        >
           <div className="parcours-demande__repere">
             <span className="parcours-demande__numero" aria-hidden="true">
               {i + 1}

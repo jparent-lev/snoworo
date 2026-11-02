@@ -126,27 +126,38 @@
   color: var(--color-texte-secondaire);
 }
 
-@media (min-width: 900px) {
+/* Ordinateur : panneau lin, une colonne par garantie (5), l'étape à deux
+   garanties en occupe deux. Lignes partagées (subgrid) : repères, résumés et
+   cartes s'alignent d'une étape à l'autre. */
+@media (min-width: 1000px) {
   .parcours-demande {
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-    column-gap: 22px;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    grid-template-rows: auto auto 1fr;
+    column-gap: 18px;
+    row-gap: 0;
+    padding: 36px 36px 40px;
+    background: var(--color-lin);
+    border-radius: 22px;
   }
 
   .parcours-demande__etape {
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
+    grid-column: span var(--garanties, 1);
+    grid-row: span 3;
+    display: grid;
+    grid-template-rows: subgrid;
+    grid-template-columns: none;
     padding-bottom: 0;
   }
 
-  /* Ligne horizontale : du centre du numéro jusqu'au numéro suivant. */
+  /* Ligne horizontale : du numéro jusqu'au numéro suivant. */
   .parcours-demande__etape::before {
     left: 44px;
-    right: -22px;
+    right: -18px;
     top: 21px;
     bottom: auto;
     width: auto;
     height: 2px;
+    background: var(--color-bordure-sur-lin);
   }
 
   .parcours-demande__repere {
@@ -154,19 +165,45 @@
     align-items: center;
   }
 
+  .parcours-demande__numero {
+    box-shadow: 0 0 0 6px var(--color-lin);
+  }
+
   .parcours-demande__nom {
     position: relative;
     z-index: 1;
     padding: 0 10px 0 12px;
-    background: var(--color-bg-page);
+    background: var(--color-lin);
   }
 
   .parcours-demande__corps {
-    gap: 16px;
+    display: contents;
   }
 
   .parcours-demande__resume {
-    font-size: 19px;
-    min-height: 2.6em;
+    margin: 14px 0 18px;
+    font-size: 18px;
+    color: var(--color-terre);
+  }
+
+  .parcours-demande__garanties {
+    display: grid;
+    grid-template-columns: repeat(var(--garanties, 1), minmax(0, 1fr));
+    gap: 18px;
+  }
+
+  /* Cartes verticales : icône, titre, texte ; même hauteur sur la rangée. */
+  .parcours-demande__garantie {
+    flex-direction: column;
+    gap: 14px;
+    height: 100%;
+    box-sizing: border-box;
+    padding: 20px;
+    border-color: var(--color-bordure-sur-lin);
+  }
+
+  .parcours-demande__titre {
+    font-size: 18px;
+    line-height: 1.25;
   }
 }
