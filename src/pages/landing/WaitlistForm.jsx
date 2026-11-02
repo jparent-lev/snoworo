@@ -6,30 +6,43 @@ import "./WaitlistForm.css";
 
 const CODE_POSTAL_REGEX = /^[A-Za-z]\d[A-Za-z][ -]?\d[A-Za-z]\d$/;
 
-// Pro (entreprises de déneigement) a sa propre entrée dans la liste, avec le
-// nom de l'entreprise : la liste se segmente par rôle (role / onRole contrôlés
-// par Landing). L'offre Pro est retirée du site jusqu'à la V2 : le rôle n'est
-// plus proposé ici, mais sa logique (champ entreprise, textes) reste en place
-// pour le rétablir en remettant la ligne dans ROLES.
-const ROLES = [
-  ["client", "Client"],
-  ["deneigeur", "Déneigeur de quartier"],
-  // ["pro", "Entreprise (Pro)"],
+// Inscription simple : courriel et code postal. Une fois inscrite, la
+// personne peut préciser ce qu'elle veut faire (faire déneiger, déneiger ou
+// les deux) : question facultative, envoyée par le même appel, qui sert à
+// compter les déneigeurs par ville. Pro (role « pro », contrôlé par Landing)
+// garde son formulaire avec le nom de l'entreprise ; l'offre est retirée du
+// site jusqu'à la V2.
+const INTENTIONS = [
+  ["client", "Faire déneiger"],
+  ["deneigeur", "Déneiger"],
+  ["les_deux", "Les deux"],
 ];
 
-export default function WaitlistForm({ role: roleControle, onRole }) {
-  const [roleLocal, setRoleLocal] = useState("client");
-  const role = roleControle ?? roleLocal;
-  const setRole = onRole ?? setRoleLocal;
-  const pro = role === "pro";
+export default function WaitlistForm({ role: roleControle = null }) {
+  const pro = roleControle === "pro";
   const [entreprise, setEntreprise] = useState("");
   const [courriel, setCourriel] = useState("");
   const [codePostal, setCodePostal] = useState("");
   const [siteWeb, setSiteWeb] = useState(""); // honeypot — reste vide pour un humain
   // null tant que pas inscrit ; ensuite { ville } (ville dérivée par le serveur, peut être absente).
   const [inscription, setInscription] = useState(null);
+  const [intention, setIntention] = useState(null);
+  const [envoiIntention, setEnvoiIntention] = useState(null);
   const [enCours, setEnCours] = useState(false);
   const [erreur, setErreur] = useState(null);
+
+  async function preciser(role) {
+    setEnvoiIntention(role);
+    try {
+      await rejoindreListeAttente({ courriel: courriel.trim(), codePostal: codePostal.trim(), role, siteWeb });
+      setIntention(role);
+    } catch {
+      // Facultatif : en cas d'échec, l'inscription reste valide sans rôle.
+      setIntention("non_precise");
+    } finally {
+      setEnvoiIntention(null);
+    }
+  }
 
   async function onSubmit(e) {
     e.preventDefault();
@@ -43,9 +56,8 @@ export default function WaitlistForm({ role: roleControle, onRole }) {
       const resultat = await rejoindreListeAttente({
         courriel: courriel.trim(),
         codePostal: codePostal.trim(),
-        role,
         siteWeb,
-        ...(pro ? { entreprise: entreprise.trim() } : {}),
+        ...(pro ? { role: "pro", entreprise: entreprise.trim() } : {}),
       });
       setInscription({ ville: resultat.data?.ville ?? null });
     } catch {
@@ -77,31 +89,38 @@ export default function WaitlistForm({ role: roleControle, onRole }) {
         <span className="waitlist-form__succes-texte">
           Nous vous écrirons dès l'ouverture dans votre secteur. Aucun pourriel : uniquement cette communication.
         </span>
-        <PartageListe role={role} ville={inscription.ville} />
+        {intention ? (
+          <>
+            {intention !== "non_precise" && <span className="waitlist-form__intention-ok">✓ Merci, c'est noté.</span>}
+            <PartageListe role={intention === "deneigeur" ? "deneigeur" : "client"} ville={inscription.ville} />
+          </>
+        ) : (
+          <div className="waitlist-form__champ waitlist-form__intention">
+            <span className="eyebrow waitlist-form__eyebrow">Facultatif : vous voulez plutôt…</span>
+            <div className="waitlist-form__role">
+              {INTENTIONS.map(([cle, libelle]) => (
+                <button
+                  key={cle}
+                  type="button"
+                  className="waitlist-form__role-bouton"
+                  disabled={Boolean(envoiIntention)}
+                  onClick={() => preciser(cle)}
+                >
+                  {envoiIntention === cle ? "Un instant…" : libelle}
+                </button>
+              ))}
+            </div>
+            <button type="button" className="btn btn--lien waitlist-form__passer" onClick={() => setIntention("non_precise")}>
+              Passer
+            </button>
+          </div>
+        )}
       </div>
     );
   }
 
   return (
     <form className="waitlist-form" onSubmit={onSubmit}>
-      <div className="waitlist-form__champ">
-        <span className="eyebrow waitlist-form__eyebrow">Je m'inscris comme</span>
-        <div className="waitlist-form__role" role="radiogroup" aria-label="Je m'inscris comme">
-          {ROLES.map(([cle, libelle]) => (
-            <button
-              key={cle}
-              type="button"
-              role="radio"
-              aria-checked={role === cle}
-              className={`waitlist-form__role-bouton ${role === cle ? "waitlist-form__role-bouton--actif" : ""}`}
-              onClick={() => setRole(cle)}
-            >
-              {libelle}
-            </button>
-          ))}
-        </div>
-      </div>
-
       {pro && (
         <label className="waitlist-form__label">
           <span className="sr-only">Nom de l'entreprise</span>

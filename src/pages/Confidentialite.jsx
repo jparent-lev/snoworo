@@ -36,7 +36,8 @@ export default function Confidentialite() {
 
       <h3>Liste d'attente</h3>
       <p>
-        Votre courriel, votre code postal et votre rôle (client ou déneigeur de quartier). À partir du code postal,
+        Votre courriel, votre code postal et, si vous le précisez, ce que vous voulez faire (faire déneiger,
+        déneiger ou les deux). À partir du code postal,
         nous déduisons votre ville. Ces renseignements servent à savoir quelles villes ouvrir en premier et à vous écrire lorsque Snowro ouvre
         dans votre secteur. Rien d'autre.
       </p>

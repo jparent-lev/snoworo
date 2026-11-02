@@ -349,6 +349,36 @@ async function connexion(cle, largeur = 1280) {
   await ctx.close();
 }
 
+// Liste d'attente : inscription simple, puis question facultative.
+{
+  const ctx = await b.newContext({ viewport: { width: 390, height: 900 }, deviceScaleFactor: 2 });
+  const p = await ctx.newPage();
+  pageCourante = p;
+  const envois = [];
+  await p.route("**/rejoindreListeAttente", (r) => {
+    envois.push(r.request().postDataJSON().data);
+    return r.fulfill({ json: { result: { ok: true, ville: "Québec" } } });
+  });
+  await test("liste d'attente : courriel et code postal seulement, puis « Les deux » en option", async () => {
+    await p.goto("http://localhost:4190/");
+    const liste = p.locator("#liste");
+    assert.equal(await liste.getByRole("radio").count(), 0);
+    await liste.getByPlaceholder("votre@courriel.com").fill("simple@exemple.ca");
+    await liste.getByPlaceholder("Code postal (ex. G1L 2M4)").fill("G1L 2M4");
+    await liste.getByRole("button", { name: "Rejoindre la liste" }).click();
+    await liste.getByText("Facultatif : vous voulez plutôt…").waitFor();
+    assert.equal(envois.length, 1);
+    assert.equal(envois[0].role ?? null, null);
+    await liste.screenshot({ path: `${D}/e2e-liste-intention-390.png` });
+    await liste.getByRole("button", { name: "Les deux" }).click();
+    await liste.getByText("Merci, c'est noté.").waitFor();
+    assert.equal(envois.length, 2);
+    assert.equal(envois[1].role, "les_deux");
+    assert.equal(envois[1].courriel, "simple@exemple.ca");
+  });
+  await ctx.close();
+}
+
 // Loi 25 : avis à l'inscription, fermeture du compte par la personne elle-même.
 {
   const ctx = await b.newContext({ viewport: { width: 390, height: 900 }, deviceScaleFactor: 2 });
