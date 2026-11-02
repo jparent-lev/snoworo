@@ -18,7 +18,7 @@ export default function PiedDePage() {
             <SnowroSymbol variant="reversed" neige size={32} />
             <span className="pied__logo-texte">snowro</span>
           </div>
-          <span className="pied__slogan">Déneigement à la demande, fait à Québec.</span>
+          <span className="pied__slogan">Trouvez un déneigeur de quartier en quelques minutes.</span>
         </div>
         <div className="pied__colonne">
           <span className="eyebrow pied__titre">Snowro</span>

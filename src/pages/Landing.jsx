@@ -8,7 +8,7 @@ import FaqAccordion from "./landing/FaqAccordion";
 import WaitlistForm from "./landing/WaitlistForm";
 import HeroIllustration from "./landing/HeroIllustration";
 import ApercuTableau from "./landing/ApercuTableau";
-import TableauParallaxe from "./landing/TableauParallaxe";
+import ParcoursDemande from "./landing/ParcoursDemande";
 import SceneProtection from "./landing/ScenesProtection";
 import {
   CapNeige,
@@ -32,11 +32,11 @@ export default function Landing() {
   const [menuOuvert, setMenuOuvert] = useState(false);
   // Barre minimaliste (logo + « Rejoindre la liste ») dès que la page défile.
   const [compact, setCompact] = useState(false);
-  // Rôle du formulaire de liste d'attente (client ou déneigeur), présélectionné
-  // par les boutons de l'accueil. Le rôle « pro » existe toujours dans le
-  // formulaire et les functions, mais l'offre Snowro Pro est retirée du site
-  // jusqu'à la V2 (section, lien du menu, bouton « Être averti pour Pro »).
-  const [roleListe, setRoleListe] = useState("client");
+  // Liste d'attente : inscription simple (courriel, code postal), puis une
+  // question facultative sur ce que la personne veut faire. Le rôle « pro »
+  // existe toujours dans le formulaire et les functions, mais l'offre Snowro
+  // Pro est retirée du site jusqu'à la V2 : roleListe reste à null ici.
+  const [roleListe] = useState(null);
 
   // Arrivée depuis une autre page par un lien "/#section" (pied de page des
   // pages légales) : le navigateur tente de défiler avant que React ait rendu
@@ -103,15 +103,13 @@ export default function Landing() {
             souffleuse prend la tâche et s'en occupe. Simple, rapide, sans engagement.
           </p>
           <div className="landing__hero-cta">
+            {/* Un seul appel à l'action : l'inscription est la même pour tout le monde
+                (ce que la personne veut faire se précise après l'envoi). */}
             <a
               href="#liste"
               className="landing__bouton-primaire landing__bouton-neige landing__bouton-neige--b"
-              onClick={() => setRoleListe("client")}
             >
-              Je veux faire déneiger
-            </a>
-            <a href="#deneigeur" className="landing__bouton-fantome">
-              Je veux déneiger
+              Rejoindre la liste
             </a>
           </div>
           <p className="landing__hero-mention">
@@ -199,7 +197,7 @@ export default function Landing() {
           </div>
           <ApercuTableau />
         </div>
-        <TableauParallaxe />
+        <ParcoursDemande />
       </section>
 
       {/* 4. Frais */}
@@ -274,9 +272,8 @@ export default function Landing() {
             <a
               href="#liste"
               className="landing__bouton-ocre landing__bouton-neige landing__bouton-neige--d"
-              onClick={() => setRoleListe("deneigeur")}
             >
-              M'inscrire comme déneigeur de quartier
+              Rejoindre la liste
             </a>
           </div>
           <div className="landing__carte-revenus-wrap">
@@ -323,7 +320,7 @@ export default function Landing() {
               votre secteur, et votre inscription fera avancer votre ville dans la file.
             </p>
           </div>
-          <WaitlistForm role={roleListe} onRole={setRoleListe} />
+          <WaitlistForm role={roleListe} />
         </div>
       </section>
 

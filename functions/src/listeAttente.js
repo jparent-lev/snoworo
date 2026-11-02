@@ -9,7 +9,10 @@ const CODE_POSTAL_REGEX = /^[A-Za-z]\d[A-Za-z][ -]?\d[A-Za-z]\d$/;
 // est distincte de celle du même courriel comme client ou déneigeur
 // (listeAttente/pro:{courriel}), pour que la liste se segmente sans qu'une
 // inscription écrase l'autre.
-const ROLES = new Set(["client", "deneigeur", "pro"]);
+// Le rôle est facultatif : l'inscription simple n'en a pas, et la personne
+// peut le préciser ensuite (même appel, même courriel). « les_deux » : faire
+// déneiger et déneiger.
+const ROLES = new Set(["client", "deneigeur", "les_deux", "pro"]);
 export const idListeAttente = (courriel, role) => (role === "pro" ? `pro:${courriel}` : courriel);
 
 // Point d'entrée public (aucune authentification requise) du site vitrine de
@@ -33,7 +36,7 @@ export const rejoindreListeAttente = onCall(
     if (typeof codePostal !== "string" || !CODE_POSTAL_REGEX.test(codePostal.trim())) {
       throw new HttpsError("invalid-argument", "Code postal invalide.");
     }
-    if (!ROLES.has(role)) {
+    if (role != null && !ROLES.has(role)) {
       throw new HttpsError("invalid-argument", "Rôle invalide.");
     }
     const entreprise = typeof request.data?.entreprise === "string" ? request.data.entreprise.trim() : "";
@@ -56,7 +59,8 @@ export const rejoindreListeAttente = onCall(
       {
         courriel: courrielNormalise,
         codePostal: codePostal.trim().toUpperCase(),
-        role,
+        // Sans rôle : on n'écrase pas celui déjà précisé (merge).
+        ...(role ? { role } : {}),
         ...(role === "pro" ? { entreprise } : {}),
         ville: derive.ville,
         villeGeoId: derive.villeGeoId,

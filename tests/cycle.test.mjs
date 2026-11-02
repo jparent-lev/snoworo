@@ -394,6 +394,17 @@ await test("liste d'attente : Pro a sa propre entrée avec l'entreprise, sans é
   await echoue(la.rejoindreListeAttente.run({ data: { ...base, role: "admin" } }), "invalid-argument", "rôle inconnu");
 });
 
+await test("liste d'attente : rôle facultatif, précisé ensuite sans être effacé par une réinscription", async () => {
+  globalThis.fetch = fetchGeocodage;
+  const base = { courriel: "simple@exemple.ca", codePostal: "G1L 2M4" };
+  await la.rejoindreListeAttente.run({ data: base });
+  assert.equal((await db.doc("listeAttente/simple@exemple.ca").get()).data().role, undefined);
+  await la.rejoindreListeAttente.run({ data: { ...base, role: "les_deux" } });
+  assert.equal((await db.doc("listeAttente/simple@exemple.ca").get()).data().role, "les_deux");
+  await la.rejoindreListeAttente.run({ data: base });
+  assert.equal((await db.doc("listeAttente/simple@exemple.ca").get()).data().role, "les_deux");
+});
+
 console.log("Firestore rules");
 globalThis.fetch = fetchOriginal;
 const env = await initializeTestEnvironment({ projectId: "demo-snowro", firestore: { rules: readFileSync(`${REPO}firestore.rules`, "utf8"), host: "127.0.0.1", port: 8080 } });

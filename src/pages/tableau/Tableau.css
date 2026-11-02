@@ -63,10 +63,17 @@
 
 .btn--principal:hover:not(:disabled) {
   background: var(--color-argile-foncee);
+  color: var(--color-surface-carte);
 }
 
 .btn--ardoise {
   background: var(--color-ardoise);
+  color: var(--color-surface-carte);
+}
+
+/* Un bouton peut être un lien (<Link className="btn …">) : sa couleur de
+   texte ne doit pas céder à celle des liens au survol (a:hover, index.css). */
+.btn--ardoise:hover:not(:disabled) {
   color: var(--color-surface-carte);
 }
 
@@ -78,6 +85,7 @@
 
 .btn--fantome:hover:not(:disabled) {
   border-color: var(--color-terre);
+  color: var(--color-terre);
 }
 
 .btn--petit {

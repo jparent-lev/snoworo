@@ -209,7 +209,7 @@ async function connexion(cle, largeur = 1280) {
 {
   const { p, ctx } = await connexion("mireille");
   await test("Mireille : tableau client, « À confirmer » en premier", async () => {
-    await p.getByRole("heading", { name: "Mes demandes acceptées" }).waitFor();
+    await p.getByRole("heading", { name: /^Mes demandes(?! acceptées)/ }).waitFor();
     await p.waitForFunction(() => document.querySelectorAll(".rangee .carte-job").length === 3);
     assert.equal(await p.locator(".rangee .badge").first().textContent(), "À confirmer");
     assert.equal(await p.locator(".historique__rang").count(), 1);
@@ -269,7 +269,7 @@ async function connexion(cle, largeur = 1280) {
   const { p, ctx } = await connexion("julie", 390);
   await test("Julie (deux rôles) : bascule visible, passe du mode client au mode déneigeur", async () => {
     await p.locator(".layout__bascule").waitFor();
-    await p.getByRole("heading", { name: "Mes demandes acceptées" }).waitFor();
+    await p.getByRole("heading", { name: /^Mes demandes(?! acceptées)/ }).waitFor();
     await p.screenshot({ path: `${D}/e2e-julie-client-390.png`, fullPage: true });
     await p.getByRole("radio", { name: "Déneigeur" }).click();
     await p.getByRole("heading", { name: "Mes demandes acceptées" }).waitFor();
@@ -323,7 +323,7 @@ async function connexion(cle, largeur = 1280) {
     await p.getByRole("option", { name: /155 Rue des Saules Est/ }).waitFor();
     await p.getByRole("combobox").press("Escape");
     await p.getByRole("button", { name: "Utiliser cette adresse" }).click();
-    await p.getByText("Choisissez votre adresse dans la liste des suggestions.").waitFor();
+    await p.getByText("Choisissez votre adresse dans la liste de suggestions.").waitFor();
     assert.equal(appels.length, 1);
   });
   await ctx.close();
@@ -349,6 +349,36 @@ async function connexion(cle, largeur = 1280) {
   await ctx.close();
 }
 
+// Liste d'attente : inscription simple, puis question facultative.
+{
+  const ctx = await b.newContext({ viewport: { width: 390, height: 900 }, deviceScaleFactor: 2 });
+  const p = await ctx.newPage();
+  pageCourante = p;
+  const envois = [];
+  await p.route("**/rejoindreListeAttente", (r) => {
+    envois.push(r.request().postDataJSON().data);
+    return r.fulfill({ json: { result: { ok: true, ville: "Québec" } } });
+  });
+  await test("liste d'attente : courriel et code postal seulement, puis « Les deux » en option", async () => {
+    await p.goto("http://localhost:4190/");
+    const liste = p.locator("#liste");
+    assert.equal(await liste.getByRole("radio").count(), 0);
+    await liste.getByPlaceholder("votre@courriel.com").fill("simple@exemple.ca");
+    await liste.getByPlaceholder("Code postal (ex. G1L 2M4)").fill("G1L 2M4");
+    await liste.getByRole("button", { name: "Rejoindre la liste" }).click();
+    await liste.getByText("Facultatif : vous voulez plutôt…").waitFor();
+    assert.equal(envois.length, 1);
+    assert.equal(envois[0].role ?? null, null);
+    await liste.screenshot({ path: `${D}/e2e-liste-intention-390.png` });
+    await liste.getByRole("button", { name: "Les deux" }).click();
+    await liste.getByText("Merci, c'est noté.").waitFor();
+    assert.equal(envois.length, 2);
+    assert.equal(envois[1].role, "les_deux");
+    assert.equal(envois[1].courriel, "simple@exemple.ca");
+  });
+  await ctx.close();
+}
+
 // Loi 25 : avis à l'inscription, fermeture du compte par la personne elle-même.
 {
   const ctx = await b.newContext({ viewport: { width: 390, height: 900 }, deviceScaleFactor: 2 });
@@ -359,6 +389,23 @@ async function connexion(cle, largeur = 1280) {
     await p.getByText("vous confirmez avoir 18 ans ou plus").waitFor();
     assert.equal(await p.getByRole("link", { name: "politique de confidentialité" }).getAttribute("href"), "/confidentialite");
     assert.equal(await p.getByRole("link", { name: "conditions d'utilisation" }).getAttribute("href"), "/conditions");
+  });
+  await test("inscription simple : aucun choix de rôle, le tableau de bord le demande à la première visite", async () => {
+    assert.equal(await p.getByText("Je veux…").count(), 0);
+    await p.getByLabel("Nom").fill("Léo Neuf");
+    await p.getByLabel("Courriel").fill("leo@test.ca");
+    await p.getByLabel("Mot de passe").fill("motdepasse");
+    await p.getByRole("button", { name: "Créer mon compte" }).click();
+    await p.getByRole("heading", { name: "Comment souhaitez-vous utiliser Snowro ?" }).waitFor();
+    await p.getByRole("checkbox", { name: /Je veux déneiger/ }).click();
+    await p.getByRole("button", { name: "Continuer" }).click();
+    await p.getByRole("heading", { name: "Une étape avant de voir les demandes" }).waitFor();
+    // Bouton-lien lisible au survol (texte clair sur fond argile).
+    const bouton = p.getByRole("link", { name: "Ajouter mon adresse" });
+    await bouton.hover();
+    assert.equal(await bouton.evaluate((el) => getComputedStyle(el).color), "rgb(255, 253, 248)");
+    const { uid: idLeo } = await auth.getUserByEmail("leo@test.ca");
+    assert.deepEqual((await db.doc(`users/${idLeo}`).get()).data().role, ["deneigeur_x"]);
   });
   await ctx.close();
 }
