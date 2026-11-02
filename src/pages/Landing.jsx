@@ -8,7 +8,7 @@ import FaqAccordion from "./landing/FaqAccordion";
 import WaitlistForm from "./landing/WaitlistForm";
 import HeroIllustration from "./landing/HeroIllustration";
 import ApercuTableau from "./landing/ApercuTableau";
-import TableauParallaxe from "./landing/TableauParallaxe";
+import ParcoursDemande from "./landing/ParcoursDemande";
 import SceneProtection from "./landing/ScenesProtection";
 import {
   CapNeige,
@@ -199,7 +199,7 @@ export default function Landing() {
           </div>
           <ApercuTableau />
         </div>
-        <TableauParallaxe />
+        <ParcoursDemande />
       </section>
 
       {/* 4. Frais */}
