@@ -6,7 +6,8 @@ import "./WaitlistForm.css";
 
 const CODE_POSTAL_REGEX = /^[A-Za-z]\d[A-Za-z][ -]?\d[A-Za-z]\d$/;
 
-// Inscription simple : courriel et code postal. Une fois inscrite, la
+// Inscription simple : nom complet, courriel et code postal, puis
+// confirmation par un lien envoyé par courriel (anti-pourriel). Une fois inscrite, la
 // personne peut préciser ce qu'elle veut faire (faire déneiger, déneiger ou
 // les deux) : question facultative, envoyée par le même appel, qui sert à
 // compter les déneigeurs par ville. Pro (role « pro », contrôlé par Landing)
@@ -21,6 +22,7 @@ const INTENTIONS = [
 export default function WaitlistForm({ role: roleControle = null }) {
   const pro = roleControle === "pro";
   const [entreprise, setEntreprise] = useState("");
+  const [nom, setNom] = useState("");
   const [courriel, setCourriel] = useState("");
   const [codePostal, setCodePostal] = useState("");
   const [siteWeb, setSiteWeb] = useState(""); // honeypot — reste vide pour un humain
@@ -34,7 +36,7 @@ export default function WaitlistForm({ role: roleControle = null }) {
   async function preciser(role) {
     setEnvoiIntention(role);
     try {
-      await rejoindreListeAttente({ courriel: courriel.trim(), codePostal: codePostal.trim(), role, siteWeb });
+      await rejoindreListeAttente({ nom: nom.trim(), courriel: courriel.trim(), codePostal: codePostal.trim(), role, siteWeb });
       setIntention(role);
     } catch {
       // Facultatif : en cas d'échec, l'inscription reste valide sans rôle.
@@ -54,17 +56,21 @@ export default function WaitlistForm({ role: roleControle = null }) {
     setEnCours(true);
     try {
       const resultat = await rejoindreListeAttente({
+        nom: nom.trim(),
         courriel: courriel.trim(),
         codePostal: codePostal.trim(),
         siteWeb,
         ...(pro ? { role: "pro", entreprise: entreprise.trim() } : {}),
       });
-      setInscription({ ville: resultat.data?.ville ?? null });
+      setInscription({
+        ville: resultat.data?.ville ?? null,
+        confirmationRequise: resultat.data?.confirmationRequise !== false,
+      });
     } catch {
       setErreur(
         pro
           ? "Quelque chose a bloqué. Vérifiez le nom de l'entreprise, le courriel et le code postal, puis réessayez."
-          : "Quelque chose a bloqué. Vérifiez votre courriel et votre code postal, puis réessayez.",
+          : "Quelque chose a bloqué. Vérifiez votre nom, votre courriel et votre code postal, puis réessayez.",
       );
     } finally {
       setEnCours(false);
@@ -85,10 +91,22 @@ export default function WaitlistForm({ role: roleControle = null }) {
   if (inscription) {
     return (
       <div className="waitlist-form waitlist-form--succes">
-        <span className="waitlist-form__succes-titre">C'est noté, merci !</span>
-        <span className="waitlist-form__succes-texte">
-          Nous vous écrirons dès l'ouverture dans votre secteur. Aucun pourriel : uniquement cette communication.
-        </span>
+        {inscription.confirmationRequise ? (
+          <>
+            <span className="waitlist-form__succes-titre">Vérifiez vos courriels</span>
+            <span className="waitlist-form__succes-texte">
+              Nous venons d'envoyer un lien à <strong>{courriel.trim()}</strong>. Cliquez dessus pour confirmer
+              votre inscription : sans confirmation, elle est effacée après 7 jours.
+            </span>
+          </>
+        ) : (
+          <>
+            <span className="waitlist-form__succes-titre">C'est noté, merci !</span>
+            <span className="waitlist-form__succes-texte">
+              Votre inscription est déjà confirmée. Nous vous écrirons dès l'ouverture dans votre secteur.
+            </span>
+          </>
+        )}
         {intention ? (
           <>
             {intention !== "non_precise" && <span className="waitlist-form__intention-ok">✓ Merci, c'est noté.</span>}
@@ -137,6 +155,21 @@ export default function WaitlistForm({ role: roleControle = null }) {
           />
         </label>
       )}
+
+      <label className="waitlist-form__label">
+        <span className="sr-only">Nom complet</span>
+        <input
+          type="text"
+          required
+          minLength={2}
+          maxLength={120}
+          placeholder="Nom complet"
+          autoComplete="name"
+          value={nom}
+          onChange={(e) => setNom(e.target.value)}
+          className="waitlist-form__input"
+        />
+      </label>
 
       <label className="waitlist-form__label">
         <span className="sr-only">Courriel</span>

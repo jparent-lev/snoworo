@@ -36,7 +36,7 @@ export default function Confidentialite() {
 
       <h3>Liste d'attente</h3>
       <p>
-        Votre courriel, votre code postal et, si vous le précisez, ce que vous voulez faire (faire déneiger,
+        Votre nom complet, votre courriel, votre code postal et, si vous le précisez, ce que vous voulez faire (faire déneiger,
         déneiger ou les deux). À partir du code postal,
         nous déduisons votre ville. Ces renseignements servent à savoir quelles villes ouvrir en premier et à vous écrire lorsque Snowro ouvre
         dans votre secteur. Rien d'autre.
@@ -158,7 +158,8 @@ export default function Confidentialite() {
       <ul>
         <li>
           <strong>Liste d'attente :</strong> jusqu'à ce que vous nous demandiez de vous en retirer, ou au plus 24 mois
-          après votre inscription : elle est alors effacée automatiquement.
+          après votre inscription : elle est alors effacée automatiquement. Une inscription dont l'adresse courriel
+          n'a pas été confirmée (lien envoyé par courriel) est effacée après 7 jours.
         </li>
         <li>
           <strong>Messages envoyés par « Nous écrire » :</strong> effacés automatiquement 24 mois après leur

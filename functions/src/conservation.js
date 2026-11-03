@@ -22,14 +22,31 @@ async function effacerAvant(collection, limiteMs) {
   }
 }
 
-// Une fois par jour : liste d'attente et messages « Nous écrire » de plus de 24 mois.
+// Inscriptions jamais confirmées : effacées quand leur lien expire (7 jours).
+async function effacerNonConfirmees() {
+  let total = 0;
+  for (;;) {
+    const lot = await db.collection("listeAttente").where("jetonExpireAt", "<=", Timestamp.now()).limit(400).get();
+    if (lot.empty) return total;
+    const batch = db.batch();
+    lot.docs.forEach((d) => batch.delete(d.ref));
+    await batch.commit();
+    total += lot.size;
+  }
+}
+
+// Une fois par jour : liste d'attente et messages « Nous écrire » de plus de
+// 24 mois, inscriptions jamais confirmées après 7 jours.
 export async function appliquerConservation() {
+  const nonConfirmees = await effacerNonConfirmees();
   const listeAttente = await effacerAvant("listeAttente", CONSERVATION_LISTE_ATTENTE_MS);
   const messagesContact = await effacerAvant("messagesContact", CONSERVATION_MESSAGES_CONTACT_MS);
-  if (listeAttente || messagesContact) {
-    logger.info(`Conservation : ${listeAttente} inscription(s) et ${messagesContact} message(s) « Nous écrire » effacés.`);
+  if (nonConfirmees || listeAttente || messagesContact) {
+    logger.info(
+      `Conservation : ${nonConfirmees} inscription(s) non confirmée(s), ${listeAttente} inscription(s) de plus de 24 mois et ${messagesContact} message(s) « Nous écrire » effacés.`,
+    );
   }
-  return { listeAttente, messagesContact };
+  return { nonConfirmees, listeAttente, messagesContact };
 }
 
 export const purgerConservation = onSchedule(

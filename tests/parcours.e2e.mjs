@@ -357,17 +357,20 @@ async function connexion(cle, largeur = 1280) {
   const envois = [];
   await p.route("**/rejoindreListeAttente", (r) => {
     envois.push(r.request().postDataJSON().data);
-    return r.fulfill({ json: { result: { ok: true, ville: "Québec" } } });
+    return r.fulfill({ json: { result: { ok: true, ville: "Québec", confirmationRequise: true } } });
   });
-  await test("liste d'attente : courriel et code postal seulement, puis « Les deux » en option", async () => {
+  await test("liste d'attente : nom, courriel et code postal, « Vérifiez vos courriels », puis « Les deux » en option", async () => {
     await p.goto("http://localhost:4190/");
     const liste = p.locator("#liste");
     assert.equal(await liste.getByRole("radio").count(), 0);
+    await liste.getByPlaceholder("Nom complet").fill("Sam Simple");
     await liste.getByPlaceholder("votre@courriel.com").fill("simple@exemple.ca");
     await liste.getByPlaceholder("Code postal (ex. G1L 2M4)").fill("G1L 2M4");
     await liste.getByRole("button", { name: "Rejoindre la liste" }).click();
+    await liste.getByText("Vérifiez vos courriels").waitFor();
     await liste.getByText("Facultatif : vous voulez plutôt…").waitFor();
     assert.equal(envois.length, 1);
+    assert.equal(envois[0].nom, "Sam Simple");
     assert.equal(envois[0].role ?? null, null);
     await liste.screenshot({ path: `${D}/e2e-liste-intention-390.png` });
     await liste.getByRole("button", { name: "Les deux" }).click();
@@ -375,6 +378,23 @@ async function connexion(cle, largeur = 1280) {
     assert.equal(envois.length, 2);
     assert.equal(envois[1].role, "les_deux");
     assert.equal(envois[1].courriel, "simple@exemple.ca");
+    assert.equal(envois[1].nom, "Sam Simple");
+  });
+  await test("liste d'attente : le lien du courriel confirme l'inscription ; un lien faux est refusé", async () => {
+    const jeton = "c".repeat(48);
+    await db.doc("listeAttente/zoe-liste@test.ca").set({
+      nom: "Zoé Liste", courriel: "zoe-liste@test.ca", ville: "Québec", confirmee: false,
+      jetonConfirmation: jeton, jetonExpireAt: ts(24 * H), createdAt: ts(0),
+    });
+    await p.unroute("**/rejoindreListeAttente");
+    await p.goto(`http://localhost:4190/liste/confirmer?c=${encodeURIComponent("zoe-liste@test.ca")}&j=${jeton}`);
+    await p.getByRole("heading", { name: "Merci Zoé, c'est confirmé" }).waitFor();
+    assert.equal((await db.doc("listeAttente/zoe-liste@test.ca").get()).data().confirmee, true);
+    await p.goto(`http://localhost:4190/liste/confirmer?c=${encodeURIComponent("zoe-liste@test.ca")}&j=${"d".repeat(48)}`);
+    await p.getByRole("heading", { name: "Merci Zoé, c'est confirmé" }).waitFor();
+    await p.getByText("Votre inscription était déjà confirmée.").waitFor();
+    await p.goto("http://localhost:4190/liste/confirmer?c=inconnu%40test.ca&j=" + "e".repeat(48));
+    await p.getByRole("heading", { name: "Ce lien ne fonctionne pas" }).waitFor();
   });
   await ctx.close();
 }

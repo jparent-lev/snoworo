@@ -316,7 +316,7 @@ export default function Landing() {
           <div>
             <h2 className="landing__h2 landing__h2--sur-argile">Nous ouvrons là où il y a du monde</h2>
             <p className="landing__p landing__p--sur-argile-clair">
-              Laissez-nous votre courriel et votre code postal. Nous vous écrirons lorsque Snowro sera offert dans
+              Laissez-nous votre nom, votre courriel et votre code postal. Nous vous écrirons lorsque Snowro sera offert dans
               votre secteur, et votre inscription fera avancer votre ville dans la file.
             </p>
           </div>

@@ -173,12 +173,17 @@ fraisPct: 8`, identiques aux valeurs par défaut de la maquette).
 ## `listeAttente/{courriel}` et `listeAttente/pro:{courriel}`
 
 ```
+nom                     // nom complet
 courriel, codePostal
+confirmee: boolean      // double confirmation : false tant que le lien du courriel n'est pas cliqué
+                        // (absent = inscription antérieure, considérée confirmée)
+confirmeeAt
+jetonConfirmation, jetonEnvoyeAt, jetonExpireAt   // lien de confirmation (7 jours), retirés à la confirmation
 role: "client" | "deneigeur" | "les_deux" | "pro"   // facultatif : précisé après l'inscription
 entreprise              // nom de l'entreprise, role "pro" seulement
 ville, villeGeoId       // dérivés par géocodage serveur du codePostal
 createdAt
-confirmation: {         // écrit par confirmerInscriptionListeAttente
+confirmation: {         // écrit par envoyerConfirmationListeAttente (envoi du lien)
   statut: "envoyee" | "echec",
   resendId: string | null,
   envoyeeAt: timestamp | null,
