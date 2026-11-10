@@ -341,8 +341,8 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* 10. FAQ */}
-      <section className="landing__section">
+      {/* 10. FAQ (ancre #faq : lien « Aide » du tableau de bord) */}
+      <section id="faq" className="landing__section">
         <h2 className="landing__h2">Les questions qui reviennent</h2>
         <FaqAccordion />
       </section>

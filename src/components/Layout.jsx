@@ -58,6 +58,12 @@ export default function Layout() {
         <Outlet context={{ mode, changerMode }} />
       </main>
       <footer className="layout__pied">
+        <nav className="layout__aide" aria-label="Aide">
+          <Link to="/#faq">Aide</Link>
+          <Link to="/nous-ecrire">Nous écrire</Link>
+          <Link to="/confidentialite">Confidentialité</Link>
+          <Link to="/conditions">Conditions</Link>
+        </nav>
         <VersionFooter />
       </footer>
     </div>
