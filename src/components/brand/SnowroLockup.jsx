@@ -2,6 +2,7 @@ import SnowroSymbol from "./SnowroSymbol";
 
 // Verrouillage horizontal — voir README § Verrouillage horizontal.
 // Sous 28px de hauteur de symbole, tomber au symbole seul (contrainte du design system).
+// qualifiant={null} : « snowro » seul, sans « X » ni « PRO » dessous.
 export default function SnowroLockup({ qualifiant = "X", neige = false, surTuile = false, size = 42, className }) {
   if (size < 28) {
     return (
@@ -34,12 +35,14 @@ export default function SnowroLockup({ qualifiant = "X", neige = false, surTuile
         >
           snowro
         </span>
-        <span
-          className="eyebrow"
-          style={{ letterSpacing: "0.18em", color: qualifiantColor, lineHeight: 1 }}
-        >
-          {qualifiant}
-        </span>
+        {qualifiant && (
+          <span
+            className="eyebrow"
+            style={{ letterSpacing: "0.18em", color: qualifiantColor, lineHeight: 1 }}
+          >
+            {qualifiant}
+          </span>
+        )}
       </div>
     </div>
   );
