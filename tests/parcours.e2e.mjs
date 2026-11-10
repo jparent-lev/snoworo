@@ -414,7 +414,7 @@ async function connexion(cle, largeur = 1280) {
   pageCourante = p;
   await test("accueil : aucune mention de Snowro Pro (menu, section, liste d'attente, FAQ, pied de page)", async () => {
     await p.goto("http://localhost:4190/");
-    await p.getByRole("heading", { name: "Nous ouvrons là où il y a du monde" }).waitFor();
+    await p.getByRole("heading", { name: "Prêt pour la prochaine tempête ?" }).waitFor();
     assert.equal(await p.locator("#pro").count(), 0);
     assert.equal(await p.getByRole("link", { name: "Être averti pour Pro" }).count(), 0);
     assert.equal(await p.getByRole("radio", { name: "Entreprise (Pro)" }).count(), 0);
@@ -426,36 +426,21 @@ async function connexion(cle, largeur = 1280) {
   await ctx.close();
 }
 
-// Liste d'attente : inscription simple, puis question facultative.
+// Accueil ouvert (création de compte) ; liens de confirmation de la liste d'attente déjà envoyés.
 {
   const ctx = await b.newContext({ viewport: { width: 390, height: 900 }, deviceScaleFactor: 2 });
   const p = await ctx.newPage();
   pageCourante = p;
-  const envois = [];
-  await p.route("**/rejoindreListeAttente", (r) => {
-    envois.push(r.request().postDataJSON().data);
-    return r.fulfill({ json: { result: { ok: true, ville: "Québec", confirmationRequise: true } } });
-  });
-  await test("liste d'attente : nom, courriel et code postal, « Vérifiez vos courriels », puis « Les deux » en option", async () => {
+  await test("accueil ouvert : les appels à l'action mènent à la création de compte, plus de liste d'attente", async () => {
     await p.goto("http://localhost:4190/");
-    const liste = p.locator("#liste");
-    assert.equal(await liste.getByRole("radio").count(), 0);
-    await liste.getByPlaceholder("Nom complet").fill("Sam Simple");
-    await liste.getByPlaceholder("votre@courriel.com").fill("simple@exemple.ca");
-    await liste.getByPlaceholder("Code postal (ex. G1L 2M4)").fill("G1L 2M4");
-    await liste.getByRole("button", { name: "Rejoindre la liste" }).click();
-    await liste.getByText("Vérifiez vos courriels").waitFor();
-    await liste.getByText("Facultatif : vous voulez plutôt…").waitFor();
-    assert.equal(envois.length, 1);
-    assert.equal(envois[0].nom, "Sam Simple");
-    assert.equal(envois[0].role ?? null, null);
-    await liste.screenshot({ path: `${D}/e2e-liste-intention-390.png` });
-    await liste.getByRole("button", { name: "Les deux" }).click();
-    await liste.getByText("Merci, c'est noté.").waitFor();
-    assert.equal(envois.length, 2);
-    assert.equal(envois[1].role, "les_deux");
-    assert.equal(envois[1].courriel, "simple@exemple.ca");
-    assert.equal(envois[1].nom, "Sam Simple");
+    assert.equal(await p.getByRole("link", { name: "Publier une demande" }).getAttribute("href"), "/inscription");
+    assert.equal(await p.getByRole("link", { name: "Créer un compte" }).first().getAttribute("href"), "/inscription");
+    assert.equal(await p.getByRole("link", { name: "Devenir déneigeur de quartier" }).first().getAttribute("href"), "/inscription");
+    assert.equal(await p.getByRole("link", { name: "Se connecter" }).first().getAttribute("href"), "/connexion");
+    const texte = await p.locator("body").innerText();
+    assert.ok(!/Rejoindre la liste|liste d'attente|Pas encore lancé/i.test(texte), "mention de la liste d'attente sur l'accueil");
+    assert.equal(await p.getByPlaceholder("Nom complet").count(), 0);
+    await p.screenshot({ path: `${D}/e2e-accueil-ouvert-390.png`, fullPage: true });
   });
   await test("liste d'attente : le lien du courriel confirme l'inscription ; un lien faux est refusé", async () => {
     const jeton = "c".repeat(48);
@@ -463,7 +448,6 @@ async function connexion(cle, largeur = 1280) {
       nom: "Zoé Liste", courriel: "zoe-liste@test.ca", ville: "Québec", confirmee: false,
       jetonConfirmation: jeton, jetonExpireAt: ts(24 * H), createdAt: ts(0),
     });
-    await p.unroute("**/rejoindreListeAttente");
     await p.goto(`http://localhost:4190/liste/confirmer?c=${encodeURIComponent("zoe-liste@test.ca")}&j=${jeton}`);
     await p.getByRole("heading", { name: "Merci Zoé, c'est confirmé" }).waitFor();
     assert.equal((await db.doc("listeAttente/zoe-liste@test.ca").get()).data().confirmee, true);

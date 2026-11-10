@@ -57,9 +57,7 @@ fournisseur de chaque projet n'accepte que sa branche.
 test.snowro.com), essais, puis PR de `test` vers `main` (sa fusion déploie en
 production). Le pied de page affiche le commit court déployé.
 
-Variables propres au test (`.env.test`) : `VITE_ACCES_COMPTES=1` (en-tête de
-l'accueil vers la connexion et la création de compte) et
-`VITE_PAGE_CREDIT_IMPOT=1` (page `/credit-impot` ; absente de la production,
+Variable propre au test (`.env.test`) : `VITE_PAGE_CREDIT_IMPOT=1` (page `/credit-impot` ; absente de la production,
 où l'adresse renvoie à l'accueil). `.env.emulateurs` active la page pour les
 tests de bout en bout.
 
