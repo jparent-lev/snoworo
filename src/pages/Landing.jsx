@@ -5,7 +5,6 @@ import SnowroSymbol from "../components/brand/SnowroSymbol";
 import PiedDePage from "../components/PiedDePage";
 import FeeCalculator from "./landing/FeeCalculator";
 import FaqAccordion from "./landing/FaqAccordion";
-import WaitlistForm from "./landing/WaitlistForm";
 import HeroIllustration from "./landing/HeroIllustration";
 import ApercuTableau from "./landing/ApercuTableau";
 import ParcoursDemande from "./landing/ParcoursDemande";
@@ -21,27 +20,19 @@ import {
 } from "./landing/Decors";
 import "./Landing.css";
 
-// Si VITE_ACCES_COMPTES=1 (.env.test, .env.production) :
-// l'en-tête mène à la connexion et à la création de compte. Sans ce réglage,
-// il mène à la liste d'attente.
-const ACCES_COMPTES = import.meta.env.VITE_ACCES_COMPTES === "1";
-
-// Site vitrine de pré-lancement — collecte de liste d'attente uniquement,
-// aucun compte ni paiement réel déclenché ici. Copie et structure figées par
-// design_handoff_snowro_site/README.md (à reprendre telle quelle) ; le menu
+// Accueil : Snowro est ouvert. Les appels à l'action mènent à la création de
+// compte ; le rôle (faire déneiger, déneiger ou les deux) se choisit à la
+// première visite du tableau de bord. La liste d'attente n'est plus proposée
+// (les liens de confirmation déjà envoyés fonctionnent toujours,
+// /liste/confirmer). Structure d'origine : design_handoff_snowro_site ; le menu
 // hamburger mobile est un ajout hors maquette (le prototype ne couvrait pas
 // ce cas — le nav en flex-wrap se cassait en plusieurs lignes désordonnées
 // sous ~900px).
 export default function Landing() {
   const { user, loading } = useAuth();
   const [menuOuvert, setMenuOuvert] = useState(false);
-  // Barre minimaliste (logo + « Rejoindre la liste ») dès que la page défile.
+  // Barre minimaliste (logo + « Créer un compte ») dès que la page défile.
   const [compact, setCompact] = useState(false);
-  // Liste d'attente : inscription simple (courriel, code postal), puis une
-  // question facultative sur ce que la personne veut faire. Le rôle « pro »
-  // existe toujours dans le formulaire et les functions, mais l'offre Snowro
-  // Pro est retirée du site jusqu'à la V2 : roleListe reste à null ici.
-  const [roleListe] = useState(null);
 
   // Arrivée depuis une autre page par un lien "/#section" (pied de page des
   // pages légales) : le navigateur tente de défiler avant que React ait rendu
@@ -62,12 +53,14 @@ export default function Landing() {
     return () => window.removeEventListener("scroll", maj);
   }, []);
 
-  if (!loading && user) return <Navigate to="/tableau-de-bord" replace />;
+  // Connecté : direction le tableau de bord, sauf si un lien vise une section
+  // de l'accueil (« Aide » du tableau de bord : /#faq).
+  if (!loading && user && !window.location.hash) return <Navigate to="/tableau-de-bord" replace />;
 
   const fermerMenu = () => setMenuOuvert(false);
 
   return (
-    <div className={`landing${ACCES_COMPTES ? " landing--comptes" : ""}`}>
+    <div className="landing landing--comptes">
       <header className={`landing__entete${compact ? " landing__entete--compact" : ""}`}>
         <div className="landing__entete-inner">
           <a href="#haut" className="landing__logo" onClick={fermerMenu}>
@@ -80,20 +73,22 @@ export default function Landing() {
             <a href="#frais" onClick={fermerMenu}>Frais</a>
             <a href="#deneigeur" onClick={fermerMenu}>Déneiger</a>
           </nav>
-          {ACCES_COMPTES ? (
-            <div className="landing__comptes">
-              <Link to="/connexion" className="landing__connexion">
-                Se connecter
+          <div className="landing__comptes">
+            {user ? (
+              <Link to="/tableau-de-bord" className="landing__nav-cta landing__bouton-neige landing__bouton-neige--a">
+                Mon tableau de bord
               </Link>
-              <Link to="/inscription" className="landing__nav-cta landing__bouton-neige landing__bouton-neige--a">
-                Créer un compte
-              </Link>
-            </div>
-          ) : (
-            <a href="#liste" className="landing__nav-cta landing__bouton-neige landing__bouton-neige--a" onClick={fermerMenu}>
-              Rejoindre la liste
-            </a>
-          )}
+            ) : (
+              <>
+                <Link to="/connexion" className="landing__connexion">
+                  Se connecter
+                </Link>
+                <Link to="/inscription" className="landing__nav-cta landing__bouton-neige landing__bouton-neige--a">
+                  Créer un compte
+                </Link>
+              </>
+            )}
+          </div>
           <button
             type="button"
             className="landing__menu-bouton"
@@ -119,17 +114,17 @@ export default function Landing() {
             souffleuse prend la tâche et s'en occupe. Simple, rapide, sans engagement.
           </p>
           <div className="landing__hero-cta">
-            {/* Un seul appel à l'action : l'inscription est la même pour tout le monde
-                (ce que la personne veut faire se précise après l'envoi). */}
-            <a
-              href="#liste"
-              className="landing__bouton-primaire landing__bouton-neige landing__bouton-neige--b"
-            >
-              Rejoindre la liste
+            {/* L'inscription est la même pour tout le monde : ce que la personne
+                veut faire se choisit à la première visite du tableau de bord. */}
+            <Link to="/inscription" className="landing__bouton-primaire landing__bouton-neige landing__bouton-neige--b">
+              Publier une demande
+            </Link>
+            <a href="#deneigeur" className="landing__bouton-fantome">
+              Je veux déneiger
             </a>
           </div>
           <p className="landing__hero-mention">
-            Pas encore lancé. Nous ouvrons quartier par quartier : la liste d'attente détermine l'ordre.
+            Inscription gratuite. Rien n'est prélevé avant qu'un déneigeur de quartier accepte votre demande.
           </p>
         </div>
 
@@ -238,20 +233,20 @@ export default function Landing() {
           <div className="landing__villes-texte">
             <h3 className="landing__h3-carte">Les villes se dessinent toutes seules</h3>
             <p className="landing__p">
-              Votre ville apparaît dans Snowro dès que des personnes s'y inscrivent. Votre demande est toujours
-              montrée aux déneigeurs de quartier de votre ville.
+              Votre ville apparaît dans Snowro dès qu'une personne s'y inscrit avec son adresse. Votre demande est
+              montrée aux déneigeurs de quartier de votre ville : plus il y en a, plus vite elle trouve preneur.
             </p>
             <div className="landing__jetons">
               <span className="landing__jeton">Québec</span>
               <span className="landing__jeton">Montréal</span>
               <span className="landing__jeton">Trois-Rivières</span>
-              <a href="#liste" className="landing__jeton landing__jeton--tienne">
+              <Link to="/inscription" className="landing__jeton landing__jeton--tienne">
                 + La vôtre ?
-              </a>
+              </Link>
             </div>
             <p className="landing__p landing__p--legende">
-              Nous ouvrons une ville lorsqu'elle compte assez de déneigeurs de quartier : c'est pourquoi la
-              liste d'attente compte.
+              Peu de déneigeurs près de chez vous ? Parlez de Snowro à vos voisins : un étudiant ou un voisin
+              avec une souffleuse s'inscrit en deux minutes.
             </p>
           </div>
           <CarteVilles />
@@ -285,12 +280,9 @@ export default function Landing() {
                 Un professionnel du déneigement qui souhaite combler les temps libres de sa tournée
               </span>
             </div>
-            <a
-              href="#liste"
-              className="landing__bouton-ocre landing__bouton-neige landing__bouton-neige--d"
-            >
-              Rejoindre la liste
-            </a>
+            <Link to="/inscription" className="landing__bouton-ocre landing__bouton-neige landing__bouton-neige--d">
+              Devenir déneigeur de quartier
+            </Link>
           </div>
           <div className="landing__carte-revenus-wrap">
             <div className="landing__carte-revenus">
@@ -325,18 +317,27 @@ export default function Landing() {
       {/* Témoignages retirés en attendant de vrais verbatims — voir Landing.css
           pour les styles landing__temoignage* laissés en place pour ce retour. */}
 
-      {/* 9. Liste d'attente */}
-      <section id="liste" className="landing__section">
+      {/* 9. Dernier appel à l'action (ancre #commencer ; l'ancienne ancre #liste
+          y mène aussi, pour les liens déjà partagés). */}
+      <section id="commencer" className="landing__section">
+        <span id="liste" aria-hidden="true" />
         <div className="landing__bloc-liste">
           <CapNeige className="landing__cap-liste" />
           <div>
-            <h2 className="landing__h2 landing__h2--sur-argile">Nous ouvrons là où il y a du monde</h2>
+            <h2 className="landing__h2 landing__h2--sur-argile">Prêt pour la prochaine tempête ?</h2>
             <p className="landing__p landing__p--sur-argile-clair">
-              Laissez-nous votre nom, votre courriel et votre code postal. Nous vous écrirons lorsque Snowro sera offert dans
-              votre secteur, et votre inscription fera avancer votre ville dans la file.
+              Créez votre compte en une minute : publiez une demande, ou recevez les demandes de votre quartier
+              si vous déneigez. Un seul compte suffit pour faire les deux.
             </p>
           </div>
-          <WaitlistForm role={roleListe} />
+          <div className="landing__final-cta">
+            <Link to="/inscription" className="landing__bouton-primaire landing__bouton-neige landing__bouton-neige--b">
+              Créer un compte
+            </Link>
+            <Link to="/connexion" className="landing__final-connexion">
+              Déjà inscrit ? Se connecter
+            </Link>
+          </div>
         </div>
       </section>
 

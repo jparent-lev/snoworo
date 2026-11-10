@@ -12,7 +12,7 @@ const THEMES = [
     questions: [
       {
         q: "Est-ce que le service est offert dans ma ville ?",
-        r: "Nous ouvrons les villes une à une, selon le nombre de déneigeurs de quartier inscrits. Votre ville apparaît automatiquement dans le système dès que des personnes s'y inscrivent avec une adresse. C'est pourquoi la liste d'attente compte plus qu'on ne le croit.",
+        r: "Oui, partout au Québec : votre ville apparaît automatiquement dans Snowro dès qu'une personne s'y inscrit avec son adresse. Votre demande est montrée aux déneigeurs de quartier de votre ville ; s'il y en a encore peu, parlez de Snowro à vos voisins, c'est ce qui la fait trouver preneur plus vite.",
       },
       {
         q: "Est-ce que je peux faire déneiger et déneiger avec le même compte ?",
