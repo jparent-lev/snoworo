@@ -110,6 +110,12 @@ service cloud.firestore {
       allow read, write: if false;
     }
 
+    // ---- limitesTelephone (compteurs anti-abus des codes par texto) ----
+    // Empreinte du numéro et compteur seulement ; effacés après 48 heures.
+    match /limitesTelephone/{document} {
+      allow read, write: if false;
+    }
+
     // ---- messagesContact (formulaire « Nous écrire » du site vitrine) ----
     // Même principe que listeAttente : écrit uniquement par
     // envoyerMessageContact (Admin SDK), jamais lu depuis un client.

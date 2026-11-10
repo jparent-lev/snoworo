@@ -1,5 +1,6 @@
 import { defineSecret, defineString } from "firebase-functions/params";
 import { logger } from "firebase-functions/v2";
+import { CONSENT_VERSIONS } from "./consentVersions.js";
 
 // Textos par Twilio (API REST, sans SDK). Envoyés seulement aux personnes qui
 // ont accordé le consentement « notificationsSMS » ET vérifié leur numéro
@@ -34,8 +35,12 @@ export function formaterNumero(e164) {
   return c.length === 10 ? `(${c.slice(0, 3)}) ${c.slice(3, 6)}-${c.slice(6)}` : e164;
 }
 
+// Un accord donné à une version antérieure du texte ne compte pas : la
+// personne doit accepter le texte actuel (Paramètres le lui redemande).
 export const peutRecevoirTextos = (profil) =>
-  profil?.consents?.notificationsSMS?.granted === true && Boolean(profil?.telephoneVerifie);
+  profil?.consents?.notificationsSMS?.granted === true &&
+  (profil.consents.notificationsSMS.version ?? 0) >= CONSENT_VERSIONS.notificationsSMS &&
+  Boolean(profil?.telephoneVerifie);
 
 // Envoi brut : lève une erreur si Twilio refuse ou n'est pas configuré.
 export async function envoyerTexteBrut(a, corps) {
