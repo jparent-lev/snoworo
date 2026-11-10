@@ -1033,9 +1033,24 @@
   border-radius: 999px;
 }
 
-/* Pastille « + La tienne ? » : en pointillés ardoise comme l'épingle
-   fantôme de la carte des villes (Decors.jsx), et lien vers la liste
-   d'attente. Padding réduit de la bordure pour garder la même hauteur que
+/* Compteur par ville (VillesPubliques.jsx) : liste sans puces, nombre en gras. */
+.landing__villes-compteur {
+  list-style: none;
+  padding: 0;
+  margin: 2px 0 0;
+}
+
+.landing__villes-compteur li {
+  display: inline-flex;
+}
+
+.landing__jeton b {
+  margin-left: 6px;
+  color: var(--color-argile-foncee);
+}
+
+/* Pastille « + La vôtre ? » : en pointillés ardoise comme l'épingle
+   fantôme de la carte des villes (Decors.jsx), et lien vers l'inscription. Padding réduit de la bordure pour garder la même hauteur que
    les autres pastilles. */
 .landing__jeton--tienne {
   background: transparent;

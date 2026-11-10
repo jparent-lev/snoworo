@@ -432,7 +432,9 @@ async function connexion(cle, largeur = 1280) {
   const p = await ctx.newPage();
   pageCourante = p;
   await test("accueil ouvert : les appels à l'action mènent à la création de compte, plus de liste d'attente", async () => {
+    await db.doc("statsPubliques/villes").set({ villes: [{ nom: "Québec", deneigeurs: 14 }], seuil: 10 });
     await p.goto("http://localhost:4190/");
+    await p.getByRole("list", { name: "Déneigeurs de quartier par ville" }).getByText("Québec 14").waitFor();
     assert.equal(await p.getByRole("link", { name: "Publier une demande" }).getAttribute("href"), "/inscription");
     assert.equal(await p.getByRole("link", { name: "Créer un compte" }).first().getAttribute("href"), "/inscription");
     assert.equal(await p.getByRole("link", { name: "Devenir déneigeur de quartier" }).first().getAttribute("href"), "/inscription");
