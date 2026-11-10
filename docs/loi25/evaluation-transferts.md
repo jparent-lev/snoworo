@@ -24,6 +24,7 @@
 | Adresse à déneiger, numéro d'appartement, adresse de service du déneigeur, position | Mise en relation dans la même ville ; adresse exacte montrée au déneigeur qui accepte | Élevée (lieu de résidence) |
 | Messages entre client et déneigeur, photos de fin de job (sans métadonnées GPS) | Exécution de la job, preuve | Moyenne ; effacés 30 jours après la job |
 | Paiement : identifiants Stripe, montants ; identité et compte bancaire du déneigeur (chez Stripe seulement) | Paiement et versement | Élevée (financière), mais détenue par Stripe |
+| Numéro de cellulaire vérifié (textos, avec consentement) | Avis par texto | Moyenne ; retirable en tout temps |
 | Liste d'attente : courriel, code postal, rôle | Choisir les villes à ouvrir | Faible ; effacée après 24 mois |
 | « Nous écrire » : nom, courriel, message | Répondre | Faible à moyenne ; effacé après 24 mois |
 
@@ -35,6 +36,7 @@
 | Google Maps Platform | Géocodage, suggestions d'adresses (texte tapé envoyé à Google) | États-Unis et autres pays | Conditions de Google Maps Platform et avenant sur le traitement des données |
 | Stripe | Paiements, vérification d'identité et versements aux déneigeurs | Canada et États-Unis | Contrat de services Stripe et avenant sur la protection des données (DPA) ; certification PCI DSS niveau 1 |
 | Resend | Envoi des courriels transactionnels | États-Unis | Conditions et avenant sur le traitement des données de Resend. À compléter : confirmer l'acceptation du DPA |
+| Twilio | Envoi des textos (code de vérification, avis de demande, de message) aux personnes qui y ont consenti | États-Unis | Conditions et avenant sur le traitement des données de Twilio. À compléter : confirmer l'acceptation du DPA |
 
 ## 3. Analyse (article 17)
 
@@ -65,7 +67,7 @@ Pour chaque fournisseur, évaluer et noter :
 ## 4. Conclusion
 
 À compléter, par exemple : « Compte tenu des mesures ci-dessus, la protection
-offerte par Google, Stripe et Resend est jugée adéquate au sens de
+offerte par Google, Stripe, Resend et Twilio est jugée adéquate au sens de
 l'article 17. Une entente écrite (conditions et avenants DPA de chaque
 fournisseur) encadre chaque communication. »
 
@@ -78,5 +80,5 @@ fournisseur) encadre chaque communication. »
 ## 5. Suivi
 
 - [ ] Confirmer l'emplacement Firestore de `snowro-app`.
-- [ ] Vérifier que l'avenant DPA est accepté chez Google Cloud, Stripe et Resend.
+- [ ] Vérifier que l'avenant DPA est accepté chez Google Cloud, Stripe, Resend et Twilio.
 - [ ] Refaire cette évaluation avant d'ajouter un fournisseur (SMS, analytique, etc.).

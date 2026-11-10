@@ -32,3 +32,6 @@ export { suggererAdresses } from "./suggestionsAdresse.js";
 export { purgerConservation } from "./conservation.js";
 export { fermerCompte } from "./compte.js";
 export { avertirDeneigeursNouvelleDemande } from "./alertesDemandes.js";
+export { envoyerCodeTelephone, verifierCodeTelephone, retirerTelephone, envoyerTexteEssai } from "./telephone.js";
+export { recevoirTexteTwilio } from "./textosEntrants.js";
+export { textosCycleDemande } from "./textosCycle.js";

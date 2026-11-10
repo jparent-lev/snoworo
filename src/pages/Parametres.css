@@ -107,6 +107,12 @@
     flex-direction: column;
     align-items: stretch;
   }
+
+  /* « Utiliser ma position » passe sous le texte : sinon il déborde de l'écran. */
+  .parametres__item--adresse {
+    flex-direction: column;
+    gap: var(--space-4);
+  }
 }
 
 .parametres__item--colonne {
@@ -217,4 +223,23 @@
   .btn.parametres__deconnexion {
     display: inline-block;
   }
+}
+
+/* Cellulaire et consentement aux textos. */
+.parametres__actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 16px;
+}
+
+.parametres__nouvelle-version {
+  margin-top: 10px;
+  padding: 12px 14px;
+  border-radius: var(--radius-panneau);
+  background: var(--color-surface-secondaire);
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
 }

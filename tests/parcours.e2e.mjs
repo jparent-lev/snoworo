@@ -121,7 +121,6 @@ async function connexion(cle, largeur = 1280) {
     await p.getByRole("link", { name: "Paramètres" }).click();
     await p.getByRole("heading", { name: "Votre adresse de service" }).waitFor();
     assert.equal(await p.getByRole("button", { name: "Me déconnecter" }).isVisible(), false);
-    assert.equal(await p.getByText("Notifications SMS").count(), 0);
     await p.goBack();
     await p.getByRole("heading", { name: "Demandes près de chez vous" }).waitFor();
   });
@@ -341,6 +340,56 @@ async function connexion(cle, largeur = 1280) {
     await p.getByRole("button", { name: "Utiliser cette adresse" }).click();
     await p.getByText("Choisissez votre adresse dans la liste de suggestions.").waitFor();
     assert.equal(appels.length, 1);
+  });
+  await test("Marc : « Utiliser ma position » reste dans l'écran à 390 px, même avec un message d'erreur", async () => {
+    const boite = await p.getByRole("button", { name: "Utiliser ma position" }).boundingBox();
+    assert.ok(boite.x + boite.width <= 390, `bouton jusqu'à ${boite.x + boite.width} px`);
+    assert.equal(await p.evaluate(() => document.documentElement.scrollWidth), 390);
+  });
+  await test("Marc : cellulaire vérifié par code, puis consentement aux textos, texto d'essai, nouvelle version", async () => {
+    const appelsTel = [];
+    let refusTwilio = true;
+    await p.route("**/envoyerCodeTelephone", (r) => {
+      // Premier essai : refus de Twilio, tel que le serveur le renvoie (503,
+      // le SDK ajoute « [503] » au message).
+      if (refusTwilio) {
+        refusTwilio = false;
+        return r.fulfill({ status: 503, json: { error: { status: "UNAVAILABLE", message: "envoi-impossible", details: { codeTwilio: 20003, statut: 401 } } } });
+      }
+      appelsTel.push(r.request().postDataJSON().data);
+      return r.fulfill({ json: { result: { ok: true } } });
+    });
+    await p.route("**/verifierCodeTelephone", (r) => {
+      appelsTel.push(r.request().postDataJSON().data);
+      return r.fulfill({ json: { result: { ok: true, numero: "+14185551234" } } });
+    });
+    await p.route("**/envoyerTexteEssai", (r) => r.fulfill({ json: { result: { ok: true } } }));
+    // Sans cellulaire vérifié, l'interrupteur des textos est grisé.
+    const sms = p.getByRole("switch", { name: "Notifications SMS" });
+    assert.equal(await sms.isDisabled(), true);
+    await p.getByText("Vérifiez d'abord votre cellulaire ci-dessus.").waitFor();
+    await p.getByLabel("Numéro de cellulaire").fill("418 555-1234");
+    await p.getByRole("button", { name: "Recevoir un code" }).click();
+    await p.getByText("Le texto n'a pas pu partir (code Twilio 20003). Réessayez dans quelques minutes.").waitFor();
+    await p.getByRole("button", { name: "Recevoir un code" }).click();
+    await p.getByLabel("Code reçu").fill("123456");
+    await p.getByRole("button", { name: "Vérifier" }).click();
+    assert.deepEqual(appelsTel, [{ numero: "418 555-1234" }, { code: "123456" }]);
+    await db.doc(`users/${uid.marc}`).update({ telephoneVerifie: "+14185551234" });
+    await p.getByText("✓ (418) 555-1234 vérifié").waitFor();
+    // Numéro vérifié : l'interrupteur s'active, le texto d'essai part vers ce numéro.
+    await p.waitForFunction(() => !document.querySelector('[aria-label="Notifications SMS"]')?.disabled);
+    await sms.click();
+    await p.waitForFunction(() => document.querySelector('[aria-label="Notifications SMS"]')?.getAttribute("aria-checked") === "true");
+    assert.equal((await db.doc(`users/${uid.marc}`).get()).data().consents.notificationsSMS.version, 2);
+    await p.getByRole("button", { name: "M'envoyer un texto d'essai" }).click();
+    await p.getByText("Texto d'essai envoyé au (418) 555-1234.").waitFor();
+    // Accord donné à une version antérieure du texte : redemandé.
+    await db.doc(`users/${uid.marc}`).update({ "consents.notificationsSMS.version": 1 });
+    await p.getByRole("button", { name: "Accepter la version 2" }).click();
+    await p.getByText("Accordé · version 2").waitFor();
+    await p.screenshot({ path: `${D}/e2e-cellulaire-390.png`, fullPage: true });
+    assert.equal(await p.evaluate(() => document.documentElement.scrollWidth), 390);
   });
   await test("Marc : désactive puis réactive les avis de nouvelles demandes par courriel", async () => {
     const interrupteur = p.getByRole("switch", { name: "Avis de nouvelles demandes par courriel" });

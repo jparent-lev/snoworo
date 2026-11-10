@@ -21,6 +21,12 @@ export const grantConsent = onCall({ region: "northamerica-northeast1" }, async 
   const { type } = request.data ?? {};
   assertValidType(type);
 
+  // Les textos exigent d'abord un numéro vérifié (Paramètres, « Votre cellulaire »).
+  if (type === "notificationsSMS") {
+    const profil = (await db.doc(`users/${request.auth.uid}`).get()).data();
+    if (!profil?.telephoneVerifie) throw new HttpsError("failed-precondition", "telephone-non-verifie");
+  }
+
   await db.doc(`users/${request.auth.uid}`).update({
     [`consents.${type}`]: {
       granted: true,

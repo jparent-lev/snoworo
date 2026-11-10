@@ -20,22 +20,39 @@ import {
 } from "../lib/paiements";
 import CarteDePaiement from "../components/CarteDePaiement";
 import { fermerCompte, messageFermeture } from "../lib/compte";
+import { envoyerCodeTelephone, envoyerTexteEssai, formaterNumero, messageTelephone, retirerTelephone, verifierCodeTelephone } from "../lib/telephone";
 import ChampAdresse from "../components/ChampAdresse";
 import "./Parametres.css";
+import { messageServeur } from "../lib/erreurs";
 
 // Les consentements liés à Snowro Pro (zonesAgregees, offresCiblees) sont
 // masqués jusqu'à la V2 : le modèle de données et les functions les gèrent
 // toujours, il suffira de remettre les deux entrées ici et dans la politique
 // de confidentialité (Confidentialite.jsx) pour les réactiver.
-// Le consentement « Notifications SMS » est masqué tant que les textos
-// (Twilio) ne sont pas en service : il reviendra avec cette fonctionnalité.
-const CONSENTS = [];
+// Textos : sur le test seulement pour l'instant (VITE_TEXTOS, .env.test).
+const TEXTOS = import.meta.env.VITE_TEXTOS === "1";
+
+const CONSENTS = [
+  TEXTOS && {
+    type: "notificationsSMS",
+    titre: "Notifications SMS",
+    // Texte de la version 2 (functions/src/consentVersions.js) : un accord
+    // donné à une version antérieure est redemandé.
+    version: 2,
+    exigeTelephone: true,
+    description:
+      "Recevez un texto quand une demande est publiée près de chez vous (déneigeurs), quand votre demande est acceptée ou faite, et quand l'autre personne vous écrit. Votre numéro est vérifié par un code.",
+  },
+].filter(Boolean);
 
 const ADRESSE_VIDE = { texte: "", placeId: null, libelle: null };
 
 export default function Parametres() {
   const { user, profile } = useAuth();
+  const consentSms = profile?.consents?.notificationsSMS;
+  const smsActifs = Boolean(consentSms?.granted && (consentSms.version ?? 0) >= 2 && profile?.telephoneVerifie);
   const [enCours, setEnCours] = useState(null);
+  const [erreurConsent, setErreurConsent] = useState(null);
   const [erreurAdresse, setErreurAdresse] = useState(null);
   const [majAdresseEnCours, setMajAdresseEnCours] = useState(false);
   const [adresse, setAdresse] = useState(ADRESSE_VIDE);
@@ -44,9 +61,12 @@ export default function Parametres() {
 
   async function basculer(type, accorde) {
     setEnCours(type);
+    setErreurConsent(null);
     try {
       if (accorde) await revokeConsent(type);
       else await grantConsent(type);
+    } catch (err) {
+      setErreurConsent(messageTelephone(err));
     } finally {
       setEnCours(null);
     }
@@ -102,7 +122,7 @@ export default function Parametres() {
       setAdresseManuelle(false);
     } catch (err) {
       setErreurAdresse(
-        err?.code === "functions/invalid-argument" ? err.message : "Adresse introuvable. Vérifiez l'adresse et réessayez.",
+        err?.code === "functions/invalid-argument" ? messageServeur(err) : "Adresse introuvable. Vérifiez l'adresse et réessayez.",
       );
     } finally {
       setMajAdresseEnCours(false);
@@ -129,7 +149,7 @@ export default function Parametres() {
         semble raisonnable.
       </p>
 
-      <div className="parametres__item">
+      <div className="parametres__item parametres__item--adresse">
         <div className="parametres__item-texte">
           <h3>{profile.ville ? profile.ville : "Aucune adresse enregistrée"}</h3>
           <p>
@@ -197,6 +217,16 @@ export default function Parametres() {
 
       {PAIEMENT_REEL && <SectionPaiement profile={profile} deneigeur={roles.includes(ROLE_DENEIGEUR)} />}
 
+      {TEXTOS && (
+        <>
+          <h1>Votre cellulaire</h1>
+          <p className="parametres__intro">
+            Vérifié une seule fois par un code, il sert aux avis par texto si vous les activez ci-dessous.
+          </p>
+          <SectionTelephone profile={profile} smsActifs={smsActifs} />
+        </>
+      )}
+
       {CONSENTS.length > 0 && (
         <>
           <h1>Vos consentements</h1>
@@ -209,24 +239,43 @@ export default function Parametres() {
             {CONSENTS.map((c) => {
               const etat = profile.consents?.[c.type];
               const accorde = Boolean(etat?.granted);
+              const sansTelephone = c.exigeTelephone && !profile.telephoneVerifie;
+              const ancienneVersion = accorde && c.version && (etat?.version ?? 0) < c.version;
               return (
                 <div key={c.type} className="parametres__item">
                   <div className="parametres__item-texte">
                     <h3>{c.titre}</h3>
                     <p>{c.description}</p>
-                    {etat?.grantedAt && (
-                      <p className="parametres__meta">
-                        {accorde ? "Accordé" : "Retiré"} · version {etat.version}
-                      </p>
+                    {sansTelephone && !accorde && <p className="parametres__meta">Vérifiez d'abord votre cellulaire ci-dessus.</p>}
+                    {ancienneVersion ? (
+                      <div className="parametres__nouvelle-version">
+                        <p>
+                          Le texte a changé depuis votre accord (version {etat.version}). Rien ne vous est envoyé tant que
+                          vous n'acceptez pas la version actuelle.
+                        </p>
+                        <button type="button" className="btn btn--principal" onClick={() => basculer(c.type, false)} disabled={enCours === c.type || sansTelephone}>
+                          Accepter la version {c.version}
+                        </button>
+                      </div>
+                    ) : (
+                      etat?.grantedAt && (
+                        <p className="parametres__meta">
+                          {accorde ? "Accordé" : "Retiré"} · version {etat.version}
+                        </p>
+                      )
+                    )}
+                    {erreurConsent && enCours === null && c.type === "notificationsSMS" && (
+                      <p className="message-erreur" role="alert">{erreurConsent}</p>
                     )}
                   </div>
                   <button
                     type="button"
                     className={`parametres__toggle ${accorde ? "parametres__toggle--actif" : ""}`}
                     onClick={() => basculer(c.type, accorde)}
-                    disabled={enCours === c.type}
+                    disabled={enCours === c.type || (sansTelephone && !accorde)}
                     role="switch"
                     aria-checked={accorde}
+                    aria-label={c.titre}
                   >
                     <span className="parametres__toggle-pastille" />
                   </button>
@@ -402,6 +451,153 @@ function SectionFermeture() {
           </form>
         </Modale>
       )}
+    </div>
+  );
+}
+
+// Numéro pour les textos : vérifié par un code reçu par texto
+// (functions/src/telephone.js). Affiché une fois le consentement accordé.
+// « Votre cellulaire » : le numéro appartient au compte, vérifié une seule fois
+// par un code. Le texto d'essai ne part que vers ce numéro vérifié.
+function SectionTelephone({ profile, smsActifs }) {
+  const [numero, setNumero] = useState("");
+  const [code, setCode] = useState("");
+  const [codeEnvoye, setCodeEnvoye] = useState(false);
+  const [modification, setModification] = useState(false);
+  const [enCours, setEnCours] = useState(false);
+  const [erreur, setErreur] = useState(null);
+  const [info, setInfo] = useState(null);
+
+  async function executer(action) {
+    setEnCours(true);
+    setErreur(null);
+    setInfo(null);
+    try {
+      await action();
+    } catch (err) {
+      setErreur(messageTelephone(err));
+    } finally {
+      setEnCours(false);
+    }
+  }
+
+  const envoyer = (e) => {
+    e.preventDefault();
+    executer(async () => {
+      await envoyerCodeTelephone(numero);
+      setCodeEnvoye(true);
+    });
+  };
+
+  const verifier = (e) => {
+    e.preventDefault();
+    executer(async () => {
+      const { ok } = await verifierCodeTelephone(code);
+      if (!ok) {
+        setErreur("Code incorrect. Vérifiez les 6 chiffres reçus par texto.");
+        return;
+      }
+      setCodeEnvoye(false);
+      setModification(false);
+      setCode("");
+      setNumero("");
+    });
+  };
+
+  const essai = () =>
+    executer(async () => {
+      await envoyerTexteEssai();
+      setInfo(`Texto d'essai envoyé au ${formaterNumero(profile.telephoneVerifie)}.`);
+    });
+
+  const retirer = () => {
+    if (!window.confirm("Retirer votre cellulaire ? Les avis par texto seront aussi désactivés.")) return;
+    executer(() => retirerTelephone());
+  };
+
+  if (profile.telephoneVerifie && !modification) {
+    return (
+      <div className="parametres__item parametres__item--colonne">
+        <div className="parametres__item-texte">
+          <h3>Cellulaire</h3>
+          <p className="champ-adresse__ok">✓ {formaterNumero(profile.telephoneVerifie)} vérifié</p>
+          <p>{smsActifs ? "Les avis par texto partent vers ce numéro." : "Activez « Notifications SMS » ci-dessous pour recevoir les avis à ce numéro."}</p>
+        </div>
+        <div className="parametres__actions">
+          <button type="button" className="btn btn--fantome" onClick={essai} disabled={enCours}>
+            M'envoyer un texto d'essai
+          </button>
+          <button type="button" className="btn btn--lien" onClick={() => setModification(true)} disabled={enCours}>
+            Changer
+          </button>
+          <button type="button" className="btn btn--lien" onClick={retirer} disabled={enCours}>
+            Retirer
+          </button>
+        </div>
+        {info && <p className="champ-adresse__ok" role="status">{info}</p>}
+        {erreur && <p className="message-erreur" role="alert">{erreur}</p>}
+      </div>
+    );
+  }
+
+  return (
+    <div className="parametres__item parametres__item--colonne">
+      <div className="parametres__item-texte">
+        <h3>{profile.telephoneVerifie ? "Changer de cellulaire" : "Cellulaire"}</h3>
+        <p>
+          {codeEnvoye
+            ? "Entrez le code à 6 chiffres reçu par texto. Il expire dans 10 minutes."
+            : "Nous envoyons un code à ce numéro pour vérifier qu'il est bien le vôtre. Aucun autre texto ne part sans votre accord."}
+        </p>
+      </div>
+      {codeEnvoye ? (
+        <form className="parametres__adresse-manuelle" onSubmit={verifier}>
+          <label className="auth-form__champ" style={{ flex: 1 }}>
+            Code reçu
+            <input
+              inputMode="numeric"
+              autoComplete="one-time-code"
+              maxLength={6}
+              value={code}
+              onChange={(e) => setCode(e.target.value.replace(/\D/g, ""))}
+            />
+          </label>
+          <button type="submit" className="auth-form__bouton" disabled={enCours || code.length !== 6}>
+            {enCours ? "Vérification…" : "Vérifier"}
+          </button>
+        </form>
+      ) : (
+        <form className="parametres__adresse-manuelle" onSubmit={envoyer}>
+          <label className="auth-form__champ" style={{ flex: 1 }}>
+            Numéro de cellulaire
+            <input type="tel" autoComplete="tel" placeholder="418 555-1234" value={numero} onChange={(e) => setNumero(e.target.value)} />
+          </label>
+          <button type="submit" className="auth-form__bouton" disabled={enCours || numero.replace(/\D/g, "").length < 10}>
+            {enCours ? "Envoi…" : "Recevoir un code"}
+          </button>
+        </form>
+      )}
+      <div className="parametres__actions">
+        {codeEnvoye && (
+          <button type="button" className="btn btn--lien" onClick={() => setCodeEnvoye(false)}>
+            Changer de numéro ou recevoir un nouveau code
+          </button>
+        )}
+        {profile.telephoneVerifie && (
+          <button
+            type="button"
+            className="btn btn--lien"
+            onClick={() => {
+              setModification(false);
+              setCodeEnvoye(false);
+              setErreur(null);
+            }}
+          >
+            Annuler
+          </button>
+        )}
+      </div>
+      {erreur && <p className="message-erreur" role="alert">{erreur}</p>}
     </div>
   );
 }

@@ -10,6 +10,9 @@ import { doc, getDoc, getDocs, setDoc, updateDoc, addDoc, collection, serverTime
 process.env.GCLOUD_PROJECT = "demo-snowro";
 process.env.GOOGLE_GEOCODING_API_KEY = "cle-factice";
 process.env.RESEND_API_KEY = "cle-factice";
+process.env.TWILIO_ACCOUNT_SID = "ACfactice";
+process.env.TWILIO_AUTH_TOKEN = "jeton-factice";
+process.env.TWILIO_NUMERO = "+15815550000";
 const REPO = fileURLToPath(new URL("..", import.meta.url));
 const geohashLib = createRequire(`${REPO}functions/package.json`)("ngeohash");
 
@@ -499,6 +502,166 @@ await test("nouvelle demande : courriel aux déneigeurs de la ville seulement, s
   await ref2.set({ statut: "ouverte", villeGeoId: "ID_QUEBEC", quartier: "Saint-Roch", titre: "Stationnement", remunerationOfferte: 30, donneurOuvrageId: "alF" });
   await al.avertirDeneigeursNouvelleDemande.run({ params: { demandeId: "al-2" }, data: await ref2.get() });
   assert.deepEqual(envoisAlerte.slice(2).map((e) => e.to[0]), ["eve@exemple.ca"]);
+});
+
+console.log("Textos (Twilio)");
+const sms = await import(`${REPO}functions/src/sms.js`);
+const tel = await import(`${REPO}functions/src/telephone.js`);
+const tc = await import(`${REPO}functions/src/textosCycle.js`);
+const textos = [];
+const fetchTextos = async (url, options) => {
+  if (String(url).includes("api.twilio.com")) {
+    const corps = new URLSearchParams(options.body);
+    textos.push({ a: corps.get("To"), de: corps.get("From"), texte: corps.get("Body"), auth: options.headers.Authorization });
+    return { ok: true, json: async () => ({ sid: `SM${textos.length}` }) };
+  }
+  return { ok: true, json: async () => ({ id: "resend-x" }) };
+};
+const avecConsentementSms = { consents: { notificationsSMS: { granted: true, version: 2 } } };
+await test("textos : numéros nord-américains normalisés, les autres refusés", async () => {
+  assert.equal(sms.normaliserNumero("418 555-1234"), "+14185551234");
+  assert.equal(sms.normaliserNumero("+1 (581) 555-0000"), "+15815550000");
+  assert.equal(sms.normaliserNumero("1-418-555-1234"), "+14185551234");
+  assert.equal(sms.normaliserNumero("555-1234"), null);
+  assert.equal(sms.normaliserNumero("+33 6 12 34 56 78"), null);
+  assert.equal(sms.normaliserNumero("011 555 1234"), null);
+});
+await test("textos : code de vérification par texto, mauvais code compté, bon code enregistre le numéro", async () => {
+  globalThis.fetch = fetchTextos;
+  textos.length = 0;
+  await db.doc("users/telA").set({ displayName: "Tia", email: "tia@exemple.ca" });
+  await echoue(appel(tel.envoyerCodeTelephone, "telA", { numero: "555" }), "invalid-argument", "numéro invalide");
+  await appel(tel.envoyerCodeTelephone, "telA", { numero: "418 555-1234" });
+  assert.equal(textos.length, 1);
+  assert.equal(textos[0].a, "+14185551234"); assert.equal(textos[0].de, "+15815550000");
+  assert.equal(textos[0].auth, `Basic ${Buffer.from("ACfactice:jeton-factice").toString("base64")}`);
+  const code = textos[0].texte.match(/(\d{6})/)[1];
+  assert.ok(!JSON.stringify((await db.doc("verificationsTelephone/telA").get()).data()).includes(code), "code jamais stocké en clair");
+  const e = await echoue(appel(tel.envoyerCodeTelephone, "telA", { numero: "418 555-1234" }), "resource-exhausted", "un code par minute");
+  assert.equal(e.message, "attendre");
+  const faux = code === "000000" ? "111111" : "000000";
+  assert.deepEqual(await appel(tel.verifierCodeTelephone, "telA", { code: faux }), { ok: false });
+  assert.equal((await db.doc("verificationsTelephone/telA").get()).data().essais, 1);
+  assert.deepEqual(await appel(tel.verifierCodeTelephone, "telA", { code }), { ok: true, numero: "+14185551234" });
+  assert.equal((await db.doc("users/telA").get()).data().telephoneVerifie, "+14185551234");
+  await echoue(appel(tel.verifierCodeTelephone, "telA", { code }), "failed-precondition", "code déjà utilisé");
+  await appel(tel.retirerTelephone, "telA", {});
+  assert.equal((await db.doc("users/telA").get()).data().telephoneVerifie, null);
+});
+await test("textos : refus de Twilio, le code d'erreur Twilio est renvoyé (sans secret)", async () => {
+  globalThis.fetch = async () => ({ ok: false, status: 401, json: async () => ({ code: 20003, message: "Authenticate" }) });
+  await db.doc("users/telB").set({ displayName: "Bo", email: "bo@exemple.ca" });
+  const e = await echoue(appel(tel.envoyerCodeTelephone, "telB", { numero: "418 555-9876" }), "unavailable", "Twilio refuse");
+  assert.equal(e.message, "envoi-impossible");
+  assert.deepEqual(e.details, { codeTwilio: 20003, statut: 401 });
+  assert.equal((await db.doc("verificationsTelephone/telB").get()).exists, false, "rien d'enregistré si le texto n'est pas parti");
+});
+await test("textos : seulement avec consentement ET numéro vérifié", async () => {
+  globalThis.fetch = fetchTextos;
+  textos.length = 0;
+  assert.equal(await sms.envoyerTexto({ telephoneVerifie: "+14185551234" }, "x"), false, "sans consentement");
+  assert.equal(await sms.envoyerTexto(avecConsentementSms, "x"), false, "sans numéro vérifié");
+  assert.equal(await sms.envoyerTexto({ ...avecConsentementSms, telephoneVerifie: "+14185551234" }, "Bonjour"), true);
+  assert.equal(textos.length, 1);
+  assert.match(textos[0].texte, /^\[Test\] Bonjour$/);
+});
+await test("textos : un accord à l'ancienne version du texte ne suffit pas", async () => {
+  globalThis.fetch = fetchTextos;
+  textos.length = 0;
+  const v1 = { consents: { notificationsSMS: { granted: true, version: 1 } }, telephoneVerifie: "+14185551234" };
+  assert.equal(await sms.envoyerTexto(v1, "x"), false);
+  assert.equal(textos.length, 0);
+});
+await test("textos : au plus 3 codes par jour vers un même numéro, peu importe le compte", async () => {
+  globalThis.fetch = fetchTextos;
+  textos.length = 0;
+  for (const u of ["limA", "limB", "limC", "limD"]) await db.doc(`users/${u}`).set({ displayName: u });
+  for (const u of ["limA", "limB", "limC"]) await appel(tel.envoyerCodeTelephone, u, { numero: "581 555-7777" });
+  const e = await echoue(appel(tel.envoyerCodeTelephone, "limD", { numero: "581 555-7777" }), "resource-exhausted", "4e code au même numéro");
+  assert.equal(e.message, "trop-de-codes-numero");
+  assert.equal(textos.length, 3);
+  const limites = await db.collection("limitesTelephone").get();
+  assert.ok(!JSON.stringify(limites.docs.map((d) => [d.id, d.data()])).includes("5815557777"), "numéro jamais stocké en clair");
+});
+await test("textos : plafond global de codes par jour", async () => {
+  globalThis.fetch = fetchTextos;
+  const jour = new Date().toISOString().slice(0, 10);
+  await db.doc(`limitesTelephone/jour-${jour}`).set({ compteur: tel.PLAFOND_CODES_PAR_JOUR });
+  await db.doc("users/limE").set({ displayName: "E" });
+  const e = await echoue(appel(tel.envoyerCodeTelephone, "limE", { numero: "581 555-8888" }), "resource-exhausted", "plafond");
+  assert.equal(e.message, "plafond-atteint");
+  await db.doc(`limitesTelephone/jour-${jour}`).delete();
+});
+await test("textos : consentement refusé sans cellulaire vérifié ; texto d'essai vers le numéro vérifié seulement ; retrait du numéro retire l'accord", async () => {
+  globalThis.fetch = fetchTextos;
+  textos.length = 0;
+  const consents = await import(`${REPO}functions/src/consents.js`);
+  await db.doc("users/essai1").set({ displayName: "Eva" });
+  const e = await echoue(appel(consents.grantConsent, "essai1", { type: "notificationsSMS" }), "failed-precondition", "sans numéro");
+  assert.equal(e.message, "telephone-non-verifie");
+  await echoue(appel(tel.envoyerTexteEssai, "essai1", {}), "failed-precondition", "essai sans numéro");
+  await db.doc("users/essai1").update({ telephoneVerifie: "+14185553333" });
+  await appel(consents.grantConsent, "essai1", { type: "notificationsSMS" });
+  assert.equal((await db.doc("users/essai1").get()).data().consents.notificationsSMS.version, 2);
+  await appel(tel.envoyerTexteEssai, "essai1", {});
+  assert.equal(textos.length, 1);
+  assert.equal(textos[0].a, "+14185553333");
+  const e2 = await echoue(appel(tel.envoyerTexteEssai, "essai1", {}), "resource-exhausted", "un essai par 10 minutes");
+  assert.equal(e2.message, "attendre-essai");
+  await appel(tel.retirerTelephone, "essai1", {});
+  const p = (await db.doc("users/essai1").get()).data();
+  assert.equal(p.telephoneVerifie, null);
+  assert.equal(p.consents.notificationsSMS.granted, false);
+  assert.equal(p.consents.notificationsSMS.retraitPar, "retrait-numero");
+});
+await test("textos : STOP par texto retire le consentement (signature Twilio vérifiée)", async () => {
+  const entrants = await import(`${REPO}functions/src/textosEntrants.js`);
+  await db.doc("users/stop1").set({ displayName: "Sam", telephoneVerifie: "+14185554444", consents: { notificationsSMS: { granted: true, version: 2 } } });
+  const url = "https://northamerica-northeast1-demo-snowro.cloudfunctions.net/recevoirTexteTwilio";
+  const appelWebhook = async (params, signature) => {
+    const req = { method: "POST", body: params, originalUrl: "/recevoirTexteTwilio", get: (h) => ({ host: "exemple.run.app", "X-Twilio-Signature": signature })[h] };
+    const res = { statut: 200, status(c) { this.statut = c; return this; }, type() { return this; }, send(b) { this.corps = b; return this; } };
+    await entrants.recevoirTexteTwilio(req, res);
+    return res;
+  };
+  const params = { AccountSid: "ACfactice", From: "+14185554444", To: "+15815550000", Body: "Stop" };
+  const r1 = await appelWebhook(params, "fausse-signature");
+  assert.equal(r1.statut, 403);
+  assert.equal((await db.doc("users/stop1").get()).data().consents.notificationsSMS.granted, true, "rien sans signature valide");
+  const r2 = await appelWebhook(params, entrants.signatureTwilio("jeton-factice", url, params));
+  assert.equal(r2.statut, 200);
+  const c = (await db.doc("users/stop1").get()).data().consents.notificationsSMS;
+  assert.equal(c.granted, false);
+  assert.equal(c.retraitPar, "stop");
+  assert.equal(entrants.estArret("arrêt"), true);
+  assert.equal(entrants.estArret("Bonjour"), false);
+  assert.equal(entrants.estArret("", "STOP"), true);
+});
+await test("textos : client averti quand sa demande est acceptée, puis faite ; rien sans changement d'étape", async () => {
+  globalThis.fetch = fetchTextos;
+  textos.length = 0;
+  await db.doc("users/telClient").set({ displayName: "Rose", email: "rose@exemple.ca", ...avecConsentementSms, telephoneVerifie: "+14185550001" });
+  const base = { titre: "Entrée double", donneurOuvrageId: "telClient", deneigeurPrenom: "Marc" };
+  const evt = (avant, apres) => ({ params: { demandeId: "tc-1" }, data: { before: { data: () => avant }, after: { data: () => apres } } });
+  await tc.textosCycleDemande.run(evt({ ...base, statut: "ouverte" }, { ...base, statut: "matchee" }));
+  await tc.textosCycleDemande.run(evt({ ...base, statut: "matchee" }, { ...base, statut: "matchee", dernierMessage: {} }));
+  await tc.textosCycleDemande.run(evt({ ...base, statut: "matchee" }, { ...base, statut: "faite" }));
+  assert.equal(textos.length, 2);
+  assert.match(textos[0].texte, /Marc s'occupe de votre demande « Entrée double »/);
+  assert.match(textos[1].texte, /Marc a terminé « Entrée double »\. Vous avez 12 h pour confirmer/);
+  assert.ok(textos.every((t) => t.a === "+14185550001"));
+});
+await test("textos : nouvelle demande, texto au déneigeur consentant même sans avis par courriel", async () => {
+  globalThis.fetch = fetchTextos;
+  textos.length = 0;
+  await db.doc("users/telDen").set({ displayName: "Gab", email: "gab@exemple.ca", role: ["deneigeur_x"], villeGeoId: "ID_TROIS", alertesDemandesCourriel: false, ...avecConsentementSms, telephoneVerifie: "+18195550002" });
+  const ref = db.doc("demandes/tc-alerte");
+  await ref.set({ statut: "ouverte", villeGeoId: "ID_TROIS", quartier: "Cap", titre: "Stationnement", remunerationOfferte: 30, donneurOuvrageId: "autre" });
+  await al.avertirDeneigeursNouvelleDemande.run({ params: { demandeId: "tc-alerte" }, data: await ref.get() });
+  assert.equal(textos.length, 1);
+  assert.equal(textos[0].a, "+18195550002");
+  assert.match(textos[0].texte, /Snowro : nouvelle demande à Cap, 25,60\u00A0\$ pour vous\. https:\/\/snowro\.com\/tableau-de-bord/);
+  assert.equal((await ref.get()).data().alerte.envoyes, 1);
 });
 
 console.log("Firestore rules");
