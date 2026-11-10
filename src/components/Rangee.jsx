@@ -80,7 +80,9 @@ export default function Rangee({ titre, compte, filtres, filtreActif, onFiltre, 
         <p className="rangee__vide">{vide}</p>
       ) : (
         <div className={`rangee__cadre ${bords.fin ? "" : "rangee__cadre--suite"}`}>
-          <div className="rangee__piste" ref={piste} onScroll={mesurer}>
+          {/* La clé remonte la piste quand le filtre ou le tri change : elle repart
+              au début au lieu de rester accrochée à la carte vue avant le filtre. */}
+          <div key={`${filtreActif ?? ""}|${tri?.valeur ?? ""}`} className="rangee__piste" ref={piste} onScroll={mesurer}>
             {children}
           </div>
         </div>

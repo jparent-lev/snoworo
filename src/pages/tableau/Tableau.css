@@ -179,6 +179,22 @@
   font-weight: 700;
 }
 
+/* Lien vers l'itinéraire : cible tactile confortable pour le déneigeur en route. */
+.carte-job__itineraire {
+  display: inline-flex;
+  align-items: center;
+  min-height: 36px;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--color-ardoise);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.carte-job__itineraire:hover {
+  color: var(--color-argile);
+}
+
 .carte-job__etiquette {
   font-size: 12px;
   font-weight: 700;
