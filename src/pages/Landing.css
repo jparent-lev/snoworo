@@ -1442,12 +1442,44 @@
   }
 }
 
-/* Dernier appel à l'action, sur le bloc argile (ancienne liste d'attente). */
+/* Dernier appel à l'action, sur le bloc argile (ancienne liste d'attente) :
+   une seule colonne, le bouton et le lien de connexion sous le texte. */
+.landing__bloc-liste.landing__bloc-final {
+  grid-template-columns: 1fr;
+  gap: 26px;
+}
+
+.landing__final-texte {
+  max-width: 640px;
+}
+
+.landing__final-texte .landing__p {
+  margin-bottom: 0;
+}
+
 .landing__final-cta {
   display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 14px;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 14px 26px;
+}
+
+/* Sur grand écran : bloc centré, plutôt qu'aligné à gauche avec un vide à droite. */
+@media (min-width: 761px) {
+  .landing__bloc-final {
+    justify-items: center;
+    text-align: center;
+  }
+
+  .landing__final-texte .landing__p {
+    max-width: 52ch;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .landing__final-cta {
+    justify-content: center;
+  }
 }
 
 .landing__final-cta .landing__bouton-primaire {
