@@ -8,6 +8,7 @@ import FaqAccordion from "./landing/FaqAccordion";
 import HeroIllustration from "./landing/HeroIllustration";
 import ApercuTableau from "./landing/ApercuTableau";
 import ParcoursDemande from "./landing/ParcoursDemande";
+import VillesPubliques from "./landing/VillesPubliques";
 import SceneProtection from "./landing/ScenesProtection";
 import {
   CapNeige,
@@ -236,18 +237,7 @@ export default function Landing() {
               Votre ville apparaît dans Snowro dès qu'une personne s'y inscrit avec son adresse. Votre demande est
               montrée aux déneigeurs de quartier de votre ville : plus il y en a, plus vite elle trouve preneur.
             </p>
-            <div className="landing__jetons">
-              <span className="landing__jeton">Québec</span>
-              <span className="landing__jeton">Montréal</span>
-              <span className="landing__jeton">Trois-Rivières</span>
-              <Link to="/inscription" className="landing__jeton landing__jeton--tienne">
-                + La vôtre ?
-              </Link>
-            </div>
-            <p className="landing__p landing__p--legende">
-              Peu de déneigeurs près de chez vous ? Parlez de Snowro à vos voisins : un étudiant ou un voisin
-              avec une souffleuse s'inscrit en deux minutes.
-            </p>
+            <VillesPubliques />
           </div>
           <CarteVilles />
         </div>

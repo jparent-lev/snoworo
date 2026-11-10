@@ -110,6 +110,14 @@ service cloud.firestore {
       allow read, write: if false;
     }
 
+    // ---- statsPubliques (compteur de l'accueil) ----
+    // Nombre de déneigeurs par ville, seulement à partir de 10 ; lisible par
+    // tous (accueil sans connexion), écrit par publierVillesPubliques.
+    match /statsPubliques/{document} {
+      allow read: if true;
+      allow write: if false;
+    }
+
     // ---- limitesTelephone (compteurs anti-abus des codes par texto) ----
     // Empreinte du numéro et compteur seulement ; effacés après 48 heures.
     match /limitesTelephone/{document} {
