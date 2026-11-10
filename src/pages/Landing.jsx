@@ -21,7 +21,7 @@ import {
 } from "./landing/Decors";
 import "./Landing.css";
 
-// Environnement de test seulement (VITE_ACCES_COMPTES=1 dans .env.test) :
+// Si VITE_ACCES_COMPTES=1 (.env.test, .env.production) :
 // l'en-tête mène à la connexion et à la création de compte, pour travailler
 // le tableau de bord. En production (pré-lancement), il reste sur la liste
 // d'attente.
