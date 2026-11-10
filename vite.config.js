@@ -2,7 +2,7 @@ import { execSync } from 'node:child_process'
 import { readFileSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import react from '@vitejs/plugin-react'
-import { defineConfig } from 'vite'
+import { defineConfig, loadEnv } from 'vite'
 import { META as META_CREDIT, faqSchema } from './src/pages/creditImpot/contenu.js'
 
 function commitCourt() {
@@ -65,8 +65,14 @@ function pageStatiqueCreditImpot() {
 }
 
 // https://vite.dev/config/
+// La page /credit-impot (et sa copie statique) n'existe que là où
+// VITE_PAGE_CREDIT_IMPOT=1 (.env.test, .env.emulateurs) : pas en production.
 export default defineConfig(({ mode }) => ({
-  plugins: [react(), bloquerIndexationEnTest(mode), pageStatiqueCreditImpot()],
+  plugins: [
+    react(),
+    bloquerIndexationEnTest(mode),
+    ...(loadEnv(mode, process.cwd(), 'VITE_').VITE_PAGE_CREDIT_IMPOT === '1' ? [pageStatiqueCreditImpot()] : []),
+  ],
   define: {
     __SNOWRO_VERSION__: JSON.stringify(commitCourt()),
     __SNOWRO_BUILD_TIME__: JSON.stringify(new Date().toISOString()),

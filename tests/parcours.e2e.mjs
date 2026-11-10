@@ -326,6 +326,18 @@ async function connexion(cle, largeur = 1280) {
     await p.getByText("Choisissez votre adresse dans la liste de suggestions.").waitFor();
     assert.equal(appels.length, 1);
   });
+  await test("Marc : désactive puis réactive les avis de nouvelles demandes par courriel", async () => {
+    const interrupteur = p.getByRole("switch", { name: "Avis de nouvelles demandes par courriel" });
+    assert.equal(await interrupteur.getAttribute("aria-checked"), "true");
+    await interrupteur.click();
+    await p.waitForFunction(() => document.querySelector('[aria-label="Avis de nouvelles demandes par courriel"]')?.getAttribute("aria-checked") === "false");
+    for (let i = 0; i < 20 && (await db.doc(`users/${uid.marc}`).get()).data().alertesDemandesCourriel !== false; i++) {
+      await p.waitForTimeout(250);
+    }
+    assert.equal((await db.doc(`users/${uid.marc}`).get()).data().alertesDemandesCourriel, false);
+    await interrupteur.click();
+    await p.waitForFunction(() => document.querySelector('[aria-label="Avis de nouvelles demandes par courriel"]')?.getAttribute("aria-checked") === "true");
+  });
   await ctx.close();
 }
 

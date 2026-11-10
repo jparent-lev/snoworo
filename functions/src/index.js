@@ -31,3 +31,4 @@ export {
 export { suggererAdresses } from "./suggestionsAdresse.js";
 export { purgerConservation } from "./conservation.js";
 export { fermerCompte } from "./compte.js";
+export { avertirDeneigeursNouvelleDemande } from "./alertesDemandes.js";
