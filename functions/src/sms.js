@@ -51,7 +51,14 @@ export async function envoyerTexteBrut(a, corps) {
     body: new URLSearchParams({ To: a, From: de, Body: `${PREFIXE}${corps}` }).toString(),
   });
   const reponse = await res.json().catch(() => ({}));
-  if (!res.ok) throw new Error(`Twilio a refusé l'envoi (${res.status}) : ${reponse.message ?? "réponse inattendue"}`);
+  if (!res.ok) {
+    const erreur = new Error(`Twilio a refusé l'envoi (${res.status}) : ${reponse.message ?? "réponse inattendue"}`);
+    // Code d'erreur Twilio (ex. 20003 authentification, 21408 pays non permis) :
+    // sans secret, utile pour le diagnostic.
+    erreur.codeTwilio = reponse.code ?? null;
+    erreur.statut = res.status;
+    throw erreur;
+  }
   return reponse.sid ?? null;
 }
 

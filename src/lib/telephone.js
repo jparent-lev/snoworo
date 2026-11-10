@@ -31,6 +31,11 @@ export function messageTelephone(err) {
       return "Trop d'essais. Demandez un nouveau code.";
     case "aucun-code":
       return "Demandez d'abord un code.";
+    case "envoi-impossible": {
+      // Le code Twilio (sans secret) aide au diagnostic : 20003, 21408, 21614…
+      const code = err?.details?.codeTwilio ?? err?.details?.statut;
+      return `Le texto n'a pas pu partir${code ? ` (code Twilio ${code})` : ""}. Réessayez dans quelques minutes.`;
+    }
     default:
       return "Quelque chose a bloqué. Réessayez.";
   }

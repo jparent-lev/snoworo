@@ -549,6 +549,14 @@ await test("textos : code de vérification par texto, mauvais code compté, bon 
   await appel(tel.retirerTelephone, "telA", {});
   assert.equal((await db.doc("users/telA").get()).data().telephoneVerifie, null);
 });
+await test("textos : refus de Twilio, le code d'erreur Twilio est renvoyé (sans secret)", async () => {
+  globalThis.fetch = async () => ({ ok: false, status: 401, json: async () => ({ code: 20003, message: "Authenticate" }) });
+  await db.doc("users/telB").set({ displayName: "Bo", email: "bo@exemple.ca" });
+  const e = await echoue(appel(tel.envoyerCodeTelephone, "telB", { numero: "418 555-9876" }), "unavailable", "Twilio refuse");
+  assert.equal(e.message, "envoi-impossible");
+  assert.deepEqual(e.details, { codeTwilio: 20003, statut: 401 });
+  assert.equal((await db.doc("verificationsTelephone/telB").get()).exists, false, "rien d'enregistré si le texto n'est pas parti");
+});
 await test("textos : seulement avec consentement ET numéro vérifié", async () => {
   globalThis.fetch = fetchTextos;
   textos.length = 0;

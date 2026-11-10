@@ -1,4 +1,5 @@
 import { onCall, HttpsError } from "firebase-functions/v2/https";
+import { logger } from "firebase-functions/v2";
 import { createHash, randomInt } from "node:crypto";
 import { FieldValue, Timestamp } from "firebase-admin/firestore";
 import { db } from "./admin.js";
@@ -43,7 +44,9 @@ export const envoyerCodeTelephone = onCall({ region: REGION, secrets: SECRETS_SM
   try {
     await envoyerTexteBrut(numero, `Snowro : votre code de vérification est ${code}. Il expire dans 10 minutes.`);
   } catch (err) {
-    throw new HttpsError("unavailable", err.message === "textos-non-configures" ? "textos-non-configures" : "envoi-impossible");
+    if (err.message === "textos-non-configures") throw new HttpsError("unavailable", "textos-non-configures");
+    logger.error(`Code de vérification non envoyé : ${err.message}`, { uid, codeTwilio: err.codeTwilio ?? null });
+    throw new HttpsError("unavailable", "envoi-impossible", { codeTwilio: err.codeTwilio ?? null, statut: err.statut ?? null });
   }
   await ref.set({
     numero,
