@@ -29,8 +29,11 @@ import { messageServeur } from "../lib/erreurs";
 // masqués jusqu'à la V2 : le modèle de données et les functions les gèrent
 // toujours, il suffira de remettre les deux entrées ici et dans la politique
 // de confidentialité (Confidentialite.jsx) pour les réactiver.
+// Textos : sur le test seulement pour l'instant (VITE_TEXTOS, .env.test).
+const TEXTOS = import.meta.env.VITE_TEXTOS === "1";
+
 const CONSENTS = [
-  {
+  TEXTOS && {
     type: "notificationsSMS",
     titre: "Notifications SMS",
     // Texte de la version 2 (functions/src/consentVersions.js) : un accord
@@ -40,7 +43,7 @@ const CONSENTS = [
     description:
       "Recevez un texto quand une demande est publiée près de chez vous (déneigeurs), quand votre demande est acceptée ou faite, et quand l'autre personne vous écrit. Votre numéro est vérifié par un code.",
   },
-];
+].filter(Boolean);
 
 const ADRESSE_VIDE = { texte: "", placeId: null, libelle: null };
 
@@ -214,11 +217,15 @@ export default function Parametres() {
 
       {PAIEMENT_REEL && <SectionPaiement profile={profile} deneigeur={roles.includes(ROLE_DENEIGEUR)} />}
 
-      <h1>Votre cellulaire</h1>
-      <p className="parametres__intro">
-        Vérifié une seule fois par un code, il sert aux avis par texto si vous les activez ci-dessous.
-      </p>
-      <SectionTelephone profile={profile} smsActifs={smsActifs} />
+      {TEXTOS && (
+        <>
+          <h1>Votre cellulaire</h1>
+          <p className="parametres__intro">
+            Vérifié une seule fois par un code, il sert aux avis par texto si vous les activez ci-dessous.
+          </p>
+          <SectionTelephone profile={profile} smsActifs={smsActifs} />
+        </>
+      )}
 
       {CONSENTS.length > 0 && (
         <>
