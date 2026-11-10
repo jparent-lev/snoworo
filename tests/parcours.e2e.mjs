@@ -121,7 +121,6 @@ async function connexion(cle, largeur = 1280) {
     await p.getByRole("link", { name: "Paramètres" }).click();
     await p.getByRole("heading", { name: "Votre adresse de service" }).waitFor();
     assert.equal(await p.getByRole("button", { name: "Me déconnecter" }).isVisible(), false);
-    assert.equal(await p.getByText("Notifications SMS").count(), 0);
     await p.goBack();
     await p.getByRole("heading", { name: "Demandes près de chez vous" }).waitFor();
   });
@@ -345,6 +344,28 @@ async function connexion(cle, largeur = 1280) {
   await test("Marc : « Utiliser ma position » reste dans l'écran à 390 px, même avec un message d'erreur", async () => {
     const boite = await p.getByRole("button", { name: "Utiliser ma position" }).boundingBox();
     assert.ok(boite.x + boite.width <= 390, `bouton jusqu'à ${boite.x + boite.width} px`);
+    assert.equal(await p.evaluate(() => document.documentElement.scrollWidth), 390);
+  });
+  await test("Marc : consentement aux textos, numéro vérifié par code", async () => {
+    const appelsTel = [];
+    await p.route("**/envoyerCodeTelephone", (r) => {
+      appelsTel.push(r.request().postDataJSON().data);
+      return r.fulfill({ json: { result: { ok: true } } });
+    });
+    await p.route("**/verifierCodeTelephone", (r) => {
+      appelsTel.push(r.request().postDataJSON().data);
+      return r.fulfill({ json: { result: { ok: true, numero: "+14185551234" } } });
+    });
+    assert.equal(await p.getByText("Numéro pour les textos").count(), 0);
+    await p.getByRole("switch").filter({ has: p.locator(".parametres__toggle-pastille") }).last().click();
+    await p.getByText("Numéro pour les textos").waitFor();
+    await p.getByLabel("Numéro de cellulaire").fill("418 555-1234");
+    await p.getByRole("button", { name: "Recevoir un code" }).click();
+    await p.getByLabel("Code reçu").fill("123456");
+    await p.getByRole("button", { name: "Vérifier" }).click();
+    assert.deepEqual(appelsTel, [{ numero: "418 555-1234" }, { code: "123456" }]);
+    await db.doc(`users/${uid.marc}`).update({ telephoneVerifie: "+14185551234" });
+    await p.getByText("✓ (418) 555-1234 vérifié").waitFor();
     assert.equal(await p.evaluate(() => document.documentElement.scrollWidth), 390);
   });
   await test("Marc : désactive puis réactive les avis de nouvelles demandes par courriel", async () => {

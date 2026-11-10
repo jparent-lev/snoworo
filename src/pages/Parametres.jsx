@@ -20,6 +20,7 @@ import {
 } from "../lib/paiements";
 import CarteDePaiement from "../components/CarteDePaiement";
 import { fermerCompte, messageFermeture } from "../lib/compte";
+import { envoyerCodeTelephone, formaterNumero, messageTelephone, retirerTelephone, verifierCodeTelephone } from "../lib/telephone";
 import ChampAdresse from "../components/ChampAdresse";
 import "./Parametres.css";
 
@@ -27,9 +28,15 @@ import "./Parametres.css";
 // masqués jusqu'à la V2 : le modèle de données et les functions les gèrent
 // toujours, il suffira de remettre les deux entrées ici et dans la politique
 // de confidentialité (Confidentialite.jsx) pour les réactiver.
-// Le consentement « Notifications SMS » est masqué tant que les textos
-// (Twilio) ne sont pas en service : il reviendra avec cette fonctionnalité.
-const CONSENTS = [];
+const CONSENTS = [
+  {
+    type: "notificationsSMS",
+    titre: "Notifications SMS",
+    // Texte de la version 2 (functions/src/consentVersions.js).
+    description:
+      "Recevez un texto quand une demande est publiée près de chez vous (déneigeurs), quand votre demande est acceptée ou faite, et quand l'autre personne vous écrit. Votre numéro est vérifié par un code.",
+  },
+];
 
 const ADRESSE_VIDE = { texte: "", placeId: null, libelle: null };
 
@@ -237,6 +244,8 @@ export default function Parametres() {
         </>
       )}
 
+      {profile.consents?.notificationsSMS?.granted && <SectionTelephone profile={profile} />}
+
       {/* Sur ordinateur, « Déconnexion » est déjà dans l'en-tête ; il y est caché sous 700 px. */}
       <button type="button" className="btn btn--fantome parametres__deconnexion" onClick={() => signOut(auth)}>
         Me déconnecter
@@ -402,6 +411,111 @@ function SectionFermeture() {
           </form>
         </Modale>
       )}
+    </div>
+  );
+}
+
+// Numéro pour les textos : vérifié par un code reçu par texto
+// (functions/src/telephone.js). Affiché une fois le consentement accordé.
+function SectionTelephone({ profile }) {
+  const [numero, setNumero] = useState("");
+  const [code, setCode] = useState("");
+  const [codeEnvoye, setCodeEnvoye] = useState(false);
+  const [enCours, setEnCours] = useState(false);
+  const [erreur, setErreur] = useState(null);
+
+  async function envoyer(e) {
+    e.preventDefault();
+    setEnCours(true);
+    setErreur(null);
+    try {
+      await envoyerCodeTelephone(numero);
+      setCodeEnvoye(true);
+    } catch (err) {
+      setErreur(messageTelephone(err));
+    } finally {
+      setEnCours(false);
+    }
+  }
+
+  async function verifier(e) {
+    e.preventDefault();
+    setEnCours(true);
+    setErreur(null);
+    try {
+      const { ok } = await verifierCodeTelephone(code);
+      if (ok) {
+        setCodeEnvoye(false);
+        setCode("");
+        setNumero("");
+      } else {
+        setErreur("Code incorrect. Vérifiez les 6 chiffres reçus par texto.");
+      }
+    } catch (err) {
+      setErreur(messageTelephone(err));
+    } finally {
+      setEnCours(false);
+    }
+  }
+
+  if (profile.telephoneVerifie && !codeEnvoye) {
+    return (
+      <div className="parametres__item">
+        <div className="parametres__item-texte">
+          <h3>Numéro pour les textos</h3>
+          <p className="champ-adresse__ok">✓ {formaterNumero(profile.telephoneVerifie)} vérifié</p>
+          {erreur && <p className="message-erreur" role="alert">{erreur}</p>}
+        </div>
+        <button type="button" className="btn btn--fantome" onClick={() => retirerTelephone().catch((err) => setErreur(messageTelephone(err)))}>
+          Retirer
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <div className="parametres__item parametres__item--colonne">
+      <div className="parametres__item-texte">
+        <h3>Numéro pour les textos</h3>
+        <p>
+          {codeEnvoye
+            ? "Entrez le code à 6 chiffres reçu par texto. Il expire dans 10 minutes."
+            : "Entrez votre numéro de cellulaire : nous vous envoyons un code pour le vérifier. Aucun texto ne part avant."}
+        </p>
+      </div>
+      {codeEnvoye ? (
+        <form className="parametres__adresse-manuelle" onSubmit={verifier}>
+          <label className="auth-form__champ" style={{ flex: 1 }}>
+            Code reçu
+            <input
+              inputMode="numeric"
+              autoComplete="one-time-code"
+              maxLength={6}
+              value={code}
+              onChange={(e) => setCode(e.target.value.replace(/\D/g, ""))}
+            />
+          </label>
+          <button type="submit" className="auth-form__bouton" disabled={enCours || code.length !== 6}>
+            {enCours ? "Vérification…" : "Vérifier"}
+          </button>
+        </form>
+      ) : (
+        <form className="parametres__adresse-manuelle" onSubmit={envoyer}>
+          <label className="auth-form__champ" style={{ flex: 1 }}>
+            Numéro de cellulaire
+            <input type="tel" autoComplete="tel" placeholder="418 555-1234" value={numero} onChange={(e) => setNumero(e.target.value)} />
+          </label>
+          <button type="submit" className="auth-form__bouton" disabled={enCours || numero.replace(/\D/g, "").length < 10}>
+            {enCours ? "Envoi…" : "Recevoir un code"}
+          </button>
+        </form>
+      )}
+      {codeEnvoye && (
+        <button type="button" className="btn btn--lien" style={{ alignSelf: "flex-start" }} onClick={() => setCodeEnvoye(false)}>
+          Changer de numéro ou recevoir un nouveau code
+        </button>
+      )}
+      {erreur && <p className="message-erreur" role="alert">{erreur}</p>}
     </div>
   );
 }

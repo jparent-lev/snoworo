@@ -4,7 +4,7 @@
 export const CONSENT_VERSIONS = {
   zonesAgregees: 1,
   offresCiblees: 1,
-  notificationsSMS: 1,
+  notificationsSMS: 2, // v2 (novembre 2026) : textos de demande acceptée, faite et nouveau message
 };
 
 export const CONSENT_TYPES = Object.keys(CONSENT_VERSIONS);
