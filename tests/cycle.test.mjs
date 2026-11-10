@@ -565,6 +565,78 @@ await test("textos : seulement avec consentement ET numéro vérifié", async ()
   assert.equal(textos.length, 1);
   assert.match(textos[0].texte, /^\[Test\] Bonjour$/);
 });
+await test("textos : un accord à l'ancienne version du texte ne suffit pas", async () => {
+  globalThis.fetch = fetchTextos;
+  textos.length = 0;
+  const v1 = { consents: { notificationsSMS: { granted: true, version: 1 } }, telephoneVerifie: "+14185551234" };
+  assert.equal(await sms.envoyerTexto(v1, "x"), false);
+  assert.equal(textos.length, 0);
+});
+await test("textos : au plus 3 codes par jour vers un même numéro, peu importe le compte", async () => {
+  globalThis.fetch = fetchTextos;
+  textos.length = 0;
+  for (const u of ["limA", "limB", "limC", "limD"]) await db.doc(`users/${u}`).set({ displayName: u });
+  for (const u of ["limA", "limB", "limC"]) await appel(tel.envoyerCodeTelephone, u, { numero: "581 555-7777" });
+  const e = await echoue(appel(tel.envoyerCodeTelephone, "limD", { numero: "581 555-7777" }), "resource-exhausted", "4e code au même numéro");
+  assert.equal(e.message, "trop-de-codes-numero");
+  assert.equal(textos.length, 3);
+  const limites = await db.collection("limitesTelephone").get();
+  assert.ok(!JSON.stringify(limites.docs.map((d) => [d.id, d.data()])).includes("5815557777"), "numéro jamais stocké en clair");
+});
+await test("textos : plafond global de codes par jour", async () => {
+  globalThis.fetch = fetchTextos;
+  const jour = new Date().toISOString().slice(0, 10);
+  await db.doc(`limitesTelephone/jour-${jour}`).set({ compteur: tel.PLAFOND_CODES_PAR_JOUR });
+  await db.doc("users/limE").set({ displayName: "E" });
+  const e = await echoue(appel(tel.envoyerCodeTelephone, "limE", { numero: "581 555-8888" }), "resource-exhausted", "plafond");
+  assert.equal(e.message, "plafond-atteint");
+  await db.doc(`limitesTelephone/jour-${jour}`).delete();
+});
+await test("textos : consentement refusé sans cellulaire vérifié ; texto d'essai vers le numéro vérifié seulement ; retrait du numéro retire l'accord", async () => {
+  globalThis.fetch = fetchTextos;
+  textos.length = 0;
+  const consents = await import(`${REPO}functions/src/consents.js`);
+  await db.doc("users/essai1").set({ displayName: "Eva" });
+  const e = await echoue(appel(consents.grantConsent, "essai1", { type: "notificationsSMS" }), "failed-precondition", "sans numéro");
+  assert.equal(e.message, "telephone-non-verifie");
+  await echoue(appel(tel.envoyerTexteEssai, "essai1", {}), "failed-precondition", "essai sans numéro");
+  await db.doc("users/essai1").update({ telephoneVerifie: "+14185553333" });
+  await appel(consents.grantConsent, "essai1", { type: "notificationsSMS" });
+  assert.equal((await db.doc("users/essai1").get()).data().consents.notificationsSMS.version, 2);
+  await appel(tel.envoyerTexteEssai, "essai1", {});
+  assert.equal(textos.length, 1);
+  assert.equal(textos[0].a, "+14185553333");
+  const e2 = await echoue(appel(tel.envoyerTexteEssai, "essai1", {}), "resource-exhausted", "un essai par 10 minutes");
+  assert.equal(e2.message, "attendre-essai");
+  await appel(tel.retirerTelephone, "essai1", {});
+  const p = (await db.doc("users/essai1").get()).data();
+  assert.equal(p.telephoneVerifie, null);
+  assert.equal(p.consents.notificationsSMS.granted, false);
+  assert.equal(p.consents.notificationsSMS.retraitPar, "retrait-numero");
+});
+await test("textos : STOP par texto retire le consentement (signature Twilio vérifiée)", async () => {
+  const entrants = await import(`${REPO}functions/src/textosEntrants.js`);
+  await db.doc("users/stop1").set({ displayName: "Sam", telephoneVerifie: "+14185554444", consents: { notificationsSMS: { granted: true, version: 2 } } });
+  const url = "https://northamerica-northeast1-demo-snowro.cloudfunctions.net/recevoirTexteTwilio";
+  const appelWebhook = async (params, signature) => {
+    const req = { method: "POST", body: params, originalUrl: "/recevoirTexteTwilio", get: (h) => ({ host: "exemple.run.app", "X-Twilio-Signature": signature })[h] };
+    const res = { statut: 200, status(c) { this.statut = c; return this; }, type() { return this; }, send(b) { this.corps = b; return this; } };
+    await entrants.recevoirTexteTwilio(req, res);
+    return res;
+  };
+  const params = { AccountSid: "ACfactice", From: "+14185554444", To: "+15815550000", Body: "Stop" };
+  const r1 = await appelWebhook(params, "fausse-signature");
+  assert.equal(r1.statut, 403);
+  assert.equal((await db.doc("users/stop1").get()).data().consents.notificationsSMS.granted, true, "rien sans signature valide");
+  const r2 = await appelWebhook(params, entrants.signatureTwilio("jeton-factice", url, params));
+  assert.equal(r2.statut, 200);
+  const c = (await db.doc("users/stop1").get()).data().consents.notificationsSMS;
+  assert.equal(c.granted, false);
+  assert.equal(c.retraitPar, "stop");
+  assert.equal(entrants.estArret("arrêt"), true);
+  assert.equal(entrants.estArret("Bonjour"), false);
+  assert.equal(entrants.estArret("", "STOP"), true);
+});
 await test("textos : client averti quand sa demande est acceptée, puis faite ; rien sans changement d'étape", async () => {
   globalThis.fetch = fetchTextos;
   textos.length = 0;

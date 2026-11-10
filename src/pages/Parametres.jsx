@@ -20,7 +20,7 @@ import {
 } from "../lib/paiements";
 import CarteDePaiement from "../components/CarteDePaiement";
 import { fermerCompte, messageFermeture } from "../lib/compte";
-import { envoyerCodeTelephone, formaterNumero, messageTelephone, retirerTelephone, verifierCodeTelephone } from "../lib/telephone";
+import { envoyerCodeTelephone, envoyerTexteEssai, formaterNumero, messageTelephone, retirerTelephone, verifierCodeTelephone } from "../lib/telephone";
 import ChampAdresse from "../components/ChampAdresse";
 import "./Parametres.css";
 import { messageServeur } from "../lib/erreurs";
@@ -33,7 +33,10 @@ const CONSENTS = [
   {
     type: "notificationsSMS",
     titre: "Notifications SMS",
-    // Texte de la version 2 (functions/src/consentVersions.js).
+    // Texte de la version 2 (functions/src/consentVersions.js) : un accord
+    // donné à une version antérieure est redemandé.
+    version: 2,
+    exigeTelephone: true,
     description:
       "Recevez un texto quand une demande est publiée près de chez vous (déneigeurs), quand votre demande est acceptée ou faite, et quand l'autre personne vous écrit. Votre numéro est vérifié par un code.",
   },
@@ -43,7 +46,10 @@ const ADRESSE_VIDE = { texte: "", placeId: null, libelle: null };
 
 export default function Parametres() {
   const { user, profile } = useAuth();
+  const consentSms = profile?.consents?.notificationsSMS;
+  const smsActifs = Boolean(consentSms?.granted && (consentSms.version ?? 0) >= 2 && profile?.telephoneVerifie);
   const [enCours, setEnCours] = useState(null);
+  const [erreurConsent, setErreurConsent] = useState(null);
   const [erreurAdresse, setErreurAdresse] = useState(null);
   const [majAdresseEnCours, setMajAdresseEnCours] = useState(false);
   const [adresse, setAdresse] = useState(ADRESSE_VIDE);
@@ -52,9 +58,12 @@ export default function Parametres() {
 
   async function basculer(type, accorde) {
     setEnCours(type);
+    setErreurConsent(null);
     try {
       if (accorde) await revokeConsent(type);
       else await grantConsent(type);
+    } catch (err) {
+      setErreurConsent(messageTelephone(err));
     } finally {
       setEnCours(null);
     }
@@ -205,6 +214,12 @@ export default function Parametres() {
 
       {PAIEMENT_REEL && <SectionPaiement profile={profile} deneigeur={roles.includes(ROLE_DENEIGEUR)} />}
 
+      <h1>Votre cellulaire</h1>
+      <p className="parametres__intro">
+        Vérifié une seule fois par un code, il sert aux avis par texto si vous les activez ci-dessous.
+      </p>
+      <SectionTelephone profile={profile} smsActifs={smsActifs} />
+
       {CONSENTS.length > 0 && (
         <>
           <h1>Vos consentements</h1>
@@ -217,24 +232,43 @@ export default function Parametres() {
             {CONSENTS.map((c) => {
               const etat = profile.consents?.[c.type];
               const accorde = Boolean(etat?.granted);
+              const sansTelephone = c.exigeTelephone && !profile.telephoneVerifie;
+              const ancienneVersion = accorde && c.version && (etat?.version ?? 0) < c.version;
               return (
                 <div key={c.type} className="parametres__item">
                   <div className="parametres__item-texte">
                     <h3>{c.titre}</h3>
                     <p>{c.description}</p>
-                    {etat?.grantedAt && (
-                      <p className="parametres__meta">
-                        {accorde ? "Accordé" : "Retiré"} · version {etat.version}
-                      </p>
+                    {sansTelephone && !accorde && <p className="parametres__meta">Vérifiez d'abord votre cellulaire ci-dessus.</p>}
+                    {ancienneVersion ? (
+                      <div className="parametres__nouvelle-version">
+                        <p>
+                          Le texte a changé depuis votre accord (version {etat.version}). Rien ne vous est envoyé tant que
+                          vous n'acceptez pas la version actuelle.
+                        </p>
+                        <button type="button" className="btn btn--principal" onClick={() => basculer(c.type, false)} disabled={enCours === c.type || sansTelephone}>
+                          Accepter la version {c.version}
+                        </button>
+                      </div>
+                    ) : (
+                      etat?.grantedAt && (
+                        <p className="parametres__meta">
+                          {accorde ? "Accordé" : "Retiré"} · version {etat.version}
+                        </p>
+                      )
+                    )}
+                    {erreurConsent && enCours === null && c.type === "notificationsSMS" && (
+                      <p className="message-erreur" role="alert">{erreurConsent}</p>
                     )}
                   </div>
                   <button
                     type="button"
                     className={`parametres__toggle ${accorde ? "parametres__toggle--actif" : ""}`}
                     onClick={() => basculer(c.type, accorde)}
-                    disabled={enCours === c.type}
+                    disabled={enCours === c.type || (sansTelephone && !accorde)}
                     role="switch"
                     aria-checked={accorde}
+                    aria-label={c.titre}
                   >
                     <span className="parametres__toggle-pastille" />
                   </button>
@@ -244,8 +278,6 @@ export default function Parametres() {
           </div>
         </>
       )}
-
-      {profile.consents?.notificationsSMS?.granted && <SectionTelephone profile={profile} />}
 
       {/* Sur ordinateur, « Déconnexion » est déjà dans l'en-tête ; il y est caché sous 700 px. */}
       <button type="button" className="btn btn--fantome parametres__deconnexion" onClick={() => signOut(auth)}>
@@ -418,58 +450,85 @@ function SectionFermeture() {
 
 // Numéro pour les textos : vérifié par un code reçu par texto
 // (functions/src/telephone.js). Affiché une fois le consentement accordé.
-function SectionTelephone({ profile }) {
+// « Votre cellulaire » : le numéro appartient au compte, vérifié une seule fois
+// par un code. Le texto d'essai ne part que vers ce numéro vérifié.
+function SectionTelephone({ profile, smsActifs }) {
   const [numero, setNumero] = useState("");
   const [code, setCode] = useState("");
   const [codeEnvoye, setCodeEnvoye] = useState(false);
+  const [modification, setModification] = useState(false);
   const [enCours, setEnCours] = useState(false);
   const [erreur, setErreur] = useState(null);
+  const [info, setInfo] = useState(null);
 
-  async function envoyer(e) {
-    e.preventDefault();
+  async function executer(action) {
     setEnCours(true);
     setErreur(null);
+    setInfo(null);
     try {
+      await action();
+    } catch (err) {
+      setErreur(messageTelephone(err));
+    } finally {
+      setEnCours(false);
+    }
+  }
+
+  const envoyer = (e) => {
+    e.preventDefault();
+    executer(async () => {
       await envoyerCodeTelephone(numero);
       setCodeEnvoye(true);
-    } catch (err) {
-      setErreur(messageTelephone(err));
-    } finally {
-      setEnCours(false);
-    }
-  }
+    });
+  };
 
-  async function verifier(e) {
+  const verifier = (e) => {
     e.preventDefault();
-    setEnCours(true);
-    setErreur(null);
-    try {
+    executer(async () => {
       const { ok } = await verifierCodeTelephone(code);
-      if (ok) {
-        setCodeEnvoye(false);
-        setCode("");
-        setNumero("");
-      } else {
+      if (!ok) {
         setErreur("Code incorrect. Vérifiez les 6 chiffres reçus par texto.");
+        return;
       }
-    } catch (err) {
-      setErreur(messageTelephone(err));
-    } finally {
-      setEnCours(false);
-    }
-  }
+      setCodeEnvoye(false);
+      setModification(false);
+      setCode("");
+      setNumero("");
+    });
+  };
 
-  if (profile.telephoneVerifie && !codeEnvoye) {
+  const essai = () =>
+    executer(async () => {
+      await envoyerTexteEssai();
+      setInfo(`Texto d'essai envoyé au ${formaterNumero(profile.telephoneVerifie)}.`);
+    });
+
+  const retirer = () => {
+    if (!window.confirm("Retirer votre cellulaire ? Les avis par texto seront aussi désactivés.")) return;
+    executer(() => retirerTelephone());
+  };
+
+  if (profile.telephoneVerifie && !modification) {
     return (
-      <div className="parametres__item">
+      <div className="parametres__item parametres__item--colonne">
         <div className="parametres__item-texte">
-          <h3>Numéro pour les textos</h3>
+          <h3>Cellulaire</h3>
           <p className="champ-adresse__ok">✓ {formaterNumero(profile.telephoneVerifie)} vérifié</p>
-          {erreur && <p className="message-erreur" role="alert">{erreur}</p>}
+          <p>{smsActifs ? "Les avis par texto partent vers ce numéro." : "Activez « Notifications SMS » ci-dessous pour recevoir les avis à ce numéro."}</p>
         </div>
-        <button type="button" className="btn btn--fantome" onClick={() => retirerTelephone().catch((err) => setErreur(messageTelephone(err)))}>
-          Retirer
-        </button>
+        <div className="parametres__actions">
+          <button type="button" className="btn btn--fantome" onClick={essai} disabled={enCours}>
+            M'envoyer un texto d'essai
+          </button>
+          <button type="button" className="btn btn--lien" onClick={() => setModification(true)} disabled={enCours}>
+            Changer
+          </button>
+          <button type="button" className="btn btn--lien" onClick={retirer} disabled={enCours}>
+            Retirer
+          </button>
+        </div>
+        {info && <p className="champ-adresse__ok" role="status">{info}</p>}
+        {erreur && <p className="message-erreur" role="alert">{erreur}</p>}
       </div>
     );
   }
@@ -477,11 +536,11 @@ function SectionTelephone({ profile }) {
   return (
     <div className="parametres__item parametres__item--colonne">
       <div className="parametres__item-texte">
-        <h3>Numéro pour les textos</h3>
+        <h3>{profile.telephoneVerifie ? "Changer de cellulaire" : "Cellulaire"}</h3>
         <p>
           {codeEnvoye
             ? "Entrez le code à 6 chiffres reçu par texto. Il expire dans 10 minutes."
-            : "Entrez votre numéro de cellulaire : nous vous envoyons un code pour le vérifier. Aucun texto ne part avant."}
+            : "Nous envoyons un code à ce numéro pour vérifier qu'il est bien le vôtre. Aucun autre texto ne part sans votre accord."}
         </p>
       </div>
       {codeEnvoye ? (
@@ -511,11 +570,26 @@ function SectionTelephone({ profile }) {
           </button>
         </form>
       )}
-      {codeEnvoye && (
-        <button type="button" className="btn btn--lien" style={{ alignSelf: "flex-start" }} onClick={() => setCodeEnvoye(false)}>
-          Changer de numéro ou recevoir un nouveau code
-        </button>
-      )}
+      <div className="parametres__actions">
+        {codeEnvoye && (
+          <button type="button" className="btn btn--lien" onClick={() => setCodeEnvoye(false)}>
+            Changer de numéro ou recevoir un nouveau code
+          </button>
+        )}
+        {profile.telephoneVerifie && (
+          <button
+            type="button"
+            className="btn btn--lien"
+            onClick={() => {
+              setModification(false);
+              setCodeEnvoye(false);
+              setErreur(null);
+            }}
+          >
+            Annuler
+          </button>
+        )}
+      </div>
       {erreur && <p className="message-erreur" role="alert">{erreur}</p>}
     </div>
   );
