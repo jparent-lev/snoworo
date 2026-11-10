@@ -25,6 +25,32 @@ export const STRIPE_WEBHOOK_SECRET = defineSecret("STRIPE_WEBHOOK_SECRET");
 export const PAIEMENT_REEL = defineBoolean("PAIEMENT_REEL", { default: false });
 // Adresse du site, pour les retours de Stripe (inscription du déneigeur).
 export const URL_SITE = defineString("URL_SITE", { default: "https://snowro.com" });
+// Mode Stripe (functions/.env.<projet>) : « test » (sandbox, sk_test_) ou
+// « live » (argent réel, sk_live_). Les identifiants Stripe d'un profil
+// (client, carte, compte de versement) sont marqués de leur mode
+// (stripeMode) : ceux d'un autre mode sont ignorés, puis remplacés, au lieu
+// de faire échouer les prélèvements et les virements après le passage au
+// mode réel. Un profil sans marque date du mode test.
+export const STRIPE_MODE = defineString("STRIPE_MODE", { default: "test" });
+export const modeStripe = () => (STRIPE_MODE.value() === "live" ? "live" : "test");
+
+const CHAMPS_STRIPE_VIDES = { stripeCustomerId: null, carte: null, stripeConnectAccountId: null, connectStatus: "non_demarre" };
+
+// Le profil tel que le mode Stripe actuel doit le voir.
+export function profilStripe(profil = {}) {
+  if ((profil.stripeMode ?? "test") === modeStripe()) return profil;
+  return { ...profil, ...CHAMPS_STRIPE_VIDES };
+}
+
+// Avant d'écrire un identifiant Stripe : efface ceux d'un autre mode et marque
+// le profil du mode actuel. Renvoie le profil à jour.
+async function adopterModeStripe(ref, profil = {}) {
+  const mode = modeStripe();
+  if (profil.stripeMode === mode) return profil;
+  const majs = (profil.stripeMode ?? "test") === mode ? { stripeMode: mode } : { ...CHAMPS_STRIPE_VIDES, stripeMode: mode };
+  await ref.set(majs, { merge: true });
+  return { ...profil, ...majs };
+}
 
 const REGION = "northamerica-northeast1";
 const DEVISE = "cad";
@@ -33,7 +59,15 @@ let client = null;
 let remplacant = null;
 export function stripe() {
   if (remplacant) return remplacant;
-  if (!client) client = new Stripe(STRIPE_SECRET_KEY.value());
+  if (!client) {
+    const cle = STRIPE_SECRET_KEY.value();
+    // Garde-fou : la clé doit correspondre au mode déclaré.
+    const attendu = modeStripe() === "live" ? "sk_live_" : "sk_test_";
+    if (!cle.startsWith(attendu) && !cle.startsWith(attendu.replace("sk_", "rk_"))) {
+      throw new Error(`STRIPE_SECRET_KEY ne correspond pas à STRIPE_MODE=${modeStripe()}`);
+    }
+    client = new Stripe(cle);
+  }
   return client;
 }
 // Tests seulement : un faux client Stripe.
@@ -69,11 +103,11 @@ function avecStripe(gestionnaire) {
 
 async function clientStripe(uid) {
   const ref = db.doc(`users/${uid}`);
-  const profil = (await ref.get()).data() ?? {};
+  const profil = await adopterModeStripe(ref, (await ref.get()).data() ?? {});
   if (profil.stripeCustomerId) return { customerId: profil.stripeCustomerId, profil };
   const customer = await stripe().customers.create(
     { email: profil.email || undefined, name: profil.displayName || undefined, metadata: { uid } },
-    { idempotencyKey: `client-${uid}` },
+    { idempotencyKey: `client-${modeStripe()}-${uid}` },
   );
   await ref.set({ stripeCustomerId: customer.id }, { merge: true });
   return { customerId: customer.id, profil };
@@ -128,7 +162,7 @@ export const enregistrerCarte = onCall({ region: REGION, secrets: [STRIPE_SECRET
 // Prélève `demande.remunerationOfferte` sur la carte du client. Renvoie
 // { ok: true, paymentIntentId, chargeId } ou { ok: false, raison }.
 export async function prelever(demandeId, demande) {
-  const client = (await db.doc(`users/${demande.donneurOuvrageId}`).get()).data() ?? {};
+  const client = profilStripe((await db.doc(`users/${demande.donneurOuvrageId}`).get()).data() ?? {});
   if (!client.stripeCustomerId || !client.carte?.paymentMethodId) return { ok: false, raison: "Aucune carte enregistrée." };
   try {
     const intent = await stripe().paymentIntents.create(
@@ -193,7 +227,7 @@ export async function verser(demandeId) {
   const ref = db.doc(`demandes/${demandeId}`);
   const demande = (await ref.get()).data();
   if (demande?.paiement?.statutPaiement !== "a_verser") return false;
-  const deneigeur = (await db.doc(`users/${demande.deneigeurId}`).get()).data() ?? {};
+  const deneigeur = profilStripe((await db.doc(`users/${demande.deneigeurId}`).get()).data() ?? {});
   try {
     if (!deneigeur.stripeConnectAccountId) throw new Error("compte de paiement du déneigeur absent");
     const virement = await stripe().transfers.create(
@@ -273,7 +307,7 @@ async function lireCompte(compteId) {
 export const lienCompteDeneigeur = onCall({ region: REGION, secrets: [STRIPE_SECRET_KEY] }, avecStripe(async (request) => {
   const uid = exigerConnexion(request);
   const ref = db.doc(`users/${uid}`);
-  const profil = (await ref.get()).data() ?? {};
+  const profil = await adopterModeStripe(ref, (await ref.get()).data() ?? {});
   if (!(profil.role ?? []).includes("deneigeur_x")) {
     throw new HttpsError("permission-denied", "Activez le mode déneigeur dans vos paramètres.");
   }
@@ -294,7 +328,7 @@ export const lienCompteDeneigeur = onCall({ region: REGION, secrets: [STRIPE_SEC
         configuration: { recipient: { capabilities: { stripe_balance: { stripe_transfers: { requested: true } } } } },
         metadata: { uid },
       },
-      { idempotencyKey: `compte-v2-${uid}` },
+      { idempotencyKey: `compte-v2-${modeStripe()}-${uid}` },
     );
     compteId = compte.id;
     await ref.set({ stripeConnectAccountId: compteId, connectStatus: "en_attente" }, { merge: true });
@@ -333,7 +367,7 @@ export const lienCompteDeneigeur = onCall({ region: REGION, secrets: [STRIPE_SEC
 export const synchroniserCompteDeneigeur = onCall({ region: REGION, secrets: [STRIPE_SECRET_KEY] }, avecStripe(async (request) => {
   const uid = exigerConnexion(request);
   const ref = db.doc(`users/${uid}`);
-  const { stripeConnectAccountId } = (await ref.get()).data() ?? {};
+  const { stripeConnectAccountId } = profilStripe((await ref.get()).data() ?? {});
   if (!stripeConnectAccountId) return { connectStatus: "non_demarre" };
   const connectStatus = statutConnect(await lireCompte(stripeConnectAccountId));
   await ref.set({ connectStatus }, { merge: true });

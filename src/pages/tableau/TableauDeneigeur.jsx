@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import { ecouterDemandesOuvertes, ecouterMesJobs, lireAdressePrivee, lirePrive } from "../../lib/demandes";
 import { preparerPhoto } from "../../lib/photo";
-import { PAIEMENT_REEL } from "../../lib/paiements";
+import { PAIEMENT_REEL, profilStripe } from "../../lib/paiements";
 import { accepterDemande, marquerFaite, messageErreur } from "../../lib/cycleDemande";
 import { aNouveauMessage, ecouterLectures } from "../../lib/messagerie";
 import { calculerPaiement, ecouterConfigFrais } from "../../lib/config";
@@ -57,7 +57,7 @@ export default function TableauDeneigeur({ conversation, onConversationFermee })
   const [tri, setTri] = useState("proches");
   const villeGeoId = profile?.villeGeoId;
   // Sans paiement réel, aucun compte de versement n'est exigé.
-  const compteActif = !PAIEMENT_REEL || profile?.connectStatus === "actif";
+  const compteActif = !PAIEMENT_REEL || profilStripe(profile)?.connectStatus === "actif";
 
   useEffect(() => ecouterMesJobs(user.uid, setJobs), [user.uid]);
   useEffect(() => ecouterLectures(user.uid, setLectures), [user.uid]);

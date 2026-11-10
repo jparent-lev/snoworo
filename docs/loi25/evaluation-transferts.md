@@ -36,7 +36,7 @@
 | Google Maps Platform | Géocodage, suggestions d'adresses (texte tapé envoyé à Google) | États-Unis et autres pays | Conditions de Google Maps Platform et avenant sur le traitement des données |
 | Stripe | Paiements, vérification d'identité et versements aux déneigeurs | Canada et États-Unis | Contrat de services Stripe et avenant sur la protection des données (DPA) ; certification PCI DSS niveau 1 |
 | Resend | Envoi des courriels transactionnels | États-Unis | Conditions et avenant sur le traitement des données de Resend. À compléter : confirmer l'acceptation du DPA |
-| Twilio | Envoi des textos (code de vérification, avis de demande, de message) aux personnes qui y ont consenti | États-Unis | Conditions et avenant sur le traitement des données de Twilio. À compléter : confirmer l'acceptation du DPA |
+| Twilio | Envoi des textos (code de vérification, avis de demande, de message) aux personnes qui y ont consenti | États-Unis | Conditions de service de Twilio, qui intègrent son avenant sur le traitement des données (DPA) : il s'applique sans signature. Garder une copie PDF datée (twilio.com/legal/data-protection-addendum). |
 
 ## 3. Analyse (article 17)
 

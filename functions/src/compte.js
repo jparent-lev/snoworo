@@ -4,7 +4,7 @@ import { getAuth } from "firebase-admin/auth";
 import { FieldValue } from "firebase-admin/firestore";
 import { db } from "./admin.js";
 import { idListeAttente } from "./listeAttente.js";
-import { STRIPE_SECRET_KEY, paiementReel, stripe } from "./paiements.js";
+import { STRIPE_SECRET_KEY, paiementReel, profilStripe, stripe } from "./paiements.js";
 
 // Fermeture du compte par la personne elle-même (Loi 25 : droit à
 // l'effacement ; politique de confidentialité, « Combien de temps on les
@@ -66,7 +66,8 @@ export async function fermerCompteUtilisateur(uid) {
 
   const refProfil = db.doc(`users/${uid}`);
   const profil = (await refProfil.get()).data() ?? {};
-  if (profil.stripeCustomerId && paiementReel()) {
+  // Seul le client Stripe du mode actuel peut être supprimé avec la clé actuelle.
+  if (profilStripe(profil).stripeCustomerId && paiementReel()) {
     try {
       await stripe().customers.del(profil.stripeCustomerId);
     } catch (err) {
