@@ -138,7 +138,7 @@ export default function TableauDeneigeur({ conversation, onConversationFermee })
           <span className="eyebrow">En attente de confirmation</span>
           <div className="chiffre__valeur">{formatArgent(chiffres.aConfirmer)}</div>
           <div className="chiffre__sous">
-            {chiffres.nbAConfirmer ? "Versé au plus tard 12 h après « C'est fait »" : "Rien en attente"}
+            {chiffres.nbAConfirmer ? "Versement lancé au plus tard 12\u00a0h après «\u00a0C'est fait\u00a0»" : "Rien en attente"}
           </div>
         </div>
         <div className="chiffre">
@@ -245,6 +245,16 @@ function CarteJob({ job: j, nouveau, conversationOuverte, onConversationFermee }
       {(j.statut === "matchee" || j.statut === "faite") && (
         <div>
           <div className="carte-job__adresse">{adresse ?? "Adresse…"}</div>
+          {adresse && j.statut === "matchee" && (
+            <a
+              className="carte-job__itineraire"
+              href={`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(adresse)}`}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Itinéraire
+            </a>
+          )}
           <div className="carte-job__meta">
             {j.donneurPrenom}
             {j.description ? ` · ${j.description}` : ""}

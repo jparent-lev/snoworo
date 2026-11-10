@@ -16,6 +16,13 @@ const TYPES_SERVICE = [
   { value: "autre", label: "Autre" },
 ];
 
+// Repères de prix, les mêmes que la FAQ de l'accueil.
+const REPERES_PRIX = {
+  entree: "Repère : autour de Québec, une entrée simple se négocie souvent autour de 25 à 35 $.",
+  entree_balcon: "Repère : autour de Québec, une entrée double avec balcon se négocie souvent autour de 45 à 60 $.",
+};
+const REPERE_GENERAL = "C'est vous qui fixez le montant. Si personne n'accepte, vous pouvez augmenter votre offre en tout temps.";
+
 const styleChamp = {
   fontFamily: "var(--font-corps)",
   fontSize: "15.5px",
@@ -182,6 +189,7 @@ export default function PublierDemande() {
         <label className="auth-form__champ">
           Montant offert ($)
           <input type="number" min="10" max="1000" step="1" value={montant} onChange={(e) => setMontant(e.target.value)} required />
+          <span className="auth-form__aide">{REPERES_PRIX[typeService] ?? REPERE_GENERAL}</span>
           {apercu && (
             <span className="auth-form__aide">
               Vous payez {formatArgent(apercu.montantTotal)}, le déneigeur reçoit {formatArgent(apercu.montantDeneigeur)} (frais

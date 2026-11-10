@@ -27,13 +27,9 @@ import "./Parametres.css";
 // masqués jusqu'à la V2 : le modèle de données et les functions les gèrent
 // toujours, il suffira de remettre les deux entrées ici et dans la politique
 // de confidentialité (Confidentialite.jsx) pour les réactiver.
-const CONSENTS = [
-  {
-    type: "notificationsSMS",
-    titre: "Notifications SMS",
-    description: "Recevez un message texte lorsqu'une demande est publiée près de chez vous ou lorsque votre jumelage est confirmé.",
-  },
-];
+// Le consentement « Notifications SMS » est masqué tant que les textos
+// (Twilio) ne sont pas en service : il reviendra avec cette fonctionnalité.
+const CONSENTS = [];
 
 const ADRESSE_VIDE = { texte: "", placeId: null, libelle: null };
 
@@ -151,7 +147,7 @@ export default function Parametres() {
           disabled={majAdresseEnCours}
           style={{ flex: "none" }}
         >
-          {majAdresseEnCours ? "Localisation…" : profile.ville ? "Mettre à jour" : "Utiliser ma position"}
+          {majAdresseEnCours ? "Localisation…" : "Utiliser ma position"}
         </button>
       </div>
 
@@ -201,41 +197,45 @@ export default function Parametres() {
 
       {PAIEMENT_REEL && <SectionPaiement profile={profile} deneigeur={roles.includes(ROLE_DENEIGEUR)} />}
 
-      <h1>Vos consentements</h1>
-      <p className="parametres__intro">
-        Chaque consentement est indépendant, daté et révocable en tout temps, et le retrait est aussi simple
-        que l'octroi.
-      </p>
+      {CONSENTS.length > 0 && (
+        <>
+          <h1>Vos consentements</h1>
+          <p className="parametres__intro">
+            Chaque consentement est indépendant, daté et révocable en tout temps, et le retrait est aussi simple
+            que l'octroi.
+          </p>
 
-      <div className="parametres__liste">
-        {CONSENTS.map((c) => {
-          const etat = profile.consents?.[c.type];
-          const accorde = Boolean(etat?.granted);
-          return (
-            <div key={c.type} className="parametres__item">
-              <div className="parametres__item-texte">
-                <h3>{c.titre}</h3>
-                <p>{c.description}</p>
-                {etat?.grantedAt && (
-                  <p className="parametres__meta">
-                    {accorde ? "Accordé" : "Retiré"} · version {etat.version}
-                  </p>
-                )}
-              </div>
-              <button
-                type="button"
-                className={`parametres__toggle ${accorde ? "parametres__toggle--actif" : ""}`}
-                onClick={() => basculer(c.type, accorde)}
-                disabled={enCours === c.type}
-                role="switch"
-                aria-checked={accorde}
-              >
-                <span className="parametres__toggle-pastille" />
-              </button>
-            </div>
-          );
-        })}
-      </div>
+          <div className="parametres__liste">
+            {CONSENTS.map((c) => {
+              const etat = profile.consents?.[c.type];
+              const accorde = Boolean(etat?.granted);
+              return (
+                <div key={c.type} className="parametres__item">
+                  <div className="parametres__item-texte">
+                    <h3>{c.titre}</h3>
+                    <p>{c.description}</p>
+                    {etat?.grantedAt && (
+                      <p className="parametres__meta">
+                        {accorde ? "Accordé" : "Retiré"} · version {etat.version}
+                      </p>
+                    )}
+                  </div>
+                  <button
+                    type="button"
+                    className={`parametres__toggle ${accorde ? "parametres__toggle--actif" : ""}`}
+                    onClick={() => basculer(c.type, accorde)}
+                    disabled={enCours === c.type}
+                    role="switch"
+                    aria-checked={accorde}
+                  >
+                    <span className="parametres__toggle-pastille" />
+                  </button>
+                </div>
+              );
+            })}
+          </div>
+        </>
+      )}
 
       <button type="button" className="btn btn--fantome" style={{ alignSelf: "flex-start" }} onClick={() => signOut(auth)}>
         Me déconnecter
