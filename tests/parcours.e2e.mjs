@@ -115,6 +115,16 @@ async function connexion(cle, largeur = 1280) {
     await p.selectOption(".rangee__tri select", "proches");
   });
   await p.screenshot({ path: `${D}/e2e-marc-1280.png`, fullPage: true });
+  await test("Ordinateur : liens d'aide au pied ; « Me déconnecter » caché dans Paramètres (déjà dans l'en-tête)", async () => {
+    const aide = p.getByRole("navigation", { name: "Aide" });
+    assert.equal(await aide.getByRole("link", { name: "Nous écrire" }).getAttribute("href"), "/nous-ecrire");
+    await p.getByRole("link", { name: "Paramètres" }).click();
+    await p.getByRole("heading", { name: "Votre adresse de service" }).waitFor();
+    assert.equal(await p.getByRole("button", { name: "Me déconnecter" }).isVisible(), false);
+    assert.equal(await p.getByText("Notifications SMS").count(), 0);
+    await p.goBack();
+    await p.getByRole("heading", { name: "Demandes près de chez vous" }).waitFor();
+  });
   await test("Marc : « Je prends la demande » ouvre l'engagement ; « Pas maintenant » n'accepte rien", async () => {
     await carteD1(p).getByRole("button", { name: "Je prends la demande" }).click();
     await p.getByRole("dialog").getByText("Une fois acceptée, pas d'annulation possible", { exact: false }).waitFor();
@@ -317,6 +327,9 @@ async function connexion(cle, largeur = 1280) {
     await p.getByText("✓ Adresse reconnue : 155 Rue des Saules Est, Québec, QC, Canada").waitFor();
     assert.equal(await p.evaluate(() => document.documentElement.scrollWidth), 390);
     await p.screenshot({ path: `${D}/e2e-adresse-service-390.png`, fullPage: true });
+    // Mobile : « Me déconnecter » dans Paramètres (l'en-tête le cache) ; liens d'aide au pied.
+    assert.equal(await p.getByRole("button", { name: "Me déconnecter" }).isVisible(), true);
+    assert.equal(await p.getByRole("navigation", { name: "Aide" }).getByRole("link", { name: "Aide" }).getAttribute("href"), "/#faq");
     await p.getByRole("button", { name: "Utiliser cette adresse" }).click();
     await p.getByText("✓ Adresse enregistrée : 155 Rue des Saules Est, Québec, QC, Canada").waitFor();
     assert.deepEqual(appels, [{ placeId: "ChIJ_saules" }]);
