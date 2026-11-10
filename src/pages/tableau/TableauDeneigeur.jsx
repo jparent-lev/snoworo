@@ -14,6 +14,7 @@ import Rangee from "../../components/Rangee";
 import { Modale, ModaleSignalement } from "./elements";
 import Conversation, { BoutonMessages } from "./Conversation";
 import "./Tableau.css";
+import { messageServeur } from "../../lib/erreurs";
 
 const FILTRES_JOBS = [
   { cle: "en_cours", libelle: "En cours", statuts: ["matchee", "faite"] },
@@ -434,7 +435,7 @@ function CarteDemandeOuverte({ demande: d, frais, compteActif }) {
       // La carte disparaît d'elle-même de la liste (plus « ouverte ») et
       // réapparaît dans « Mes demandes acceptées ».
     } catch (err) {
-      setEtat(err.message === "deja-prise" ? "prise" : "erreur");
+      setEtat(messageServeur(err) === "deja-prise" ? "prise" : "erreur");
       setErreur(messageErreur(err));
     }
   }

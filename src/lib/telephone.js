@@ -1,5 +1,6 @@
 import { httpsCallable } from "firebase/functions";
 import { functions } from "./firebase";
+import { messageServeur } from "./erreurs";
 
 // Vérification du numéro pour les textos (functions/src/telephone.js).
 const envoyerCodeCallable = httpsCallable(functions, "envoyerCodeTelephone");
@@ -16,7 +17,7 @@ export function formaterNumero(e164) {
 }
 
 export function messageTelephone(err) {
-  switch (err?.message) {
+  switch (messageServeur(err)) {
     case "numero-invalide":
       return "Numéro invalide : entrez un numéro canadien à 10 chiffres, par exemple 418 555-1234.";
     case "attendre":

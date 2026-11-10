@@ -23,6 +23,7 @@ import { fermerCompte, messageFermeture } from "../lib/compte";
 import { envoyerCodeTelephone, formaterNumero, messageTelephone, retirerTelephone, verifierCodeTelephone } from "../lib/telephone";
 import ChampAdresse from "../components/ChampAdresse";
 import "./Parametres.css";
+import { messageServeur } from "../lib/erreurs";
 
 // Les consentements liés à Snowro Pro (zonesAgregees, offresCiblees) sont
 // masqués jusqu'à la V2 : le modèle de données et les functions les gèrent
@@ -109,7 +110,7 @@ export default function Parametres() {
       setAdresseManuelle(false);
     } catch (err) {
       setErreurAdresse(
-        err?.code === "functions/invalid-argument" ? err.message : "Adresse introuvable. Vérifiez l'adresse et réessayez.",
+        err?.code === "functions/invalid-argument" ? messageServeur(err) : "Adresse introuvable. Vérifiez l'adresse et réessayez.",
       );
     } finally {
       setMajAdresseEnCours(false);
