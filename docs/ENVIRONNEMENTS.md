@@ -205,7 +205,7 @@ Cartes de test : `4242 4242 4242 4242` (fonctionne), `4000 0000 0000 0341`
 | 7 | Passage de Stripe en production | Stripe et GCP | Vérification d'entreprise, clés live, webhook de production, nouvelles versions des secrets, TPS/TVQ avec le comptable |
 | 9 | Clé Google propre au projet de test (facultatif) | GCP `snowro-test` | Aujourd'hui, le test utilise la clé de production (`Snowro-Geo`). Pour séparer quotas et facturation : créer une clé dans `snowro-test`, y activer Geocoding API et Places API (New) (déjà activée), puis une nouvelle version de `GOOGLE_GEOCODING_API_KEY` dans `snowro-test` |
 | 10 | Moyens de paiement en mode production | Stripe, mode production | Refaire le tri fait dans la sandbox le 2026-10-02 |
-| 11 | Textos (Twilio) | Twilio, GCP `snowro-test` et `snowro-app` | Compte Twilio, numéro canadien, secrets `TWILIO_ACCOUNT_SID` et `TWILIO_AUTH_TOKEN` dans les deux projets (avant le déploiement), `TWILIO_NUMERO` dans `functions/.env.<projet>` (vide = textos inactifs). Compte d'essai : textos seulement vers les numéros vérifiés dans Twilio |
+| 11 | Textos (Twilio) | Twilio, GCP `snowro-test` et `snowro-app` | Compte payant (allo@snowro.com), numéro +1 581 892-5901. Secrets `TWILIO_ACCOUNT_SID`, `TWILIO_API_KEY_SID` et `TWILIO_API_KEY_SECRET` (clé API restreinte à Messaging, une par projet ; jamais l'Auth Token) en place dans les deux projets. `TWILIO_NUMERO` dans `functions/.env.<projet>` (vide = textos inactifs) : rempli pour le test, à remplir pour la production après l'essai. Reste : avenant DPA à signer sur twilio.com/legal/data-protection-addendum |
 | 8 | DKIM Google Workspace, puis DMARC `quarantine` | Console Workspace, GoDaddy | `google._domainkey` encore absent |
 
 ## 7. Journal

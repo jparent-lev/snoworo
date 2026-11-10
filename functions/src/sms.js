@@ -6,10 +6,14 @@ import { logger } from "firebase-functions/v2";
 // (telephoneVerifie, écrit par verifierCodeTelephone). Sans numéro Twilio
 // configuré (TWILIO_NUMERO vide), rien ne part : les textos sont simplement
 // inactifs.
+// Authentification par clé API restreinte (Messaging seulement), jamais par
+// l'Auth Token du compte : chaque projet GCP a sa propre clé (snowro-test,
+// snowro-app), révocable sans toucher à l'autre.
 export const TWILIO_ACCOUNT_SID = defineSecret("TWILIO_ACCOUNT_SID");
-export const TWILIO_AUTH_TOKEN = defineSecret("TWILIO_AUTH_TOKEN");
+export const TWILIO_API_KEY_SID = defineSecret("TWILIO_API_KEY_SID");
+export const TWILIO_API_KEY_SECRET = defineSecret("TWILIO_API_KEY_SECRET");
 export const TWILIO_NUMERO = defineString("TWILIO_NUMERO", { default: "" });
-export const SECRETS_SMS = [TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN];
+export const SECRETS_SMS = [TWILIO_ACCOUNT_SID, TWILIO_API_KEY_SID, TWILIO_API_KEY_SECRET];
 
 // Même règle que les courriels : « [Test] » hors production.
 const PREFIXE = (process.env.GCLOUD_PROJECT ?? "snowro-app") === "snowro-app" ? "" : "[Test] ";
@@ -41,7 +45,7 @@ export async function envoyerTexteBrut(a, corps) {
   const res = await fetch(`https://api.twilio.com/2010-04-01/Accounts/${sid}/Messages.json`, {
     method: "POST",
     headers: {
-      Authorization: `Basic ${Buffer.from(`${sid}:${TWILIO_AUTH_TOKEN.value()}`).toString("base64")}`,
+      Authorization: `Basic ${Buffer.from(`${TWILIO_API_KEY_SID.value()}:${TWILIO_API_KEY_SECRET.value()}`).toString("base64")}`,
       "Content-Type": "application/x-www-form-urlencoded",
     },
     body: new URLSearchParams({ To: a, From: de, Body: `${PREFIXE}${corps}` }).toString(),
