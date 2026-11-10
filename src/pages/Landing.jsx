@@ -21,10 +21,9 @@ import {
 } from "./landing/Decors";
 import "./Landing.css";
 
-// Environnement de test seulement (VITE_ACCES_COMPTES=1 dans .env.test) :
-// l'en-tête mène à la connexion et à la création de compte, pour travailler
-// le tableau de bord. En production (pré-lancement), il reste sur la liste
-// d'attente.
+// Si VITE_ACCES_COMPTES=1 (.env.test, .env.production) :
+// l'en-tête mène à la connexion et à la création de compte. Sans ce réglage,
+// il mène à la liste d'attente.
 const ACCES_COMPTES = import.meta.env.VITE_ACCES_COMPTES === "1";
 
 // Site vitrine de pré-lancement — collecte de liste d'attente uniquement,
