@@ -342,6 +342,11 @@ async function connexion(cle, largeur = 1280) {
     await p.getByText("Choisissez votre adresse dans la liste de suggestions.").waitFor();
     assert.equal(appels.length, 1);
   });
+  await test("Marc : « Utiliser ma position » reste dans l'écran à 390 px, même avec un message d'erreur", async () => {
+    const boite = await p.getByRole("button", { name: "Utiliser ma position" }).boundingBox();
+    assert.ok(boite.x + boite.width <= 390, `bouton jusqu'à ${boite.x + boite.width} px`);
+    assert.equal(await p.evaluate(() => document.documentElement.scrollWidth), 390);
+  });
   await test("Marc : désactive puis réactive les avis de nouvelles demandes par courriel", async () => {
     const interrupteur = p.getByRole("switch", { name: "Avis de nouvelles demandes par courriel" });
     assert.equal(await interrupteur.getAttribute("aria-checked"), "true");

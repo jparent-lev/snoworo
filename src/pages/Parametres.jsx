@@ -129,7 +129,7 @@ export default function Parametres() {
         semble raisonnable.
       </p>
 
-      <div className="parametres__item">
+      <div className="parametres__item parametres__item--adresse">
         <div className="parametres__item-texte">
           <h3>{profile.ville ? profile.ville : "Aucune adresse enregistrée"}</h3>
           <p>
