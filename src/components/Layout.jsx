@@ -17,7 +17,9 @@ export default function Layout() {
       <header className="layout__entete">
         <Link to="/tableau-de-bord" className="layout__logo">
           <span className="layout__logo-complet">
-            <SnowroLockup qualifiant="X" size={30} />
+            {/* Sans le qualifiant « X » : on n'évoque pas les offres (Snowro X, Pro)
+                tant que Pro n'est pas développé. */}
+            <SnowroLockup qualifiant={null} size={30} />
           </span>
           {/* Sur mobile, le symbole seul : l'en-tête doit aussi loger la bascule. */}
           <span className="layout__logo-court">

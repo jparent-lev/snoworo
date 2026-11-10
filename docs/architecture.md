@@ -21,7 +21,7 @@ structure figées par `design_handoff_snowro_site`.
   authentification), qui valide et géocode le code postal avant d'écrire dans
   `listeAttente/{courriel}` — voir `data-model.md`.
 - Courriel de confirmation à la première inscription
-  (`confirmerInscriptionListeAttente`, déclenché à la création du document),
+  (`envoyerConfirmationListeAttente`, lien de double confirmation envoyé à chaque nouveau jeton ; `confirmerListeAttente` valide le lien de la page `/liste/confirmer`),
   expédié depuis `allo@snowro.com`.
 - Partage après l'inscription (`src/pages/landing/PartageListe.jsx`) :
   message prêt à partager adapté au rôle et à la ville, partage natif du

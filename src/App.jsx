@@ -10,8 +10,11 @@ import Parametres from "./pages/Parametres";
 import Confidentialite from "./pages/Confidentialite";
 import Conditions from "./pages/Conditions";
 import NousEcrire from "./pages/NousEcrire";
+import ConfirmerListe from "./pages/ConfirmerListe";
 import CreditImpot from "./pages/creditImpot/CreditImpot";
 import ApercuPartage from "./pages/ApercuPartage";
+
+const PAGE_CREDIT_IMPOT = import.meta.env.VITE_PAGE_CREDIT_IMPOT === "1";
 
 export default function App() {
   return (
@@ -22,7 +25,9 @@ export default function App() {
       <Route path="/confidentialite" element={<Confidentialite />} />
       <Route path="/conditions" element={<Conditions />} />
       <Route path="/nous-ecrire" element={<NousEcrire />} />
-      <Route path="/credit-impot" element={<CreditImpot />} />
+      <Route path="/liste/confirmer" element={<ConfirmerListe />} />
+      {/* Sur le test seulement (VITE_PAGE_CREDIT_IMPOT, .env.test) ; ailleurs, retour à l'accueil. */}
+      <Route path="/credit-impot" element={PAGE_CREDIT_IMPOT ? <CreditImpot /> : <Navigate to="/" replace />} />
       {/* Gabarit de l'image d'aperçu partagée (og-snowro.png), en développement seulement. */}
       {import.meta.env.DEV && <Route path="/apercu-partage" element={<ApercuPartage />} />}
 

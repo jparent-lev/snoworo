@@ -24,6 +24,9 @@ carte: { paymentMethodId, marque, derniers4, expMois, expAnnee } | null   // �
 carteMiseAJourAt                        // 🔒
 connectStatus: "non_demarre" | "en_attente" | "actif" | "restreint"   // 🔒 voir plus bas
 
+alertesDemandesCourriel: boolean   // false = plus d'avis de nouvelles demandes (absent = actifs)
+derniereAlerteDemandeAt            // dernier avis envoyé (au plus un toutes les 20 min)
+
 consents: {                 // 🔒 écrit uniquement via grantConsent/revokeConsent
   zonesAgregees:    { granted, grantedAt, version, revokedAt? },
   offresCiblees:    { granted, grantedAt, version, revokedAt? },
@@ -79,6 +82,7 @@ confirmeeAt, confirmationAuto   // true si confirmée par confirmerJobsEchues
 annuleeAt                       // seulement depuis « ouverte »
 signalement: { par: "client" | "deneigeur", motif, details, statutPrecedent, at } | null
 dernierMessage: { at, par } | null   // recopié par notifierNouveauMessage
+alerte: { envoyes, at }         // avertirDeneigeursNouvelleDemande : déneigeurs avertis par courriel
 paiementRefuse: { at, raison } | null   // carte refusée à l'acceptation (paiement réel)
 paiement: { montantTotal, fraisSnowro, montantDeneigeur, statutPaiement,
             stripePaymentIntentId, stripeChargeId, stripeTransferId, verseAt, erreurVersement }
@@ -173,12 +177,17 @@ fraisPct: 8`, identiques aux valeurs par défaut de la maquette).
 ## `listeAttente/{courriel}` et `listeAttente/pro:{courriel}`
 
 ```
+nom                     // nom complet
 courriel, codePostal
+confirmee: boolean      // double confirmation : false tant que le lien du courriel n'est pas cliqué
+                        // (absent = inscription antérieure, considérée confirmée)
+confirmeeAt
+jetonConfirmation, jetonEnvoyeAt, jetonExpireAt   // lien de confirmation (7 jours), retirés à la confirmation
 role: "client" | "deneigeur" | "les_deux" | "pro"   // facultatif : précisé après l'inscription
 entreprise              // nom de l'entreprise, role "pro" seulement
 ville, villeGeoId       // dérivés par géocodage serveur du codePostal
 createdAt
-confirmation: {         // écrit par confirmerInscriptionListeAttente
+confirmation: {         // écrit par envoyerConfirmationListeAttente (envoi du lien)
   statut: "envoyee" | "echec",
   resendId: string | null,
   envoyeeAt: timestamp | null,

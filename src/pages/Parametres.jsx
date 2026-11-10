@@ -116,6 +116,7 @@ export default function Parametres() {
   if (!profile) return null;
 
   const roles = profile.role ?? [];
+  const alertesActives = profile.alertesDemandesCourriel !== false;
   const changerRoles = (r) => r.length && setDoc(doc(db, "users", user.uid), { role: r }, { merge: true });
 
   return (
@@ -172,6 +173,28 @@ export default function Parametres() {
           {majAdresseEnCours ? "Vérification…" : "Utiliser cette adresse"}
         </button>
       </form>
+
+      {/* Avis de nouvelles demandes (avertirDeneigeursNouvelleDemande) : actifs
+          par défaut, au plus un courriel toutes les 20 minutes. */}
+      <div className="parametres__item">
+        <div className="parametres__item-texte">
+          <h3>Avis de nouvelles demandes par courriel</h3>
+          <p>
+            Un courriel quand une demande est publiée dans votre ville (au plus un toutes les 20 minutes). Jamais
+            l'adresse exacte : le quartier, la distance et le montant.
+          </p>
+        </div>
+        <button
+          type="button"
+          className={`parametres__toggle ${alertesActives ? "parametres__toggle--actif" : ""}`}
+          onClick={() => setDoc(doc(db, "users", user.uid), { alertesDemandesCourriel: !alertesActives }, { merge: true })}
+          role="switch"
+          aria-checked={alertesActives}
+          aria-label="Avis de nouvelles demandes par courriel"
+        >
+          <span className="parametres__toggle-pastille" />
+        </button>
+      </div>
 
         </>
       )}

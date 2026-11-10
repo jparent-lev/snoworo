@@ -11,6 +11,7 @@ process.env.GCLOUD_PROJECT = "demo-snowro";
 process.env.GOOGLE_GEOCODING_API_KEY = "cle-factice";
 process.env.RESEND_API_KEY = "cle-factice";
 const REPO = fileURLToPath(new URL("..", import.meta.url));
+const geohashLib = createRequire(`${REPO}functions/package.json`)("ngeohash");
 
 // Géocodage simulé : toute adresse contenant « Lévis » tombe à Lévis, le reste à Québec (Limoilou).
 const fetchOriginal = globalThis.fetch;
@@ -328,13 +329,17 @@ console.log("Conservation et fermeture de compte (Loi 25)");
 const cons = await import(`${REPO}functions/src/conservation.js`);
 const compte = await import(`${REPO}functions/src/compte.js`);
 const { getAuth } = createRequire(`${REPO}functions/package.json`)("firebase-admin/auth");
-await test("conservation : liste d'attente et « Nous écrire » effacés après 24 mois, le reste gardé", async () => {
+await test("conservation : liste d'attente et « Nous écrire » après 24 mois, inscriptions non confirmées après 7 jours", async () => {
   const vieux = TS.fromMillis(Date.now() - 731 * 24 * 3600e3);
   await db.doc("listeAttente/vieux@exemple.ca").set({ courriel: "vieux@exemple.ca", createdAt: vieux });
   await db.doc("listeAttente/recent@exemple.ca").set({ courriel: "recent@exemple.ca", createdAt: TS.now() });
   await db.doc("messagesContact/vieux").set({ courriel: "a@exemple.ca", createdAt: vieux });
   await db.doc("messagesContact/recent").set({ courriel: "b@exemple.ca", createdAt: TS.now() });
-  assert.deepEqual(await cons.appliquerConservation(), { listeAttente: 1, messagesContact: 1 });
+  await db.doc("listeAttente/jamais@exemple.ca").set({ courriel: "jamais@exemple.ca", confirmee: false, createdAt: TS.now(), jetonExpireAt: TS.fromMillis(Date.now() - 1000) });
+  await db.doc("listeAttente/encore@exemple.ca").set({ courriel: "encore@exemple.ca", confirmee: false, createdAt: TS.now(), jetonExpireAt: TS.fromMillis(Date.now() + 3600e3) });
+  assert.deepEqual(await cons.appliquerConservation(), { nonConfirmees: 1, listeAttente: 1, messagesContact: 1 });
+  assert.equal((await db.doc("listeAttente/jamais@exemple.ca").get()).exists, false, "non confirmée après 7 jours");
+  assert.equal((await db.doc("listeAttente/encore@exemple.ca").get()).exists, true, "lien encore valide");
   assert.equal((await db.doc("listeAttente/vieux@exemple.ca").get()).exists, false);
   assert.equal((await db.doc("listeAttente/recent@exemple.ca").get()).exists, true);
   assert.equal((await db.doc("messagesContact/recent").get()).exists, true);
@@ -383,7 +388,7 @@ console.log("Liste d'attente (Pro distinct)");
 const la = await import(`${REPO}functions/src/listeAttente.js`);
 await test("liste d'attente : Pro a sa propre entrée avec l'entreprise, sans écraser l'inscription client", async () => {
   globalThis.fetch = fetchGeocodage;
-  const base = { courriel: "Duo@Exemple.ca", codePostal: "G1L 2M4" };
+  const base = { nom: "Léa Duo", courriel: "Duo@Exemple.ca", codePostal: "G1L 2M4" };
   await la.rejoindreListeAttente.run({ data: { ...base, role: "client" } });
   await echoue(la.rejoindreListeAttente.run({ data: { ...base, role: "pro" } }), "invalid-argument", "pro sans entreprise");
   await la.rejoindreListeAttente.run({ data: { ...base, role: "pro", entreprise: " Déneigement Duo inc. " } });
@@ -396,13 +401,104 @@ await test("liste d'attente : Pro a sa propre entrée avec l'entreprise, sans é
 
 await test("liste d'attente : rôle facultatif, précisé ensuite sans être effacé par une réinscription", async () => {
   globalThis.fetch = fetchGeocodage;
-  const base = { courriel: "simple@exemple.ca", codePostal: "G1L 2M4" };
+  const base = { nom: "Sam Simple", courriel: "simple@exemple.ca", codePostal: "G1L 2M4" };
   await la.rejoindreListeAttente.run({ data: base });
   assert.equal((await db.doc("listeAttente/simple@exemple.ca").get()).data().role, undefined);
   await la.rejoindreListeAttente.run({ data: { ...base, role: "les_deux" } });
   assert.equal((await db.doc("listeAttente/simple@exemple.ca").get()).data().role, "les_deux");
   await la.rejoindreListeAttente.run({ data: base });
   assert.equal((await db.doc("listeAttente/simple@exemple.ca").get()).data().role, "les_deux");
+});
+
+process.env.URL_SITE = "https://snowro.com";
+const conf = await import(`${REPO}functions/src/confirmationListeAttente.js`);
+const instantane = async (ref) => { const snap = await ref.get(); return { data: () => snap.data(), ref }; };
+await test("liste d'attente : nom complet requis ; double confirmation (jeton, lien, confirmé, renvoi limité)", async () => {
+  globalThis.fetch = fetchGeocodage;
+  const base = { nom: "  Jeanne   Tremblay ", courriel: "Jeanne@Exemple.ca", codePostal: "G1L 2M4" };
+  await echoue(la.rejoindreListeAttente.run({ data: { ...base, nom: "" } }), "invalid-argument", "sans nom");
+  const r = await la.rejoindreListeAttente.run({ data: base });
+  assert.equal(r.confirmationRequise, true);
+  const ref = db.doc("listeAttente/jeanne@exemple.ca");
+  const e1 = (await ref.get()).data();
+  assert.equal(e1.nom, "Jeanne Tremblay"); assert.equal(e1.confirmee, false); assert.match(e1.jetonConfirmation, /^[0-9a-f]{48}$/);
+  // Moins de 10 minutes plus tard : même jeton (pas de nouveau courriel).
+  await la.rejoindreListeAttente.run({ data: { ...base, role: "deneigeur" } });
+  assert.equal((await ref.get()).data().jetonConfirmation, e1.jetonConfirmation);
+  await echoue(la.confirmerListeAttente.run({ data: { c: "jeanne@exemple.ca", j: "0".repeat(48) } }), "failed-precondition", "mauvais jeton");
+  const ok = await la.confirmerListeAttente.run({ data: { c: "jeanne@exemple.ca", j: e1.jetonConfirmation } });
+  assert.deepEqual(ok, { ok: true, deja: false, prenom: "Jeanne", ville: "Québec" });
+  const e2 = (await ref.get()).data();
+  assert.equal(e2.confirmee, true); assert.equal(e2.jetonConfirmation, undefined); assert.equal(e2.role, "deneigeur");
+  assert.equal((await la.confirmerListeAttente.run({ data: { c: "jeanne@exemple.ca", j: e1.jetonConfirmation } })).deja, true);
+  // Déjà confirmée : une réinscription ne redemande pas de confirmation.
+  assert.equal((await la.rejoindreListeAttente.run({ data: base })).confirmationRequise, false);
+  assert.equal((await ref.get()).data().confirmee, true);
+  await echoue(la.confirmerListeAttente.run({ data: { c: "x", j: "pas-un-jeton" } }), "invalid-argument", "jeton mal formé");
+});
+await test("liste d'attente : lien expiré refusé ; nouveau lien après 10 minutes", async () => {
+  const ref = db.doc("listeAttente/tard@exemple.ca");
+  await ref.set({ nom: "Tom Tard", courriel: "tard@exemple.ca", confirmee: false, jetonConfirmation: "a".repeat(48), jetonEnvoyeAt: TS.fromMillis(Date.now() - 8 * 24 * 3600e3), jetonExpireAt: TS.fromMillis(Date.now() - 1000) });
+  const e = await echoue(la.confirmerListeAttente.run({ data: { c: "tard@exemple.ca", j: "a".repeat(48) } }), "failed-precondition", "expiré");
+  assert.equal(e.message, "lien-expire");
+  globalThis.fetch = fetchGeocodage;
+  await la.rejoindreListeAttente.run({ data: { nom: "Tom Tard", courriel: "tard@exemple.ca", codePostal: "G1L 2M4" } });
+  const nouveau = (await ref.get()).data();
+  assert.notEqual(nouveau.jetonConfirmation, "a".repeat(48));
+  assert.ok(nouveau.jetonExpireAt.toMillis() > Date.now() + 6 * 24 * 3600e3);
+});
+await test("liste d'attente : courriel de confirmation avec le lien, envoyé seulement quand le jeton change", async () => {
+  const envoisConf = [];
+  globalThis.fetch = async (url, options) => {
+    envoisConf.push(JSON.parse(options.body));
+    return { ok: true, json: async () => ({ id: `resend-conf-${envoisConf.length}` }) };
+  };
+  const ref = db.doc("listeAttente/lien@exemple.ca");
+  await ref.set({ nom: "Lina Lien", courriel: "lien@exemple.ca", ville: "Québec", confirmee: false, jetonConfirmation: "b".repeat(48) });
+  const apres = await instantane(ref);
+  await conf.envoyerConfirmationListeAttente.run({ params: { id: "lien@exemple.ca" }, data: { before: { data: () => undefined }, after: apres } });
+  assert.equal(envoisConf.length, 1);
+  assert.deepEqual(envoisConf[0].to, ["lien@exemple.ca"]);
+  assert.match(envoisConf[0].subject, /Confirmez votre inscription/);
+  assert.ok(envoisConf[0].html.includes(`https://snowro.com/liste/confirmer?c=lien%40exemple.ca&amp;j=${"b".repeat(48)}`));
+  assert.match(envoisConf[0].html, /Bonjour Lina/);
+  assert.equal((await ref.get()).data().confirmation.statut, "envoyee");
+  // Écriture du statut : même jeton, aucun nouvel envoi.
+  await conf.envoyerConfirmationListeAttente.run({ params: { id: "lien@exemple.ca" }, data: { before: apres, after: await instantane(ref) } });
+  assert.equal(envoisConf.length, 1);
+});
+
+console.log("Avis de nouvelles demandes aux déneigeurs");
+const al = await import(`${REPO}functions/src/alertesDemandes.js`);
+await test("nouvelle demande : courriel aux déneigeurs de la ville seulement, sans adresse, au plus un par 20 minutes", async () => {
+  const envoisAlerte = [];
+  globalThis.fetch = async (url, options) => {
+    envoisAlerte.push(JSON.parse(options.body));
+    return { ok: true, json: async () => ({ id: `resend-al-${envoisAlerte.length}` }) };
+  };
+  const g = (lat, lng) => geohashLib.encode(lat, lng);
+  await db.doc("users/alA").set({ displayName: "Alex Dupuis", email: "alex@exemple.ca", role: ["deneigeur_x"], villeGeoId: "ID_QUEBEC", ville: "Québec", addressGeohash: g(46.83, -71.22) });
+  await db.doc("users/alB").set({ displayName: "Bea", email: "bea@exemple.ca", role: ["deneigeur_x"], villeGeoId: "ID_QUEBEC", alertesDemandesCourriel: false });
+  await db.doc("users/alC").set({ displayName: "Carl", email: "carl@exemple.ca", role: ["deneigeur_x"], villeGeoId: "ID_LEVIS" });
+  await db.doc("users/alD").set({ displayName: "Dom", email: "dom@exemple.ca", role: ["deneigeur_x"], villeGeoId: "ID_QUEBEC", derniereAlerteDemandeAt: TS.fromMillis(Date.now() - 5 * 60e3) });
+  await db.doc("users/alE").set({ displayName: "Eve", email: "eve@exemple.ca", role: ["donneur_ouvrage", "deneigeur_x"], villeGeoId: "ID_QUEBEC" });
+  await db.doc("users/alF").set({ displayName: "Fred", email: "fred@exemple.ca", role: ["donneur_ouvrage"], villeGeoId: "ID_QUEBEC" });
+  const ref = db.doc("demandes/al-1");
+  await ref.set({ statut: "ouverte", villeGeoId: "ID_QUEBEC", ville: "Québec", quartier: "Limoilou", titre: "Entrée double + balcon", remunerationOfferte: 45, outilsFournis: true, dateHeureSouhaitee: TS.fromMillis(Date.now() + 20 * 3600e3), adresseGeohash: g(46.826, -71.2206).slice(0, 7), donneurOuvrageId: "alE" });
+  await al.avertirDeneigeursNouvelleDemande.run({ params: { demandeId: "al-1" }, data: await ref.get() });
+  assert.deepEqual(envoisAlerte.map((e) => e.to[0]).sort(), ["alex@exemple.ca", "marc@exemple.ca"], "Alex et Marc (Québec) ; pas Bea (désactivé), Carl (Lévis), Dom (averti il y a 5 min), Eve (a publié), Fred (pas déneigeur)");
+  const courriel = envoisAlerte.find((e) => e.to[0] === "alex@exemple.ca");
+  assert.match(courriel.subject, /Nouvelle demande à Limoilou : 39,40\u00A0\$ pour vous/);
+  assert.match(courriel.html, /Bonjour Alex/); assert.match(courriel.html, /km de chez vous/); assert.match(courriel.html, /outils fournis/);
+  assert.ok(!/3e Avenue|adresse exacte/.test(courriel.html.replace("jamais", "")), "aucune adresse");
+  assert.ok((await db.doc("users/alA").get()).data().derniereAlerteDemandeAt);
+  assert.equal((await ref.get()).data().alerte.envoyes, 2);
+  // Deuxième demande (publiée par Fred) quelques minutes plus tard : Alex et Marc
+  // viennent d'être avertis ; seule Eve, qui n'en est pas l'autrice cette fois, l'est.
+  const ref2 = db.doc("demandes/al-2");
+  await ref2.set({ statut: "ouverte", villeGeoId: "ID_QUEBEC", quartier: "Saint-Roch", titre: "Stationnement", remunerationOfferte: 30, donneurOuvrageId: "alF" });
+  await al.avertirDeneigeursNouvelleDemande.run({ params: { demandeId: "al-2" }, data: await ref2.get() });
+  assert.deepEqual(envoisAlerte.slice(2).map((e) => e.to[0]), ["eve@exemple.ca"]);
 });
 
 console.log("Firestore rules");

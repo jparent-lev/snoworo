@@ -3,6 +3,7 @@ import { logger } from "firebase-functions/v2";
 import { FieldValue } from "firebase-admin/firestore";
 import { db } from "./admin.js";
 import { RESEND_API_KEY, echapperHtml, envoyerCourriel, gabaritCourriel } from "./courriels.js";
+import { URL_SITE } from "./paiements.js";
 
 // Un courriel d'avis au plus par conversation et par destinataire dans cet
 // intervalle : une rafale de messages ne devient pas une rafale de courriels.
@@ -62,7 +63,7 @@ export const notifierNouveauMessage = onDocumentCreated(
       expediteurPrenom,
       titreDemande: demande.titre,
       extrait: message.contenu,
-      lien: `https://snowro.com/tableau-de-bord?conversation=${demandeId}&mode=${parClient ? "deneigeur" : "client"}`,
+      lien: `${URL_SITE.value()}/tableau-de-bord?conversation=${demandeId}&mode=${parClient ? "deneigeur" : "client"}`,
     });
     try {
       await envoyerCourriel({

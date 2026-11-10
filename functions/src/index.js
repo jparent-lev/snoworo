@@ -17,8 +17,8 @@ export {
   annulerDemande,
   augmenterOffre,
 } from "./cycleDemande.js";
-export { rejoindreListeAttente } from "./listeAttente.js";
-export { confirmerInscriptionListeAttente } from "./confirmationListeAttente.js";
+export { rejoindreListeAttente, confirmerListeAttente } from "./listeAttente.js";
+export { envoyerConfirmationListeAttente } from "./confirmationListeAttente.js";
 export { envoyerMessageContact } from "./contact.js";
 export { notifierNouveauMessage } from "./messagerie.js";
 export {
@@ -31,3 +31,4 @@ export {
 export { suggererAdresses } from "./suggestionsAdresse.js";
 export { purgerConservation } from "./conservation.js";
 export { fermerCompte } from "./compte.js";
+export { avertirDeneigeursNouvelleDemande } from "./alertesDemandes.js";

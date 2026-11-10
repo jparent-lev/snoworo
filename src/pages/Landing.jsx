@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Navigate } from "react-router-dom";
+import { Link, Navigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import SnowroSymbol from "../components/brand/SnowroSymbol";
 import PiedDePage from "../components/PiedDePage";
@@ -20,6 +20,12 @@ import {
   IllustrationEtape,
 } from "./landing/Decors";
 import "./Landing.css";
+
+// Environnement de test seulement (VITE_ACCES_COMPTES=1 dans .env.test) :
+// l'en-tête mène à la connexion et à la création de compte, pour travailler
+// le tableau de bord. En production (pré-lancement), il reste sur la liste
+// d'attente.
+const ACCES_COMPTES = import.meta.env.VITE_ACCES_COMPTES === "1";
 
 // Site vitrine de pré-lancement — collecte de liste d'attente uniquement,
 // aucun compte ni paiement réel déclenché ici. Copie et structure figées par
@@ -62,7 +68,7 @@ export default function Landing() {
   const fermerMenu = () => setMenuOuvert(false);
 
   return (
-    <div className="landing">
+    <div className={`landing${ACCES_COMPTES ? " landing--comptes" : ""}`}>
       <header className={`landing__entete${compact ? " landing__entete--compact" : ""}`}>
         <div className="landing__entete-inner">
           <a href="#haut" className="landing__logo" onClick={fermerMenu}>
@@ -75,9 +81,20 @@ export default function Landing() {
             <a href="#frais" onClick={fermerMenu}>Frais</a>
             <a href="#deneigeur" onClick={fermerMenu}>Déneiger</a>
           </nav>
-          <a href="#liste" className="landing__nav-cta landing__bouton-neige landing__bouton-neige--a" onClick={fermerMenu}>
-            Rejoindre la liste
-          </a>
+          {ACCES_COMPTES ? (
+            <div className="landing__comptes">
+              <Link to="/connexion" className="landing__connexion">
+                Se connecter
+              </Link>
+              <Link to="/inscription" className="landing__nav-cta landing__bouton-neige landing__bouton-neige--a">
+                Créer un compte
+              </Link>
+            </div>
+          ) : (
+            <a href="#liste" className="landing__nav-cta landing__bouton-neige landing__bouton-neige--a" onClick={fermerMenu}>
+              Rejoindre la liste
+            </a>
+          )}
           <button
             type="button"
             className="landing__menu-bouton"
@@ -316,7 +333,7 @@ export default function Landing() {
           <div>
             <h2 className="landing__h2 landing__h2--sur-argile">Nous ouvrons là où il y a du monde</h2>
             <p className="landing__p landing__p--sur-argile-clair">
-              Laissez-nous votre courriel et votre code postal. Nous vous écrirons lorsque Snowro sera offert dans
+              Laissez-nous votre nom, votre courriel et votre code postal. Nous vous écrirons lorsque Snowro sera offert dans
               votre secteur, et votre inscription fera avancer votre ville dans la file.
             </p>
           </div>
