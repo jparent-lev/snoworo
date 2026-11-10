@@ -311,10 +311,10 @@ export default function Landing() {
           y mène aussi, pour les liens déjà partagés). */}
       <section id="commencer" className="landing__section">
         <span id="liste" aria-hidden="true" />
-        <div className="landing__bloc-liste">
+        <div className="landing__bloc-liste landing__bloc-final">
           <CapNeige className="landing__cap-liste" />
-          <div>
-            <h2 className="landing__h2 landing__h2--sur-argile">Prêt pour la prochaine tempête ?</h2>
+          <div className="landing__final-texte">
+            <h2 className="landing__h2 landing__h2--sur-argile">Prêt pour la prochaine tempête&nbsp;?</h2>
             <p className="landing__p landing__p--sur-argile-clair">
               Créez votre compte en une minute : publiez une demande, ou recevez les demandes de votre quartier
               si vous déneigez. Un seul compte suffit pour faire les deux.
