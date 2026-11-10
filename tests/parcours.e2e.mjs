@@ -128,6 +128,9 @@ async function connexion(cle, largeur = 1280) {
     await p.getByText("1234, 3e Avenue, Québec").waitFor({ timeout: 15000 });
     const d = (await db.doc("demandes/D1").get()).data();
     assert.equal(d.statut, "matchee"); assert.equal(d.deneigeurId, uid.marc); assert.equal(d.paiement.montantDeneigeur, 39.4);
+    const itineraire = p.locator(".carte-job", { hasText: "1234, 3e Avenue" }).getByRole("link", { name: "Itinéraire" });
+    assert.match(await itineraire.getAttribute("href"), /^https:\/\/www\.google\.com\/maps\/dir\/\?api=1&destination=1234%2C%203e%20Avenue%2C%20Qu%C3%A9bec$/);
+    await p.screenshot({ path: `${D}/e2e-acceptee-1280.png`, fullPage: true });
   });
   await test("Marc : « C'est fait » exige une photo ; avec 2 photos, passe « En attente de confirmation »", async () => {
     await p.locator(".carte-job", { hasText: "1234, 3e Avenue" }).getByRole("button", { name: "C'est fait" }).click();
