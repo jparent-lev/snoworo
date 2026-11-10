@@ -4,6 +4,7 @@ import { FieldValue } from "firebase-admin/firestore";
 import { db } from "./admin.js";
 import { RESEND_API_KEY, echapperHtml, envoyerCourriel, gabaritCourriel } from "./courriels.js";
 import { URL_SITE } from "./paiements.js";
+import { SECRETS_SMS, envoyerTexto } from "./sms.js";
 
 // Un courriel d'avis au plus par conversation et par destinataire dans cet
 // intervalle : une rafale de messages ne devient pas une rafale de courriels.
@@ -22,7 +23,7 @@ export const notifierNouveauMessage = onDocumentCreated(
   {
     document: "messages/{demandeId}/messages/{messageId}",
     region: "northamerica-northeast1",
-    secrets: [RESEND_API_KEY],
+    secrets: [RESEND_API_KEY, ...SECRETS_SMS],
   },
   async (event) => {
     const { demandeId } = event.params;
@@ -59,11 +60,12 @@ export const notifierNouveauMessage = onDocumentCreated(
       return;
     }
 
+    const lienConversation = `${URL_SITE.value()}/tableau-de-bord?conversation=${demandeId}&mode=${parClient ? "deneigeur" : "client"}`;
     const { sujet, html, texte } = composerAvis({
       expediteurPrenom,
       titreDemande: demande.titre,
       extrait: message.contenu,
-      lien: `${URL_SITE.value()}/tableau-de-bord?conversation=${demandeId}&mode=${parClient ? "deneigeur" : "client"}`,
+      lien: lienConversation,
     });
     try {
       await envoyerCourriel({
@@ -77,6 +79,12 @@ export const notifierNouveauMessage = onDocumentCreated(
     } catch (err) {
       logger.error(`Avis de message non envoyé pour la demande ${demandeId} : ${err.message}`);
     }
+    // Texto (consentement et numéro vérifiés) : qui a écrit, jamais le contenu.
+    await envoyerTexto(
+      destinataire,
+      `Snowro : ${expediteurPrenom || "L'autre personne"} vous a écrit à propos de « ${demande.titre} ». ${lienConversation}`,
+      { contexte: `message ${demandeId}` },
+    );
   },
 );
 

@@ -6,8 +6,9 @@ import { db } from "./admin.js";
 import { RESEND_API_KEY, echapperHtml, envoyerCourriel, gabaritCourriel } from "./courriels.js";
 import { URL_SITE } from "./paiements.js";
 import { calculerPaiement, lireFrais } from "./cycleDemande.js";
+import { SECRETS_SMS, envoyerTexto, peutRecevoirTextos } from "./sms.js";
 
-// Avertit par courriel les déneigeurs de quartier de la même ville dès
+// Avertit par courriel (et par texto, voir plus bas) les déneigeurs de quartier de la même ville dès
 // qu'une demande est publiée (« Les déneigeurs de quartier disponibles dans
 // votre secteur sont avertis tout de suite », accueil).
 // - Destinataires : rôle déneigeur, même villeGeoId (jamais une autre ville),
@@ -16,6 +17,8 @@ import { calculerPaiement, lireFrais } from "./cycleDemande.js";
 // - Pas de rafale : au plus un courriel par déneigeur toutes les 20 minutes
 //   (derniereAlerteDemandeAt) ; pendant une tempête, il voit les autres
 //   demandes en ouvrant son tableau de bord.
+// - Texto aussi (même règle de 20 minutes) pour ceux qui ont accordé le
+//   consentement « notificationsSMS » et vérifié leur numéro (sms.js).
 // - Rien d'identifiant dans le courriel : quartier, distance approximative,
 //   type de travail, moment souhaité et montant ; jamais l'adresse.
 export const ROLE_DENEIGEUR = "deneigeur_x";
@@ -72,7 +75,7 @@ export function composerAlerte({ prenom, demande, montantDeneigeur, km, lien, vi
 }
 
 export const avertirDeneigeursNouvelleDemande = onDocumentCreated(
-  { document: "demandes/{demandeId}", region: "northamerica-northeast1", secrets: [RESEND_API_KEY] },
+  { document: "demandes/{demandeId}", region: "northamerica-northeast1", secrets: [RESEND_API_KEY, ...SECRETS_SMS] },
   async (event) => {
     const demande = event.data?.data();
     if (!demande || demande.statut !== "ouverte" || !demande.villeGeoId) return;
@@ -91,29 +94,44 @@ export const avertirDeneigeursNouvelleDemande = onDocumentCreated(
     let envoyes = 0;
     for (const doc of candidats.docs) {
       const u = doc.data();
-      if (doc.id === demande.donneurOuvrageId || !u.email || u.alertesDemandesCourriel === false) continue;
+      if (doc.id === demande.donneurOuvrageId) continue;
+      const parCourriel = Boolean(u.email) && u.alertesDemandesCourriel !== false;
+      const parTexto = peutRecevoirTextos(u);
+      if (!parCourriel && !parTexto) continue;
       if (maintenant - (u.derniereAlerteDemandeAt?.toMillis?.() ?? 0) < DELAI_ENTRE_ALERTES_MS) continue;
-      const { sujet, html, texte } = composerAlerte({
-        prenom: (u.displayName ?? "").split(" ")[0],
-        demande,
-        montantDeneigeur,
-        km: distanceKm(u.addressGeohash, demande.adresseGeohash),
-        lien,
-        ville: u.ville,
-      });
-      try {
-        await envoyerCourriel({
-          a: u.email,
-          sujet,
-          html,
-          texte,
-          cleIdempotence: `alerte-${demandeId}-${doc.id}`,
-          type: "nouvelle_demande",
+      const km = distanceKm(u.addressGeohash, demande.adresseGeohash);
+      let averti = false;
+      if (parCourriel) {
+        const { sujet, html, texte } = composerAlerte({
+          prenom: (u.displayName ?? "").split(" ")[0],
+          demande,
+          montantDeneigeur,
+          km,
+          lien,
+          ville: u.ville,
         });
+        try {
+          await envoyerCourriel({
+            a: u.email,
+            sujet,
+            html,
+            texte,
+            cleIdempotence: `alerte-${demandeId}-${doc.id}`,
+            type: "nouvelle_demande",
+          });
+          averti = true;
+        } catch (err) {
+          logger.error(`Avis de nouvelle demande ${demandeId} non envoyé à ${doc.id} : ${err.message}`);
+        }
+      }
+      if (parTexto) {
+        const ou = demande.quartier || demande.ville || u.ville || "votre ville";
+        const corps = `Snowro : nouvelle demande à ${ou}${km == null ? "" : km < 1 ? " (moins de 1 km)" : ` (${km.toFixed(1).replace(".", ",")} km)`}, ${formatArgent(montantDeneigeur)} pour vous. ${lien}`;
+        if (await envoyerTexto(u, corps, { contexte: `nouvelle demande ${demandeId}` })) averti = true;
+      }
+      if (averti) {
         await doc.ref.update({ derniereAlerteDemandeAt: FieldValue.serverTimestamp() });
         envoyes += 1;
-      } catch (err) {
-        logger.error(`Avis de nouvelle demande ${demandeId} non envoyé à ${doc.id} : ${err.message}`);
       }
     }
     await event.data.ref.update({ alerte: { envoyes, at: FieldValue.serverTimestamp() } });

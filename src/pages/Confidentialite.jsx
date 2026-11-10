@@ -90,8 +90,10 @@ export default function Confidentialite() {
       </p>
       <ul>
         <li>
-          <strong>Notifications SMS :</strong> recevoir un message texte lorsqu'une demande est publiée près de chez vous ou lorsque
-          votre jumelage est confirmé.
+          <strong>Notifications SMS :</strong> recevoir un texto lorsqu'une demande est publiée près de chez vous
+          (déneigeurs), lorsque votre demande est acceptée ou faite, et lorsque l'autre personne vous écrit (qui
+          a écrit, jamais le contenu). Votre numéro de cellulaire est vérifié par un code reçu par texto; il ne sert
+          qu'à ces avis. Vous pouvez retirer le consentement ou le numéro en tout temps dans les paramètres.
         </li>
       </ul>
 
@@ -133,6 +135,10 @@ export default function Confidentialite() {
           <strong>Resend :</strong> envoi des courriels de Snowro (confirmation d'inscription, avis liés à vos
           demandes).
         </li>
+        <li>
+          <strong>Twilio :</strong> envoi des textos, seulement si vous avez accordé le consentement « Notifications
+          SMS » et vérifié votre numéro (numéro de cellulaire et contenu du texto, jamais l'adresse ni vos messages).
+        </li>
       </ul>
       <p>
         Entre utilisateurs : une fois un jumelage confirmé, le client et le déneigeur de quartier voient ce qu'il
@@ -150,7 +156,7 @@ export default function Confidentialite() {
 
       <h2>Renseignements conservés à l'extérieur du Québec</h2>
       <p>
-        Nos fonctions serveur sont hébergées à Montréal. Certains de nos fournisseurs (Google, Stripe, Resend)
+        Nos fonctions serveur sont hébergées à Montréal. Certains de nos fournisseurs (Google, Stripe, Resend, Twilio)
         peuvent toutefois conserver ou traiter des renseignements ailleurs au Canada et aux États-Unis. Avant de
         le faire, nous avons évalué que la protection offerte par ces fournisseurs est adéquate, notamment par leurs
         engagements contractuels de confidentialité et de sécurité, comme l'exige la Loi 25.

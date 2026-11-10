@@ -10,6 +10,9 @@ import { doc, getDoc, getDocs, setDoc, updateDoc, addDoc, collection, serverTime
 process.env.GCLOUD_PROJECT = "demo-snowro";
 process.env.GOOGLE_GEOCODING_API_KEY = "cle-factice";
 process.env.RESEND_API_KEY = "cle-factice";
+process.env.TWILIO_ACCOUNT_SID = "ACfactice";
+process.env.TWILIO_AUTH_TOKEN = "jeton-factice";
+process.env.TWILIO_NUMERO = "+15815550000";
 const REPO = fileURLToPath(new URL("..", import.meta.url));
 const geohashLib = createRequire(`${REPO}functions/package.json`)("ngeohash");
 
@@ -499,6 +502,86 @@ await test("nouvelle demande : courriel aux déneigeurs de la ville seulement, s
   await ref2.set({ statut: "ouverte", villeGeoId: "ID_QUEBEC", quartier: "Saint-Roch", titre: "Stationnement", remunerationOfferte: 30, donneurOuvrageId: "alF" });
   await al.avertirDeneigeursNouvelleDemande.run({ params: { demandeId: "al-2" }, data: await ref2.get() });
   assert.deepEqual(envoisAlerte.slice(2).map((e) => e.to[0]), ["eve@exemple.ca"]);
+});
+
+console.log("Textos (Twilio)");
+const sms = await import(`${REPO}functions/src/sms.js`);
+const tel = await import(`${REPO}functions/src/telephone.js`);
+const tc = await import(`${REPO}functions/src/textosCycle.js`);
+const textos = [];
+const fetchTextos = async (url, options) => {
+  if (String(url).includes("api.twilio.com")) {
+    const corps = new URLSearchParams(options.body);
+    textos.push({ a: corps.get("To"), de: corps.get("From"), texte: corps.get("Body"), auth: options.headers.Authorization });
+    return { ok: true, json: async () => ({ sid: `SM${textos.length}` }) };
+  }
+  return { ok: true, json: async () => ({ id: "resend-x" }) };
+};
+const avecConsentementSms = { consents: { notificationsSMS: { granted: true, version: 2 } } };
+await test("textos : numéros nord-américains normalisés, les autres refusés", async () => {
+  assert.equal(sms.normaliserNumero("418 555-1234"), "+14185551234");
+  assert.equal(sms.normaliserNumero("+1 (581) 555-0000"), "+15815550000");
+  assert.equal(sms.normaliserNumero("1-418-555-1234"), "+14185551234");
+  assert.equal(sms.normaliserNumero("555-1234"), null);
+  assert.equal(sms.normaliserNumero("+33 6 12 34 56 78"), null);
+  assert.equal(sms.normaliserNumero("011 555 1234"), null);
+});
+await test("textos : code de vérification par texto, mauvais code compté, bon code enregistre le numéro", async () => {
+  globalThis.fetch = fetchTextos;
+  textos.length = 0;
+  await db.doc("users/telA").set({ displayName: "Tia", email: "tia@exemple.ca" });
+  await echoue(appel(tel.envoyerCodeTelephone, "telA", { numero: "555" }), "invalid-argument", "numéro invalide");
+  await appel(tel.envoyerCodeTelephone, "telA", { numero: "418 555-1234" });
+  assert.equal(textos.length, 1);
+  assert.equal(textos[0].a, "+14185551234"); assert.equal(textos[0].de, "+15815550000");
+  assert.equal(textos[0].auth, `Basic ${Buffer.from("ACfactice:jeton-factice").toString("base64")}`);
+  const code = textos[0].texte.match(/(\d{6})/)[1];
+  assert.ok(!JSON.stringify((await db.doc("verificationsTelephone/telA").get()).data()).includes(code), "code jamais stocké en clair");
+  const e = await echoue(appel(tel.envoyerCodeTelephone, "telA", { numero: "418 555-1234" }), "resource-exhausted", "un code par minute");
+  assert.equal(e.message, "attendre");
+  const faux = code === "000000" ? "111111" : "000000";
+  assert.deepEqual(await appel(tel.verifierCodeTelephone, "telA", { code: faux }), { ok: false });
+  assert.equal((await db.doc("verificationsTelephone/telA").get()).data().essais, 1);
+  assert.deepEqual(await appel(tel.verifierCodeTelephone, "telA", { code }), { ok: true, numero: "+14185551234" });
+  assert.equal((await db.doc("users/telA").get()).data().telephoneVerifie, "+14185551234");
+  await echoue(appel(tel.verifierCodeTelephone, "telA", { code }), "failed-precondition", "code déjà utilisé");
+  await appel(tel.retirerTelephone, "telA", {});
+  assert.equal((await db.doc("users/telA").get()).data().telephoneVerifie, null);
+});
+await test("textos : seulement avec consentement ET numéro vérifié", async () => {
+  globalThis.fetch = fetchTextos;
+  textos.length = 0;
+  assert.equal(await sms.envoyerTexto({ telephoneVerifie: "+14185551234" }, "x"), false, "sans consentement");
+  assert.equal(await sms.envoyerTexto(avecConsentementSms, "x"), false, "sans numéro vérifié");
+  assert.equal(await sms.envoyerTexto({ ...avecConsentementSms, telephoneVerifie: "+14185551234" }, "Bonjour"), true);
+  assert.equal(textos.length, 1);
+  assert.match(textos[0].texte, /^\[Test\] Bonjour$/);
+});
+await test("textos : client averti quand sa demande est acceptée, puis faite ; rien sans changement d'étape", async () => {
+  globalThis.fetch = fetchTextos;
+  textos.length = 0;
+  await db.doc("users/telClient").set({ displayName: "Rose", email: "rose@exemple.ca", ...avecConsentementSms, telephoneVerifie: "+14185550001" });
+  const base = { titre: "Entrée double", donneurOuvrageId: "telClient", deneigeurPrenom: "Marc" };
+  const evt = (avant, apres) => ({ params: { demandeId: "tc-1" }, data: { before: { data: () => avant }, after: { data: () => apres } } });
+  await tc.textosCycleDemande.run(evt({ ...base, statut: "ouverte" }, { ...base, statut: "matchee" }));
+  await tc.textosCycleDemande.run(evt({ ...base, statut: "matchee" }, { ...base, statut: "matchee", dernierMessage: {} }));
+  await tc.textosCycleDemande.run(evt({ ...base, statut: "matchee" }, { ...base, statut: "faite" }));
+  assert.equal(textos.length, 2);
+  assert.match(textos[0].texte, /Marc s'occupe de votre demande « Entrée double »/);
+  assert.match(textos[1].texte, /Marc a terminé « Entrée double »\. Vous avez 12 h pour confirmer/);
+  assert.ok(textos.every((t) => t.a === "+14185550001"));
+});
+await test("textos : nouvelle demande, texto au déneigeur consentant même sans avis par courriel", async () => {
+  globalThis.fetch = fetchTextos;
+  textos.length = 0;
+  await db.doc("users/telDen").set({ displayName: "Gab", email: "gab@exemple.ca", role: ["deneigeur_x"], villeGeoId: "ID_TROIS", alertesDemandesCourriel: false, ...avecConsentementSms, telephoneVerifie: "+18195550002" });
+  const ref = db.doc("demandes/tc-alerte");
+  await ref.set({ statut: "ouverte", villeGeoId: "ID_TROIS", quartier: "Cap", titre: "Stationnement", remunerationOfferte: 30, donneurOuvrageId: "autre" });
+  await al.avertirDeneigeursNouvelleDemande.run({ params: { demandeId: "tc-alerte" }, data: await ref.get() });
+  assert.equal(textos.length, 1);
+  assert.equal(textos[0].a, "+18195550002");
+  assert.match(textos[0].texte, /Snowro : nouvelle demande à Cap, 25,60\u00A0\$ pour vous\. https:\/\/snowro\.com\/tableau-de-bord/);
+  assert.equal((await ref.get()).data().alerte.envoyes, 1);
 });
 
 console.log("Firestore rules");

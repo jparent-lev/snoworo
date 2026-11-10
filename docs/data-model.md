@@ -24,6 +24,8 @@ carte: { paymentMethodId, marque, derniers4, expMois, expAnnee } | null   // �
 carteMiseAJourAt                        // 🔒
 connectStatus: "non_demarre" | "en_attente" | "actif" | "restreint"   // 🔒 voir plus bas
 
+telephoneVerifie: string | null    // 🔒 +1XXXXXXXXXX, écrit par verifierCodeTelephone (textos)
+telephoneVerifieAt                 // 🔒
 alertesDemandesCourriel: boolean   // false = plus d'avis de nouvelles demandes (absent = actifs)
 derniereAlerteDemandeAt            // dernier avis envoyé (au plus un toutes les 20 min)
 
@@ -323,3 +325,11 @@ description, adresse, photos, évaluation et conversation (le registre de
 paiement est gardé 6 ans) ; efface `users/{uid}` (et `lectures`), l'entrée de
 liste d'attente, les offres reçues et le client Stripe ; supprime le compte
 Auth en dernier.
+
+## `verificationsTelephone/{uid}`
+
+Code de vérification du numéro (textos), géré par `functions/src/telephone.js`,
+fermé à tout accès client : `numero`, `empreinte` (SHA-256 du code, jamais le
+code), `expireAt` (10 min), `essais` (5 au plus), `envoyeAt` (un code par
+minute), `compteur` et `fenetreAt` (5 codes par 24 h). Effacé à la fermeture
+du compte.
