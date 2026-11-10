@@ -52,7 +52,7 @@ export default function Confidentialite() {
       <ul>
         <li>
           <strong>Identité et contact :</strong> votre nom ou prénom d'affichage, votre courriel et, si vous le
-          fournissez, votre numéro de téléphone.
+          fournissez, votre numéro de cellulaire (vérifié par un code reçu par texto).
         </li>
         <li>
           <strong>Adresses et localisation :</strong> l'adresse à déneiger d'une demande (avec le numéro
@@ -92,8 +92,11 @@ export default function Confidentialite() {
         <li>
           <strong>Notifications SMS :</strong> recevoir un texto lorsqu'une demande est publiée près de chez vous
           (déneigeurs), lorsque votre demande est acceptée ou faite, et lorsque l'autre personne vous écrit (qui
-          a écrit, jamais le contenu). Votre numéro de cellulaire est vérifié par un code reçu par texto; il ne sert
-          qu'à ces avis. Vous pouvez retirer le consentement ou le numéro en tout temps dans les paramètres.
+          a écrit, jamais le contenu). Il faut d'abord vérifier votre numéro de cellulaire par un code reçu par
+          texto; le numéro ne sert qu'à ces avis et aux textos d'essai que vous demandez vous-même. Vous pouvez
+          retirer le consentement ou le numéro en tout temps dans les paramètres (retirer le numéro retire aussi le
+          consentement), ou répondre STOP à l'un de nos textos : le consentement est alors retiré automatiquement.
+          Si le texte de ce consentement change, nous vous redemandons votre accord avant tout nouvel envoi.
         </li>
       </ul>
 
@@ -177,6 +180,11 @@ export default function Confidentialite() {
           <strong>Photos de fin de demande et messages échangés :</strong> effacés automatiquement 30 jours après la
           demande, sauf si un problème a été signalé : nous les conservons alors jusqu'à ce qu'il soit réglé. Avant l'envoi,
           l'app retire des photos les informations cachées qu'ajoute le téléphone (dont la position GPS).
+        </li>
+        <li>
+          <strong>Codes de vérification par texto :</strong> jamais conservés en clair (seulement une empreinte),
+          valides 10 minutes. Pour limiter les abus, nous comptons les codes envoyés à chaque numéro à l'aide d'une
+          empreinte du numéro, effacée après 48 heures.
         </li>
         <li>
           <strong>Compte :</strong> tant que votre compte est actif. Vous pouvez le fermer vous-même en tout temps dans
