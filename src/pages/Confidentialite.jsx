@@ -138,7 +138,9 @@ export default function Confidentialite() {
         Entre utilisateurs : une fois un jumelage confirmé, le client et le déneigeur de quartier voient ce qu'il
         faut pour faire la demande (prénom, adresse à déneiger, messages échangés). Avant un jumelage, une demande
         ouverte est montrée aux déneigeurs de quartier de la même ville avec votre prénom, le quartier, la
-        description de la demande, le montant offert et la distance approximative. Votre note, elle, est visible des
+        description de la demande, le montant offert et la distance approximative. Ces déneigeurs en sont aussi
+        avertis par courriel (quartier, titre, moment souhaité, montant et distance approximative, jamais
+        l'adresse) ; chacun peut désactiver ces avis dans ses paramètres. Votre note, elle, est visible des
         autres utilisateurs.
       </p>
       <p>

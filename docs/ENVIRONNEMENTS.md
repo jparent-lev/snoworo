@@ -57,6 +57,12 @@ fournisseur de chaque projet n'accepte que sa branche.
 test.snowro.com), essais, puis PR de `test` vers `main` (sa fusion déploie en
 production). Le pied de page affiche le commit court déployé.
 
+Variables propres au test (`.env.test`) : `VITE_ACCES_COMPTES=1` (en-tête de
+l'accueil vers la connexion et la création de compte) et
+`VITE_PAGE_CREDIT_IMPOT=1` (page `/credit-impot` ; absente de la production,
+où l'adresse renvoie à l'accueil). `.env.emulateurs` active la page pour les
+tests de bout en bout.
+
 Pages statiques générées au build : `dist/credit-impot.html` (plugin
 `pageStatiqueCreditImpot` de `vite.config.js`), copie de `index.html` avec le
 titre, l'aperçu de partage et le balisage FAQPage de `/credit-impot`. Firebase
@@ -222,3 +228,7 @@ Cartes de test : `4242 4242 4242 4242` (fonctionne), `4000 0000 0000 0341`
 - 2026-10-04 : page `/credit-impot` (crédit d'impôt pour maintien à domicile
   des aînés) avec copie statique `credit-impot.html`, sur `test` seulement
   pour l'instant. Aucune mesure d'audience (pas de consentement en place).
+- 2026-11-10 : page `/credit-impot` limitée au test (`VITE_PAGE_CREDIT_IMPOT`).
+  Avis de nouvelles demandes aux déneigeurs par courriel
+  (`avertirDeneigeursNouvelleDemande`) ; nouvel index composite `users`
+  (`villeGeoId`, `role` array-contains), déployé par le workflow.

@@ -11,6 +11,7 @@ process.env.GCLOUD_PROJECT = "demo-snowro";
 process.env.GOOGLE_GEOCODING_API_KEY = "cle-factice";
 process.env.RESEND_API_KEY = "cle-factice";
 const REPO = fileURLToPath(new URL("..", import.meta.url));
+const geohashLib = createRequire(`${REPO}functions/package.json`)("ngeohash");
 
 // Géocodage simulé : toute adresse contenant « Lévis » tombe à Lévis, le reste à Québec (Limoilou).
 const fetchOriginal = globalThis.fetch;
@@ -465,6 +466,39 @@ await test("liste d'attente : courriel de confirmation avec le lien, envoyé seu
   // Écriture du statut : même jeton, aucun nouvel envoi.
   await conf.envoyerConfirmationListeAttente.run({ params: { id: "lien@exemple.ca" }, data: { before: apres, after: await instantane(ref) } });
   assert.equal(envoisConf.length, 1);
+});
+
+console.log("Avis de nouvelles demandes aux déneigeurs");
+const al = await import(`${REPO}functions/src/alertesDemandes.js`);
+await test("nouvelle demande : courriel aux déneigeurs de la ville seulement, sans adresse, au plus un par 20 minutes", async () => {
+  const envoisAlerte = [];
+  globalThis.fetch = async (url, options) => {
+    envoisAlerte.push(JSON.parse(options.body));
+    return { ok: true, json: async () => ({ id: `resend-al-${envoisAlerte.length}` }) };
+  };
+  const g = (lat, lng) => geohashLib.encode(lat, lng);
+  await db.doc("users/alA").set({ displayName: "Alex Dupuis", email: "alex@exemple.ca", role: ["deneigeur_x"], villeGeoId: "ID_QUEBEC", ville: "Québec", addressGeohash: g(46.83, -71.22) });
+  await db.doc("users/alB").set({ displayName: "Bea", email: "bea@exemple.ca", role: ["deneigeur_x"], villeGeoId: "ID_QUEBEC", alertesDemandesCourriel: false });
+  await db.doc("users/alC").set({ displayName: "Carl", email: "carl@exemple.ca", role: ["deneigeur_x"], villeGeoId: "ID_LEVIS" });
+  await db.doc("users/alD").set({ displayName: "Dom", email: "dom@exemple.ca", role: ["deneigeur_x"], villeGeoId: "ID_QUEBEC", derniereAlerteDemandeAt: TS.fromMillis(Date.now() - 5 * 60e3) });
+  await db.doc("users/alE").set({ displayName: "Eve", email: "eve@exemple.ca", role: ["donneur_ouvrage", "deneigeur_x"], villeGeoId: "ID_QUEBEC" });
+  await db.doc("users/alF").set({ displayName: "Fred", email: "fred@exemple.ca", role: ["donneur_ouvrage"], villeGeoId: "ID_QUEBEC" });
+  const ref = db.doc("demandes/al-1");
+  await ref.set({ statut: "ouverte", villeGeoId: "ID_QUEBEC", ville: "Québec", quartier: "Limoilou", titre: "Entrée double + balcon", remunerationOfferte: 45, outilsFournis: true, dateHeureSouhaitee: TS.fromMillis(Date.now() + 20 * 3600e3), adresseGeohash: g(46.826, -71.2206).slice(0, 7), donneurOuvrageId: "alE" });
+  await al.avertirDeneigeursNouvelleDemande.run({ params: { demandeId: "al-1" }, data: await ref.get() });
+  assert.deepEqual(envoisAlerte.map((e) => e.to[0]).sort(), ["alex@exemple.ca", "marc@exemple.ca"], "Alex et Marc (Québec) ; pas Bea (désactivé), Carl (Lévis), Dom (averti il y a 5 min), Eve (a publié), Fred (pas déneigeur)");
+  const courriel = envoisAlerte.find((e) => e.to[0] === "alex@exemple.ca");
+  assert.match(courriel.subject, /Nouvelle demande à Limoilou : 39,40\u00A0\$ pour vous/);
+  assert.match(courriel.html, /Bonjour Alex/); assert.match(courriel.html, /km de chez vous/); assert.match(courriel.html, /outils fournis/);
+  assert.ok(!/3e Avenue|adresse exacte/.test(courriel.html.replace("jamais", "")), "aucune adresse");
+  assert.ok((await db.doc("users/alA").get()).data().derniereAlerteDemandeAt);
+  assert.equal((await ref.get()).data().alerte.envoyes, 2);
+  // Deuxième demande (publiée par Fred) quelques minutes plus tard : Alex et Marc
+  // viennent d'être avertis ; seule Eve, qui n'en est pas l'autrice cette fois, l'est.
+  const ref2 = db.doc("demandes/al-2");
+  await ref2.set({ statut: "ouverte", villeGeoId: "ID_QUEBEC", quartier: "Saint-Roch", titre: "Stationnement", remunerationOfferte: 30, donneurOuvrageId: "alF" });
+  await al.avertirDeneigeursNouvelleDemande.run({ params: { demandeId: "al-2" }, data: await ref2.get() });
+  assert.deepEqual(envoisAlerte.slice(2).map((e) => e.to[0]), ["eve@exemple.ca"]);
 });
 
 console.log("Firestore rules");

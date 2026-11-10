@@ -81,7 +81,7 @@ export function calculerPaiement(montant, { fraisFixe, fraisPct }) {
   return { montantTotal: montant, fraisSnowro, montantDeneigeur: arrondir(montant - fraisSnowro) };
 }
 
-async function lireFrais() {
+export async function lireFrais() {
   const snap = await db.doc("config/frais").get();
   return snap.exists ? { ...FRAIS_PAR_DEFAUT, ...snap.data() } : FRAIS_PAR_DEFAUT;
 }
