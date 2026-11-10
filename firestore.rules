@@ -25,8 +25,11 @@ service cloud.firestore {
       // stripeCustomerId, carte, carteMiseAJourAt : la carte du client,
       // enregistrée par enregistrerCarte après vérification auprès de Stripe
       // (functions/src/paiements.js) ; jamais le numéro, seulement un résumé.
+      // telephoneVerifie, telephoneVerifieAt : écrits par verifierCodeTelephone
+      // après le code reçu par texto (functions/src/telephone.js).
       return ['consents', 'proSubscription', 'ville', 'villeGeoId', 'stripeConnectAccountId', 'connectStatus',
-              'ratingAvg', 'ratingCount', 'nbJobsCompletees', 'stripeCustomerId', 'carte', 'carteMiseAJourAt'];
+              'ratingAvg', 'ratingCount', 'nbJobsCompletees', 'stripeCustomerId', 'carte', 'carteMiseAJourAt',
+              'telephoneVerifie', 'telephoneVerifieAt'];
     }
 
     function abonneProActif() {
@@ -98,6 +101,12 @@ service cloud.firestore {
     // (callable, public, sans authentification) valide et géocode avant
     // d'écrire via l'Admin SDK. Voir design_handoff_snowro_site/README.md.
     match /listeAttente/{document} {
+      allow read, write: if false;
+    }
+
+    // ---- verificationsTelephone (codes de vérification par texto) ----
+    // Empreinte du code seulement, gérée par functions/src/telephone.js.
+    match /verificationsTelephone/{document} {
       allow read, write: if false;
     }
 

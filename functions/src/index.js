@@ -32,3 +32,5 @@ export { suggererAdresses } from "./suggestionsAdresse.js";
 export { purgerConservation } from "./conservation.js";
 export { fermerCompte } from "./compte.js";
 export { avertirDeneigeursNouvelleDemande } from "./alertesDemandes.js";
+export { envoyerCodeTelephone, verifierCodeTelephone, retirerTelephone } from "./telephone.js";
+export { textosCycleDemande } from "./textosCycle.js";

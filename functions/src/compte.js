@@ -85,6 +85,7 @@ export async function fermerCompteUtilisateur(uid) {
   }
   await batch.commit();
   await db.recursiveDelete(refProfil);
+  await db.doc(`verificationsTelephone/${uid}`).delete();
 
   try {
     await getAuth().deleteUser(uid);
