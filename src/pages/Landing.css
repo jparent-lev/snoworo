@@ -232,6 +232,52 @@
   }
 }
 
+/* Environnement de test : « Se connecter » et « Créer un compte ». */
+.landing__comptes {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.landing__connexion {
+  font-weight: 700;
+  font-size: 15px;
+  color: var(--color-terre);
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.landing__connexion:hover {
+  color: var(--color-argile-foncee);
+}
+
+@media (max-width: 900px) {
+  .landing__comptes {
+    margin-left: auto;
+    gap: 12px;
+  }
+
+  .landing__comptes .landing__nav-cta {
+    margin-left: 0;
+  }
+
+  .landing__connexion {
+    font-size: 14px;
+  }
+}
+
+/* Petit écran : le mot « snowro » cède sa place aux deux boutons et au menu. */
+@media (max-width: 520px) {
+  .landing--comptes .landing__logo-texte {
+    display: none;
+  }
+
+  .landing--comptes .landing__comptes .landing__nav-cta {
+    padding: 8px 12px;
+  }
+}
+
 .landing__nav-cta:hover {
   background: var(--color-argile-foncee) !important;
 }
