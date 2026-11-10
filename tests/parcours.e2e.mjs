@@ -348,7 +348,14 @@ async function connexion(cle, largeur = 1280) {
   });
   await test("Marc : consentement aux textos, numéro vérifié par code", async () => {
     const appelsTel = [];
+    let refusTwilio = true;
     await p.route("**/envoyerCodeTelephone", (r) => {
+      // Premier essai : refus de Twilio, tel que le serveur le renvoie (503,
+      // le SDK ajoute « [503] » au message).
+      if (refusTwilio) {
+        refusTwilio = false;
+        return r.fulfill({ status: 503, json: { error: { status: "UNAVAILABLE", message: "envoi-impossible", details: { codeTwilio: 20003, statut: 401 } } } });
+      }
       appelsTel.push(r.request().postDataJSON().data);
       return r.fulfill({ json: { result: { ok: true } } });
     });
@@ -360,6 +367,8 @@ async function connexion(cle, largeur = 1280) {
     await p.getByRole("switch").filter({ has: p.locator(".parametres__toggle-pastille") }).last().click();
     await p.getByText("Numéro pour les textos").waitFor();
     await p.getByLabel("Numéro de cellulaire").fill("418 555-1234");
+    await p.getByRole("button", { name: "Recevoir un code" }).click();
+    await p.getByText("Le texto n'a pas pu partir (code Twilio 20003). Réessayez dans quelques minutes.").waitFor();
     await p.getByRole("button", { name: "Recevoir un code" }).click();
     await p.getByLabel("Code reçu").fill("123456");
     await p.getByRole("button", { name: "Vérifier" }).click();

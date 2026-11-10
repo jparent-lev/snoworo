@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import PageLegale from "../components/PageLegale";
 import { confirmerListeAttente } from "../lib/listeAttente";
+import { messageServeur } from "../lib/erreurs";
 
 // Page du lien de confirmation de la liste d'attente
 // (/liste/confirmer?c=…&j=…, envoyé par envoyerConfirmationListeAttente).
@@ -15,7 +16,7 @@ export default function ConfirmerListe() {
     let annule = false;
     confirmerListeAttente({ c, j })
       .then(({ data }) => !annule && setEtat({ statut: "confirmee", ...data }))
-      .catch((err) => !annule && setEtat({ statut: err?.message === "lien-expire" ? "expire" : "invalide" }));
+      .catch((err) => !annule && setEtat({ statut: messageServeur(err) === "lien-expire" ? "expire" : "invalide" }));
     return () => {
       annule = true;
     };
