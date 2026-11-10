@@ -11,8 +11,7 @@ process.env.GCLOUD_PROJECT = "demo-snowro";
 process.env.GOOGLE_GEOCODING_API_KEY = "cle-factice";
 process.env.RESEND_API_KEY = "cle-factice";
 process.env.TWILIO_ACCOUNT_SID = "ACfactice";
-process.env.TWILIO_API_KEY_SID = "SKfactice";
-process.env.TWILIO_API_KEY_SECRET = "secret-factice";
+process.env.TWILIO_AUTH_TOKEN = "jeton-factice";
 process.env.TWILIO_NUMERO = "+15815550000";
 const REPO = fileURLToPath(new URL("..", import.meta.url));
 const geohashLib = createRequire(`${REPO}functions/package.json`)("ngeohash");
@@ -535,7 +534,7 @@ await test("textos : code de vérification par texto, mauvais code compté, bon 
   await appel(tel.envoyerCodeTelephone, "telA", { numero: "418 555-1234" });
   assert.equal(textos.length, 1);
   assert.equal(textos[0].a, "+14185551234"); assert.equal(textos[0].de, "+15815550000");
-  assert.equal(textos[0].auth, `Basic ${Buffer.from("SKfactice:secret-factice").toString("base64")}`);
+  assert.equal(textos[0].auth, `Basic ${Buffer.from("ACfactice:jeton-factice").toString("base64")}`);
   const code = textos[0].texte.match(/(\d{6})/)[1];
   assert.ok(!JSON.stringify((await db.doc("verificationsTelephone/telA").get()).data()).includes(code), "code jamais stocké en clair");
   const e = await echoue(appel(tel.envoyerCodeTelephone, "telA", { numero: "418 555-1234" }), "resource-exhausted", "un code par minute");
