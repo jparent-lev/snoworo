@@ -29,7 +29,7 @@ import { messageServeur } from "../lib/erreurs";
 // masqués jusqu'à la V2 : le modèle de données et les functions les gèrent
 // toujours, il suffira de remettre les deux entrées ici et dans la politique
 // de confidentialité (Confidentialite.jsx) pour les réactiver.
-// Textos : sur le test seulement pour l'instant (VITE_TEXTOS, .env.test).
+// Textos : section et consentement affichés si VITE_TEXTOS=1 (.env.test, .env.production).
 const TEXTOS = import.meta.env.VITE_TEXTOS === "1";
 
 const CONSENTS = [
