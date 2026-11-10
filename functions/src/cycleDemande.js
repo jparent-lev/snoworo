@@ -5,7 +5,7 @@ import { FieldValue, Timestamp } from "firebase-admin/firestore";
 import { db } from "./admin.js";
 import { AdresseImprecise, GEOCODING_API_KEY, villeDepuisAdresse, villeDepuisPlaceId } from "./geocoding.js";
 import { RESEND_API_KEY } from "./courriels.js";
-import { STRIPE_SECRET_KEY, avertirCarteRefusee, paiementReel, prelever, verser } from "./paiements.js";
+import { STRIPE_SECRET_KEY, avertirCarteRefusee, paiementReel, prelever, profilStripe, verser } from "./paiements.js";
 
 // Cycle de vie d'une demande, entièrement côté serveur (les Firestore rules
 // refusent toute écriture client sur demandes/) :
@@ -159,7 +159,7 @@ export const publierDemande = onCall({ region: REGION, secrets: [GEOCODING_API_K
   const adresseReconnue = lieu.adresseNormalisee.replace(/, Canada$/, "");
   const adresse = unite ? `${adresseReconnue} (app. ${unite})` : adresseReconnue;
 
-  const profil = (await db.doc(`users/${uid}`).get()).data() ?? {};
+  const profil = profilStripe((await db.doc(`users/${uid}`).get()).data() ?? {});
   // Rien n'est prélevé à la publication, mais il faut une carte pour que
   // l'acceptation puisse prélever.
   if (paiementReel() && !profil.carte?.paymentMethodId) throw new HttpsError("failed-precondition", "carte-requise");
@@ -236,7 +236,7 @@ export const accepterDemande = onCall({ region: REGION, secrets: [STRIPE_SECRET_
     if (!profil.villeGeoId || profil.villeGeoId !== demande.villeGeoId) {
       throw new HttpsError("permission-denied", "Cette demande est hors de votre ville de service.");
     }
-    if (reel && profil.connectStatus !== "actif") {
+    if (reel && profilStripe(profil).connectStatus !== "actif") {
       throw new HttpsError("failed-precondition", "Configurez votre compte de paiement avant d'accepter des demandes.");
     }
 
@@ -288,7 +288,7 @@ export const accepterDemande = onCall({ region: REGION, secrets: [STRIPE_SECRET_
 // ---- Relancer après une carte refusée (client, une fois la carte à jour) ----
 export const relancerDemande = onCall({ region: REGION }, async (request) => {
   const uid = exigerConnexion(request);
-  const profil = (await db.doc(`users/${uid}`).get()).data() ?? {};
+  const profil = profilStripe((await db.doc(`users/${uid}`).get()).data() ?? {});
   if (paiementReel() && !profil.carte?.paymentMethodId) throw new HttpsError("failed-precondition", "carte-requise");
   return db.runTransaction(async (tx) => {
     const { ref, demande } = await lireDemande(tx, request.data?.demandeId, { uid, role: "client", statuts: ["paiement_refuse"] });

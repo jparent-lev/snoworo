@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { publierDemande, messageErreur } from "../lib/cycleDemande";
 import { calculerPaiement, ecouterConfigFrais } from "../lib/config";
 import { formatArgent } from "../lib/formatArgent";
-import { PAIEMENT_REEL, libelleCarte } from "../lib/paiements";
+import { PAIEMENT_REEL, libelleCarte, profilStripe } from "../lib/paiements";
 import { useAuth } from "../context/AuthContext";
 import CarteDePaiement from "../components/CarteDePaiement";
 import ChampAdresse from "../components/ChampAdresse";
@@ -56,7 +56,7 @@ export default function PublierDemande() {
   // que la fiche (users/{uid}.carte, écrite par le serveur) se mette à jour.
   const [carteAjoutee, setCarteAjoutee] = useState(null);
   const [changerCarte, setChangerCarte] = useState(false);
-  const carte = carteAjoutee ?? profile?.carte;
+  const carte = carteAjoutee ?? profilStripe(profile)?.carte;
   const carteManquante = PAIEMENT_REEL && !carte;
   const [adresse, setAdresse] = useState({ texte: "", placeId: null, libelle: null });
   const [adresseManuelle, setAdresseManuelle] = useState(false);

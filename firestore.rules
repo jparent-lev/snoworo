@@ -29,7 +29,7 @@ service cloud.firestore {
       // après le code reçu par texto (functions/src/telephone.js).
       return ['consents', 'proSubscription', 'ville', 'villeGeoId', 'stripeConnectAccountId', 'connectStatus',
               'ratingAvg', 'ratingCount', 'nbJobsCompletees', 'stripeCustomerId', 'carte', 'carteMiseAJourAt',
-              'telephoneVerifie', 'telephoneVerifieAt'];
+              'telephoneVerifie', 'telephoneVerifieAt', 'stripeMode'];
     }
 
     function abonneProActif() {
