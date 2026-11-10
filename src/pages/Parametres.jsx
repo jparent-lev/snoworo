@@ -12,6 +12,7 @@ import { mettreAJourAdresseParPosition, mettreAJourAdresseParSaisie } from "../l
 import { encoderGeohash } from "../lib/geo";
 import { messageErreur } from "../lib/cycleDemande";
 import {
+  profilStripe,
   STATUTS_CONNECT,
   PAIEMENT_REEL,
   libelleCarte,
@@ -303,8 +304,8 @@ function SectionPaiement({ profile, deneigeur }) {
   const [carteAjoutee, setCarteAjoutee] = useState(null);
   const [enCours, setEnCours] = useState(false);
   const [erreur, setErreur] = useState(null);
-  const carte = carteAjoutee ?? profile.carte;
-  const statut = profile.connectStatus ?? "non_demarre";
+  const carte = carteAjoutee ?? profilStripe(profile).carte;
+  const statut = profilStripe(profile).connectStatus ?? "non_demarre";
   const infoStatut = STATUTS_CONNECT[statut] ?? STATUTS_CONNECT.en_attente;
 
   // Retour de Stripe (?stripe=retour ou ?stripe=reprendre) : met le statut à

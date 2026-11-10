@@ -245,6 +245,31 @@ await test("fermer son compte : client Stripe (carte enregistrée) supprimé", a
   assert.deepEqual(derniers("customers.del").at(-1).params, { id: "cus_ferme" });
   assert.equal((await db.doc("users/payFerme").get()).exists, false);
 });
+await test("passage au mode réel : carte et compte de versement du mode test ignorés, puis remplacés", async () => {
+  await db.doc("users/payMode").set({
+    displayName: "Léa", email: "lea@exemple.ca", role: ["deneigeur_x"], villeGeoId: "ID_QUEBEC",
+    stripeCustomerId: "cus_test_ancien", carte: { paymentMethodId: "pm_test_ancien", marque: "visa", derniers4: "4242" },
+    stripeConnectAccountId: "acct_test_ancien", connectStatus: "actif",
+  });
+  process.env.STRIPE_MODE = "live";
+  try {
+    assert.equal(p.modeStripe(), "live");
+    const vu = p.profilStripe((await db.doc("users/payMode").get()).data());
+    assert.equal(vu.carte, null); assert.equal(vu.connectStatus, "non_demarre");
+    const e = await echoue(appel(f.publierDemande, "payMode", base), "failed-precondition", "carte du mode test");
+    assert.equal(e.message, "carte-requise");
+    const avant = derniers("customers.create").length;
+    await appel(p.preparerCarte, "payMode", {});
+    assert.equal(derniers("customers.create").length, avant + 1, "nouveau client Stripe en mode réel");
+    assert.match(derniers("customers.create").at(-1).options.idempotencyKey, /^client-live-/);
+    const u = (await db.doc("users/payMode").get()).data();
+    assert.equal(u.stripeMode, "live"); assert.equal(u.stripeCustomerId, "cus_pay1");
+    assert.equal(u.carte, null); assert.equal(u.stripeConnectAccountId, null); assert.equal(u.connectStatus, "non_demarre");
+  } finally {
+    delete process.env.STRIPE_MODE;
+  }
+  assert.equal(p.modeStripe(), "test");
+});
 
 console.log(`\n${ok} tests réussis`);
 process.exit(0);

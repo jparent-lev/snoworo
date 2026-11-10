@@ -7,6 +7,16 @@ import { functions } from "./firebase";
 // fonctions. Sans clé : paiement simulé et bandeau « Période de test ».
 export const CLE_PUBLIQUE_STRIPE = import.meta.env.VITE_STRIPE_CLE_PUBLIQUE || "";
 export const PAIEMENT_REEL = Boolean(CLE_PUBLIQUE_STRIPE);
+// Mode Stripe d'après la clé publiable (pk_live_ = argent réel).
+export const MODE_STRIPE = CLE_PUBLIQUE_STRIPE.startsWith("pk_live_") ? "live" : "test";
+
+// Le profil tel que le mode Stripe actuel doit le voir : une carte ou un
+// compte de versement créés dans l'autre mode (stripeMode, absent = test)
+// sont ignorés, comme côté serveur (functions/src/paiements.js).
+export function profilStripe(profil) {
+  if (!profil || (profil.stripeMode ?? "test") === MODE_STRIPE) return profil;
+  return { ...profil, stripeCustomerId: null, carte: null, stripeConnectAccountId: null, connectStatus: "non_demarre" };
+}
 
 const appeler = (nom) => {
   const fn = httpsCallable(functions, nom);

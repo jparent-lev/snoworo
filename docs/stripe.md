@@ -74,12 +74,50 @@ obligatoire pour accepter, bandeaux « Période de test » retirés.
 - Inscription Express en mode test : Stripe propose des valeurs de test
   (téléphone `000 000 0000`, code SMS `000000`, compte bancaire de test).
 
-## Passer en production
+## Passer en production (argent réel)
 
-Refaire les étapes 2, 4 et 5 avec les clés du **mode production**
-(`sk_live_…`, `pk_live_…`) et un nouveau webhook en mode production. Prévoir
-avant : conditions d'utilisation à jour (paiement, remboursement), et
-validation fiscale des frais Snowro (TPS/TVQ) avec le comptable.
+Le test (`snowro-test`) reste en mode test ; seule la production change.
+
+**Avant (dans Stripe, mode production)**
+1. Activer le compte : vérification de l'entreprise (identité du
+   représentant, NEQ, compte bancaire de Snowro pour les frais encaissés).
+2. Connect en mode production : profil de plateforme (marketplace, comptes
+   Express, Canada), image de marque (nom, icône, couleur `#C1652F`),
+   confirmation de conformité du marchand.
+3. Paramètres > Moyens de paiement : même tri qu'en sandbox (Cartes, Link au
+   besoin ; moyens européens et asiatiques désactivés).
+4. Webhook de production : Développeurs > Webhooks > Ajouter une destination,
+   URL `https://northamerica-northeast1-snowro-app.cloudfunctions.net/webhookStripe`,
+   événement `account.updated` (comptes connectés). Garder le secret
+   `whsec_…`.
+5. TPS/TVQ sur les frais Snowro : validé avec le comptable (inscription,
+   affichage sur les reçus).
+
+**Secrets (Cloud Shell, `snowro-app`)**, sans jamais afficher les valeurs :
+
+```bash
+read -rs CLE && printf '%s' "$CLE" | gcloud secrets versions add STRIPE_SECRET_KEY --project=snowro-app --data-file=- ; unset CLE      # sk_live_…
+read -rs CLE && printf '%s' "$CLE" | gcloud secrets versions add STRIPE_WEBHOOK_SECRET --project=snowro-app --data-file=- ; unset CLE  # whsec_… du webhook de production
+```
+
+**PR de bascule (une seule, vers `main`)**
+- `.env.production` : `VITE_STRIPE_CLE_PUBLIQUE=pk_live_…` ;
+- `functions/.env.snowro-app` : `STRIPE_MODE=live`.
+
+Les secrets doivent être en place avant la fusion : le déploiement fige la
+version des secrets lue à ce moment, et `stripe()` refuse une clé qui ne
+correspond pas à `STRIPE_MODE`.
+
+**Ce qui se passe pour les comptes existants** : les cartes et comptes de
+versement créés en mode test (`stripeMode` absent ou `test`) sont ignorés en
+mode réel. Le client doit ajouter une vraie carte, le déneigeur refaire son
+inscription de versement ; le profil est marqué `stripeMode: "live"` à la
+première opération. Faire la bascule quand aucune demande n'est acceptée ou
+faite en mode test (sinon son virement échouerait).
+
+**Retour arrière** : remettre `pk_test_…`, `STRIPE_MODE=test` et une version
+`sk_test_…` du secret ; les identifiants du mode réel seront alors ignorés à
+leur tour.
 
 ## Moyens de paiement offerts
 
