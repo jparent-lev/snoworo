@@ -206,3 +206,15 @@
   flex-direction: column;
   gap: 4px;
 }
+
+/* Visible seulement sur mobile : l'en-tête n'a pas la place pour « Déconnexion ». */
+.btn.parametres__deconnexion {
+  align-self: flex-start;
+  display: none;
+}
+
+@media (max-width: 700px) {
+  .btn.parametres__deconnexion {
+    display: inline-block;
+  }
+}

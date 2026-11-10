@@ -162,10 +162,19 @@
     margin-right: 0;
   }
 
+  /* Une seule ligne qui défile ; le fondu à droite montre qu'il y a d'autres
+     puces. La marge intérieure laisse la dernière puce sortir du fondu. */
   .rangee__filtres {
     flex-wrap: nowrap;
     overflow-x: auto;
     scrollbar-width: none;
     padding-bottom: 2px;
+    padding-right: 36px;
+    -webkit-mask-image: linear-gradient(90deg, #000 calc(100% - 44px), transparent);
+    mask-image: linear-gradient(90deg, #000 calc(100% - 44px), transparent);
+  }
+
+  .rangee__filtres::-webkit-scrollbar {
+    display: none;
   }
 }
