@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { messageErreur, signalerProbleme } from "../../lib/cycleDemande";
+import VideoSnowro from "../../components/VideoSnowro";
 import { lirePrive } from "../../lib/demandes";
 import { ROLE_CLIENT, ROLE_DENEIGEUR } from "../../lib/mode";
 
@@ -314,5 +315,18 @@ export function ModalePhoto({ demande, onFermer }) {
         </div>
       )}
     </Modale>
+  );
+}
+
+// Encart d'accueil des comptes sans activité : la vidéo du parcours.
+export function EncartVideo({ video, titre, texte, libelle }) {
+  return (
+    <section className="encart-video">
+      <div className="encart-video__texte">
+        <h2>{titre}</h2>
+        <p>{texte}</p>
+      </div>
+      <VideoSnowro video={video} libelle={libelle} />
+    </section>
   );
 }

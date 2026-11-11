@@ -11,10 +11,37 @@ export const VIDEOS = {
   confiance: { fichier: "snowro-la-confiance", titre: "Ce qui vous protège avec Snowro", duree: "35 s" },
 };
 
+const Lecture = ({ taille = 16 }) => (
+  <svg viewBox="0 0 24 24" width={taille} height={taille} aria-hidden="true">
+    <path d="M8 5 L19 12 L8 19 Z" fill="currentColor" />
+  </svg>
+);
+
 // Vignette cliquable qui ouvre la vidéo dans un lecteur plein écran.
-export default function VideoSnowro({ video, libelle, sombre = false, className = "" }) {
+// « vedette » : grande image d'aperçu 16:9, le bouton de lecture dans un coin.
+export default function VideoSnowro({ video, libelle, sombre = false, vedette = false, className = "" }) {
   const [ouvert, setOuvert] = useState(false);
   const v = VIDEOS[video];
+  const lecteur = ouvert && <LecteurVideo v={v} onFermer={() => setOuvert(false)} />;
+  if (vedette) {
+    return (
+      <>
+        <button type="button" className={`video-vedette ${className}`} onClick={() => setOuvert(true)}>
+          <img src={`/videos/${v.fichier}.jpg`} alt="" width="1280" height="720" />
+          <span className="video-vedette__pastille">
+            <span className="video-vedette__lecture">
+              <Lecture taille={18} />
+            </span>
+            <span className="video-vedette__texte">
+              <b>{libelle}</b>
+              <span>Vidéo avec son · {v.duree}</span>
+            </span>
+          </span>
+        </button>
+        {lecteur}
+      </>
+    );
+  }
   return (
     <>
       <button
@@ -25,9 +52,7 @@ export default function VideoSnowro({ video, libelle, sombre = false, className 
         <span className="video-lien__vignette" aria-hidden="true">
           <img src={`/videos/${v.fichier}.jpg`} alt="" loading="lazy" width="128" height="72" />
           <span className="video-lien__lecture">
-            <svg viewBox="0 0 24 24" width="16" height="16">
-              <path d="M8 5 L19 12 L8 19 Z" fill="currentColor" />
-            </svg>
+            <Lecture taille={12} />
           </span>
         </span>
         <span className="video-lien__texte">
@@ -35,7 +60,7 @@ export default function VideoSnowro({ video, libelle, sombre = false, className 
           <span>Vidéo avec son · {v.duree}</span>
         </span>
       </button>
-      {ouvert && <LecteurVideo v={v} onFermer={() => setOuvert(false)} />}
+      {lecteur}
     </>
   );
 }

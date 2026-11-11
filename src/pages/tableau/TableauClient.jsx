@@ -9,7 +9,7 @@ import { annulerDemande, augmenterOffre, confirmerJob, evaluerJob, messageErreur
 import { formatArgent } from "../../lib/formatArgent";
 import { dateCourte, dureeRestante, echeance, ilYa, millis } from "../../lib/temps";
 import Rangee from "../../components/Rangee";
-import { Etapes, Modale, ModaleEvaluation, ModalePhoto, ModaleSignalement, Personne } from "./elements";
+import { EncartVideo, Etapes, Modale, ModaleEvaluation, ModalePhoto, ModaleSignalement, Personne } from "./elements";
 import Conversation, { BoutonMessages } from "./Conversation";
 import "./Tableau.css";
 
@@ -59,6 +59,15 @@ export default function TableauClient({ conversation, onConversationFermee }) {
       </div>
       {!PAIEMENT_REEL && (
         <p className="tableau__simulation">Période de test : aucun paiement réel n'est effectué pour l'instant.</p>
+      )}
+
+      {demandes?.length === 0 && (
+        <EncartVideo
+          video="faireDeneiger"
+          titre="Première demande ?"
+          texte="Voyez en 35 secondes comment ça se passe, de la publication jusqu'à la confirmation du travail."
+          libelle="Voir une demande, du début à la fin"
+        />
       )}
 
       {demandes && (

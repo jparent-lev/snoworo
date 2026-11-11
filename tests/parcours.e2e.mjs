@@ -99,6 +99,8 @@ async function connexion(cle, largeur = 1280) {
   await test("Marc : tableau déneigeur, sans bascule (un seul rôle)", async () => {
     await p.getByRole("heading", { name: "Demandes près de chez vous" }).waitFor();
     assert.equal(await p.locator(".layout__bascule").count(), 0);
+    // Marc a déjà une demande acceptée : pas d'encart vidéo d'accueil.
+    assert.equal(await p.locator(".encart-video").count(), 0);
   });
   await test("Marc : 4 demandes de Québec, jamais celle de Lévis, triées par distance", async () => {
     await p.waitForFunction(() => document.querySelectorAll(".rangee")[1]?.querySelectorAll(".carte-job").length === 4);
@@ -454,10 +456,11 @@ async function connexion(cle, largeur = 1280) {
     assert.equal(await p.getByPlaceholder("Nom complet").count(), 0);
     await p.screenshot({ path: `${D}/e2e-accueil-ouvert-390.png`, fullPage: true });
   });
-  await test("accueil : quatre vidéos, ouvertes au clic dans un lecteur avec sous-titres, rien de chargé avant", async () => {
+  await test("accueil : trois vidéos, dont « Snowro en bref » en vedette dans le héros, ouvertes au clic dans un lecteur avec sous-titres, rien de chargé avant", async () => {
     await p.goto("http://localhost:4190/");
     const boutons = p.getByRole("button", { name: /Vidéo avec son/ });
-    assert.equal(await boutons.count(), 4);
+    assert.equal(await boutons.count(), 3);
+    assert.equal(await p.locator(".landing__hero .video-vedette").count(), 1, "vidéo vedette dans le héros");
     assert.equal(await p.locator("video").count(), 0, "aucune vidéo chargée avant le clic");
     await p.getByRole("button", { name: /Voir Snowro en 30 secondes/ }).click();
     const dlg = p.getByRole("dialog", { name: "Snowro en bref" });
@@ -469,6 +472,14 @@ async function connexion(cle, largeur = 1280) {
     assert.ok(etat > 31 && etat < 33, `durée ${etat}`);
     assert.ok(await p.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth), "défilement horizontal");
     await p.screenshot({ path: `${D}/e2e-video-390.png` });
+    await p.keyboard.press("Escape");
+    await dlg.waitFor({ state: "detached" });
+    await p.screenshot({ path: `${D}/e2e-heros-video-390.png` });
+    await p.setViewportSize({ width: 1280, height: 800 });
+    await p.screenshot({ path: `${D}/e2e-heros-video-1280.png` });
+    await p.setViewportSize({ width: 390, height: 844 });
+    await p.getByRole("button", { name: /Voir Snowro en 30 secondes/ }).click();
+    await dlg.waitFor();
     await p.keyboard.press("Escape");
     await dlg.waitFor({ state: "detached" });
     const vtt = await p.evaluate(() => fetch("/videos/snowro-la-confiance.fr.vtt").then((r) => r.text()));
@@ -524,6 +535,11 @@ async function connexion(cle, largeur = 1280) {
 }
 {
   const { p, ctx } = await connexion("zoe", 390);
+  await test("Zoé : aucune demande encore, le tableau propose la vidéo du parcours client", async () => {
+    await p.locator(".encart-video").getByRole("button", { name: /Voir une demande, du début à la fin/ }).waitFor();
+    assert.ok(await p.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth), "défilement horizontal");
+    await p.screenshot({ path: `${D}/e2e-encart-video-390.png` });
+  });
   await test("Zoé : ferme son compte depuis Paramètres (confirmation FERMER), compte de connexion supprimé", async () => {
     await p.goto("http://localhost:4190/parametres");
     await p.getByRole("button", { name: "Fermer mon compte" }).click();

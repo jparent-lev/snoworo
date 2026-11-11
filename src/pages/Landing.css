@@ -1508,8 +1508,34 @@
   margin-top: 20px;
 }
 
-.landing__video-centre {
-  display: flex;
-  justify-content: center;
-  margin: 8px 0 32px;
+
+/* Héros : « Snowro en bref » en vedette, l'illustration animée au-dessus,
+   atténuée, comme un décor. La vidéo couvre seulement le sol de la scène :
+   le triplex et le déneigeur restent visibles. */
+.landing__hero-scene {
+  flex-direction: column;
+  align-items: center;
+}
+
+.landing__hero-fond {
+  width: 100%;
+  opacity: 0.5;
+  filter: saturate(0.8);
+  pointer-events: none;
+}
+
+/* Le téléphone de l'illustration ferait doublon avec la vidéo. */
+.landing__hero-fond .hero-illu .hero-illu__phone {
+  display: none;
+}
+
+.landing__hero-scene .landing__hero-video {
+  position: relative;
+  width: min(92%, 520px);
+  margin-top: -20%;
+  transform: rotate(-1.2deg);
+}
+
+.landing__hero-scene .landing__hero-video:hover {
+  transform: translateY(-2px) rotate(-1.2deg);
 }
