@@ -9,8 +9,9 @@ import { STRIPE_SECRET_KEY, paiementReel, profilStripe, stripe } from "./paiemen
 // Fermeture du compte par la personne elle-même (Loi 25 : droit à
 // l'effacement ; politique de confidentialité, « Combien de temps on les
 // garde »). Tout est fait immédiatement :
-// - refusé tant qu'une demande est en cours ou qu'un versement reste à faire
-//   (l'autre personne compte dessus) ;
+// - refusé tant qu'une demande est en cours ou qu'un paiement n'est pas
+//   terminé, pour le client comme pour le déneigeur (prélèvement en cours,
+//   montant retenu ou virement à faire : l'autre personne compte dessus) ;
 // - demandes encore ouvertes annulées ;
 // - dans chaque demande où la personne apparaît : prénom et description
 //   effacés, ainsi que l'adresse, les photos, l'évaluation et la
@@ -39,8 +40,8 @@ export async function fermerCompteUtilisateur(uid) {
   for (const d of demandes) {
     const { statut, paiement, deneigeurId } = d.data();
     if (STATUTS_EN_COURS.has(statut)) throw new HttpsError("failed-precondition", "job-en-cours");
-    if (deneigeurId === uid && VERSEMENTS_EN_ATTENTE.has(paiement?.statutPaiement)) {
-      throw new HttpsError("failed-precondition", "versement-en-attente");
+    if (VERSEMENTS_EN_ATTENTE.has(paiement?.statutPaiement)) {
+      throw new HttpsError("failed-precondition", deneigeurId === uid ? "versement-en-attente" : "paiement-en-cours");
     }
   }
 

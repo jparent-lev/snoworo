@@ -356,6 +356,12 @@ await test("fermer son compte : refusé pendant une demande en cours ou sans con
   await db.doc("demandes/ferm-versement").set({ statut: "completee", donneurOuvrageId: "client1", deneigeurId: "ferme1", paiement: { statutPaiement: "a_verser" } });
   assert.equal((await echoue(appel(compte.fermerCompte, "ferme1", { confirmation: "FERMER" }), "failed-precondition", "versement")).message, "versement-en-attente");
   await db.doc("demandes/ferm-versement").delete();
+  // Côté client aussi : demande confirmée dont le paiement n'est pas terminé.
+  for (const statutPaiement of ["prelevement_en_cours", "retenu", "a_verser"]) {
+    await db.doc("demandes/ferm-paiement").set({ statut: "completee", donneurOuvrageId: "ferme1", deneigeurId: "den1", paiement: { statutPaiement } });
+    assert.equal((await echoue(appel(compte.fermerCompte, "ferme1", { confirmation: "FERMER" }), "failed-precondition", `paiement ${statutPaiement}`)).message, "paiement-en-cours");
+  }
+  await db.doc("demandes/ferm-paiement").delete();
 });
 await test("fermer son compte : profil, connexion, adresses, photos, messages et liste d'attente effacés ; paiement gardé", async () => {
   const { uid } = await getAuth().createUser({ email: "ferme@exemple.ca", password: "motdepasse" });
