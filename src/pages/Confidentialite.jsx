@@ -105,6 +105,10 @@ export default function Confidentialite() {
         <li>Nous ne vendons pas, ne louons pas et n'échangeons pas vos renseignements personnels.</li>
         <li>Nous n'utilisons pas de témoins (cookies) publicitaires ni d'outils de pistage publicitaire.</li>
         <li>
+          Sur l'accueil, nous publions seulement le nombre de déneigeurs de quartier inscrits par ville, et
+          seulement pour les villes qui en comptent au moins 10 : jamais de nom, d'adresse ni de quartier.
+        </li>
+        <li>
           Nous ne prenons aucune décision fondée exclusivement sur un traitement automatisé qui vous concerne sans
           vous en informer. La mise en contact avec un déneigeur de quartier se fait selon la ville et l'ordre
           d'acceptation, pas selon un profil.

@@ -664,12 +664,33 @@ await test("textos : nouvelle demande, texto au déneigeur consentant même sans
   assert.equal((await ref.get()).data().alerte.envoyes, 1);
 });
 
+await test("compteur public : déneigeurs par ville, seulement les villes d'au moins 10", async () => {
+  const vp = await import(`${REPO}functions/src/villesPubliques.js`);
+  const lot = db.batch();
+  for (let i = 0; i < 12; i++) lot.set(db.doc(`users/cvA${i}`), { role: ["deneigeur_x"], villeGeoId: "ID_COMPTEUR_A", ville: "Villeneuve" });
+  for (let i = 0; i < 4; i++) lot.set(db.doc(`users/cvB${i}`), { role: ["deneigeur_x"], villeGeoId: "ID_COMPTEUR_B", ville: "Petiteville" });
+  lot.set(db.doc("users/cvC"), { role: ["donneur_ouvrage"], villeGeoId: "ID_COMPTEUR_A", ville: "Villeneuve" });
+  await lot.commit();
+  const villes = await vp.calculerVillesPubliques();
+  assert.deepEqual(villes.find((v) => v.nom === "Villeneuve"), { nom: "Villeneuve", deneigeurs: 12 }, "clients non comptés");
+  assert.equal(villes.some((v) => v.nom === "Petiteville"), false, "sous le seuil : jamais publiée");
+  const publie = (await db.doc("statsPubliques/villes").get()).data();
+  assert.equal(publie.seuil, 10);
+  assert.ok(!JSON.stringify(publie).includes("cvA"), "aucun identifiant de compte");
+});
+
 console.log("Firestore rules");
 globalThis.fetch = fetchOriginal;
 const env = await initializeTestEnvironment({ projectId: "demo-snowro", firestore: { rules: readFileSync(`${REPO}firestore.rules`, "utf8"), host: "127.0.0.1", port: 8080 } });
 const c1 = env.authenticatedContext("client1").firestore();
 const d1 = env.authenticatedContext("den1").firestore();
 const d3 = env.authenticatedContext("den3").firestore();
+await test("compteur public : lisible sans connexion, jamais modifiable", async () => {
+  const anonyme = env.unauthenticatedContext().firestore();
+  await assertSucceeds(getDoc(doc(anonyme, "statsPubliques/villes")));
+  await assertFails(setDoc(doc(anonyme, "statsPubliques/villes"), { villes: [] }));
+  await assertFails(setDoc(doc(c1, "statsPubliques/villes"), { villes: [] }));
+});
 await test("users : lecture de sa fiche seulement", async () => {
   await assertSucceeds(getDoc(doc(c1, "users/client1")));
   await assertFails(getDoc(doc(c1, "users/den1")));
