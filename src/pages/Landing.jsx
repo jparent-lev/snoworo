@@ -262,7 +262,7 @@ export default function Landing() {
               acceptez seulement celles qui entrent dans votre journée. Vous êtes libre de votre horaire, sans
               quota ni contrat de saison, et vous êtes payé dans les jours qui suivent, directement dans votre compte.
             </p>
-            <VideoSnowro video="deneiger" libelle="Voir comment on déneige avec Snowro" sombre className="landing__video" />
+            <VideoSnowro video="deneiger" libelle="Voir comment on déneige avec Snowro" sombre className="landing__video landing__video--avant-liste" />
             <div className="landing__profils">
               <span>
                 <Icone nom="etudiant" className="decor-icone--ocre" />

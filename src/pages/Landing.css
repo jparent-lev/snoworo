@@ -1508,6 +1508,11 @@
   margin-top: 20px;
 }
 
+/* Section déneigeur : de l'air avant la liste des profils. */
+.landing__video--avant-liste {
+  margin-bottom: 32px;
+}
+
 
 /* Héros : « Snowro en bref » en vedette, l'illustration animée au-dessus,
    atténuée, comme un décor. La vidéo couvre seulement le sol de la scène :
