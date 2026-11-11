@@ -10,6 +10,7 @@ import ApercuTableau from "./landing/ApercuTableau";
 import ParcoursDemande from "./landing/ParcoursDemande";
 import VillesPubliques from "./landing/VillesPubliques";
 import SceneProtection from "./landing/ScenesProtection";
+import VideoSnowro from "../components/VideoSnowro";
 import {
   CapNeige,
   CarteVilles,
@@ -127,6 +128,7 @@ export default function Landing() {
           <p className="landing__hero-mention">
             Inscription gratuite. Rien n'est prélevé avant qu'un déneigeur de quartier accepte votre demande.
           </p>
+          <VideoSnowro video="enBref" libelle="Voir Snowro en 30 secondes" className="landing__video" />
         </div>
 
         <div className="landing__hero-phone-wrap">
@@ -140,6 +142,9 @@ export default function Landing() {
       <section id="comment" className="landing__section">
         <h2 className="landing__h2 landing__h2--centre">Trois étapes simples, de la demande au travail terminé</h2>
         <p className="landing__chapeau landing__chapeau--centre">Publiez votre demande, un déneigeur de quartier l'accepte, et vous confirmez le travail : simple, rapide, sans engagement.</p>
+        <div className="landing__video-centre">
+          <VideoSnowro video="faireDeneiger" libelle="Voir une demande, du début à la fin" />
+        </div>
         <div className="landing__etapes-grille">
           {[
             {
@@ -177,6 +182,7 @@ export default function Landing() {
               ne vous offre pas : une note publique sur chaque déneigeur de quartier, une entente écrite avant
               le début du travail, et un paiement qui reste sécurisé jusqu'à ce que la demande soit faite.
             </p>
+            <VideoSnowro video="confiance" libelle="Voir ce qui vous protège" sombre className="landing__video" />
           </div>
           <div className="landing__bloc-paiement-cartes">
             {[
@@ -256,6 +262,7 @@ export default function Landing() {
               acceptez seulement celles qui entrent dans votre journée. Vous êtes libre de votre horaire, sans
               quota ni contrat de saison, et vous êtes payé dans les jours qui suivent, directement dans votre compte.
             </p>
+            <VideoSnowro video="deneiger" libelle="Voir comment on déneige avec Snowro" sombre className="landing__video" />
             <div className="landing__profils">
               <span>
                 <Icone nom="etudiant" className="decor-icone--ocre" />
