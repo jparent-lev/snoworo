@@ -345,26 +345,60 @@ export const marquerFaite = onCall({ region: REGION }, async (request) => {
   });
 });
 
+// Critères notés par le client, chacun de 1 à 5 étoiles. La note générale de
+// la demande est leur moyenne. Les moyennes par critère sont gardées sur la
+// fiche du déneigeur (ratingCriteres), pour pouvoir plus tard filtrer par note
+// minimale.
+export const CRITERES_EVALUATION = ["ponctualite", "communication", "qualite"];
+
+const arrondir2 = (x) => Math.round(x * 100) / 100;
+
 function validerEvaluation(data) {
+  const commentaire = texte(data?.commentaire, { max: COMMENTAIRE_MAX, nom: "Commentaire" });
+  const brut = data?.notes;
+  if (brut && typeof brut === "object") {
+    const notes = {};
+    for (const critere of CRITERES_EVALUATION) {
+      const n = brut[critere];
+      if (!Number.isInteger(n) || n < 1 || n > 5) {
+        throw new HttpsError("invalid-argument", "Notez chacun des trois critères, de 1 à 5 étoiles.");
+      }
+      notes[critere] = n;
+    }
+    const note = arrondir2(CRITERES_EVALUATION.reduce((s, c) => s + notes[c], 0) / CRITERES_EVALUATION.length);
+    return { note, notes, commentaire };
+  }
+  // Ancienne forme (une seule note), encore envoyée par un onglet ouvert avant la mise à jour.
   const { note } = data ?? {};
   if (!Number.isInteger(note) || note < 1 || note > 5) {
-    throw new HttpsError("invalid-argument", "Note de 1 à 5 étoiles.");
+    throw new HttpsError("invalid-argument", "Notez chacun des trois critères, de 1 à 5 étoiles.");
   }
-  return { note, commentaire: texte(data.commentaire, { max: COMMENTAIRE_MAX, nom: "Commentaire" }) };
+  return { note, notes: null, commentaire };
 }
 
 // À appeler après toutes les lectures de la transaction (`profil` = fiche du
-// déneigeur déjà lue) : moyenne recalculée côté serveur seulement
-// (ratingAvg/ratingCount sont protégés dans firestore.rules).
-function evaluer(tx, ref, demande, profil, { note, commentaire }) {
+// déneigeur déjà lue) : moyennes recalculées côté serveur seulement
+// (ratingAvg, ratingCount et ratingCriteres sont protégés dans firestore.rules).
+function evaluer(tx, ref, demande, profil, { note, notes, commentaire }) {
   const nombre = profil.ratingCount ?? 0;
   const moyenne = profil.ratingAvg ?? 0;
-  tx.set(
-    db.doc(`users/${demande.deneigeurId}`),
-    { ratingAvg: Math.round(((moyenne * nombre + note) / (nombre + 1)) * 100) / 100, ratingCount: nombre + 1 },
-    { merge: true },
-  );
-  tx.set(db.doc(`${ref.path}/prive/evaluation`), { note, commentaire, at: FieldValue.serverTimestamp() });
+  const maj = { ratingAvg: arrondir2((moyenne * nombre + note) / (nombre + 1)), ratingCount: nombre + 1 };
+  if (notes) {
+    const avant = profil.ratingCriteres ?? {};
+    maj.ratingCriteres = Object.fromEntries(
+      CRITERES_EVALUATION.map((c) => {
+        const p = avant[c] ?? { moyenne: 0, nombre: 0 };
+        return [c, { moyenne: arrondir2((p.moyenne * p.nombre + notes[c]) / (p.nombre + 1)), nombre: p.nombre + 1 }];
+      }),
+    );
+  }
+  tx.set(db.doc(`users/${demande.deneigeurId}`), maj, { merge: true });
+  tx.set(db.doc(`${ref.path}/prive/evaluation`), {
+    note,
+    ...(notes ? { notes } : {}),
+    commentaire,
+    at: FieldValue.serverTimestamp(),
+  });
   tx.update(ref, { evaluee: true });
 }
 
@@ -379,15 +413,18 @@ function confirmer(tx, ref, demande, { automatique }) {
   tx.set(db.doc(`users/${demande.deneigeurId}`), { nbJobsCompletees: FieldValue.increment(1) }, { merge: true });
 }
 
-// ---- Confirmer (client), avec évaluation facultative ----
+// ---- Confirmer (client), après l'évaluation sur les trois critères ----
+// La notation est une étape obligatoire avant de libérer le versement. Sans
+// action du client, la confirmation automatique (12 h) se fait sans note, et
+// le client peut encore évaluer dans les 7 jours (evaluerJob).
 export const confirmerJob = onCall({ region: REGION, secrets: [STRIPE_SECRET_KEY] }, async (request) => {
   const uid = exigerConnexion(request);
-  const evaluation = request.data?.note == null ? null : validerEvaluation(request.data);
   await db.runTransaction(async (tx) => {
     const { ref, demande } = await lireDemande(tx, request.data?.demandeId, { uid, role: "client", statuts: ["faite"] });
-    const profil = evaluation ? ((await tx.get(db.doc(`users/${demande.deneigeurId}`))).data() ?? {}) : null;
+    const evaluation = validerEvaluation(request.data);
+    const profil = (await tx.get(db.doc(`users/${demande.deneigeurId}`))).data() ?? {};
     confirmer(tx, ref, demande, { automatique: false });
-    if (evaluation) evaluer(tx, ref, demande, profil, evaluation);
+    evaluer(tx, ref, demande, profil, evaluation);
   });
   await verser(request.data.demandeId);
   return { ok: true };

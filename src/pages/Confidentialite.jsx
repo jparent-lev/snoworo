@@ -68,7 +68,9 @@ export default function Confidentialite() {
           <strong>Demandes et demandes :</strong> le montant offert, le quartier indiqué, le statut de la demande,
           les messages échangés avec l'autre personne une fois le jumelage confirmé, les photos (de 1 à 3) prises
           par le déneigeur de quartier à la fin de la demande (visibles seulement par vous deux) et l'appréciation
-          laissée par le client (des étoiles et, s'il le souhaite, un mot lu seulement par le déneigeur).
+          laissée par le client (des étoiles sur trois critères : ponctualité, communication et qualité du
+          déneigement; et, s'il le souhaite, un mot lu seulement par le déneigeur). Les moyennes de ces notes
+          forment la note du déneigeur de quartier.
         </li>
         <li>
           <strong>Paiement :</strong> le paiement est traité par Stripe. Snowro ne voit ni ne conserve jamais

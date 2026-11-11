@@ -240,24 +240,32 @@ async function connexion(cle, largeur = 1280) {
     for (let i = 0; i < 30 && (await db.doc("demandes/M1").get()).data().remunerationOfferte !== 35; i++) await new Promise((r) => setTimeout(r, 500));
     assert.equal((await db.doc("demandes/M1").get()).data().remunerationOfferte, 35);
   });
-  await test("Mireille : « Confirmer » avec 5 étoiles et un mot : historique, versement simulé, note de Marc", async () => {
+  await test("Mireille : « Confirmer » après la notation sur trois critères : historique, versement simulé, notes de Marc", async () => {
     await p.locator(".carte-job", { hasText: "À confirmer" }).getByRole("button", { name: "Confirmer" }).click();
     const dlg = p.getByRole("dialog", { name: "Confirmer la demande ?" });
-    await dlg.getByRole("radio", { name: /5 étoiles/ }).click();
+    // Le bouton reste bloqué tant que les trois critères ne sont pas notés.
+    await dlg.getByRole("button", { name: /Notez les 3 critères \(0\/3\)/ }).waitFor();
+    assert.equal(await dlg.getByRole("button", { name: /Notez les 3 critères/ }).isDisabled(), true);
+    for (const critere of ["Ponctualité", "Communication", "Qualité du déneigement"]) {
+      await dlg.getByRole("radiogroup", { name: critere }).getByRole("radio", { name: /5 étoiles/ }).click();
+    }
     await dlg.getByRole("textbox").fill("Impeccable, merci Marc !");
     await p.screenshot({ path: `${D}/e2e-evaluation-1280.png` });
-    await dlg.getByRole("button", { name: "Confirmer" }).click();
+    await dlg.getByRole("button", { name: "Confirmer et verser le paiement" }).click();
     await p.waitForFunction(() => document.querySelectorAll(".historique__rang").length === 2, null, { timeout: 15000 });
     const d = (await db.doc("demandes/M3").get()).data();
     assert.equal(d.statut, "completee"); assert.equal(d.paiement.statutPaiement, "simule_verse"); assert.equal(d.evaluee, true);
     const marc = (await db.doc(`users/${uid.marc}`).get()).data();
     assert.equal(marc.ratingCount, 21); assert.equal(marc.ratingAvg, 4.81);
+    assert.deepEqual(marc.ratingCriteres.qualite, { moyenne: 5, nombre: 1 });
   });
   await test("Mireille : la demande de Julie confirmée automatiquement il y a 4 jours peut encore être évaluée", async () => {
     await db.doc("demandes/M4").update({ confirmeeAt: ts(-96 * H) });
     await p.reload();
     await p.getByRole("button", { name: "Évaluer Julie" }).click();
-    await p.getByRole("dialog").getByRole("radio", { name: /4 étoiles/ }).click();
+    for (const critere of ["Ponctualité", "Communication", "Qualité du déneigement"]) {
+      await p.getByRole("dialog").getByRole("radiogroup", { name: critere }).getByRole("radio", { name: /4 étoiles/ }).click();
+    }
     await p.getByRole("dialog").getByRole("button", { name: "Envoyer" }).click();
     await p.getByRole("button", { name: "Évaluer Julie" }).waitFor({ state: "detached", timeout: 15000 });
     assert.equal((await db.doc("demandes/M4").get()).data().evaluee, true);
@@ -270,7 +278,9 @@ async function connexion(cle, largeur = 1280) {
   const { p, ctx } = await connexion("marc");
   await test("Marc : la demande terminée affiche les 5 étoiles et le mot de Mireille", async () => {
     await p.getByRole("tab", { name: /Terminées/ }).click();
-    await p.locator(".evaluation-recue", { hasText: "Impeccable, merci Marc" }).waitFor();
+    const ev = p.locator(".evaluation-recue", { hasText: "Impeccable, merci Marc" });
+    await ev.waitFor();
+    await ev.getByText("Ponctualité 5/5").waitFor();
   });
   await p.screenshot({ path: `${D}/e2e-marc-evaluation-1280.png`, fullPage: true });
   await ctx.close();
