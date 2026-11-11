@@ -10,6 +10,7 @@ import ApercuTableau from "./landing/ApercuTableau";
 import ParcoursDemande from "./landing/ParcoursDemande";
 import VillesPubliques from "./landing/VillesPubliques";
 import SceneProtection from "./landing/ScenesProtection";
+import VideoSnowro from "../components/VideoSnowro";
 import {
   CapNeige,
   CarteVilles,
@@ -129,8 +130,12 @@ export default function Landing() {
           </p>
         </div>
 
-        <div className="landing__hero-phone-wrap">
-          <HeroIllustration />
+        {/* La vidéo en vedette, l'illustration animée en arrière-plan. */}
+        <div className="landing__hero-phone-wrap landing__hero-scene">
+          <div className="landing__hero-fond">
+            <HeroIllustration />
+          </div>
+          <VideoSnowro video="enBref" libelle="Voir Snowro en 30 secondes" vedette className="landing__hero-video" />
         </div>
       </section>
         <BancDeNeige />
@@ -177,6 +182,7 @@ export default function Landing() {
               ne vous offre pas : une note publique sur chaque déneigeur de quartier, une entente écrite avant
               le début du travail, et un paiement qui reste sécurisé jusqu'à ce que la demande soit faite.
             </p>
+            <VideoSnowro video="confiance" libelle="Voir ce qui vous protège" sombre className="landing__video" />
           </div>
           <div className="landing__bloc-paiement-cartes">
             {[
@@ -256,6 +262,7 @@ export default function Landing() {
               acceptez seulement celles qui entrent dans votre journée. Vous êtes libre de votre horaire, sans
               quota ni contrat de saison, et vous êtes payé dans les jours qui suivent, directement dans votre compte.
             </p>
+            <VideoSnowro video="deneiger" libelle="Voir comment on déneige avec Snowro" sombre className="landing__video landing__video--avant-liste" />
             <div className="landing__profils">
               <span>
                 <Icone nom="etudiant" className="decor-icone--ocre" />

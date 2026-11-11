@@ -9,7 +9,7 @@ import { annulerDemande, augmenterOffre, confirmerJob, evaluerJob, messageErreur
 import { formatArgent } from "../../lib/formatArgent";
 import { dateCourte, dureeRestante, echeance, ilYa, millis } from "../../lib/temps";
 import Rangee from "../../components/Rangee";
-import { Etapes, Modale, ModaleEvaluation, ModalePhoto, ModaleSignalement, Personne } from "./elements";
+import { EncartVideo, Etapes, Modale, ModaleEvaluation, ModalePhoto, ModaleSignalement, Personne } from "./elements";
 import Conversation, { BoutonMessages } from "./Conversation";
 import "./Tableau.css";
 
@@ -59,6 +59,15 @@ export default function TableauClient({ conversation, onConversationFermee }) {
       </div>
       {!PAIEMENT_REEL && (
         <p className="tableau__simulation">Période de test : aucun paiement réel n'est effectué pour l'instant.</p>
+      )}
+
+      {demandes?.length === 0 && (
+        <EncartVideo
+          video="faireDeneiger"
+          titre="Première demande ?"
+          texte="Voyez en 35 secondes comment ça se passe, de la publication jusqu'à la confirmation du travail."
+          libelle="Voir une demande, du début à la fin"
+        />
       )}
 
       {demandes && (
@@ -139,8 +148,7 @@ function RangHistorique({ demande: d, evaluable }) {
           titre={`Évaluer ${d.deneigeurPrenom}`}
           prenom={d.deneigeurPrenom}
           libelleEnvoyer="Envoyer"
-          noteRequise
-          onEnvoyer={({ note, commentaire }) => evaluerJob({ demandeId: d.id, note, commentaire })}
+          onEnvoyer={({ notes, commentaire }) => evaluerJob({ demandeId: d.id, notes, commentaire })}
           onFermer={() => setEvaluer(false)}
         />
       )}
@@ -308,12 +316,10 @@ function CarteDemandeClient({ demande: d, nouveau, conversationOuverte, onConver
       {modale === "confirmer" && (
         <ModaleEvaluation
           titre="Confirmer la demande ?"
-          intro={`Le paiement de ${formatArgent(d.remunerationOfferte)} sera versé à ${d.deneigeurPrenom}. Si quelque chose ne va pas, signalez plutôt un problème.`}
+          intro={`Notez d'abord ${d.deneigeurPrenom} sur trois critères. Le paiement de ${formatArgent(d.remunerationOfferte)} lui sera ensuite versé. Si quelque chose ne va pas, signalez plutôt un problème.`}
           prenom={d.deneigeurPrenom}
-          libelleEnvoyer="Confirmer"
-          onEnvoyer={({ note, commentaire }) =>
-            confirmerJob(note ? { demandeId: d.id, note, commentaire } : { demandeId: d.id })
-          }
+          libelleEnvoyer="Confirmer et verser le paiement"
+          onEnvoyer={({ notes, commentaire }) => confirmerJob({ demandeId: d.id, notes, commentaire })}
           onFermer={() => setModale(null)}
         />
       )}

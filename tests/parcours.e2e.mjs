@@ -99,6 +99,8 @@ async function connexion(cle, largeur = 1280) {
   await test("Marc : tableau déneigeur, sans bascule (un seul rôle)", async () => {
     await p.getByRole("heading", { name: "Demandes près de chez vous" }).waitFor();
     assert.equal(await p.locator(".layout__bascule").count(), 0);
+    // Marc a déjà une demande acceptée : pas d'encart vidéo d'accueil.
+    assert.equal(await p.locator(".encart-video").count(), 0);
   });
   await test("Marc : 4 demandes de Québec, jamais celle de Lévis, triées par distance", async () => {
     await p.waitForFunction(() => document.querySelectorAll(".rangee")[1]?.querySelectorAll(".carte-job").length === 4);
@@ -240,24 +242,32 @@ async function connexion(cle, largeur = 1280) {
     for (let i = 0; i < 30 && (await db.doc("demandes/M1").get()).data().remunerationOfferte !== 35; i++) await new Promise((r) => setTimeout(r, 500));
     assert.equal((await db.doc("demandes/M1").get()).data().remunerationOfferte, 35);
   });
-  await test("Mireille : « Confirmer » avec 5 étoiles et un mot : historique, versement simulé, note de Marc", async () => {
+  await test("Mireille : « Confirmer » après la notation sur trois critères : historique, versement simulé, notes de Marc", async () => {
     await p.locator(".carte-job", { hasText: "À confirmer" }).getByRole("button", { name: "Confirmer" }).click();
     const dlg = p.getByRole("dialog", { name: "Confirmer la demande ?" });
-    await dlg.getByRole("radio", { name: /5 étoiles/ }).click();
+    // Le bouton reste bloqué tant que les trois critères ne sont pas notés.
+    await dlg.getByRole("button", { name: /Notez les 3 critères \(0\/3\)/ }).waitFor();
+    assert.equal(await dlg.getByRole("button", { name: /Notez les 3 critères/ }).isDisabled(), true);
+    for (const critere of ["Ponctualité", "Communication", "Qualité du déneigement"]) {
+      await dlg.getByRole("radiogroup", { name: critere }).getByRole("radio", { name: /5 étoiles/ }).click();
+    }
     await dlg.getByRole("textbox").fill("Impeccable, merci Marc !");
     await p.screenshot({ path: `${D}/e2e-evaluation-1280.png` });
-    await dlg.getByRole("button", { name: "Confirmer" }).click();
+    await dlg.getByRole("button", { name: "Confirmer et verser le paiement" }).click();
     await p.waitForFunction(() => document.querySelectorAll(".historique__rang").length === 2, null, { timeout: 15000 });
     const d = (await db.doc("demandes/M3").get()).data();
     assert.equal(d.statut, "completee"); assert.equal(d.paiement.statutPaiement, "simule_verse"); assert.equal(d.evaluee, true);
     const marc = (await db.doc(`users/${uid.marc}`).get()).data();
     assert.equal(marc.ratingCount, 21); assert.equal(marc.ratingAvg, 4.81);
+    assert.deepEqual(marc.ratingCriteres.qualite, { moyenne: 5, nombre: 1 });
   });
   await test("Mireille : la demande de Julie confirmée automatiquement il y a 4 jours peut encore être évaluée", async () => {
     await db.doc("demandes/M4").update({ confirmeeAt: ts(-96 * H) });
     await p.reload();
     await p.getByRole("button", { name: "Évaluer Julie" }).click();
-    await p.getByRole("dialog").getByRole("radio", { name: /4 étoiles/ }).click();
+    for (const critere of ["Ponctualité", "Communication", "Qualité du déneigement"]) {
+      await p.getByRole("dialog").getByRole("radiogroup", { name: critere }).getByRole("radio", { name: /4 étoiles/ }).click();
+    }
     await p.getByRole("dialog").getByRole("button", { name: "Envoyer" }).click();
     await p.getByRole("button", { name: "Évaluer Julie" }).waitFor({ state: "detached", timeout: 15000 });
     assert.equal((await db.doc("demandes/M4").get()).data().evaluee, true);
@@ -270,7 +280,9 @@ async function connexion(cle, largeur = 1280) {
   const { p, ctx } = await connexion("marc");
   await test("Marc : la demande terminée affiche les 5 étoiles et le mot de Mireille", async () => {
     await p.getByRole("tab", { name: /Terminées/ }).click();
-    await p.locator(".evaluation-recue", { hasText: "Impeccable, merci Marc" }).waitFor();
+    const ev = p.locator(".evaluation-recue", { hasText: "Impeccable, merci Marc" });
+    await ev.waitFor();
+    await ev.getByText("Ponctualité 5/5").waitFor();
   });
   await p.screenshot({ path: `${D}/e2e-marc-evaluation-1280.png`, fullPage: true });
   await ctx.close();
@@ -444,6 +456,35 @@ async function connexion(cle, largeur = 1280) {
     assert.equal(await p.getByPlaceholder("Nom complet").count(), 0);
     await p.screenshot({ path: `${D}/e2e-accueil-ouvert-390.png`, fullPage: true });
   });
+  await test("accueil : trois vidéos, dont « Snowro en bref » en vedette dans le héros, ouvertes au clic dans un lecteur avec sous-titres, rien de chargé avant", async () => {
+    await p.goto("http://localhost:4190/");
+    const boutons = p.getByRole("button", { name: /Vidéo avec son/ });
+    assert.equal(await boutons.count(), 3);
+    assert.equal(await p.locator(".landing__hero .video-vedette").count(), 1, "vidéo vedette dans le héros");
+    assert.equal(await p.locator("video").count(), 0, "aucune vidéo chargée avant le clic");
+    await p.getByRole("button", { name: /Voir Snowro en 30 secondes/ }).click();
+    const dlg = p.getByRole("dialog", { name: "Snowro en bref" });
+    await dlg.waitFor();
+    const video = dlg.locator("video");
+    assert.ok((await video.getAttribute("src")).endsWith("/videos/snowro-en-bref.mp4"));
+    assert.ok((await dlg.locator("track").getAttribute("src")).endsWith("/videos/snowro-en-bref.fr.vtt"));
+    const etat = await video.evaluate((v) => new Promise((ok) => (v.readyState >= 1 ? ok(v.duration) : v.addEventListener("loadedmetadata", () => ok(v.duration)))));
+    assert.ok(etat > 31 && etat < 33, `durée ${etat}`);
+    assert.ok(await p.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth), "défilement horizontal");
+    await p.screenshot({ path: `${D}/e2e-video-390.png` });
+    await p.keyboard.press("Escape");
+    await dlg.waitFor({ state: "detached" });
+    await p.screenshot({ path: `${D}/e2e-heros-video-390.png` });
+    await p.setViewportSize({ width: 1280, height: 800 });
+    await p.screenshot({ path: `${D}/e2e-heros-video-1280.png` });
+    await p.setViewportSize({ width: 390, height: 844 });
+    await p.getByRole("button", { name: /Voir Snowro en 30 secondes/ }).click();
+    await dlg.waitFor();
+    await p.keyboard.press("Escape");
+    await dlg.waitFor({ state: "detached" });
+    const vtt = await p.evaluate(() => fetch("/videos/snowro-la-confiance.fr.vtt").then((r) => r.text()));
+    assert.ok(vtt.startsWith("WEBVTT") && vtt.includes("Paiement sécurisé"));
+  });
   await test("liste d'attente : le lien du courriel confirme l'inscription ; un lien faux est refusé", async () => {
     const jeton = "c".repeat(48);
     await db.doc("listeAttente/zoe-liste@test.ca").set({
@@ -494,6 +535,11 @@ async function connexion(cle, largeur = 1280) {
 }
 {
   const { p, ctx } = await connexion("zoe", 390);
+  await test("Zoé : aucune demande encore, le tableau propose la vidéo du parcours client", async () => {
+    await p.locator(".encart-video").getByRole("button", { name: /Voir une demande, du début à la fin/ }).waitFor();
+    assert.ok(await p.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth), "défilement horizontal");
+    await p.screenshot({ path: `${D}/e2e-encart-video-390.png` });
+  });
   await test("Zoé : ferme son compte depuis Paramètres (confirmation FERMER), compte de connexion supprimé", async () => {
     await p.goto("http://localhost:4190/parametres");
     await p.getByRole("button", { name: "Fermer mon compte" }).click();

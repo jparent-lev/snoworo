@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { messageErreur, signalerProbleme } from "../../lib/cycleDemande";
+import VideoSnowro from "../../components/VideoSnowro";
 import { lirePrive } from "../../lib/demandes";
 import { ROLE_CLIENT, ROLE_DENEIGEUR } from "../../lib/mode";
 
@@ -188,42 +189,56 @@ export function ChoixRoles({ valeur, onChange }) {
 
 const LIBELLES_NOTES = ["", "Décevant", "Passable", "Correct", "Très bien", "Impeccable"];
 
+// Les trois critères notés avant de confirmer une demande (mêmes clés que
+// CRITERES_EVALUATION côté serveur, functions/src/cycleDemande.js).
+export const CRITERES = [
+  { cle: "ponctualite", libelle: "Ponctualité", aide: "Fait dans le délai convenu" },
+  { cle: "communication", libelle: "Communication", aide: "Joignable, clair et courtois" },
+  { cle: "qualite", libelle: "Qualité du déneigement", aide: "Entrée bien dégagée, rien d'oublié" },
+];
+
 // Choix de 1 à 5 étoiles (groupe de boutons radio, utilisable au clavier).
-export function ChoixEtoiles({ valeur, onChange }) {
+export function ChoixEtoiles({ valeur, onChange, libelle = "Note", requis = false }) {
   return (
-    <div className="etoiles" role="radiogroup" aria-label="Note">
+    <div className="etoiles" role="radiogroup" aria-label={libelle}>
       {[1, 2, 3, 4, 5].map((n) => (
         <button
           key={n}
           type="button"
           role="radio"
           aria-checked={valeur === n}
-          aria-label={`${n} étoile${n > 1 ? "s" : ""} : ${LIBELLES_NOTES[n]}`}
+          aria-label={`${libelle} : ${n} étoile${n > 1 ? "s" : ""}, ${LIBELLES_NOTES[n]}`}
           className={`etoiles__etoile ${valeur >= n ? "etoiles__etoile--pleine" : ""}`}
           onClick={() => onChange(valeur === n ? null : n)}
         >
           ★
         </button>
       ))}
-      <span className="etoiles__libelle">{valeur ? LIBELLES_NOTES[valeur] : "Facultatif"}</span>
+      <span className="etoiles__libelle">{valeur ? LIBELLES_NOTES[valeur] : requis ? "À noter" : "Facultatif"}</span>
     </div>
   );
 }
 
-// Étoiles + mot privé. `onEnvoyer({ note, commentaire })` ; note peut être
-// null si `noteRequise` est faux (confirmation sans évaluation).
-export function ModaleEvaluation({ titre, intro, libelleEnvoyer, noteRequise, prenom, onEnvoyer, onFermer }) {
-  const [note, setNote] = useState(null);
+// Note sur 5, avec une décimale à la française (4,7).
+export const noteTexte = (n) => (Math.round(n * 10) / 10).toFixed(1).replace(".", ",");
+
+// Notation sur les trois critères + mot privé. Les trois notes sont requises.
+// `onEnvoyer({ notes, commentaire })`, notes = { ponctualite, communication, qualite }.
+export function ModaleEvaluation({ titre, intro, libelleEnvoyer, prenom, onEnvoyer, onFermer }) {
+  const [notes, setNotes] = useState({});
   const [commentaire, setCommentaire] = useState("");
   const [enCours, setEnCours] = useState(false);
   const [erreur, setErreur] = useState(null);
+  const complete = CRITERES.every((c) => notes[c.cle]);
+  const nbNotes = CRITERES.filter((c) => notes[c.cle]).length;
 
   async function envoyer(e) {
     e.preventDefault();
+    if (!complete) return;
     setEnCours(true);
     setErreur(null);
     try {
-      await onEnvoyer({ note, commentaire: note ? commentaire.trim() : "" });
+      await onEnvoyer({ notes, commentaire: commentaire.trim() });
       onFermer();
     } catch (err) {
       setErreur(messageErreur(err));
@@ -235,24 +250,35 @@ export function ModaleEvaluation({ titre, intro, libelleEnvoyer, noteRequise, pr
     <Modale titre={titre} onFermer={onFermer}>
       {intro && <p>{intro}</p>}
       <form onSubmit={envoyer} style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-        <div>
-          <span className="modale__etiquette">Comment ça s'est passé avec {prenom} ?</span>
-          <ChoixEtoiles valeur={note} onChange={setNote} />
+        <span className="modale__etiquette">Comment ça s'est passé avec {prenom} ?</span>
+        <div className="evaluation__criteres">
+          {CRITERES.map((c) => (
+            <div key={c.cle} className="evaluation__critere">
+              <div>
+                <b>{c.libelle}</b>
+                <span className="modale__aide">{c.aide}</span>
+              </div>
+              <ChoixEtoiles
+                libelle={c.libelle}
+                requis
+                valeur={notes[c.cle] ?? null}
+                onChange={(n) => setNotes((avant) => ({ ...avant, [c.cle]: n }))}
+              />
+            </div>
+          ))}
         </div>
-        {note && (
-          <label>
-            Un mot pour {prenom} (facultatif)
-            <textarea rows={3} maxLength={500} value={commentaire} onChange={(e) => setCommentaire(e.target.value)} />
-            <span className="modale__aide">Seul {prenom} le lira. Il n'est pas affiché publiquement.</span>
-          </label>
-        )}
+        <label>
+          Un mot pour {prenom} (facultatif)
+          <textarea rows={3} maxLength={500} value={commentaire} onChange={(e) => setCommentaire(e.target.value)} />
+          <span className="modale__aide">Seul {prenom} le lira. Il n'est pas affiché publiquement.</span>
+        </label>
         {erreur && <p className="message-erreur" role="alert">{erreur}</p>}
         <div className="modale__actions">
           <button type="button" className="btn btn--fantome" onClick={onFermer}>
             Retour
           </button>
-          <button type="submit" className="btn btn--principal" disabled={enCours || (noteRequise && !note)}>
-            {enCours ? "Envoi…" : libelleEnvoyer}
+          <button type="submit" className="btn btn--principal" disabled={enCours || !complete}>
+            {enCours ? "Envoi…" : complete ? libelleEnvoyer : `Notez les 3 critères (${nbNotes}/3)`}
           </button>
         </div>
       </form>
@@ -289,5 +315,18 @@ export function ModalePhoto({ demande, onFermer }) {
         </div>
       )}
     </Modale>
+  );
+}
+
+// Encart d'accueil des comptes sans activité : la vidéo du parcours.
+export function EncartVideo({ video, titre, texte, libelle }) {
+  return (
+    <section className="encart-video">
+      <div className="encart-video__texte">
+        <h2>{titre}</h2>
+        <p>{texte}</p>
+      </div>
+      <VideoSnowro video={video} libelle={libelle} />
+    </section>
   );
 }

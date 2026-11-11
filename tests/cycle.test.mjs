@@ -137,7 +137,8 @@ await test("marquer faite : seulement le déneigeur choisi ; confirmation auto d
 });
 await test("confirmer (client) : completee, versement simulé, compteur du déneigeur +1", async () => {
   await echoue(appel(f.confirmerJob, "den1", { demandeId: id }), "permission-denied", "confirmer par déneigeur");
-  await appel(f.confirmerJob, "client1", { demandeId: id });
+  await echoue(appel(f.confirmerJob, "client1", { demandeId: id }), "invalid-argument", "confirmer sans noter");
+  await appel(f.confirmerJob, "client1", { demandeId: id, notes: { ponctualite: 5, communication: 5, qualite: 5 } });
   const d = await lire(id);
   assert.equal(d.statut, "completee"); assert.equal(d.confirmationAuto, false); assert.equal(d.paiement.statutPaiement, "simule_verse");
   assert.equal((await db.doc("users/den1").get()).data().nbJobsCompletees, 24);
@@ -197,28 +198,33 @@ await test("photos : enregistrées en privé avec « C'est fait » (3 documents)
   assert.ok(ecart > 29.9 * 24 * 3600e3 && ecart <= 30 * 24 * 3600e3, `délai ${ecart}`);
   for (const i of [0, 1, 2]) assert.equal((await db.doc(`demandes/${avecPhoto}/prive/photo-${i}`).get()).data().donnees, jpeg);
 });
-await test("confirmer avec 4 étoiles et un mot : moyenne recalculée, mot privé", async () => {
+await test("confirmer après la notation sur trois critères : moyennes recalculées, mot privé", async () => {
   await db.doc("users/den3").set({ ratingAvg: 5, ratingCount: 1 }, { merge: true });
-  await echoue(appel(f.confirmerJob, "client1", { demandeId: avecPhoto, note: 6 }), "invalid-argument", "note 6");
-  await appel(f.confirmerJob, "client1", { demandeId: avecPhoto, note: 4, commentaire: "Merci, très propre !" });
+  await echoue(appel(f.confirmerJob, "client1", { demandeId: avecPhoto, notes: { ponctualite: 6, communication: 4, qualite: 3 } }), "invalid-argument", "note 6");
+  await echoue(appel(f.confirmerJob, "client1", { demandeId: avecPhoto, notes: { ponctualite: 5, communication: 4 } }), "invalid-argument", "critère manquant");
+  const notes = { ponctualite: 5, communication: 4, qualite: 3 };
+  await appel(f.confirmerJob, "client1", { demandeId: avecPhoto, notes, commentaire: "Merci, très propre !" });
   const den3 = (await db.doc("users/den3").get()).data();
   assert.equal(den3.ratingAvg, 4.5); assert.equal(den3.ratingCount, 2);
+  assert.deepEqual(den3.ratingCriteres, { ponctualite: { moyenne: 5, nombre: 1 }, communication: { moyenne: 4, nombre: 1 }, qualite: { moyenne: 3, nombre: 1 } });
   assert.equal((await lire(avecPhoto)).evaluee, true);
-  assert.deepEqual((({ note, commentaire }) => ({ note, commentaire }))((await db.doc(`demandes/${avecPhoto}/prive/evaluation`).get()).data()), { note: 4, commentaire: "Merci, très propre !" });
+  const ev = (await db.doc(`demandes/${avecPhoto}/prive/evaluation`).get()).data();
+  assert.deepEqual({ note: ev.note, notes: ev.notes, commentaire: ev.commentaire }, { note: 4, notes, commentaire: "Merci, très propre !" });
 });
 await test("évaluer après coup : une seule fois, client seulement, dans les 7 jours", async () => {
   const x = await jobFaite("den3");
-  await echoue(appel(f.evaluerJob, "client1", { demandeId: x, note: 5 }), "failed-precondition", "pas encore confirmée");
-  await appel(f.confirmerJob, "client1", { demandeId: x });
+  await echoue(appel(f.evaluerJob, "client1", { demandeId: x, notes: { ponctualite: 5, communication: 5, qualite: 5 } }), "failed-precondition", "pas encore confirmée");
+  // Confirmée automatiquement (12 h), donc sans note.
+  await db.doc(`demandes/${x}`).update({ statut: "completee", confirmeeAt: TS.now(), confirmationAuto: true });
   assert.notEqual((await lire(x)).evaluee, true);
-  await echoue(appel(f.evaluerJob, "den3", { demandeId: x, note: 5 }), "permission-denied", "déneigeur");
-  await appel(f.evaluerJob, "client1", { demandeId: x, note: 5 });
-  assert.equal((await db.doc("users/den3").get()).data().ratingCount, 3);
-  await echoue(appel(f.evaluerJob, "client1", { demandeId: x, note: 1 }), "already-exists", "deux fois");
+  await echoue(appel(f.evaluerJob, "den3", { demandeId: x, notes: { ponctualite: 5, communication: 5, qualite: 5 } }), "permission-denied", "déneigeur");
+  await appel(f.evaluerJob, "client1", { demandeId: x, notes: { ponctualite: 5, communication: 5, qualite: 5 } });
+  const den3 = (await db.doc("users/den3").get()).data();
+  assert.equal(den3.ratingCount, 3); assert.equal(den3.ratingCriteres.qualite.nombre, 2); assert.equal(den3.ratingCriteres.qualite.moyenne, 4);
+  await echoue(appel(f.evaluerJob, "client1", { demandeId: x, notes: { ponctualite: 5, communication: 5, qualite: 5 } }), "already-exists", "deux fois");
   const y = await jobFaite("den3");
-  await appel(f.confirmerJob, "client1", { demandeId: y });
-  await db.doc(`demandes/${y}`).update({ confirmeeAt: TS.fromMillis(Date.now() - 8 * 24 * 3600e3) });
-  await echoue(appel(f.evaluerJob, "client1", { demandeId: y, note: 5 }), "failed-precondition", "après 7 jours");
+  await db.doc(`demandes/${y}`).update({ statut: "completee", confirmationAuto: true, confirmeeAt: TS.fromMillis(Date.now() - 8 * 24 * 3600e3) });
+  await echoue(appel(f.evaluerJob, "client1", { demandeId: y, notes: { ponctualite: 5, communication: 5, qualite: 5 } }), "failed-precondition", "après 7 jours");
 });
 await test("purge : photos et messages effacés 30 jours après la demande, gardés si la demande est signalée", async () => {
   const signalee = await jobFaite("den1");
@@ -702,7 +708,8 @@ await test("users : lecture de sa fiche seulement", async () => {
   await assertFails(getDoc(doc(c1, "users/den1")));
 });
 await test("users : impossible de modifier sa note ou son compteur ; rôles modifiables", async () => {
-  await assertFails(updateDoc(doc(d1, "users/den1"), { ratingAvg: 5 }));
+  await assertFails(updateDoc(doc(d1, "users/den1"), { ratingAvg: 1 }));
+  await assertFails(updateDoc(doc(d1, "users/den1"), { ratingCriteres: { qualite: { moyenne: 5, nombre: 99 } } }));
   await assertFails(updateDoc(doc(d1, "users/den1"), { nbJobsCompletees: 999 }));
   await assertSucceeds(setDoc(doc(d1, "users/den1"), { role: ["deneigeur_x", "donneur_ouvrage"] }, { merge: true }));
 });

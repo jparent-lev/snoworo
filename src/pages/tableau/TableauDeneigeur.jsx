@@ -11,7 +11,7 @@ import { formatArgent } from "../../lib/formatArgent";
 import { decoderGeohash, distanceMetres } from "../../lib/geo";
 import { dateCourte, debutSemaine, echeance, estAujourdhui, heure, ilYa, millis } from "../../lib/temps";
 import Rangee from "../../components/Rangee";
-import { Modale, ModaleSignalement } from "./elements";
+import { CRITERES, EncartVideo, Modale, ModaleSignalement, noteTexte } from "./elements";
 import Conversation, { BoutonMessages } from "./Conversation";
 import "./Tableau.css";
 import { messageServeur } from "../../lib/erreurs";
@@ -156,8 +156,26 @@ export default function TableauDeneigeur({ conversation, onConversationFermee })
           <div className="chiffre__sous">
             {nbJobs} demande{nbJobs > 1 ? "s" : ""} terminée{nbJobs > 1 ? "s" : ""}
           </div>
+          {profile?.ratingCriteres && (
+            <div className="chiffre__sous chiffre__criteres">
+              {CRITERES.filter((c) => profile.ratingCriteres[c.cle]?.nombre).map((c) => (
+                <span key={c.cle}>
+                  {c.libelle} {noteTexte(profile.ratingCriteres[c.cle].moyenne)}
+                </span>
+              ))}
+            </div>
+          )}
         </div>
       </div>
+
+      {jobs?.length === 0 && (
+        <EncartVideo
+          video="deneiger"
+          titre="Votre premier déneigement ?"
+          texte="Voyez en 30 secondes comment choisir une demande, faire le travail et recevoir votre versement."
+          libelle="Voir comment on déneige avec Snowro"
+        />
+      )}
 
       {jobs && (
         <Rangee
@@ -404,12 +422,22 @@ function EvaluationRecue({ demandeId, prenom }) {
       .catch(() => setEvaluation(null));
   }, [demandeId]);
   if (!evaluation) return null;
+  const pleines = Math.round(evaluation.note);
   return (
     <div className="evaluation-recue">
-      <span className="etoile" aria-label={`${evaluation.note} sur 5`}>
-        {"★".repeat(evaluation.note)}
-        <span className="evaluation-recue__vide">{"★".repeat(5 - evaluation.note)}</span>
+      <span className="etoile" aria-label={`${noteTexte(evaluation.note)} sur 5`}>
+        {"★".repeat(pleines)}
+        <span className="evaluation-recue__vide">{"★".repeat(5 - pleines)}</span>
       </span>
+      {evaluation.notes && (
+        <ul className="evaluation-recue__criteres">
+          {CRITERES.map((c) => (
+            <li key={c.cle}>
+              {c.libelle} <b>{evaluation.notes[c.cle]}/5</b>
+            </li>
+          ))}
+        </ul>
+      )}
       {evaluation.commentaire && (
         <p>
           « {evaluation.commentaire} » <span className="carte-job__meta">· {prenom}</span>
