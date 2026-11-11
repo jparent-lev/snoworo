@@ -5,7 +5,7 @@ import "./VideoSnowro.css";
 // Les quatre vidéos de présentation (public/videos/) : MP4 web, image
 // d'aperçu et sous-titres français. Rien n'est chargé avant le clic.
 export const VIDEOS = {
-  enBref: { fichier: "snowro-en-bref", titre: "Snowro en bref", duree: "30 s" },
+  enBref: { fichier: "snowro-en-bref", titre: "Snowro en bref", duree: "30 s", boucle: true },
   faireDeneiger: { fichier: "snowro-faire-deneiger", titre: "Faire déneiger avec Snowro", duree: "35 s" },
   deneiger: { fichier: "snowro-deneiger", titre: "Déneiger avec Snowro", duree: "30 s" },
   confiance: { fichier: "snowro-la-confiance", titre: "Ce qui vous protège avec Snowro", duree: "35 s" },
@@ -17,8 +17,40 @@ const Lecture = ({ taille = 16 }) => (
   </svg>
 );
 
+const animationsReduites = () =>
+  typeof window !== "undefined" && window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+
+// Boucle muette : « muted » posé sur l'élément avant play(), sinon certains
+// navigateurs mobiles refusent la lecture automatique.
+function Boucle({ fichier }) {
+  const ref = useRef(null);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    el.muted = true;
+    el.play?.().catch(() => {});
+  }, []);
+  return (
+    <video
+      ref={ref}
+      className="video-vedette__boucle"
+      src={`/videos/${fichier}-boucle.mp4`}
+      poster={`/videos/${fichier}.jpg`}
+      autoPlay
+      muted
+      loop
+      playsInline
+      preload="auto"
+      aria-hidden="true"
+      tabIndex={-1}
+    />
+  );
+}
+
 // Vignette cliquable qui ouvre la vidéo dans un lecteur plein écran.
-// « vedette » : grande image d'aperçu 16:9, le bouton de lecture dans un coin.
+// « vedette » : grand format 16:9, le bouton de lecture dans un coin. Si la
+// vidéo a une boucle (X-boucle.mp4, 4 s, muette), elle joue en continu à la
+// place de l'image, sauf quand l'utilisateur préfère réduire les animations.
 export default function VideoSnowro({ video, libelle, sombre = false, vedette = false, className = "" }) {
   const [ouvert, setOuvert] = useState(false);
   const v = VIDEOS[video];
@@ -27,7 +59,11 @@ export default function VideoSnowro({ video, libelle, sombre = false, vedette = 
     return (
       <>
         <button type="button" className={`video-vedette ${className}`} onClick={() => setOuvert(true)}>
-          <img src={`/videos/${v.fichier}.jpg`} alt="" width="1280" height="720" />
+          {v.boucle && !animationsReduites() ? (
+            <Boucle fichier={v.fichier} />
+          ) : (
+            <img src={`/videos/${v.fichier}.jpg`} alt="" width="1280" height="720" />
+          )}
           <span className="video-vedette__pastille">
             <span className="video-vedette__lecture">
               <Lecture taille={18} />

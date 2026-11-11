@@ -461,7 +461,11 @@ async function connexion(cle, largeur = 1280) {
     const boutons = p.getByRole("button", { name: /Vidéo avec son/ });
     assert.equal(await boutons.count(), 3);
     assert.equal(await p.locator(".landing__hero .video-vedette").count(), 1, "vidéo vedette dans le héros");
-    assert.equal(await p.locator("video").count(), 0, "aucune vidéo chargée avant le clic");
+    // Seule la boucle muette de 4 s joue d'emblée ; aucune vidéo complète avant le clic.
+    assert.equal(await p.locator("video:not(.video-vedette__boucle)").count(), 0, "aucune vidéo complète avant le clic");
+    const boucle = p.locator(".landing__hero .video-vedette__boucle");
+    assert.ok((await boucle.getAttribute("src")).endsWith("/videos/snowro-en-bref-boucle.mp4"));
+    assert.equal(await boucle.evaluate((v) => v.muted && v.loop), true, "boucle muette");
     await p.getByRole("button", { name: /Voir Snowro en 30 secondes/ }).click();
     const dlg = p.getByRole("dialog", { name: "Snowro en bref" });
     await dlg.waitFor();
