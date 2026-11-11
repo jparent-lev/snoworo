@@ -192,7 +192,7 @@ export default function Confidentialite() {
         </li>
         <li>
           <strong>Compte :</strong> tant que votre compte est actif. Vous pouvez le fermer vous-même en tout temps dans
-          les paramètres (sauf pendant une demande en cours) : vos renseignements sont alors effacés ou rendus
+          les paramètres (sauf pendant une demande en cours ou un paiement pas encore terminé) : vos renseignements sont alors effacés ou rendus
           anonymes immédiatement, sauf ce que la loi nous oblige à conserver plus longtemps (le registre des
           paiements, conservé 6 ans pour des raisons fiscales). Stripe conserve de son côté les renseignements
           de paiement et de vérification d'identité selon ses propres obligations légales.

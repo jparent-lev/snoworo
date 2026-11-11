@@ -13,6 +13,9 @@ export function messageFermeture(err) {
   if (messageServeur(err) === "job-en-cours") {
     return "Vous avez une demande en cours (acceptée, faite ou signalée). Terminez-la d'abord, puis revenez fermer votre compte.";
   }
+  if (messageServeur(err) === "paiement-en-cours") {
+    return "Le paiement d'une de vos demandes n'est pas encore terminé (le déneigeur n'a pas encore reçu son versement). Réessayez dans quelques jours.";
+  }
   if (messageServeur(err) === "versement-en-attente") {
     return "Un versement est encore en route vers votre compte bancaire. Réessayez une fois qu'il est reçu.";
   }
