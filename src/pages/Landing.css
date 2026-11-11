@@ -1502,3 +1502,14 @@
   color: var(--color-surface-carte);
   opacity: 0.85;
 }
+
+/* Vidéos de présentation (components/VideoSnowro.jsx) */
+.landing__video {
+  margin-top: 20px;
+}
+
+.landing__video-centre {
+  display: flex;
+  justify-content: center;
+  margin: 8px 0 32px;
+}

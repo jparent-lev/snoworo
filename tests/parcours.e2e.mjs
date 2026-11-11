@@ -454,6 +454,26 @@ async function connexion(cle, largeur = 1280) {
     assert.equal(await p.getByPlaceholder("Nom complet").count(), 0);
     await p.screenshot({ path: `${D}/e2e-accueil-ouvert-390.png`, fullPage: true });
   });
+  await test("accueil : quatre vidéos, ouvertes au clic dans un lecteur avec sous-titres, rien de chargé avant", async () => {
+    await p.goto("http://localhost:4190/");
+    const boutons = p.getByRole("button", { name: /Vidéo avec son/ });
+    assert.equal(await boutons.count(), 4);
+    assert.equal(await p.locator("video").count(), 0, "aucune vidéo chargée avant le clic");
+    await p.getByRole("button", { name: /Voir Snowro en 30 secondes/ }).click();
+    const dlg = p.getByRole("dialog", { name: "Snowro en bref" });
+    await dlg.waitFor();
+    const video = dlg.locator("video");
+    assert.ok((await video.getAttribute("src")).endsWith("/videos/snowro-en-bref.mp4"));
+    assert.ok((await dlg.locator("track").getAttribute("src")).endsWith("/videos/snowro-en-bref.fr.vtt"));
+    const etat = await video.evaluate((v) => new Promise((ok) => (v.readyState >= 1 ? ok(v.duration) : v.addEventListener("loadedmetadata", () => ok(v.duration)))));
+    assert.ok(etat > 31 && etat < 33, `durée ${etat}`);
+    assert.ok(await p.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth), "défilement horizontal");
+    await p.screenshot({ path: `${D}/e2e-video-390.png` });
+    await p.keyboard.press("Escape");
+    await dlg.waitFor({ state: "detached" });
+    const vtt = await p.evaluate(() => fetch("/videos/snowro-la-confiance.fr.vtt").then((r) => r.text()));
+    assert.ok(vtt.startsWith("WEBVTT") && vtt.includes("Paiement sécurisé"));
+  });
   await test("liste d'attente : le lien du courriel confirme l'inscription ; un lien faux est refusé", async () => {
     const jeton = "c".repeat(48);
     await db.doc("listeAttente/zoe-liste@test.ca").set({
