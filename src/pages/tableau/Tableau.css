@@ -504,6 +504,41 @@
   color: var(--color-texte-secondaire);
 }
 
+/* Notation sur trois critères, avant la confirmation */
+.evaluation__criteres {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.evaluation__critere {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--color-bordure);
+}
+
+.evaluation__critere:last-child {
+  border-bottom: none;
+}
+
+.evaluation__critere > div:first-child {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.evaluation__critere .etoiles__etoile {
+  font-size: 28px;
+}
+
+.evaluation__critere .etoiles__libelle {
+  min-width: 72px;
+}
+
 .photos-faite {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -593,6 +628,27 @@
 
 .evaluation-recue__vide {
   color: var(--color-bordure);
+}
+
+.evaluation-recue__criteres {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 14px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  color: var(--color-texte-secondaire);
+}
+
+.evaluation-recue__criteres b {
+  color: var(--color-terre);
+}
+
+.chiffre__criteres {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px 10px;
+  margin-top: 4px;
 }
 
 .evaluation-recue p {

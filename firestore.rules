@@ -19,7 +19,7 @@ service cloud.firestore {
       // snowro-changements-claude-code.md § 1 : une donnée qui détermine un
       // comportement de sécurité/matching/paiement ne doit jamais être
       // manipulable par le client, au même titre que les consentements.
-      // ratingAvg, ratingCount, nbJobsCompletees : la réputation d'un
+      // ratingAvg, ratingCount, ratingCriteres, nbJobsCompletees : la réputation d'un
       // déneigeur, mise à jour seulement par les Cloud Functions (sinon chacun
       // pourrait se donner 5 étoiles).
       // stripeCustomerId, carte, carteMiseAJourAt : la carte du client,
@@ -28,7 +28,7 @@ service cloud.firestore {
       // telephoneVerifie, telephoneVerifieAt : écrits par verifierCodeTelephone
       // après le code reçu par texto (functions/src/telephone.js).
       return ['consents', 'proSubscription', 'ville', 'villeGeoId', 'stripeConnectAccountId', 'connectStatus',
-              'ratingAvg', 'ratingCount', 'nbJobsCompletees', 'stripeCustomerId', 'carte', 'carteMiseAJourAt',
+              'ratingAvg', 'ratingCount', 'ratingCriteres', 'nbJobsCompletees', 'stripeCustomerId', 'carte', 'carteMiseAJourAt',
               'telephoneVerifie', 'telephoneVerifieAt', 'stripeMode'];
     }
 

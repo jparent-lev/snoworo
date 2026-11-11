@@ -175,7 +175,7 @@ await test("accepter : 50 $ prélevés hors session sur la carte du client, paie
 });
 await test("confirmer : 44 $ virés au compte du déneigeur, liés au prélèvement", async () => {
   await appel(f.marquerFaite, "payDen", { demandeId: id, photos });
-  await appel(f.confirmerJob, "payClient", { demandeId: id });
+  await appel(f.confirmerJob, "payClient", { demandeId: id, notes: { ponctualite: 5, communication: 5, qualite: 5 } });
   const [tr] = derniers("transfers.create");
   assert.equal(tr.params.amount, 4400); assert.equal(tr.params.destination, "acct_den");
   assert.equal(tr.params.source_transaction, "ch_1"); assert.equal(tr.options.idempotencyKey, `versement-${id}`);
@@ -218,7 +218,7 @@ await test("virement en échec : reste « a_verser », réessayé par la tâche 
   await appel(f.marquerFaite, "payDen", { demandeId, photos });
   const creer = fauxStripe.transfers.create;
   fauxStripe.transfers.create = async () => { throw new Error("Stripe indisponible"); };
-  await appel(f.confirmerJob, "payClient", { demandeId });
+  await appel(f.confirmerJob, "payClient", { demandeId, notes: { ponctualite: 5, communication: 5, qualite: 5 } });
   let d = await lire(demandeId);
   assert.equal(d.paiement.statutPaiement, "a_verser"); assert.equal(d.paiement.erreurVersement, "Stripe indisponible");
   fauxStripe.transfers.create = creer;

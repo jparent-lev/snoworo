@@ -139,8 +139,7 @@ function RangHistorique({ demande: d, evaluable }) {
           titre={`Évaluer ${d.deneigeurPrenom}`}
           prenom={d.deneigeurPrenom}
           libelleEnvoyer="Envoyer"
-          noteRequise
-          onEnvoyer={({ note, commentaire }) => evaluerJob({ demandeId: d.id, note, commentaire })}
+          onEnvoyer={({ notes, commentaire }) => evaluerJob({ demandeId: d.id, notes, commentaire })}
           onFermer={() => setEvaluer(false)}
         />
       )}
@@ -308,12 +307,10 @@ function CarteDemandeClient({ demande: d, nouveau, conversationOuverte, onConver
       {modale === "confirmer" && (
         <ModaleEvaluation
           titre="Confirmer la demande ?"
-          intro={`Le paiement de ${formatArgent(d.remunerationOfferte)} sera versé à ${d.deneigeurPrenom}. Si quelque chose ne va pas, signalez plutôt un problème.`}
+          intro={`Notez d'abord ${d.deneigeurPrenom} sur trois critères. Le paiement de ${formatArgent(d.remunerationOfferte)} lui sera ensuite versé. Si quelque chose ne va pas, signalez plutôt un problème.`}
           prenom={d.deneigeurPrenom}
-          libelleEnvoyer="Confirmer"
-          onEnvoyer={({ note, commentaire }) =>
-            confirmerJob(note ? { demandeId: d.id, note, commentaire } : { demandeId: d.id })
-          }
+          libelleEnvoyer="Confirmer et verser le paiement"
+          onEnvoyer={({ notes, commentaire }) => confirmerJob({ demandeId: d.id, notes, commentaire })}
           onFermer={() => setModale(null)}
         />
       )}
