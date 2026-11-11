@@ -102,12 +102,14 @@
   transition: transform 160ms ease-out, box-shadow 160ms ease-out;
 }
 
-.video-vedette img {
+.video-vedette img,
+.video-vedette__boucle {
   display: block;
   width: 100%;
   height: auto;
   aspect-ratio: 16 / 9;
   object-fit: cover;
+  pointer-events: none;
 }
 
 .video-vedette:hover {

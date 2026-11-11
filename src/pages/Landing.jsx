@@ -5,7 +5,6 @@ import SnowroSymbol from "../components/brand/SnowroSymbol";
 import PiedDePage from "../components/PiedDePage";
 import FeeCalculator from "./landing/FeeCalculator";
 import FaqAccordion from "./landing/FaqAccordion";
-import HeroIllustration from "./landing/HeroIllustration";
 import ApercuTableau from "./landing/ApercuTableau";
 import ParcoursDemande from "./landing/ParcoursDemande";
 import VillesPubliques from "./landing/VillesPubliques";
@@ -130,11 +129,8 @@ export default function Landing() {
           </p>
         </div>
 
-        {/* La vidéo en vedette, l'illustration animée en arrière-plan. */}
+        {/* La vidéo en vedette : une boucle muette, la lecture complète au clic. */}
         <div className="landing__hero-phone-wrap landing__hero-scene">
-          <div className="landing__hero-fond">
-            <HeroIllustration />
-          </div>
           <VideoSnowro video="enBref" libelle="Voir Snowro en 30 secondes" vedette className="landing__hero-video" />
         </div>
       </section>
