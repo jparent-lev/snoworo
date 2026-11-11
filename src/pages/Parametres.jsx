@@ -417,7 +417,7 @@ function SectionFermeture() {
       <h2>Fermer mon compte</h2>
       <p>
         Vos renseignements sont effacés ou rendus anonymes, sauf le registre des paiements que la loi nous oblige à
-        conserver 6 ans. Impossible tant qu'une demande est en cours.
+        conserver 6 ans. Impossible tant qu'une demande est en cours ou qu'un paiement n'est pas terminé.
       </p>
       <button type="button" className="btn btn--fantome parametres__bouton-fermer" onClick={() => setOuverte(true)}>
         Fermer mon compte
