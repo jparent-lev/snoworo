@@ -280,20 +280,20 @@ export default function Landing() {
               <div className="landing__revenus-lignes">
                 <div className="landing__revenu-ligne">
                   <span>Mardi : 3 entrées</span>
-                  <span className="landing__revenu-montant">110 $</span>
+                  <span className="landing__revenu-montant">95 $</span>
                 </div>
                 <div className="landing__revenu-ligne">
                   <span>Jeudi : 1 stationnement</span>
-                  <span className="landing__revenu-montant">55 $</span>
+                  <span className="landing__revenu-montant">49 $</span>
                 </div>
                 <div className="landing__revenu-ligne landing__revenu-ligne--dernier">
                   <span>Samedi : 4 entrées</span>
-                  <span className="landing__revenu-montant">145 $</span>
+                  <span className="landing__revenu-montant">130 $</span>
                 </div>
               </div>
               <div className="landing__revenu-total">
                 <span>Dans votre compte</span>
-                <span className="landing__revenu-total-montant">282 $</span>
+                <span className="landing__revenu-total-montant">274 $</span>
               </div>
               <span className="landing__revenu-note">Exemple d'une semaine de tempête à Limoilou, frais déjà déduits.</span>
             </div>
