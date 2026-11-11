@@ -128,11 +128,14 @@ export default function Landing() {
           <p className="landing__hero-mention">
             Inscription gratuite. Rien n'est prélevé avant qu'un déneigeur de quartier accepte votre demande.
           </p>
-          <VideoSnowro video="enBref" libelle="Voir Snowro en 30 secondes" className="landing__video" />
         </div>
 
-        <div className="landing__hero-phone-wrap">
-          <HeroIllustration />
+        {/* La vidéo en vedette, l'illustration animée en arrière-plan. */}
+        <div className="landing__hero-phone-wrap landing__hero-scene">
+          <div className="landing__hero-fond">
+            <HeroIllustration />
+          </div>
+          <VideoSnowro video="enBref" libelle="Voir Snowro en 30 secondes" vedette className="landing__hero-video" />
         </div>
       </section>
         <BancDeNeige />
@@ -142,9 +145,6 @@ export default function Landing() {
       <section id="comment" className="landing__section">
         <h2 className="landing__h2 landing__h2--centre">Trois étapes simples, de la demande au travail terminé</h2>
         <p className="landing__chapeau landing__chapeau--centre">Publiez votre demande, un déneigeur de quartier l'accepte, et vous confirmez le travail : simple, rapide, sans engagement.</p>
-        <div className="landing__video-centre">
-          <VideoSnowro video="faireDeneiger" libelle="Voir une demande, du début à la fin" />
-        </div>
         <div className="landing__etapes-grille">
           {[
             {

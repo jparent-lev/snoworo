@@ -11,7 +11,7 @@ import { formatArgent } from "../../lib/formatArgent";
 import { decoderGeohash, distanceMetres } from "../../lib/geo";
 import { dateCourte, debutSemaine, echeance, estAujourdhui, heure, ilYa, millis } from "../../lib/temps";
 import Rangee from "../../components/Rangee";
-import { CRITERES, Modale, ModaleSignalement, noteTexte } from "./elements";
+import { CRITERES, EncartVideo, Modale, ModaleSignalement, noteTexte } from "./elements";
 import Conversation, { BoutonMessages } from "./Conversation";
 import "./Tableau.css";
 import { messageServeur } from "../../lib/erreurs";
@@ -167,6 +167,15 @@ export default function TableauDeneigeur({ conversation, onConversationFermee })
           )}
         </div>
       </div>
+
+      {jobs?.length === 0 && (
+        <EncartVideo
+          video="deneiger"
+          titre="Votre premier déneigement ?"
+          texte="Voyez en 30 secondes comment choisir une demande, faire le travail et recevoir votre versement."
+          libelle="Voir comment on déneige avec Snowro"
+        />
+      )}
 
       {jobs && (
         <Rangee
