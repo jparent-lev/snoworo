@@ -13,52 +13,56 @@ import NousEcrire from "./pages/NousEcrire";
 import ConfirmerListe from "./pages/ConfirmerListe";
 import CreditImpot from "./pages/creditImpot/CreditImpot";
 import ApercuPartage from "./pages/ApercuPartage";
+import BandeauMesure from "./components/BandeauMesure";
 
 const PAGE_CREDIT_IMPOT = import.meta.env.VITE_PAGE_CREDIT_IMPOT === "1";
 
 export default function App() {
   return (
-    <Routes>
-      <Route path="/" element={<Landing />} />
-      <Route path="/connexion" element={<Login />} />
-      <Route path="/inscription" element={<Signup />} />
-      <Route path="/confidentialite" element={<Confidentialite />} />
-      <Route path="/conditions" element={<Conditions />} />
-      <Route path="/nous-ecrire" element={<NousEcrire />} />
-      <Route path="/liste/confirmer" element={<ConfirmerListe />} />
-      {/* Sur le test seulement (VITE_PAGE_CREDIT_IMPOT, .env.test) ; ailleurs, retour à l'accueil. */}
-      <Route path="/credit-impot" element={PAGE_CREDIT_IMPOT ? <CreditImpot /> : <Navigate to="/" replace />} />
-      {/* Gabarit de l'image d'aperçu partagée (og-snowro.png), en développement seulement. */}
-      {import.meta.env.DEV && <Route path="/apercu-partage" element={<ApercuPartage />} />}
+    <>
+      <BandeauMesure />
+      <Routes>
+        <Route path="/" element={<Landing />} />
+        <Route path="/connexion" element={<Login />} />
+        <Route path="/inscription" element={<Signup />} />
+        <Route path="/confidentialite" element={<Confidentialite />} />
+        <Route path="/conditions" element={<Conditions />} />
+        <Route path="/nous-ecrire" element={<NousEcrire />} />
+        <Route path="/liste/confirmer" element={<ConfirmerListe />} />
+        {/* Sur le test seulement (VITE_PAGE_CREDIT_IMPOT, .env.test) ; ailleurs, retour à l'accueil. */}
+        <Route path="/credit-impot" element={PAGE_CREDIT_IMPOT ? <CreditImpot /> : <Navigate to="/" replace />} />
+        {/* Gabarit de l'image d'aperçu partagée (og-snowro.png), en développement seulement. */}
+        {import.meta.env.DEV && <Route path="/apercu-partage" element={<ApercuPartage />} />}
 
-      <Route element={<Layout />}>
-        <Route
-          path="/tableau-de-bord"
-          element={
-            <RequireAuth>
-              <TableauDeBord />
-            </RequireAuth>
-          }
-        />
-        {/* Ancienne adresse, gardée pour les favoris et les liens déjà partagés. */}
-        <Route path="/demandes" element={<Navigate to="/tableau-de-bord" replace />} />
-        <Route
-          path="/publier"
-          element={
-            <RequireAuth>
-              <PublierDemande />
-            </RequireAuth>
-          }
-        />
-        <Route
-          path="/parametres"
-          element={
-            <RequireAuth>
-              <Parametres />
-            </RequireAuth>
-          }
-        />
-      </Route>
-    </Routes>
+        <Route element={<Layout />}>
+          <Route
+            path="/tableau-de-bord"
+            element={
+              <RequireAuth>
+                <TableauDeBord />
+              </RequireAuth>
+            }
+          />
+          {/* Ancienne adresse, gardée pour les favoris et les liens déjà partagés. */}
+          <Route path="/demandes" element={<Navigate to="/tableau-de-bord" replace />} />
+          <Route
+            path="/publier"
+            element={
+              <RequireAuth>
+                <PublierDemande />
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/parametres"
+            element={
+              <RequireAuth>
+                <Parametres />
+              </RequireAuth>
+            }
+          />
+        </Route>
+      </Routes>
+    </>
   );
 }

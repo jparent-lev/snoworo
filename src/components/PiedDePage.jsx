@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import SnowroSymbol from "./brand/SnowroSymbol";
 import VersionFooter from "./VersionFooter";
+import LienTemoins from "./LienTemoins";
 import { SilhouetteToits } from "../pages/landing/Decors";
 import "./PiedDePage.css";
 
@@ -32,6 +33,7 @@ export default function PiedDePage() {
           <Link to="/confidentialite">Confidentialité</Link>
           <Link to="/conditions">Conditions</Link>
           <Link to="/nous-ecrire">Nous écrire</Link>
+          <LienTemoins />
         </div>
       </div>
       <div className="pied__barre">

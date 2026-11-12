@@ -15,6 +15,7 @@ import { CRITERES, EncartVideo, Modale, ModaleSignalement, noteTexte } from "./e
 import Conversation, { BoutonMessages } from "./Conversation";
 import "./Tableau.css";
 import { messageServeur } from "../../lib/erreurs";
+import { mesurer } from "../../lib/mesure";
 
 const FILTRES_JOBS = [
   { cle: "en_cours", libelle: "En cours", statuts: ["matchee", "faite"] },
@@ -237,6 +238,7 @@ function CarteJob({ job: j, nouveau, conversationOuverte, onConversationFermee }
     setErreur(null);
     try {
       await marquerFaite({ demandeId: j.id, photos });
+      mesurer("travail_fait", { photos: photos.length });
     } catch (err) {
       setErreur(messageErreur(err));
     } finally {
@@ -460,6 +462,7 @@ function CarteDemandeOuverte({ demande: d, frais, compteActif }) {
     setErreur(null);
     try {
       await accepterDemande({ demandeId: d.id });
+      mesurer("demande_acceptee", { type_service: d.typeService, value: d.remunerationOfferte, currency: "CAD" });
       // La carte disparaît d'elle-même de la liste (plus « ouverte ») et
       // réapparaît dans « Mes demandes acceptées ».
     } catch (err) {

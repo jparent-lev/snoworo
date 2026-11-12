@@ -1,4 +1,5 @@
 import { Link, Outlet } from "react-router-dom";
+import LienTemoins from "./LienTemoins";
 import { signOut } from "firebase/auth";
 import { auth } from "../lib/firebase";
 import { useAuth } from "../context/AuthContext";
@@ -63,6 +64,7 @@ export default function Layout() {
           <Link to="/nous-ecrire">Nous écrire</Link>
           <Link to="/confidentialite">Confidentialité</Link>
           <Link to="/conditions">Conditions</Link>
+          <LienTemoins />
         </nav>
         <VersionFooter />
       </footer>

@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
+import { mesurer } from "../lib/mesure";
 import "./VideoSnowro.css";
 
 // Les quatre vidéos de présentation (public/videos/) : MP4 web, image
@@ -54,11 +55,15 @@ function Boucle({ fichier }) {
 export default function VideoSnowro({ video, libelle, sombre = false, vedette = false, className = "" }) {
   const [ouvert, setOuvert] = useState(false);
   const v = VIDEOS[video];
+  const ouvrir = () => {
+    setOuvert(true);
+    mesurer("video_ouverte", { video_title: v.titre, emplacement: vedette ? "vedette" : "vignette" });
+  };
   const lecteur = ouvert && <LecteurVideo v={v} onFermer={() => setOuvert(false)} />;
   if (vedette) {
     return (
       <>
-        <button type="button" className={`video-vedette ${className}`} onClick={() => setOuvert(true)}>
+        <button type="button" className={`video-vedette ${className}`} onClick={ouvrir}>
           {v.boucle && !animationsReduites() ? (
             <Boucle fichier={v.fichier} />
           ) : (
@@ -83,7 +88,7 @@ export default function VideoSnowro({ video, libelle, sombre = false, vedette = 
       <button
         type="button"
         className={`video-lien ${sombre ? "video-lien--sombre" : ""} ${className}`}
-        onClick={() => setOuvert(true)}
+        onClick={ouvrir}
       >
         <span className="video-lien__vignette" aria-hidden="true">
           <img src={`/videos/${v.fichier}.jpg`} alt="" loading="lazy" width="128" height="72" />
@@ -105,6 +110,7 @@ function LecteurVideo({ v, onFermer }) {
   const boite = useRef(null);
   const lecteur = useRef(null);
   const fermer = useRef(onFermer);
+  const suivi = useRef({});
   fermer.current = onFermer;
 
   useEffect(() => {
@@ -141,6 +147,23 @@ function LecteurVideo({ v, onFermer }) {
           controls
           playsInline
           preload="metadata"
+          onPlay={() => {
+            if (suivi.current.debut) return;
+            suivi.current.debut = true;
+            mesurer("video_start", { video_title: v.titre });
+          }}
+          onTimeUpdate={(e) => {
+            const { currentTime, duration } = e.currentTarget;
+            if (!duration) return;
+            const pct = (currentTime / duration) * 100;
+            for (const palier of [25, 50, 75]) {
+              if (pct >= palier && !suivi.current[palier]) {
+                suivi.current[palier] = true;
+                mesurer("video_progress", { video_title: v.titre, video_percent: palier });
+              }
+            }
+          }}
+          onEnded={() => mesurer("video_complete", { video_title: v.titre })}
         >
           <track kind="captions" srcLang="fr" label="Français" src={`/videos/${v.fichier}.fr.vtt`} />
         </video>

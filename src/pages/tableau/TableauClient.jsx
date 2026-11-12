@@ -12,6 +12,7 @@ import Rangee from "../../components/Rangee";
 import { EncartVideo, Etapes, Modale, ModaleEvaluation, ModalePhoto, ModaleSignalement, Personne } from "./elements";
 import Conversation, { BoutonMessages } from "./Conversation";
 import "./Tableau.css";
+import { mesurer } from "../../lib/mesure";
 
 const FILTRES = [
   { cle: "en_cours", libelle: "En cours", statuts: ["paiement_refuse", "faite", "matchee", "ouverte", "signalee"] },
@@ -319,7 +320,11 @@ function CarteDemandeClient({ demande: d, nouveau, conversationOuverte, onConver
           intro={`Notez d'abord ${d.deneigeurPrenom} sur trois critères. Le paiement de ${formatArgent(d.remunerationOfferte)} lui sera ensuite versé. Si quelque chose ne va pas, signalez plutôt un problème.`}
           prenom={d.deneigeurPrenom}
           libelleEnvoyer="Confirmer et verser le paiement"
-          onEnvoyer={({ notes, commentaire }) => confirmerJob({ demandeId: d.id, notes, commentaire })}
+          onEnvoyer={async ({ notes, commentaire }) => {
+            const r = await confirmerJob({ demandeId: d.id, notes, commentaire });
+            mesurer("demande_confirmee", { value: d.remunerationOfferte, currency: "CAD" });
+            return r;
+          }}
           onFermer={() => setModale(null)}
         />
       )}

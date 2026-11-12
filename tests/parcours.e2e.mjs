@@ -72,6 +72,15 @@ console.log("Données de test en place");
 const serveur = spawn("npx", ["vite", "preview", "--port", "4190", "--strictPort"], { cwd: REPO, stdio: "ignore" });
 await new Promise((r) => setTimeout(r, 3000));
 const b = await chromium.launch(process.env.CHROMIUM_PATH ? { executablePath: process.env.CHROMIUM_PATH } : {});
+// Le build de test a un identifiant de mesure fictif : chaque contexte part
+// avec « Refuser » déjà choisi (pas de bandeau), sauf celui du test de mesure.
+const nouveauContexte = b.newContext.bind(b);
+b.newContext = async (options = {}) => {
+  const { mesure, ...reste } = options;
+  const c = await nouveauContexte(reste);
+  if (!mesure) await c.addInitScript(() => localStorage.setItem("snowro-mesure", JSON.stringify({ choix: "refuse", version: 1 })));
+  return c;
+};
 let ok = 0;
 let pageCourante = null;
 const test = async (nom, fn) => {
@@ -610,6 +619,51 @@ async function connexion(cle, largeur = 1280) {
     await pb.screenshot({ path: `${D}/e2e-credit-1280.png`, fullPage: true });
   });
   await bureau.close();
+}
+
+// Mesure d'audience (Loi 25) : rien avant « Accepter », adresse nettoyée, retrait.
+{
+  const ctx = await b.newContext({ viewport: { width: 390, height: 844 }, mesure: true });
+  const p = await ctx.newPage();
+  pageCourante = p;
+  const requetes = [];
+  await ctx.route(/google(tagmanager|-analytics)\.com/, (r) => {
+    requetes.push(r.request().url());
+    r.fulfill({ status: 200, contentType: "text/javascript", body: "" });
+  });
+  const bandeau = p.getByRole("region", { name: "Mesure d'audience" });
+  await test("mesure : bandeau au premier passage, rien de chargé ; « Refuser » est retenu", async () => {
+    await p.goto("http://localhost:4190/?utm_source=instagram&utm_campaign=lancement&c=zoe%40test.ca");
+    await bandeau.waitFor();
+    await p.screenshot({ path: `${D}/e2e-bandeau-mesure-390.png` });
+    assert.equal(requetes.length, 0, "aucune requête Google avant le choix");
+    assert.equal(await p.evaluate(() => !!window.dataLayer), false);
+    await bandeau.getByRole("button", { name: "Refuser" }).click();
+    await bandeau.waitFor({ state: "detached" });
+    await p.reload();
+    await p.locator(".landing__hero").waitFor();
+    assert.equal(await bandeau.count(), 0);
+    assert.equal(requetes.length, 0, "aucune requête Google après un refus");
+  });
+  await test("mesure : « Accepter » par le lien Témoins charge GA, sans courriel dans l'adresse ; retrait possible", async () => {
+    await p.getByRole("button", { name: "Témoins" }).click();
+    await bandeau.getByRole("button", { name: "Accepter" }).click();
+    await p.waitForFunction(() => document.querySelector('script[src*="googletagmanager.com/gtag/js?id=G-TEST000000"]'));
+    const vue = await p.evaluate(() => [...window.dataLayer].map((a) => [...a]).find((a) => a[0] === "event" && a[1] === "page_view")?.[2]);
+    assert.ok(vue.page_location.includes("utm_source=instagram"), vue.page_location);
+    assert.ok(!/zoe|%40|@/.test(vue.page_location), vue.page_location);
+    const config = await p.evaluate(() => [...window.dataLayer].map((a) => [...a]).find((a) => a[0] === "consent")?.[2]);
+    assert.equal(config.ad_storage, "denied");
+    await p.getByRole("link", { name: "Créer un compte" }).first().click();
+    await p.waitForURL("**/inscription");
+    const evenements = await p.evaluate(() => [...window.dataLayer].map((a) => [...a]).filter((a) => a[0] === "event").map((a) => a[1]));
+    assert.ok(evenements.includes("cta_clic") && evenements.filter((e) => e === "page_view").length >= 2, evenements.join(","));
+    await p.goBack();
+    await p.getByRole("button", { name: "Témoins" }).click();
+    await bandeau.getByRole("button", { name: "Refuser" }).click();
+    assert.equal(await p.evaluate(() => window["ga-disable-G-TEST000000"]), true);
+  });
+  await ctx.close();
 }
 
 await b.close();
