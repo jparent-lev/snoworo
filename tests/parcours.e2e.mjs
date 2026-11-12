@@ -66,6 +66,8 @@ for (const [id, d] of Object.entries(demandes)) {
   await db.doc(`demandes/${id}`).set(pub);
   await db.doc(`demandes/${id}/prive/adresse`).set({ adresse });
 }
+// D1 est chez la mère de Paul : le déneigeur voit qui sera sur place.
+await db.doc("demandes/D1/prive/adresse").set({ lien: "proche", personneSurPlace: "Ginette" }, { merge: true });
 console.log("Données de test en place");
 
 // ---- Navigateur ----
@@ -146,6 +148,7 @@ async function connexion(cle, largeur = 1280) {
     await carteD1(p).getByRole("button", { name: "Je prends la demande" }).click();
     await p.getByRole("button", { name: "Je m'engage" }).click();
     await p.getByText("1234, 3e Avenue, Québec").waitFor({ timeout: 15000 });
+    await p.locator(".carte-job", { hasText: "1234, 3e Avenue" }).getByText("Sur place : Ginette").waitFor();
     const d = (await db.doc("demandes/D1").get()).data();
     assert.equal(d.statut, "matchee"); assert.equal(d.deneigeurId, uid.marc); assert.equal(d.paiement.montantDeneigeur, 39.4);
     const itineraire = p.locator(".carte-job", { hasText: "1234, 3e Avenue" }).getByRole("link", { name: "Itinéraire" });
@@ -658,6 +661,73 @@ async function connexion(cle, largeur = 1280) {
     await p.getByText("annulée (retard du déneigeur), remboursée").waitFor();
     const d = (await db.doc("demandes/M9").get()).data();
     assert.equal(d.statut, "annulee"); assert.equal(d.annulation.par, "client"); assert.equal(d.paiement.statutPaiement, "simule_rembourse");
+  });
+  await ctx.close();
+}
+
+// Carnet d'adresses : ajout formel (lien + attestation), puis choix à la
+// publication. Géocodage et publication simulés (pas de clé Google ici).
+{
+  const { p, ctx } = await connexion("mireille", 390);
+  const ajouts = [];
+  const publications = [];
+  await p.route("**/suggererAdresses", (r) => r.fulfill({ json: { result: { suggestions: [
+    { placeId: "ChIJ_parents", principal: "42 Rue des Érables", secondaire: "Québec, QC, Canada" },
+  ] } } }));
+  await p.route("**/ajouterAdresse", async (r) => {
+    const data = r.request().postDataJSON().data;
+    ajouts.push(data);
+    await db.collection(`users/${uid.mireille}/adresses`).add({
+      nom: data.nom, lien: data.lien, personneSurPlace: data.personneSurPlace, adresse: "42 Rue des Érables, Québec, QC G1L 1A1",
+      attestation: { version: 1, at: Timestamp.now() }, createdAt: Timestamp.now(),
+    });
+    return r.fulfill({ json: { result: { adresseId: "x", adresse: "42 Rue des Érables", ville: "Québec" } } });
+  });
+  await p.route("**/publierDemande", (r) => {
+    publications.push(r.request().postDataJSON().data);
+    return r.fulfill({ json: { result: { demandeId: "nouvelle", ville: "Québec", adresse: "42 Rue des Érables" } } });
+  });
+  await test("Mireille : ajoute « Parents » à ses adresses ; lien et attestation exigés", async () => {
+    await p.goto("http://localhost:4190/parametres#adresses");
+    await p.getByRole("heading", { name: "Mes adresses" }).waitFor();
+    await p.getByText("Aucune adresse enregistrée").waitFor();
+    await p.getByRole("button", { name: "Ajouter une adresse" }).click();
+    await p.getByLabel("Nom").fill("Parents");
+    await p.getByRole("combobox").fill("42 rue des Éra");
+    await p.getByRole("option", { name: /42 Rue des Érables/ }).click();
+    await p.getByRole("button", { name: "Ajouter cette adresse" }).click();
+    await p.getByText("Indiquez si c'est chez vous ou chez un proche.").waitFor();
+    await p.getByLabel("Chez un proche").check();
+    await p.getByLabel("Prénom de la personne sur place (facultatif)").fill("Ginette");
+    await p.getByRole("button", { name: "Ajouter cette adresse" }).click();
+    await p.getByText("Confirmez que vous avez l'autorisation de faire déneiger cette adresse.").waitFor();
+    assert.equal(ajouts.length, 0);
+    await p.getByLabel(/Cette adresse est chez moi, ou chez une personne/).check();
+    assert.equal(await p.evaluate(() => document.documentElement.scrollWidth), 390);
+    await p.screenshot({ path: `${D}/e2e-carnet-ajout-390.png`, fullPage: true });
+    await p.getByRole("button", { name: "Ajouter cette adresse" }).click();
+    await p.locator(".statut-connect", { hasText: "Chez un proche · Ginette sur place" }).waitFor();
+    assert.deepEqual(ajouts, [{ nom: "Parents", placeId: "ChIJ_parents", unite: "", lien: "proche", personneSurPlace: "Ginette", attestation: true }]);
+    await p.screenshot({ path: `${D}/e2e-carnet-390.png`, fullPage: true });
+  });
+  await test("Mireille : publie à « Parents » depuis le carnet ; « Une autre adresse… » demande le lien et l'attestation", async () => {
+    await p.goto("http://localhost:4190/publier");
+    const choix = p.getByLabel("Adresse à déneiger");
+    await choix.waitFor();
+    assert.match(await choix.locator("option:checked").textContent(), /^Parents · 42 Rue des Érables/);
+    await p.getByText(/Chez un proche · Ginette sur place\. Montrée seulement/).waitFor();
+    assert.equal(await p.locator("input[role=combobox]").count(), 0, "pas de saisie avec une adresse du carnet");
+    await choix.selectOption("autre");
+    await p.getByText("À qui est cette adresse?").waitFor();
+    await p.getByRole("checkbox", { name: "Enregistrer dans mes adresses" }).waitFor();
+    await p.screenshot({ path: `${D}/e2e-publier-autre-390.png`, fullPage: true });
+    await choix.selectOption({ label: "Parents · 42 Rue des Érables, Québec, QC G1L 1A1" });
+    await p.getByRole("button", { name: "Publier la demande" }).click();
+    await p.waitForURL("**/tableau-de-bord");
+    assert.equal(publications.length, 1);
+    assert.ok(publications[0].adresseId, "adresseId envoyé");
+    assert.equal(publications[0].attestation, undefined);
+    assert.equal(publications[0].placeId, undefined);
   });
   await ctx.close();
 }

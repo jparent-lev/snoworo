@@ -100,7 +100,7 @@ await db.doc("users/payClient").set({ displayName: "Sophie Roy", email: "sophie@
 await db.doc("users/payDen").set({ displayName: "Éric Pelletier", email: "eric@exemple.ca", role: ["deneigeur_x"], villeGeoId: "ID_QUEBEC", connectStatus: "non_demarre" });
 const demain = new Date(Date.now() + 24 * 3600e3).toISOString();
 const photos = ["data:image/jpeg;base64," + Buffer.from([0xff, 0xd8, 0xff, 0xd9]).toString("base64")];
-const base = { adresse: "10, 4e Avenue, Québec", titre: "Entrée simple", typeService: "entree", montant: 50, dateHeureSouhaitee: demain };
+const base = { adresse: "10, 4e Avenue, Québec", lien: "moi", attestation: true, titre: "Entrée simple", typeService: "entree", montant: 50, dateHeureSouhaitee: demain };
 
 console.log("Paiements Stripe (faux Stripe)");
 await test("publier : refusé sans carte enregistrée", async () => {

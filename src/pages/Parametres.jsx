@@ -4,7 +4,7 @@ import { doc, setDoc } from "firebase/firestore";
 import { signOut } from "firebase/auth";
 import { auth, db } from "../lib/firebase";
 import { ChoixRoles, Modale } from "./tableau/elements";
-import { ROLE_DENEIGEUR } from "../lib/mode";
+import { ROLE_CLIENT, ROLE_DENEIGEUR } from "../lib/mode";
 import "./tableau/Tableau.css";
 import { useAuth } from "../context/AuthContext";
 import { grantConsent, revokeConsent } from "../lib/consents";
@@ -23,6 +23,8 @@ import CarteDePaiement from "../components/CarteDePaiement";
 import { fermerCompte, messageFermeture } from "../lib/compte";
 import { envoyerCodeTelephone, formaterNumero, messageTelephone, retirerTelephone, verifierCodeTelephone } from "../lib/telephone";
 import ChampAdresse from "../components/ChampAdresse";
+import LieuAdresse from "../components/LieuAdresse";
+import { LIEU_VIDE, ajouterAdresse, ecouterCarnet, erreurLieu, libelleLien, supprimerAdresse } from "../lib/carnet";
 import "./Parametres.css";
 import { messageServeur } from "../lib/erreurs";
 
@@ -257,6 +259,8 @@ export default function Parametres() {
 
         </>
       )}
+
+      {roles.includes(ROLE_CLIENT) && <SectionCarnet uid={user.uid} />}
 
       {PAIEMENT_REEL && <SectionPaiement profile={profile} deneigeur={roles.includes(ROLE_DENEIGEUR)} />}
 
@@ -517,6 +521,167 @@ function SectionFermeture() {
         </Modale>
       )}
     </div>
+  );
+}
+
+// « Mes adresses » (client) : chez soi, chez ses parents, chez des amis…
+// Chaque ajout est formel : adresse vérifiée (numéro civique), lien et
+// attestation d'autorisation datée (functions/src/carnet.js).
+function SectionCarnet({ uid }) {
+  const [adresses, setAdresses] = useState(null);
+  const [ajout, setAjout] = useState(false);
+  const [nom, setNom] = useState("");
+  const [adresse, setAdresse] = useState(ADRESSE_VIDE);
+  const [adresseManuelle, setAdresseManuelle] = useState(false);
+  const [unite, setUnite] = useState("");
+  const [lieu, setLieu] = useState(LIEU_VIDE);
+  const [enCours, setEnCours] = useState(false);
+  const [erreur, setErreur] = useState(null);
+  const [aRetirer, setARetirer] = useState(null);
+
+  useEffect(() => ecouterCarnet(uid, setAdresses), [uid]);
+
+  function fermer() {
+    setAjout(false);
+    setNom("");
+    setAdresse(ADRESSE_VIDE);
+    setUnite("");
+    setLieu(LIEU_VIDE);
+    setErreur(null);
+  }
+
+  async function enregistrer(e) {
+    e.preventDefault();
+    setErreur(null);
+    const manque = !nom.trim()
+      ? "Donnez un nom à cette adresse, par exemple « Maison » ou « Parents »."
+      : !adresse.placeId && (!adresseManuelle || adresse.texte.trim().length < 8)
+        ? adresseManuelle
+          ? "Écrivez l'adresse au complet, avec le numéro civique."
+          : "Choisissez l'adresse dans la liste des suggestions."
+        : erreurLieu(lieu);
+    if (manque) return setErreur(manque);
+    setEnCours(true);
+    try {
+      await ajouterAdresse({
+        nom: nom.trim(),
+        ...(adresse.placeId ? { placeId: adresse.placeId } : { adresse: adresse.texte.trim() }),
+        unite: unite.trim(),
+        lien: lieu.lien,
+        personneSurPlace: lieu.personneSurPlace.trim(),
+        attestation: lieu.attestation,
+      });
+      fermer();
+    } catch (err) {
+      setErreur(messageErreur(err));
+    } finally {
+      setEnCours(false);
+    }
+  }
+
+  async function retirer() {
+    const a = aRetirer;
+    setARetirer(null);
+    try {
+      await supprimerAdresse({ adresseId: a.id });
+    } catch (err) {
+      setErreur(messageErreur(err));
+    }
+  }
+
+  return (
+    <>
+      <h1 id="adresses">Mes adresses</h1>
+      <p className="parametres__intro">
+        Les adresses où vous faites déneiger : chez vous, chez vos parents, chez des amis. Choisissez-en une en
+        publiant une demande. L'adresse exacte est montrée seulement au déneigeur qui accepte.
+      </p>
+
+      <div className="parametres__liste">
+        {adresses?.map((a) => (
+          <div key={a.id} className="parametres__item">
+            <div className="parametres__item-texte">
+              <h3>{a.nom}</h3>
+              <p>{a.adresse}</p>
+              <Pastille ton="ok">{libelleLien(a)}</Pastille>
+              {a.attestation?.at && <p className="parametres__meta">{dateConsentement("Autorisation attestée", a.attestation.at)}</p>}
+            </div>
+            <button type="button" className="btn btn--lien" onClick={() => setARetirer(a)} style={{ flex: "none" }}>
+              Retirer
+            </button>
+          </div>
+        ))}
+        {adresses?.length === 0 && !ajout && (
+          <div className="parametres__item">
+            <div className="parametres__item-texte">
+              <h3>Aucune adresse enregistrée</h3>
+              <p>Vous pouvez aussi entrer l'adresse à chaque demande.</p>
+            </div>
+          </div>
+        )}
+
+        {ajout ? (
+          <form className="parametres__item parametres__carnet-ajout" onSubmit={enregistrer} noValidate>
+            <h3>Nouvelle adresse</h3>
+            <label className="auth-form__champ">
+              Nom
+              <input value={nom} onChange={(e) => setNom(e.target.value)} placeholder="Ex. Maison, Parents, Chalet de Luc" maxLength={40} disabled={enCours} />
+            </label>
+            <div className="auth-form__champ">
+              <span>Adresse</span>
+              <ChampAdresse
+                valeur={adresse}
+                onChange={setAdresse}
+                manuel={adresseManuelle}
+                onManuel={(m) => {
+                  setAdresseManuelle(m);
+                  setAdresse(ADRESSE_VIDE);
+                }}
+                disabled={enCours}
+              />
+            </div>
+            <label className="auth-form__champ">
+              Appartement ou logement (facultatif)
+              <input value={unite} onChange={(e) => setUnite(e.target.value)} placeholder="Ex. 3, ou 1234-B" maxLength={20} disabled={enCours} />
+            </label>
+            <LieuAdresse valeur={lieu} onChange={(v) => { setLieu(v); setErreur(null); }} disabled={enCours} />
+            {erreur && <p className="message-erreur" role="alert">{erreur}</p>}
+            <div className="parametres__carnet-actions">
+              <button type="submit" className="auth-form__bouton" disabled={enCours}>
+                {enCours ? "Vérification…" : "Ajouter cette adresse"}
+              </button>
+              <button type="button" className="btn btn--lien" onClick={fermer} disabled={enCours}>
+                Annuler
+              </button>
+            </div>
+          </form>
+        ) : (
+          <>
+            {erreur && <p className="message-erreur" role="alert">{erreur}</p>}
+            <button type="button" className="btn btn--fantome parametres__carnet-bouton" onClick={() => setAjout(true)}>
+              Ajouter une adresse
+            </button>
+          </>
+        )}
+      </div>
+
+      {aRetirer && (
+        <Modale titre="Retirer cette adresse?" onFermer={() => setARetirer(null)}>
+          <p>
+            « {aRetirer.nom} » sera retirée de votre carnet. Les demandes déjà publiées à cette adresse ne changent
+            pas.
+          </p>
+          <div className="modale__actions">
+            <button type="button" className="btn btn--fantome" onClick={() => setARetirer(null)}>
+              Garder
+            </button>
+            <button type="button" className="btn btn--principal" onClick={retirer}>
+              Retirer
+            </button>
+          </div>
+        </Modale>
+      )}
+    </>
   );
 }
 

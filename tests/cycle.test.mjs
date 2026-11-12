@@ -44,6 +44,7 @@ const fetchGeocodage = async (url) => {
 globalThis.fetch = fetchGeocodage;
 
 const f = await import(`${REPO}functions/src/cycleDemande.js`);
+const carnet = await import(`${REPO}functions/src/carnet.js`);
 const { db } = await import(`${REPO}functions/src/admin.js`);
 const appel = (fn, uid, data) => fn.run({ auth: uid ? { uid } : undefined, data });
 async function echoue(promesse, code, texte) {
@@ -60,7 +61,7 @@ await db.doc("users/den2").set({ displayName: "Luc Lévis", role: ["deneigeur_x"
 await db.doc("users/den3").set({ displayName: "Julie L", role: ["deneigeur_x"], villeGeoId: "ID_QUEBEC" });
 await db.doc("users/sansrole").set({ displayName: "Paul", role: [], villeGeoId: "ID_QUEBEC" });
 const demain = new Date(Date.now() + 24 * 3600e3).toISOString();
-const base = { adresse: "1234, 3e Avenue, Québec", titre: "Entrée double + balcon", description: "Pelle sur le balcon", typeService: "entree_balcon", montant: 45, dateHeureSouhaitee: demain, outilsFournis: true };
+const base = { adresse: "1234, 3e Avenue, Québec", lien: "moi", attestation: true, titre: "Entrée double + balcon", description: "Pelle sur le balcon", typeService: "entree_balcon", montant: 45, dateHeureSouhaitee: demain, outilsFournis: true };
 
 // Plus petit JPEG valable : « C'est fait » exige au moins une photo.
 const jpeg = "data:image/jpeg;base64," + Buffer.from([0xff, 0xd8, 0xff, 0xe0, 0, 16, 74, 70, 73, 70, 0, 1, 0xff, 0xd9]).toString("base64");
@@ -96,6 +97,43 @@ await test("publier : refus sans connexion, montant hors bornes, heure passée, 
   await echoue(appel(f.publierDemande, "client1", { ...base, montant: 5 }), "invalid-argument", "montant 5");
   await echoue(appel(f.publierDemande, "client1", { ...base, dateHeureSouhaitee: new Date().toISOString() }), "invalid-argument", "heure");
   await echoue(appel(f.publierDemande, "client1", { ...base, typeService: "piscine" }), "invalid-argument", "type");
+});
+await test("publier : attestation et lien exigés ; adresse d'un proche avec prénom sur place, enregistrée au carnet", async () => {
+  await echoue(appel(f.publierDemande, "client1", { ...base, attestation: false }), "invalid-argument", "sans attestation");
+  await echoue(appel(f.publierDemande, "client1", { ...base, lien: undefined }), "invalid-argument", "sans lien");
+  const { demandeId } = await appel(f.publierDemande, "client1", { ...base, lien: "proche", personneSurPlace: "Ginette", enregistrer: { nom: "Parents" } });
+  const prive = (await db.doc(`demandes/${demandeId}/prive/adresse`).get()).data();
+  assert.equal(prive.lien, "proche"); assert.equal(prive.personneSurPlace, "Ginette");
+  assert.equal(prive.attestation.source, "demande"); assert.equal(prive.attestation.version, carnet.ATTESTATION.version);
+  assert.ok(prive.attestation.at && prive.attestation.adresseId);
+  const a = (await db.doc(`users/client1/adresses/${prive.attestation.adresseId}`).get()).data();
+  assert.equal(a.nom, "Parents"); assert.equal(a.lien, "proche"); assert.equal(a.personneSurPlace, "Ginette");
+  assert.equal(a.attestation.texte, carnet.ATTESTATION.texte); assert.ok(a.attestation.at);
+  // « Chez moi » : pas de prénom gardé même s'il est envoyé.
+  const { demandeId: d2 } = await appel(f.publierDemande, "client1", { ...base, personneSurPlace: "Ignoré" });
+  assert.equal((await db.doc(`demandes/${d2}/prive/adresse`).get()).data().personneSurPlace, "");
+});
+await test("carnet : ajout formel (nom, lien, attestation, géocodage précis), publier depuis le carnet, suppression", async () => {
+  await echoue(appel(carnet.ajouterAdresse, null, { nom: "Maison", adresse: base.adresse, lien: "moi", attestation: true }), "unauthenticated", "sans connexion");
+  await echoue(appel(carnet.ajouterAdresse, "client1", { adresse: base.adresse, lien: "moi", attestation: true }), "invalid-argument", "sans nom");
+  await echoue(appel(carnet.ajouterAdresse, "client1", { nom: "Maison", adresse: base.adresse, lien: "moi" }), "invalid-argument", "sans attestation");
+  await echoue(appel(carnet.ajouterAdresse, "client1", { nom: "Maison", adresse: base.adresse, lien: "voisin", attestation: true }), "invalid-argument", "lien inconnu");
+  await echoue(appel(carnet.ajouterAdresse, "client1", { nom: "Maison", adresse: "3e Avenue rue seulement, Québec", lien: "moi", attestation: true }), "invalid-argument", "rue seule");
+  const { adresseId, ville } = await appel(carnet.ajouterAdresse, "client1", { nom: "Chalet de Luc", adresse: "10 rue Saint-Laurent, Lévis", unite: "2", lien: "proche", personneSurPlace: "Luc", attestation: true });
+  assert.equal(ville, "Lévis");
+  const { demandeId, adresse } = await appel(f.publierDemande, "client1", { ...base, adresse: undefined, lien: undefined, attestation: undefined, adresseId });
+  assert.equal(adresse, "10 rue Saint-Laurent, Lévis, QC G1L 2M4 (app. 2)");
+  const d = await lire(demandeId);
+  assert.equal(d.villeGeoId, "ID_LEVIS"); assert.equal(d.quartier, "Lauzon");
+  const prive = (await db.doc(`demandes/${demandeId}/prive/adresse`).get()).data();
+  assert.equal(prive.personneSurPlace, "Luc"); assert.equal(prive.unite, "2");
+  assert.deepEqual({ source: prive.attestation.source, adresseId: prive.attestation.adresseId }, { source: "carnet", adresseId });
+  // L'adresse d'un autre compte n'existe pas pour moi.
+  await echoue(appel(f.publierDemande, "den1", { ...base, adresseId }), "not-found", "carnet d'un autre");
+  await appel(carnet.supprimerAdresse, "client1", { adresseId });
+  assert.equal((await db.doc(`users/client1/adresses/${adresseId}`).get()).exists, false);
+  await echoue(appel(f.publierDemande, "client1", { ...base, adresseId }), "not-found", "adresse supprimée");
+  await echoue(appel(carnet.supprimerAdresse, "client1", { adresseId: "a/b" }), "invalid-argument", "chemin");
 });
 await test("accepter : hors ville refusé (exclusion dure), propre demande refusée, sans rôle refusé", async () => {
   await echoue(appel(f.accepterDemande, "den2", { demandeId: id }), "permission-denied", "hors ville");
@@ -740,6 +778,11 @@ await test("compteur public : lisible sans connexion, jamais modifiable", async 
 await test("users : lecture de sa fiche seulement", async () => {
   await assertSucceeds(getDoc(doc(c1, "users/client1")));
   await assertFails(getDoc(doc(c1, "users/den1")));
+});
+await test("carnet d'adresses : lecture par le propriétaire seulement, aucune écriture client", async () => {
+  await assertSucceeds(getDocs(collection(c1, "users/client1/adresses")));
+  await assertFails(getDocs(collection(d1, "users/client1/adresses")));
+  await assertFails(setDoc(doc(c1, "users/client1/adresses/x"), { nom: "Maison", attestation: { version: 1 } }));
 });
 await test("users : impossible de modifier sa note ou son compteur ; rôles modifiables", async () => {
   await assertFails(updateDoc(doc(d1, "users/den1"), { ratingAvg: 1 }));

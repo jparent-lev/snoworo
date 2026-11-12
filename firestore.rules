@@ -57,6 +57,12 @@ service cloud.firestore {
           request.resource.data.keys().hasOnly(['luAt']) &&
           request.resource.data.luAt == request.time;
       }
+      // Carnet d'adresses (functions/src/carnet.js) : ajout formel et
+      // attestation par les fonctions seulement ; lecture par le propriétaire.
+      match /adresses/{adresseId} {
+        allow read: if estProprietaire(userId);
+        allow write: if false;
+      }
     }
 
     // ---- demandes ----

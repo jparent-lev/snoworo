@@ -79,8 +79,19 @@ export default function Conditions() {
           paiement reste retenu et nous tranchons selon les faits.
         </li>
         <li>
+          Vous pouvez faire déneiger chez vous ou chez un proche (vos parents, un ami). Chaque adresse est
+          accompagnée de votre attestation : c'est chez vous, ou la personne qui y habite a accepté d'y être
+          déneigée par l'entremise de Snowro. Vous garantissez cette autorisation et vous demeurez responsable de
+          la demande comme si elle était chez vous, y compris de son paiement.
+        </li>
+        <li>
           Vous vous engagez à rendre l'endroit accessible et à signaler tout ce qui pourrait être dangereux ou
           fragile (marches glacées, objets cachés sous la neige, voiture à ne pas accrocher, etc.).
+        </li>
+        <li>
+          Si le déneigeur de quartier se voit refuser l'accès sur place, il utilise « Signaler un problème »
+          (« Je n'ai pas pu accéder à l'endroit ») : le paiement reste retenu et nous tranchons selon les faits. Une autorisation qui
+          n'existait pas peut mener à la suspension du compte.
         </li>
       </ul>
 

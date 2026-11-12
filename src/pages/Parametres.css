@@ -255,3 +255,22 @@
   font-weight: 700;
   color: var(--color-terre);
 }
+
+/* Carnet d'adresses : formulaire d'ajout en colonne, dans une carte. */
+.parametres__carnet-ajout {
+  flex-direction: column;
+  align-items: stretch;
+  gap: var(--space-4);
+}
+.parametres__carnet-ajout h3 {
+  margin: 0;
+}
+.parametres__carnet-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-4);
+}
+.parametres__carnet-bouton {
+  align-self: flex-start;
+}
