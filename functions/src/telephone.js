@@ -138,7 +138,9 @@ export const envoyerTexteEssai = onCall({ region: REGION, secrets: SECRETS_SMS }
   const ref = db.doc(`verificationsTelephone/${uid}`);
   const maintenant = Date.now();
   const dernier = (await ref.get()).data()?.essaiAt?.toMillis?.() ?? 0;
-  if (maintenant - dernier < DELAI_TEXTE_ESSAI_MS) throw new HttpsError("resource-exhausted", "attendre-essai");
+  if (maintenant - dernier < DELAI_TEXTE_ESSAI_MS) {
+    throw new HttpsError("resource-exhausted", "attendre-essai", { restantMs: DELAI_TEXTE_ESSAI_MS - (maintenant - dernier) });
+  }
   try {
     await envoyerTexteBrut(profil.telephoneVerifie, "Snowro : texto d'essai. Vos avis par texto arriveront à ce numéro. Répondez STOP pour ne plus en recevoir.");
   } catch (err) {
@@ -147,5 +149,5 @@ export const envoyerTexteEssai = onCall({ region: REGION, secrets: SECRETS_SMS }
     throw new HttpsError("unavailable", "envoi-impossible", { codeTwilio: err.codeTwilio ?? null, statut: err.statut ?? null });
   }
   await ref.set({ essaiAt: Timestamp.fromMillis(maintenant) }, { merge: true });
-  return { ok: true };
+  return { ok: true, prochainEssaiAt: maintenant + DELAI_TEXTE_ESSAI_MS };
 });
