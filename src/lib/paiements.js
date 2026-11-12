@@ -38,7 +38,7 @@ export function chargerStripe() {
 
 export function libelleCarte(carte) {
   if (!carte) return "";
-  const marque = { visa: "Visa", mastercard: "Mastercard", amex: "American Express", link: "Link" }[carte.marque] ?? "Carte";
+  const marque = { visa: "Visa", mastercard: "Mastercard", amex: "American Express", link: "Link (paiement enregistré chez Stripe)" }[carte.marque] ?? "Carte";
   return carte.derniers4 ? `${marque} •••• ${carte.derniers4}` : marque;
 }
 
