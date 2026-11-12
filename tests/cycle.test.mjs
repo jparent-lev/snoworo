@@ -620,6 +620,7 @@ await test("textos : consentement refusé sans cellulaire vérifié ; texto d'es
   assert.equal(textos[0].a, "+14185553333");
   const e2 = await echoue(appel(tel.envoyerTexteEssai, "essai1", {}), "resource-exhausted", "un essai par 10 minutes");
   assert.equal(e2.message, "attendre-essai");
+  assert.ok(e2.details.restantMs > 9 * 60 * 1000 && e2.details.restantMs <= 10 * 60 * 1000, `restantMs ${e2.details.restantMs}`);
   await appel(tel.retirerTelephone, "essai1", {});
   const p = (await db.doc("users/essai1").get()).data();
   assert.equal(p.telephoneVerifie, null);
