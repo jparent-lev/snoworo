@@ -304,6 +304,7 @@ function SectionPaiement({ profile, deneigeur }) {
   const [carteAjoutee, setCarteAjoutee] = useState(null);
   const [enCours, setEnCours] = useState(false);
   const [erreur, setErreur] = useState(null);
+  const [info, setInfo] = useState(null);
   const carte = carteAjoutee ?? profilStripe(profile).carte;
   const statut = profilStripe(profile).connectStatus ?? "non_demarre";
   const infoStatut = STATUTS_CONNECT[statut] ?? STATUTS_CONNECT.en_attente;
@@ -318,13 +319,36 @@ function SectionPaiement({ profile, deneigeur }) {
       .finally(() => setParams({}, { replace: true }));
   }, [retourStripe, setParams]);
 
+  // Inscription : même onglet (Stripe ramène à /parametres?stripe=retour).
+  // Compte actif : le tableau de bord Express (connect.stripe.com) n'a pas de
+  // lien de retour, il s'ouvre donc dans un nouvel onglet et Snowro reste
+  // ouvert. L'onglet est ouvert tout de suite, pendant le clic, sinon le
+  // navigateur bloquerait la fenêtre ouverte après l'appel au serveur.
   async function ouvrirStripe() {
+    const onglet = statut === "actif" ? window.open("", "_blank") : null;
     setEnCours(true);
     setErreur(null);
     try {
-      const { url } = await lienCompteDeneigeur();
+      const { url, type } = await lienCompteDeneigeur();
+      if (type === "tableau" && onglet) {
+        onglet.opener = null;
+        onglet.location.href = url;
+        setEnCours(false);
+        return;
+      }
+      if (type === "tableau" && statut !== "actif") {
+        // Statut affiché en retard (le compte vient d'être activé chez
+        // Stripe) : on ne quitte pas le site ; le serveur a mis connectStatus
+        // à jour, la pastille passe à « Actif » et le bouton devient « Voir
+        // mes versements ».
+        setInfo("Votre compte de versement est actif. Vous pouvez maintenant accepter des demandes.");
+        setEnCours(false);
+        return;
+      }
+      onglet?.close();
       window.location.assign(url);
     } catch (err) {
+      onglet?.close();
       setErreur(messageErreur(err));
       setEnCours(false);
     }
@@ -371,6 +395,7 @@ function SectionPaiement({ profile, deneigeur }) {
               <p className="parametres__meta">
                 Géré par Stripe : identité et compte bancaire, une seule fois. <strong>Obligatoire pour accepter des demandes.</strong>
               </p>
+              {info && <p className="champ-adresse__ok" role="status">{info}</p>}
               {erreur && <p className="message-erreur" role="alert">{erreur}</p>}
             </div>
             <button type="button" className="auth-form__bouton" style={{ flex: "none" }} disabled={enCours} onClick={ouvrirStripe}>
