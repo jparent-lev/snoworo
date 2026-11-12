@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useAuth } from "../../context/AuthContext";
-import { ecouterDemandesOuvertes, ecouterMesJobs, lireAdressePrivee, lirePrive } from "../../lib/demandes";
+import { ecouterDemandesOuvertes, ecouterMesJobs, lirePrive } from "../../lib/demandes";
 import { preparerPhoto } from "../../lib/photo";
 import { PAIEMENT_REEL, profilStripe } from "../../lib/paiements";
 import { accepterDemande, estEnRetard, limiteRetard, marquerFaite, messageErreur } from "../../lib/cycleDemande";
@@ -198,14 +198,19 @@ export default function TableauDeneigeur({ conversation, onConversationFermee })
 
 function CarteJob({ job: j, nouveau, conversationOuverte, onConversationFermee }) {
   const [adresse, setAdresse] = useState(null);
+  const [surPlace, setSurPlace] = useState("");
   const [modale, setModale] = useState(conversationOuverte ? "messages" : null); // "faite" | "signaler" | "messages"
   const [enCours, setEnCours] = useState(false);
   const [erreur, setErreur] = useState(null);
 
   useEffect(() => {
     if (j.statut !== "matchee" && j.statut !== "faite") return;
-    lireAdressePrivee(j.id)
-      .then(setAdresse)
+    // Adresse d'un proche : le prénom de la personne sur place, s'il est donné.
+    lirePrive(j.id, "adresse")
+      .then((p) => {
+        setAdresse(p?.adresse ?? null);
+        setSurPlace(p?.lien === "proche" ? p.personneSurPlace || "un proche du client" : "");
+      })
       .catch(() => setAdresse(null));
   }, [j.id, j.statut]);
 
@@ -243,6 +248,7 @@ function CarteJob({ job: j, nouveau, conversationOuverte, onConversationFermee }
       {(j.statut === "matchee" || j.statut === "faite") && (
         <div>
           <div className="carte-job__adresse">{adresse ?? "Adresse…"}</div>
+          {surPlace && <div className="carte-job__meta">Sur place : {surPlace}</div>}
           {adresse && j.statut === "matchee" && (
             <a
               className="carte-job__itineraire"

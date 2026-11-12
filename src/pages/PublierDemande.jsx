@@ -7,6 +7,8 @@ import { PAIEMENT_REEL, libelleCarte, profilStripe } from "../lib/paiements";
 import { useAuth } from "../context/AuthContext";
 import CarteDePaiement from "../components/CarteDePaiement";
 import ChampAdresse from "../components/ChampAdresse";
+import LieuAdresse from "../components/LieuAdresse";
+import { LIEU_VIDE, ecouterCarnet, erreurLieu, libelleLien } from "../lib/carnet";
 import "./AuthForm.css";
 import { mesurer } from "../lib/mesure";
 
@@ -52,7 +54,7 @@ function demainHuitHeures() {
 // position du téléphone, qui peut être au travail plutôt qu'à la maison.
 export default function PublierDemande() {
   const navigate = useNavigate();
-  const { profile } = useAuth();
+  const { user, profile } = useAuth();
   // La carte enregistrée pendant cette visite s'affiche tout de suite, avant
   // que la fiche (users/{uid}.carte, écrite par le serveur) se mette à jour.
   const [carteAjoutee, setCarteAjoutee] = useState(null);
@@ -62,6 +64,13 @@ export default function PublierDemande() {
   const [adresse, setAdresse] = useState({ texte: "", placeId: null, libelle: null });
   const [adresseManuelle, setAdresseManuelle] = useState(false);
   const [unite, setUnite] = useState("");
+  // Carnet d'adresses : la première est choisie par défaut ; « autre » ouvre
+  // la saisie (avec lien, attestation et, au choix, ajout au carnet).
+  const [carnet, setCarnet] = useState(null);
+  const [choix, setChoix] = useState(null);
+  const [lieu, setLieu] = useState(LIEU_VIDE);
+  const [enregistrer, setEnregistrer] = useState(false);
+  const [nomCarnet, setNomCarnet] = useState("");
   const [typeService, setTypeService] = useState(TYPES_SERVICE[1].value);
   const [titre, setTitre] = useState("");
   const [description, setDescription] = useState("");
@@ -75,12 +84,16 @@ export default function PublierDemande() {
   const [enCours, setEnCours] = useState(false);
 
   useEffect(() => ecouterConfigFrais(setFrais), []);
+  useEffect(() => (user ? ecouterCarnet(user.uid, setCarnet) : undefined), [user]);
+  // Choix par défaut une fois le carnet lu, sans écraser celui de la personne.
+  const choixEffectif = choix ?? (carnet?.length ? carnet[0].id : "autre");
+  const depuisCarnet = carnet?.find((a) => a.id === choixEffectif);
 
   const montantNombre = Number(montant);
   const apercu = montantNombre >= 10 ? calculerPaiement(montantNombre, frais) : null;
   const titreParDefaut = typeService === "autre" ? "Déneigement" : TYPES_SERVICE.find((t) => t.value === typeService).label;
   // Avec les suggestions, il faut en choisir une ; sinon, le texte complet.
-  const adresseManquante = !adresse.placeId && (!adresseManuelle || adresse.texte.trim().length < 8);
+  const adresseManquante = !depuisCarnet && !adresse.placeId && (!adresseManuelle || adresse.texte.trim().length < 8);
 
   async function onSubmit(e) {
     e.preventDefault();
@@ -93,11 +106,23 @@ export default function PublierDemande() {
       );
       return;
     }
+    if (!depuisCarnet) {
+      const e = erreurLieu(lieu) ?? (enregistrer && !nomCarnet.trim() ? "Donnez un nom à cette adresse, par exemple « Parents »." : null);
+      if (e) return setErreur(e);
+    }
     setEnCours(true);
     try {
       await publierDemande({
-        ...(adresse.placeId ? { placeId: adresse.placeId } : { adresse: adresse.texte.trim() }),
-        unite: unite.trim(),
+        ...(depuisCarnet
+          ? { adresseId: depuisCarnet.id }
+          : {
+              ...(adresse.placeId ? { placeId: adresse.placeId } : { adresse: adresse.texte.trim() }),
+              unite: unite.trim(),
+              lien: lieu.lien,
+              personneSurPlace: lieu.personneSurPlace.trim(),
+              attestation: lieu.attestation,
+              ...(enregistrer ? { enregistrer: { nom: nomCarnet.trim() } } : {}),
+            }),
         typeService,
         titre: titre.trim() || titreParDefaut,
         description: description.trim(),
@@ -118,26 +143,63 @@ export default function PublierDemande() {
       <form className="auth-form__carte" onSubmit={onSubmit} style={{ maxWidth: 460 }}>
         <h1 className="auth-form__titre">Publier une demande</h1>
 
-        <div className="auth-form__champ">
-          <span>Adresse à déneiger</span>
-          <ChampAdresse
-            valeur={adresse}
-            onChange={setAdresse}
-            manuel={adresseManuelle}
-            onManuel={(m) => {
-              setAdresseManuelle(m);
-              setAdresse({ texte: "", placeId: null, libelle: null });
-            }}
-          />
-          <span className="auth-form__aide">
-            Montrée seulement au déneigeur de quartier qui accepte. Les autres voient le quartier et la distance.
-          </span>
-        </div>
+        {carnet?.length > 0 && (
+          <label className="auth-form__champ">
+            Adresse à déneiger
+            <select value={choixEffectif} onChange={(e) => setChoix(e.target.value)} style={styleChamp}>
+              {carnet.map((a) => (
+                <option key={a.id} value={a.id}>
+                  {a.nom} · {a.adresse}
+                </option>
+              ))}
+              <option value="autre">Une autre adresse…</option>
+            </select>
+            {depuisCarnet && <span className="auth-form__aide">{libelleLien(depuisCarnet)}. Montrée seulement au déneigeur de quartier qui accepte.</span>}
+          </label>
+        )}
 
-        <label className="auth-form__champ">
-          Appartement ou logement (facultatif)
-          <input value={unite} onChange={(e) => setUnite(e.target.value)} placeholder="Ex. 3, ou 1234-B" maxLength={20} />
-        </label>
+        {!depuisCarnet && (
+          <>
+            <div className="auth-form__champ">
+              <span>{carnet?.length ? "Autre adresse" : "Adresse à déneiger"}</span>
+              <ChampAdresse
+                valeur={adresse}
+                onChange={setAdresse}
+                manuel={adresseManuelle}
+                onManuel={(m) => {
+                  setAdresseManuelle(m);
+                  setAdresse({ texte: "", placeId: null, libelle: null });
+                }}
+              />
+              <span className="auth-form__aide">
+                Montrée seulement au déneigeur de quartier qui accepte. Les autres voient le quartier et la distance.
+              </span>
+            </div>
+
+            <label className="auth-form__champ">
+              Appartement ou logement (facultatif)
+              <input value={unite} onChange={(e) => setUnite(e.target.value)} placeholder="Ex. 3, ou 1234-B" maxLength={20} />
+            </label>
+
+            <LieuAdresse valeur={lieu} onChange={setLieu} />
+
+            <label className="auth-form__case">
+              <input type="checkbox" checked={enregistrer} onChange={(e) => setEnregistrer(e.target.checked)} />
+              Enregistrer dans mes adresses
+            </label>
+            {enregistrer && (
+              <label className="auth-form__champ">
+                Nom de l'adresse
+                <input
+                  value={nomCarnet}
+                  onChange={(e) => setNomCarnet(e.target.value)}
+                  placeholder={lieu.lien === "proche" ? "Ex. Parents, Chalet de Luc" : "Ex. Maison"}
+                  maxLength={40}
+                />
+              </label>
+            )}
+          </>
+        )}
 
         <label className="auth-form__champ">
           Type de service
