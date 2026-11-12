@@ -251,17 +251,17 @@ export default function Parametres() {
                     {ancienneVersion ? (
                       <div className="parametres__nouvelle-version">
                         <p>
-                          Le texte a changé depuis votre accord (version {etat.version}). Rien ne vous est envoyé tant que
-                          vous n'acceptez pas la version actuelle.
+                          Le texte de ce consentement a changé depuis votre accord. Rien ne vous est envoyé tant que vous
+                          n'acceptez pas le nouveau texte.
                         </p>
                         <button type="button" className="btn btn--principal" onClick={() => basculer(c.type, false)} disabled={enCours === c.type || sansTelephone}>
-                          Accepter la version {c.version}
+                          Accepter le nouveau texte
                         </button>
                       </div>
                     ) : (
                       etat?.grantedAt && (
                         <p className="parametres__meta">
-                          {accorde ? "Accordé" : "Retiré"} · version {etat.version}
+                          {dateConsentement(accorde ? "Activé" : "Désactivé", accorde ? etat.grantedAt : etat.revokedAt ?? etat.grantedAt)}
                         </p>
                       )
                     )}
@@ -460,6 +460,30 @@ function SectionFermeture() {
 // (functions/src/telephone.js). Affiché une fois le consentement accordé.
 // « Votre cellulaire » : le numéro appartient au compte, vérifié une seule fois
 // par un code. Le texto d'essai ne part que vers ce numéro vérifié.
+// « Activé le 12 novembre 2026 » : la date de l'accord ou du retrait (la
+// version du texte reste dans la fiche, pour la preuve du consentement).
+function dateConsentement(libelle, horodatage) {
+  const d = horodatage?.toDate?.() ?? (horodatage ? new Date(horodatage) : null);
+  if (!d || Number.isNaN(d.getTime())) return libelle;
+  return `${libelle} le ${d.toLocaleDateString("fr-CA", { day: "numeric", month: "long", year: "numeric" })}`;
+}
+
+// Compte à rebours jusqu'à `fin` (millisecondes) : secondes restantes, 0 à la fin.
+function useCompteARebours(fin) {
+  const [maintenant, setMaintenant] = useState(() => Date.now());
+  useEffect(() => {
+    if (!fin || fin <= Date.now()) return undefined;
+    const t = setInterval(() => {
+      setMaintenant(Date.now());
+      if (Date.now() >= fin) clearInterval(t);
+    }, 1000);
+    return () => clearInterval(t);
+  }, [fin]);
+  return fin ? Math.max(0, Math.ceil((fin - maintenant) / 1000)) : 0;
+}
+
+const minSec = (s) => `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`;
+
 function SectionTelephone({ profile, smsActifs }) {
   const [numero, setNumero] = useState("");
   const [code, setCode] = useState("");
@@ -468,6 +492,9 @@ function SectionTelephone({ profile, smsActifs }) {
   const [enCours, setEnCours] = useState(false);
   const [erreur, setErreur] = useState(null);
   const [info, setInfo] = useState(null);
+  // Prochain texto d'essai permis (le serveur en limite un par 10 minutes).
+  const [prochainEssai, setProchainEssai] = useState(null);
+  const attenteEssai = useCompteARebours(prochainEssai);
 
   async function executer(action) {
     setEnCours(true);
@@ -507,8 +534,21 @@ function SectionTelephone({ profile, smsActifs }) {
 
   const essai = () =>
     executer(async () => {
-      await envoyerTexteEssai();
-      setInfo(`Texto d'essai envoyé au ${formaterNumero(profile.telephoneVerifie)}.`);
+      try {
+        const { data } = await envoyerTexteEssai();
+        setProchainEssai(data?.prochainEssaiAt ?? Date.now() + 10 * 60 * 1000);
+        setInfo(`Texto d'essai envoyé au ${formaterNumero(profile.telephoneVerifie)}.`);
+      } catch (err) {
+        // Déjà envoyé il y a moins de 10 minutes (autre onglet, page rechargée) :
+        // pas d'erreur, seulement le compte à rebours.
+        const restant = err?.details?.restantMs;
+        if (messageServeur(err) === "attendre-essai" && restant) {
+          setProchainEssai(Date.now() + restant);
+          setInfo("Un texto d'essai est parti il y a moins de 10 minutes.");
+          return;
+        }
+        throw err;
+      }
     });
 
   const retirer = () => {
@@ -525,8 +565,8 @@ function SectionTelephone({ profile, smsActifs }) {
           <p>{smsActifs ? "Les avis par texto partent vers ce numéro." : "Activez « Notifications SMS » ci-dessous pour recevoir les avis à ce numéro."}</p>
         </div>
         <div className="parametres__actions">
-          <button type="button" className="btn btn--fantome" onClick={essai} disabled={enCours}>
-            M'envoyer un texto d'essai
+          <button type="button" className="btn btn--fantome" onClick={essai} disabled={enCours || attenteEssai > 0}>
+            {attenteEssai > 0 ? `Nouvel essai dans ${minSec(attenteEssai)}` : "M'envoyer un texto d'essai"}
           </button>
           <button type="button" className="btn btn--lien" onClick={() => setModification(true)} disabled={enCours}>
             Changer

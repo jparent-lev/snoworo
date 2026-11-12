@@ -384,7 +384,7 @@ async function connexion(cle, largeur = 1280) {
       appelsTel.push(r.request().postDataJSON().data);
       return r.fulfill({ json: { result: { ok: true, numero: "+14185551234" } } });
     });
-    await p.route("**/envoyerTexteEssai", (r) => r.fulfill({ json: { result: { ok: true } } }));
+    await p.route("**/envoyerTexteEssai", (r) => r.fulfill({ json: { result: { ok: true, prochainEssaiAt: Date.now() + 10 * 60 * 1000 } } }));
     // Sans cellulaire vérifié, l'interrupteur des textos est grisé.
     const sms = p.getByRole("switch", { name: "Notifications SMS" });
     assert.equal(await sms.isDisabled(), true);
@@ -405,10 +405,14 @@ async function connexion(cle, largeur = 1280) {
     assert.equal((await db.doc(`users/${uid.marc}`).get()).data().consents.notificationsSMS.version, 2);
     await p.getByRole("button", { name: "M'envoyer un texto d'essai" }).click();
     await p.getByText("Texto d'essai envoyé au (418) 555-1234.").waitFor();
+    // Compte à rebours : le bouton reste désactivé jusqu'au prochain essai permis.
+    const rebours = p.getByRole("button", { name: /^Nouvel essai dans (9:5\d|10:00)$/ });
+    await rebours.waitFor();
+    assert.equal(await rebours.isDisabled(), true);
     // Accord donné à une version antérieure du texte : redemandé.
     await db.doc(`users/${uid.marc}`).update({ "consents.notificationsSMS.version": 1 });
-    await p.getByRole("button", { name: "Accepter la version 2" }).click();
-    await p.getByText("Accordé · version 2").waitFor();
+    await p.getByRole("button", { name: "Accepter le nouveau texte" }).click();
+    await p.getByText(/^Activé le \d{1,2} \S+ \d{4}$/).waitFor();
     await p.screenshot({ path: `${D}/e2e-cellulaire-390.png`, fullPage: true });
     assert.equal(await p.evaluate(() => document.documentElement.scrollWidth), 390);
   });
@@ -656,6 +660,8 @@ async function connexion(cle, largeur = 1280) {
     assert.equal(config.ad_storage, "denied");
     await p.getByRole("link", { name: "Créer un compte" }).first().click();
     await p.waitForURL("**/inscription");
+    // La page vue de /inscription part dans un effet React, juste après la navigation.
+    await p.waitForFunction(() => window.dataLayer.filter((a) => a[0] === "event" && a[1] === "page_view").length >= 2);
     const evenements = await p.evaluate(() => [...window.dataLayer].map((a) => [...a]).filter((a) => a[0] === "event").map((a) => a[1]));
     assert.ok(evenements.includes("cta_clic") && evenements.filter((e) => e === "page_view").length >= 2, evenements.join(","));
     await p.goBack();
