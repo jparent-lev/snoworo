@@ -313,23 +313,37 @@ export const lienCompteDeneigeur = onCall({ region: REGION, secrets: [STRIPE_SEC
   }
   let compteId = profil.stripeConnectAccountId;
   if (!compteId) {
-    const compte = await stripe().v2.core.accounts.create(
-      {
-        contact_email: profil.email || undefined,
-        display_name: profil.displayName || undefined,
-        identity: identiteParticulier(profil),
-        dashboard: "express",
-        defaults: {
-          currency: "cad",
-          locales: ["fr-CA"],
-          profile: profilActivite(),
-          responsibilities: { fees_collector: "application", losses_collector: "application" },
+    // Clé d'idempotence : protège contre un double clic (un seul compte), mais
+    // Stripe rejoue la réponse enregistrée pour une même clé, refus compris.
+    // Après un échec (ex. plateforme pas encore activée), la tentative suivante
+    // prend donc une nouvelle clé.
+    const tentative = profil.tentativeCompteStripe ?? 0;
+    // (Le numéro est toujours présent : les clés d'avant ce correctif, sans
+    // numéro, ne sont jamais réutilisées.)
+    const cle = `compte-v2-${modeStripe()}-${uid}-${tentative}`;
+    let compte;
+    try {
+      compte = await stripe().v2.core.accounts.create(
+        {
+          contact_email: profil.email || undefined,
+          display_name: profil.displayName || undefined,
+          identity: identiteParticulier(profil),
+          dashboard: "express",
+          defaults: {
+            currency: "cad",
+            locales: ["fr-CA"],
+            profile: profilActivite(),
+            responsibilities: { fees_collector: "application", losses_collector: "application" },
+          },
+          configuration: { recipient: { capabilities: { stripe_balance: { stripe_transfers: { requested: true } } } } },
+          metadata: { uid },
         },
-        configuration: { recipient: { capabilities: { stripe_balance: { stripe_transfers: { requested: true } } } } },
-        metadata: { uid },
-      },
-      { idempotencyKey: `compte-v2-${modeStripe()}-${uid}` },
-    );
+        { idempotencyKey: cle },
+      );
+    } catch (err) {
+      await ref.set({ tentativeCompteStripe: tentative + 1 }, { merge: true });
+      throw err;
+    }
     compteId = compte.id;
     await ref.set({ stripeConnectAccountId: compteId, connectStatus: "en_attente" }, { merge: true });
   }
