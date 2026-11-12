@@ -341,6 +341,10 @@ async function connexion(cle, largeur = 1280) {
   });
   await test("Marc : adresse de service choisie dans les suggestions, envoyée par placeId", async () => {
     await p.goto("http://localhost:4190/parametres");
+    // Adresse déjà enregistrée : confirmée, formulaire replié.
+    await p.getByText("✓ Adresse de service enregistrée").waitFor();
+    assert.equal(await p.getByRole("combobox").count(), 0);
+    await p.getByRole("button", { name: "Changer d'adresse" }).click();
     const champ = p.getByRole("combobox");
     await champ.fill("155 rue des Saul");
     await p.getByRole("option", { name: /155 Rue des Saules Est/ }).click();
@@ -351,10 +355,14 @@ async function connexion(cle, largeur = 1280) {
     assert.equal(await p.getByRole("button", { name: "Me déconnecter" }).isVisible(), true);
     assert.equal(await p.getByRole("navigation", { name: "Aide" }).getByRole("link", { name: "Aide" }).getAttribute("href"), "/#faq");
     await p.getByRole("button", { name: "Utiliser cette adresse" }).click();
-    await p.getByText("✓ Adresse enregistrée : 155 Rue des Saules Est, Québec, QC, Canada").waitFor();
+    await p.getByText("✓ Mise à jour à partir de : 155 Rue des Saules Est, Québec, QC, Canada").waitFor();
     assert.deepEqual(appels, [{ placeId: "ChIJ_saules" }]);
+    assert.equal(await p.getByRole("combobox").count(), 0, "formulaire replié après l'enregistrement");
+    await p.locator("#adresse").scrollIntoViewIfNeeded();
+    await p.screenshot({ path: `${D}/e2e-adresse-enregistree-390.png` });
   });
   await test("Marc : sans suggestion choisie, rien n'est envoyé", async () => {
+    await p.getByRole("button", { name: "Changer d'adresse" }).click();
     await p.getByRole("combobox").fill("155 rue des Saul");
     await p.getByRole("option", { name: /155 Rue des Saules Est/ }).waitFor();
     await p.getByRole("combobox").press("Escape");

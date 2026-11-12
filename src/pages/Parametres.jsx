@@ -59,6 +59,9 @@ export default function Parametres() {
   const [adresse, setAdresse] = useState(ADRESSE_VIDE);
   const [adresseManuelle, setAdresseManuelle] = useState(false);
   const [adresseEnregistree, setAdresseEnregistree] = useState(null);
+  // Adresse déjà enregistrée : le formulaire reste replié derrière « Changer
+  // d'adresse », sinon il laisse croire que rien n'a été enregistré.
+  const [modifierAdresse, setModifierAdresse] = useState(false);
 
   async function basculer(type, accorde) {
     setEnCours(type);
@@ -85,7 +88,8 @@ export default function Parametres() {
         try {
           const hash = encoderGeohash(pos.coords.latitude, pos.coords.longitude);
           await mettreAJourAdresseParPosition(hash);
-          setAdresseEnregistree(null);
+          setAdresseEnregistree("votre position actuelle");
+          setModifierAdresse(false);
         } catch {
           setErreurAdresse("Impossible de déterminer votre ville à partir de cette position. Réessayez, ou entrez votre adresse manuellement.");
         } finally {
@@ -121,6 +125,7 @@ export default function Parametres() {
       setAdresseEnregistree(adresse.placeId ? adresse.libelle : adresse.texte.trim());
       setAdresse(ADRESSE_VIDE);
       setAdresseManuelle(false);
+      setModifierAdresse(false);
     } catch (err) {
       setErreurAdresse(
         err?.code === "functions/invalid-argument" ? messageServeur(err) : "Adresse introuvable. Vérifiez l'adresse et réessayez.",
@@ -162,43 +167,73 @@ export default function Parametres() {
       <div className="parametres__item parametres__item--adresse">
         <div className="parametres__item-texte">
           <h3>{profile.ville ? profile.ville : "Aucune adresse enregistrée"}</h3>
-          <p>
-            {profile.ville
-              ? "Vous voyez les demandes ouvertes dans cette ville."
-              : "Ajoutez votre adresse pour voir les demandes près de chez vous."}
-          </p>
-          {adresseEnregistree && <p className="champ-adresse__ok">✓ Adresse enregistrée : {adresseEnregistree}</p>}
+          {profile.ville ? (
+            <>
+              <p className="champ-adresse__ok">
+                ✓ Adresse de service enregistrée{profile.postalCodePrefix ? ` (secteur ${profile.postalCodePrefix})` : ""}
+              </p>
+              <p>Vous voyez les demandes ouvertes dans cette ville, avec leur distance de chez vous.</p>
+              <p className="parametres__meta">
+                Pour votre vie privée, nous gardons seulement la ville, le secteur et une position approximative,
+                jamais l'adresse exacte : c'est pourquoi elle ne s'affiche pas ici.
+              </p>
+            </>
+          ) : (
+            <p>Ajoutez votre adresse pour voir les demandes près de chez vous.</p>
+          )}
+          {adresseEnregistree && <p className="champ-adresse__ok">✓ Mise à jour à partir de : {adresseEnregistree}</p>}
           {erreurAdresse && <p className="message-erreur" role="alert">{erreurAdresse}</p>}
         </div>
-        <button
-          type="button"
-          className="auth-form__bouton"
-          onClick={mettreAJourParPosition}
-          disabled={majAdresseEnCours}
-          style={{ flex: "none" }}
-        >
-          {majAdresseEnCours ? "Localisation…" : "Utiliser ma position"}
-        </button>
+        {profile.ville && !modifierAdresse ? (
+          <button type="button" className="btn btn--fantome" onClick={() => setModifierAdresse(true)} style={{ flex: "none" }}>
+            Changer d'adresse
+          </button>
+        ) : (
+          <button
+            type="button"
+            className="auth-form__bouton"
+            onClick={mettreAJourParPosition}
+            disabled={majAdresseEnCours}
+            style={{ flex: "none" }}
+          >
+            {majAdresseEnCours ? "Localisation…" : "Utiliser ma position"}
+          </button>
+        )}
       </div>
 
-      <form className="parametres__adresse-manuelle" onSubmit={mettreAJourParSaisie} noValidate>
-        <div className="auth-form__champ" style={{ flex: 1 }}>
-          <span>Ou entrez votre adresse</span>
-          <ChampAdresse
-            valeur={adresse}
-            onChange={setAdresse}
-            manuel={adresseManuelle}
-            onManuel={(m) => {
-              setAdresseManuelle(m);
-              setAdresse(ADRESSE_VIDE);
-            }}
-            disabled={majAdresseEnCours}
-          />
-        </div>
-        <button type="submit" className="auth-form__bouton" disabled={majAdresseEnCours || !adresse.texte.trim()}>
-          {majAdresseEnCours ? "Vérification…" : "Utiliser cette adresse"}
-        </button>
-      </form>
+      {(!profile.ville || modifierAdresse) && (
+        <form className="parametres__adresse-manuelle" onSubmit={mettreAJourParSaisie} noValidate>
+          <div className="auth-form__champ" style={{ flex: 1 }}>
+            <span>{profile.ville ? "Ou entrez votre nouvelle adresse" : "Ou entrez votre adresse"}</span>
+            <ChampAdresse
+              valeur={adresse}
+              onChange={setAdresse}
+              manuel={adresseManuelle}
+              onManuel={(m) => {
+                setAdresseManuelle(m);
+                setAdresse(ADRESSE_VIDE);
+              }}
+              disabled={majAdresseEnCours}
+            />
+          </div>
+          <button type="submit" className="auth-form__bouton" disabled={majAdresseEnCours || !adresse.texte.trim()}>
+            {majAdresseEnCours ? "Vérification…" : "Utiliser cette adresse"}
+          </button>
+          {profile.ville && (
+            <button
+              type="button"
+              className="btn btn--lien"
+              onClick={() => {
+                setModifierAdresse(false);
+                setAdresse(ADRESSE_VIDE);
+                setErreurAdresse(null);
+              }}
+            >
+              Annuler
+            </button>
+          )}
+        </form>
+      )}
 
       {/* Avis de nouvelles demandes (avertirDeneigeursNouvelleDemande) : actifs
           par défaut, au plus un courriel toutes les 20 minutes. */}
