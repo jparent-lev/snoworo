@@ -163,6 +163,46 @@ await test("signaler : bloque le versement et la confirmation auto ; tiers refus
   assert.equal(d.statut, "signalee"); assert.equal(d.signalement.par, "client"); assert.equal(d.signalement.statutPrecedent, "matchee");
   assert.equal(d.paiement.statutPaiement, "simule_bloque");
 });
+await test("retard : avis à l'heure prévue (une fois), annulation remboursée 12 h après ; une demande faite n'est pas touchée", async () => {
+  const r = await import(`${REPO}functions/src/retards.js`);
+  const { Timestamp } = createRequire(`${REPO}functions/package.json`)("firebase-admin/firestore");
+  const ids = [];
+  for (let i = 0; i < 3; i++) {
+    const { demandeId } = await appel(f.publierDemande, "client1", base);
+    await appel(f.accepterDemande, "den1", { demandeId });
+    ids.push(demandeId);
+  }
+  const [avis, annule, faite] = ids;
+  await appel(f.marquerFaite, "den1", { demandeId: faite, photos });
+  await db.doc(`demandes/${avis}`).update({ dateHeureSouhaitee: Timestamp.fromMillis(Date.now() - 3600e3) });
+  await db.doc(`demandes/${annule}`).update({ dateHeureSouhaitee: Timestamp.fromMillis(Date.now() - 13 * 3600e3) });
+  await db.doc(`demandes/${faite}`).update({ dateHeureSouhaitee: Timestamp.fromMillis(Date.now() - 13 * 3600e3) });
+  const res = await r.traiterRetardsMaintenant();
+  assert.ok(res.avis >= 1 && res.annulees >= 1, JSON.stringify(res));
+  let d = await lire(avis);
+  assert.equal(d.statut, "matchee"); assert.ok(d.retardAvisAt, "avis noté");
+  const premierAvis = d.retardAvisAt.toMillis();
+  d = await lire(annule);
+  assert.equal(d.statut, "annulee"); assert.equal(d.annulation.raison, "retard"); assert.equal(d.annulation.par, "automatique");
+  assert.equal(d.paiement.statutPaiement, "simule_rembourse");
+  assert.equal((await lire(faite)).statut, "faite");
+  // Deuxième passage : pas de nouvel avis.
+  await r.traiterRetardsMaintenant();
+  assert.equal((await lire(avis)).retardAvisAt.toMillis(), premierAvis);
+  // Le déneigeur ne peut plus marquer faite une demande annulée.
+  await echoue(appel(f.marquerFaite, "den1", { demandeId: annule, photos }), "failed-precondition", "faite après annulation");
+});
+await test("retard : le client peut annuler une demande acceptée seulement après l'heure prévue", async () => {
+  const { Timestamp } = createRequire(`${REPO}functions/package.json`)("firebase-admin/firestore");
+  const { demandeId } = await appel(f.publierDemande, "client1", base);
+  await appel(f.accepterDemande, "den1", { demandeId });
+  await echoue(appel(f.annulerDemande, "client1", { demandeId }), "failed-precondition", "avant l'heure");
+  await echoue(appel(f.annulerDemande, "den1", { demandeId }), "permission-denied", "par le déneigeur");
+  await db.doc(`demandes/${demandeId}`).update({ dateHeureSouhaitee: Timestamp.fromMillis(Date.now() - 60e3) });
+  await appel(f.annulerDemande, "client1", { demandeId });
+  const d = await lire(demandeId);
+  assert.equal(d.statut, "annulee"); assert.equal(d.annulation.par, "client"); assert.equal(d.paiement.statutPaiement, "simule_rembourse");
+});
 await test("annuler : permis tant qu'ouverte", async () => {
   const { demandeId: e } = await appel(f.publierDemande, "client1", base);
   await appel(f.annulerDemande, "client1", { demandeId: e });

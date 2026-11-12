@@ -5,7 +5,8 @@ import { FieldValue, Timestamp } from "firebase-admin/firestore";
 import { db } from "./admin.js";
 import { AdresseImprecise, GEOCODING_API_KEY, villeDepuisAdresse, villeDepuisPlaceId } from "./geocoding.js";
 import { RESEND_API_KEY } from "./courriels.js";
-import { STRIPE_SECRET_KEY, avertirCarteRefusee, paiementReel, prelever, profilStripe, verser } from "./paiements.js";
+import { STRIPE_SECRET_KEY, avertirCarteRefusee, paiementReel, prelever, profilStripe, rembourser, verser } from "./paiements.js";
+import { annulerPourRetard, avertirAnnulationRetard, estEnRetard } from "./retards.js";
 
 // Cycle de vie d'une demande, entièrement côté serveur (les Firestore rules
 // refusent toute écriture client sur demandes/) :
@@ -17,8 +18,10 @@ import { STRIPE_SECRET_KEY, avertirCarteRefusee, paiementReel, prelever, profilS
 //
 // Pas d'annulation une fois la demande acceptée, ni par le client ni par le
 // déneigeur (décision produit : pas de porte de sortie pour laisser une demande
-// en plan au profit d'une plus payante). Après l'acceptation, le seul recours
-// est « Signaler un problème ».
+// en plan au profit d'une plus payante). Exception, le retard : une fois
+// l'heure limite passée sans « C'est fait », le client peut annuler et être
+// remboursé, et c'est automatique 12 h plus tard (functions/src/retards.js).
+// Sinon, le recours est « Signaler un problème ».
 //
 // Paiement (functions/src/paiements.js) : réel par Stripe Connect quand
 // PAIEMENT_REEL est vrai, sinon SIMULÉ : mêmes montants (config/frais), mais
@@ -526,14 +529,33 @@ export const signalerProbleme = onCall({ region: REGION }, async (request) => {
   });
 });
 
-// ---- Annuler (client, seulement tant que personne n'a accepté) ----
-export const annulerDemande = onCall({ region: REGION }, async (request) => {
+// ---- Annuler (client) ----
+// Sans frais tant que personne n'a accepté. Une fois acceptée : seulement si
+// l'heure limite est passée sans « C'est fait » (retard), et le client est
+// alors remboursé en entier (functions/src/retards.js).
+export const annulerDemande = onCall({ region: REGION, secrets: [STRIPE_SECRET_KEY, RESEND_API_KEY] }, async (request) => {
   const uid = exigerConnexion(request);
-  return db.runTransaction(async (tx) => {
-    const { ref } = await lireDemande(tx, request.data?.demandeId, { uid, role: "client", statuts: ["ouverte"] });
-    tx.update(ref, { statut: "annulee", annuleeAt: FieldValue.serverTimestamp() });
-    return { ok: true };
+  const demandeId = request.data?.demandeId;
+  const retard = await db.runTransaction(async (tx) => {
+    const { ref, demande } = await lireDemande(tx, demandeId, { uid, role: "client", statuts: ["ouverte", "matchee"] });
+    if (demande.statut === "ouverte") {
+      tx.update(ref, { statut: "annulee", annuleeAt: FieldValue.serverTimestamp() });
+      return null;
+    }
+    if (!estEnRetard(demande)) {
+      throw new HttpsError(
+        "failed-precondition",
+        "Une demande acceptée ne peut être annulée qu'une fois l'heure prévue passée sans que le travail soit fait.",
+      );
+    }
+    annulerPourRetard(tx, ref, demande, { par: "client" });
+    return demande;
   });
+  if (retard) {
+    await rembourser(demandeId);
+    await avertirAnnulationRetard(demandeId, retard, { par: "client" });
+  }
+  return { ok: true, rembourse: Boolean(retard) };
 });
 
 // ---- Augmenter l'offre (client, tant que personne n'a accepté) ----

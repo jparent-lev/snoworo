@@ -256,6 +256,35 @@ export async function verser(demandeId) {
   }
 }
 
+// ---- Remboursement du client (demande annulée pour retard) ----
+
+// Idempotent (clé par demande). Laisse « a_rembourser » en cas d'échec ;
+// traiterRetards réessaie. Le remboursement est total : les frais de
+// traitement de Stripe sur ce prélèvement restent à la charge de Snowro.
+export async function rembourser(demandeId) {
+  const ref = db.doc(`demandes/${demandeId}`);
+  const demande = (await ref.get()).data();
+  if (demande?.paiement?.statutPaiement !== "a_rembourser") return false;
+  try {
+    if (!demande.paiement.stripePaymentIntentId) throw new Error("prélèvement introuvable");
+    const remboursement = await stripe().refunds.create(
+      { payment_intent: demande.paiement.stripePaymentIntentId, reason: "requested_by_customer", metadata: { demandeId } },
+      { idempotencyKey: `remboursement-${demandeId}` },
+    );
+    await ref.update({
+      "paiement.statutPaiement": "rembourse",
+      "paiement.stripeRefundId": remboursement.id,
+      "paiement.rembourseAt": FieldValue.serverTimestamp(),
+      "paiement.erreurRemboursement": null,
+    });
+    return true;
+  } catch (err) {
+    logger.error(`Remboursement non fait pour la demande ${demandeId} : ${err.message}`);
+    await ref.update({ "paiement.erreurRemboursement": err.message });
+    return false;
+  }
+}
+
 // ---- Compte du déneigeur (Stripe Connect, Accounts v2) ----
 // Stripe exige Accounts v2 pour une nouvelle intégration Connect : compte
 // « destinataire » (configuration recipient, virements vers son solde

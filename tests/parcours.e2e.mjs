@@ -648,6 +648,25 @@ async function connexion(cle, largeur = 1280) {
   await bureau.close();
 }
 
+// Retard : demande acceptée dont l'heure prévue est passée sans « C'est fait ».
+{
+  await db.doc("demandes/M9").set(base({ donneurOuvrageId: uid.mireille, donneurPrenom: "Mireille", titre: "Entrée oubliée", typeService: "entree", remunerationOfferte: 35, dateHeureSouhaitee: ts(-2 * H), adresseGeohash: g7(46.827, -71.221), statut: "matchee", deneigeurId: uid.julie, deneigeurPrenom: "Julie", deneigeurNote: { moyenne: 4.9, nombre: 41 }, matchedAt: ts(-5 * H), paiement: paiement(35, "simule_retenu"), adresse: "5, 3e Rue, Québec" }));
+  const { p, ctx } = await connexion("mireille", 390);
+  await test("Mireille : demande en retard, « Annuler et être remboursé » ; elle passe à l'historique, remboursée", async () => {
+    await p.goto("http://localhost:4190/tableau-de-bord?mode=client");
+    const carte = p.locator(".carte-job", { hasText: "Entrée oubliée" });
+    await carte.getByText("En retard").waitFor();
+    await carte.getByText(/elle sera annulée et vous serez remboursé automatiquement/).waitFor();
+    await p.screenshot({ path: `${D}/e2e-retard-client-390.png`, fullPage: true });
+    await carte.getByRole("button", { name: "Annuler et être remboursé" }).click();
+    await p.getByRole("dialog").getByRole("button", { name: "Annuler et être remboursé" }).click();
+    await p.getByText("annulée (retard du déneigeur), remboursée").waitFor();
+    const d = (await db.doc("demandes/M9").get()).data();
+    assert.equal(d.statut, "annulee"); assert.equal(d.annulation.par, "client"); assert.equal(d.paiement.statutPaiement, "simule_rembourse");
+  });
+  await ctx.close();
+}
+
 // Mesure d'audience (Loi 25) : rien avant « Accepter », adresse nettoyée, retrait.
 {
   const ctx = await b.newContext({ viewport: { width: 390, height: 844 }, mesure: true });

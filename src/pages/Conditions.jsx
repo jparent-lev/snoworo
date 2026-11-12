@@ -71,9 +71,12 @@ export default function Conditions() {
         </li>
         <li>
           Vous pouvez annuler une demande sans frais tant que personne ne l'a acceptée. Une fois qu'elle est
-          acceptée, elle ne peut plus être annulée, ni par vous ni par le déneigeur de quartier. En cas de
-          problème (absence, travail incomplet), utilisez « Signaler un problème » : le paiement reste retenu
-          et nous tranchons selon les faits.
+          acceptée, elle ne peut plus être annulée, ni par vous ni par le déneigeur de quartier, sauf en cas de
+          retard : si l'heure prévue est passée sans que le déneigeur de quartier ait marqué la demande faite,
+          vous pouvez l'annuler et être remboursé en totalité. Sans nouvelles 12 heures après l'heure prévue, la
+          demande est annulée et vous êtes remboursé automatiquement ; le déneigeur de quartier n'est alors pas
+          payé. Pour tout autre problème (absence, travail incomplet), utilisez « Signaler un problème » : le
+          paiement reste retenu et nous tranchons selon les faits.
         </li>
         <li>
           Vous vous engagez à rendre l'endroit accessible et à signaler tout ce qui pourrait être dangereux ou
@@ -94,6 +97,11 @@ export default function Conditions() {
         <li>
           Avant de marquer une demande faite, vous prenez sur place de 1 à 3 photos du travail terminé. Elles ne
           montrent que l'endroit déneigé : jamais de personne ni de plaque d'immatriculation reconnaissable.
+        </li>
+        <li>
+          Vous marquez la demande faite avant l'heure prévue. Passé cette heure, le client peut l'annuler et être
+          remboursé ; 12 heures après l'heure prévue sans « C'est fait », elle est annulée automatiquement et vous
+          n'êtes pas payé pour cette demande.
         </li>
         <li>
           Vous recevez le montant offert, moins les frais de service de Snowro, dans votre compte bancaire après la
