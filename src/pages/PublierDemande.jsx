@@ -8,6 +8,7 @@ import { useAuth } from "../context/AuthContext";
 import CarteDePaiement from "../components/CarteDePaiement";
 import ChampAdresse from "../components/ChampAdresse";
 import "./AuthForm.css";
+import { mesurer } from "../lib/mesure";
 
 const TYPES_SERVICE = [
   { value: "entree", label: "Entrée / allée" },
@@ -104,6 +105,7 @@ export default function PublierDemande() {
         montant: montantNombre,
         dateHeureSouhaitee: new Date(dateHeureSouhaitee).toISOString(),
       });
+      mesurer("demande_publiee", { type_service: typeService, value: montantNombre, currency: "CAD" });
       navigate("/tableau-de-bord");
     } catch (err) {
       setErreur(messageErreur(err));

@@ -5,6 +5,7 @@ import { doc, setDoc } from "firebase/firestore";
 import { auth, db } from "../lib/firebase";
 import VersionFooter from "../components/VersionFooter";
 import "./AuthForm.css";
+import { mesurer } from "../lib/mesure";
 
 export default function Signup() {
   const [displayName, setDisplayName] = useState("");
@@ -26,6 +27,7 @@ export default function Signup() {
       // merge : onUserCreate (Cloud Function) complète la fiche de son côté,
       // sans jamais toucher aux rôles (voir functions/src/onUserCreate.js).
       await setDoc(doc(db, "users", user.uid), { displayName }, { merge: true });
+      mesurer("sign_up", { method: "courriel" });
       navigate("/tableau-de-bord");
     } catch (err) {
       setErreur(traduireErreur(err.code));

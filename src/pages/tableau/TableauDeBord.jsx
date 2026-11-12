@@ -7,6 +7,7 @@ import TableauClient from "./TableauClient";
 import TableauDeneigeur from "./TableauDeneigeur";
 import { ChoixRoles } from "./elements";
 import "./Tableau.css";
+import { mesurer } from "../../lib/mesure";
 
 // Point d'entrée après connexion : le mode (Client / Déneigeur) vient de la
 // bascule de l'en-tête (Layout). Un compte sans rôle choisit d'abord.
@@ -40,6 +41,7 @@ function PremierChoix() {
   async function valider() {
     setEnCours(true);
     await setDoc(doc(db, "users", user.uid), { role: roles }, { merge: true });
+    mesurer("choix_role", { role: roles.length > 1 ? "les_deux" : roles[0] === "deneigeur_x" ? "deneigeur" : "client" });
   }
 
   return (

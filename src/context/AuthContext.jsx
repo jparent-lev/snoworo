@@ -1,4 +1,5 @@
 import { createContext, useContext, useEffect, useState } from "react";
+import { definirProfilMesure } from "../lib/mesure";
 import { onAuthStateChanged } from "firebase/auth";
 import { doc, onSnapshot } from "firebase/firestore";
 import { auth, db } from "../lib/firebase";
@@ -25,6 +26,7 @@ export function AuthProvider({ children }) {
     setLoading(true);
     return onSnapshot(doc(db, "users", user.uid), (snap) => {
       setProfile(snap.exists() ? snap.data() : null);
+      if (snap.exists()) definirProfilMesure(snap.data().role);
       setLoading(false);
     });
   }, [user]);

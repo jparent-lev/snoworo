@@ -84,7 +84,7 @@ export default function Landing() {
                 <Link to="/connexion" className="landing__connexion">
                   Se connecter
                 </Link>
-                <Link to="/inscription" className="landing__nav-cta landing__bouton-neige landing__bouton-neige--a">
+                <Link to="/inscription" data-mesure="entete" className="landing__nav-cta landing__bouton-neige landing__bouton-neige--a">
                   Créer un compte
                 </Link>
               </>
@@ -117,10 +117,10 @@ export default function Landing() {
           <div className="landing__hero-cta">
             {/* L'inscription est la même pour tout le monde : ce que la personne
                 veut faire se choisit à la première visite du tableau de bord. */}
-            <Link to="/inscription" className="landing__bouton-primaire landing__bouton-neige landing__bouton-neige--b">
+            <Link to="/inscription" data-mesure="heros_publier" className="landing__bouton-primaire landing__bouton-neige landing__bouton-neige--b">
               Publier une demande
             </Link>
-            <a href="#deneigeur" className="landing__bouton-fantome">
+            <a href="#deneigeur" data-mesure="heros_deneiger" className="landing__bouton-fantome">
               Je veux déneiger
             </a>
           </div>
@@ -273,7 +273,7 @@ export default function Landing() {
                 Un professionnel du déneigement qui souhaite combler les temps libres de sa tournée
               </span>
             </div>
-            <Link to="/inscription" className="landing__bouton-ocre landing__bouton-neige landing__bouton-neige--d">
+            <Link to="/inscription" data-mesure="section_deneigeur" className="landing__bouton-ocre landing__bouton-neige landing__bouton-neige--d">
               Devenir déneigeur de quartier
             </Link>
           </div>
@@ -324,7 +324,7 @@ export default function Landing() {
             </p>
           </div>
           <div className="landing__final-cta">
-            <Link to="/inscription" className="landing__bouton-primaire landing__bouton-neige landing__bouton-neige--b">
+            <Link to="/inscription" data-mesure="appel_final" className="landing__bouton-primaire landing__bouton-neige landing__bouton-neige--b">
               Créer un compte
             </Link>
             <Link to="/connexion" className="landing__final-connexion">

@@ -105,7 +105,10 @@ export default function Confidentialite() {
       <h2>Ce que nous ne faisons pas</h2>
       <ul>
         <li>Nous ne vendons pas, ne louons pas et n'échangeons pas vos renseignements personnels.</li>
-        <li>Nous n'utilisons pas de témoins (cookies) publicitaires ni d'outils de pistage publicitaire.</li>
+        <li>
+          Nous n'utilisons pas de témoins (cookies) publicitaires ni d'outils de pistage publicitaire. La mesure
+          d'audience, elle, n'est active que si vous l'acceptez.
+        </li>
         <li>
           Sur l'accueil, nous publions seulement le nombre de déneigeurs de quartier inscrits par ville, et
           seulement pour les villes qui en comptent au moins 10 : jamais de nom, d'adresse ni de quartier.
@@ -117,11 +120,22 @@ export default function Confidentialite() {
         </li>
       </ul>
 
-      <h2>Témoins et stockage dans votre navigateur</h2>
+      <h2 id="temoins">Témoins et stockage dans votre navigateur</h2>
       <p>
-        Snowro utilise le stockage de votre navigateur uniquement pour ce qui est nécessaire au fonctionnement
-        du site, par exemple garder votre session ouverte une fois connecté. Aucun témoin de mesure d'audience ou
-        de publicité n'est utilisé.
+        Snowro utilise le stockage de votre navigateur pour ce qui est nécessaire au fonctionnement du site, par
+        exemple garder votre session ouverte une fois connecté ou retenir votre choix au sujet de la mesure
+        d'audience. Aucun témoin publicitaire n'est utilisé.
+      </p>
+      <p>
+        <strong>Mesure d'audience (Google Analytics), seulement si vous l'acceptez.</strong> Elle est désactivée par
+        défaut : rien n'est chargé ni envoyé à Google avant que vous choisissiez « Accepter » dans le bandeau. Si
+        vous acceptez, Google Analytics dépose des témoins (_ga) et nous indique, de façon agrégée, les pages
+        vues, la provenance des visites (par exemple une publication Instagram), le type d'appareil, la ville
+        approximative et les étapes franchies (création de compte, demande publiée, acceptée ou confirmée,
+        vidéo regardée). Nous n'y envoyons jamais votre nom, votre courriel, votre adresse ni l'identifiant de
+        votre compte ou de vos demandes, et les fonctions publicitaires de Google sont désactivées. Ces données
+        servent seulement à améliorer le site ; Google les conserve 2 mois. Vous pouvez changer d'avis en tout
+        temps avec le lien « Témoins » au bas des pages : les témoins de mesure sont alors effacés.
       </p>
 
       <h2>Qui d'autre y a accès</h2>
@@ -134,7 +148,8 @@ export default function Confidentialite() {
         <li>
           <strong>Google (Firebase et Google Maps Platform) :</strong> hébergement du site web et de la base de données,
           authentification, fonctions serveur, suggestions d'adresses pendant la saisie et conversion d'une
-          adresse, d'un code postal ou d'une position en nom de ville.
+          adresse, d'un code postal ou d'une position en nom de ville. Si vous l'acceptez, Google Analytics
+          pour la mesure d'audience (voir « Témoins » ci-dessus).
         </li>
         <li>
           <strong>Stripe :</strong> traitement des paiements et vérification d'identité des déneigeurs de
