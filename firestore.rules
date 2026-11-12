@@ -13,7 +13,7 @@ service cloud.firestore {
 
     function champsProteges() {
       // consents, proSubscription, ville, villeGeoId, stripeConnectAccountId,
-      // connectStatus : jamais en écriture directe côté client. ville/villeGeoId
+      // connectStatus, tentativeCompteStripe : jamais en écriture directe côté client. ville/villeGeoId
       // sont dérivés par géocodage serveur ; connectStatus n'est confirmé que
       // par la Cloud Function qui reçoit le webhook Stripe — voir
       // snowro-changements-claude-code.md § 1 : une donnée qui détermine un
@@ -27,7 +27,7 @@ service cloud.firestore {
       // (functions/src/paiements.js) ; jamais le numéro, seulement un résumé.
       // telephoneVerifie, telephoneVerifieAt : écrits par verifierCodeTelephone
       // après le code reçu par texto (functions/src/telephone.js).
-      return ['consents', 'proSubscription', 'ville', 'villeGeoId', 'stripeConnectAccountId', 'connectStatus',
+      return ['consents', 'proSubscription', 'ville', 'villeGeoId', 'stripeConnectAccountId', 'connectStatus', 'tentativeCompteStripe',
               'ratingAvg', 'ratingCount', 'ratingCriteres', 'nbJobsCompletees', 'stripeCustomerId', 'carte', 'carteMiseAJourAt',
               'telephoneVerifie', 'telephoneVerifieAt', 'stripeMode'];
     }

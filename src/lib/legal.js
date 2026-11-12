@@ -3,8 +3,9 @@
 // à chaque modification du texte de l'une ou l'autre politique (la Loi 25
 // demande que la version en vigueur soit identifiable).
 export const INFOS_LEGALES = {
-  // Nom légal de la société (ajouter « inc. » ou le NEQ ici si voulu).
-  nomLegal: "Snowro",
+  // Nom légal de la société qui exploite Snowro (registre des entreprises du
+  // Québec, même nom que le compte Stripe).
+  nomLegal: "9508-2632 Québec inc.",
   responsableRenseignements: "Jonathan Parent",
   miseAJour: "12 novembre 2026",
 };
