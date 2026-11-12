@@ -342,7 +342,7 @@ async function connexion(cle, largeur = 1280) {
   await test("Marc : adresse de service choisie dans les suggestions, envoyée par placeId", async () => {
     await p.goto("http://localhost:4190/parametres");
     // Adresse déjà enregistrée : confirmée, formulaire replié.
-    await p.getByText("✓ Adresse de service enregistrée").waitFor();
+    await p.locator(".statut-connect", { hasText: "Enregistrée" }).first().waitFor();
     assert.equal(await p.getByRole("combobox").count(), 0);
     await p.getByRole("button", { name: "Changer d'adresse" }).click();
     const champ = p.getByRole("combobox");
@@ -405,7 +405,8 @@ async function connexion(cle, largeur = 1280) {
     await p.getByRole("button", { name: "Vérifier" }).click();
     assert.deepEqual(appelsTel, [{ numero: "418 555-1234" }, { code: "123456" }]);
     await db.doc(`users/${uid.marc}`).update({ telephoneVerifie: "+14185551234" });
-    await p.getByText("✓ (418) 555-1234 vérifié").waitFor();
+    await p.getByText("(418) 555-1234").waitFor();
+    await p.locator(".statut-connect", { hasText: "Vérifié" }).waitFor();
     // Numéro vérifié : l'interrupteur s'active, le texto d'essai part vers ce numéro.
     await p.waitForFunction(() => !document.querySelector('[aria-label="Notifications SMS"]')?.disabled);
     await sms.click();
@@ -420,7 +421,7 @@ async function connexion(cle, largeur = 1280) {
     // Accord donné à une version antérieure du texte : redemandé.
     await db.doc(`users/${uid.marc}`).update({ "consents.notificationsSMS.version": 1 });
     await p.getByRole("button", { name: "Accepter le nouveau texte" }).click();
-    await p.getByText(/^Activé le \d{1,2} \S+ \d{4}$/).waitFor();
+    await p.locator(".statut-connect--ok", { hasText: /^✓Activé le \d{1,2} \S+ \d{4}$/ }).waitFor();
     await p.screenshot({ path: `${D}/e2e-cellulaire-390.png`, fullPage: true });
     assert.equal(await p.evaluate(() => document.documentElement.scrollWidth), 390);
   });

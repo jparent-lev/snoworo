@@ -249,3 +249,9 @@
 .parametres__page h1[id] {
   scroll-margin-top: 96px;
 }
+
+.parametres__numero {
+  margin: 6px 0 2px;
+  font-weight: 700;
+  color: var(--color-terre);
+}

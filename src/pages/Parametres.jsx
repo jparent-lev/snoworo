@@ -169,9 +169,7 @@ export default function Parametres() {
           <h3>{profile.ville ? profile.ville : "Aucune adresse enregistrée"}</h3>
           {profile.ville ? (
             <>
-              <p className="champ-adresse__ok">
-                ✓ Adresse de service enregistrée{profile.postalCodePrefix ? ` (secteur ${profile.postalCodePrefix})` : ""}
-              </p>
+              <Pastille ton="ok">Enregistrée{profile.postalCodePrefix ? ` · secteur ${profile.postalCodePrefix}` : ""}</Pastille>
               <p>Vous voyez les demandes ouvertes dans cette ville, avec leur distance de chez vous.</p>
               <p className="parametres__meta">
                 Pour votre vie privée, nous gardons seulement la ville, le secteur et une position approximative,
@@ -304,9 +302,9 @@ export default function Parametres() {
                       </div>
                     ) : (
                       etat?.grantedAt && (
-                        <p className="parametres__meta">
+                        <Pastille ton={accorde ? "ok" : "neutre"}>
                           {dateConsentement(accorde ? "Activé" : "Désactivé", accorde ? etat.grantedAt : etat.revokedAt ?? etat.grantedAt)}
-                        </p>
+                        </Pastille>
                       )
                     )}
                     {erreurConsent && enCours === null && c.type === "notificationsSMS" && (
@@ -406,12 +404,7 @@ function SectionPaiement({ profile, deneigeur }) {
           <div className="parametres__item-texte">
             <h3>Carte pour vos demandes</h3>
             {/* Même pastille que le compte de versement : on voit d'un coup d'œil que c'est en place. */}
-            <span className={`statut-connect statut-connect--${carte ? "ok" : "neutre"}`}>
-              <span className="statut-connect__icone" aria-hidden="true">
-                {carte ? "✓" : "○"}
-              </span>
-              {carte ? "Enregistrée" : "Aucune carte"}
-            </span>
+            <Pastille ton={carte ? "ok" : "neutre"}>{carte ? "Enregistrée" : "Aucune carte"}</Pastille>
             <p>
               {carte
                 ? `${libelleCarte(carte)}. Elle n'est prélevée que lorsqu'un déneigeur de quartier accepte votre demande.`
@@ -436,12 +429,7 @@ function SectionPaiement({ profile, deneigeur }) {
           <div className="parametres__item parametres__item--empile-mobile">
             <div className="parametres__item-texte">
               <h3>Compte de versement</h3>
-              <span className={`statut-connect statut-connect--${infoStatut.ton}`}>
-                <span className="statut-connect__icone" aria-hidden="true">
-                  {{ ok: "✓", attente: "…", alerte: "!", neutre: "○" }[infoStatut.ton]}
-                </span>
-                {infoStatut.pastille}
-              </span>
+              <Pastille ton={infoStatut.ton}>{infoStatut.pastille}</Pastille>
               <p>{infoStatut.texte}</p>
               <p className="parametres__meta">
                 Géré par Stripe : identité et compte bancaire, une seule fois. <strong>Obligatoire pour accepter des demandes.</strong>
@@ -536,6 +524,20 @@ function SectionFermeture() {
 // (functions/src/telephone.js). Affiché une fois le consentement accordé.
 // « Votre cellulaire » : le numéro appartient au compte, vérifié une seule fois
 // par un code. Le texto d'essai ne part que vers ce numéro vérifié.
+// Pastille d'état, la même partout dans les paramètres : ✓ vert quand c'est
+// en place, ○ neutre sinon (ton : ok | neutre | attente | alerte).
+function Pastille({ ton, children }) {
+  const icone = { ok: "✓", attente: "…", alerte: "!", neutre: "○" }[ton];
+  return (
+    <span className={`statut-connect statut-connect--${ton}`}>
+      <span className="statut-connect__icone" aria-hidden="true">
+        {icone}
+      </span>
+      {children}
+    </span>
+  );
+}
+
 // « Activé le 12 novembre 2026 » : la date de l'accord ou du retrait (la
 // version du texte reste dans la fiche, pour la preuve du consentement).
 function dateConsentement(libelle, horodatage) {
@@ -637,7 +639,8 @@ function SectionTelephone({ profile, smsActifs }) {
       <div className="parametres__item parametres__item--colonne">
         <div className="parametres__item-texte">
           <h3>Cellulaire</h3>
-          <p className="champ-adresse__ok">✓ {formaterNumero(profile.telephoneVerifie)} vérifié</p>
+          <Pastille ton="ok">Vérifié</Pastille>
+          <p className="parametres__numero">{formaterNumero(profile.telephoneVerifie)}</p>
           <p>{smsActifs ? "Les avis par texto partent vers ce numéro." : "Activez « Notifications SMS » ci-dessous pour recevoir les avis à ce numéro."}</p>
         </div>
         <div className="parametres__actions">
