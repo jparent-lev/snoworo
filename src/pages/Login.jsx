@@ -4,6 +4,7 @@ import { useLocation, useNavigate, Link } from "react-router-dom";
 import { auth } from "../lib/firebase";
 import VersionFooter from "../components/VersionFooter";
 import "./AuthForm.css";
+import { mesurer } from "../lib/mesure";
 
 export default function Login() {
   const [email, setEmail] = useState("");
@@ -21,6 +22,7 @@ export default function Login() {
     setEnCours(true);
     try {
       await signInWithEmailAndPassword(auth, email, password);
+      mesurer("login", { method: "courriel" });
       navigate(destination, { replace: true });
     } catch {
       setErreur("Courriel ou mot de passe incorrect.");
