@@ -3,12 +3,12 @@ import { useAuth } from "../../context/AuthContext";
 import { ecouterDemandesOuvertes, ecouterMesJobs, lireAdressePrivee, lirePrive } from "../../lib/demandes";
 import { preparerPhoto } from "../../lib/photo";
 import { PAIEMENT_REEL, profilStripe } from "../../lib/paiements";
-import { accepterDemande, marquerFaite, messageErreur } from "../../lib/cycleDemande";
+import { accepterDemande, estEnRetard, limiteRetard, marquerFaite, messageErreur } from "../../lib/cycleDemande";
 import { aNouveauMessage, ecouterLectures } from "../../lib/messagerie";
 import { calculerPaiement, ecouterConfigFrais } from "../../lib/config";
 import { formatArgent } from "../../lib/formatArgent";
 import { decoderGeohash, distanceMetres } from "../../lib/geo";
-import { dateCourte, debutSemaine, echeance, estAujourdhui, heure, ilYa, millis } from "../../lib/temps";
+import { dateCourte, debutSemaine, echeance, estAujourdhui, heure, ilYa, millis, moment } from "../../lib/temps";
 import Rangee from "../../components/Rangee";
 import EtapesDemarrage from "../../components/EtapesDemarrage";
 import { CRITERES, EncartVideo, Modale, ModaleSignalement, noteTexte } from "./elements";
@@ -228,7 +228,7 @@ function CarteJob({ job: j, nouveau, conversationOuverte, onConversationFermee }
   return (
     <article className={`carte-job ${j.statut === "matchee" ? "carte-job--attention" : ""}`}>
       <div className="carte-job__haut">
-        {j.statut === "matchee" && <span className="badge badge--argile">À faire</span>}
+        {j.statut === "matchee" && <span className="badge badge--argile">{estEnRetard(j) ? "En retard" : "À faire"}</span>}
         {j.statut === "faite" && <span className="badge badge--vert">En attente de confirmation</span>}
         {j.statut === "signalee" && <span className="badge badge--gris">Signalée</span>}
         {j.statut === "completee" && <span className="badge badge--ardoise">Terminée</span>}
@@ -266,6 +266,13 @@ function CarteJob({ job: j, nouveau, conversationOuverte, onConversationFermee }
         <span className="carte-job__meta">pour vous ({formatArgent(j.remunerationOfferte)} moins les frais)</span>
       </div>
 
+      {estEnRetard(j) && (
+        <p className="carte-job__note carte-job__note--alerte">
+          L'heure prévue est passée. Si c'est fait, marquez-la « C'est fait » avec vos photos. Sinon, elle sera annulée{" "}
+          <b>{moment(limiteRetard(j)).toLowerCase()}</b> et {j.donneurPrenom} sera remboursé : aucun versement pour cette
+          demande. {j.donneurPrenom} peut aussi l'annuler dès maintenant.
+        </p>
+      )}
       {j.statut === "faite" && (
         <p className="carte-job__note">
           {j.donneurPrenom} a jusqu'à <b>{j.confirmationAutoAt ? heure(j.confirmationAutoAt.toDate()) : "…"}</b> pour confirmer ou

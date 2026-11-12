@@ -947,3 +947,10 @@
     text-align: center;
   }
 }
+
+/* Demande en retard : note bien visible pour le déneigeur. */
+.carte-job__note--alerte {
+  background: #fbe9e2;
+  color: var(--color-argile-foncee);
+  border: 1px solid rgba(193, 101, 47, 0.35);
+}
