@@ -3,6 +3,7 @@ import SnowroSymbol from "./brand/SnowroSymbol";
 import VersionFooter from "./VersionFooter";
 import LienTemoins from "./LienTemoins";
 import { SilhouetteToits } from "../pages/landing/Decors";
+import { INFOS_LEGALES } from "../lib/legal";
 import "./PiedDePage.css";
 
 // Pied de page du site vitrine, partagé entre l'accueil et les pages légales.
@@ -37,7 +38,7 @@ export default function PiedDePage() {
         </div>
       </div>
       <div className="pied__barre">
-        <span>© 2026 Snowro. Québec, QC.</span>
+        <span>© 2026 Snowro, exploité par {INFOS_LEGALES.nomLegal}, Québec (QC).</span>
         <span>Paiements traités par Stripe.</span>
       </div>
       <div className="pied__version">
