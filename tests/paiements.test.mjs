@@ -236,6 +236,12 @@ await test("erreur Stripe : message lisible renvoyé à l'app", async () => {
   const e = await echoue(appel(p.lienCompteDeneigeur, "payDen2", {}), "failed-precondition", "plateforme incomplète");
   assert.match(e.message, /^Stripe : Please review the responsibilities/);
   fauxStripe.v2.core.accounts.create = creer;
+  // Nouvel essai une fois la plateforme réglée : nouvelle clé d'idempotence,
+  // sinon Stripe rejouerait le refus enregistré pour l'ancienne.
+  assert.equal((await db.doc("users/payDen2").get()).data().tentativeCompteStripe, 1);
+  await appel(p.lienCompteDeneigeur, "payDen2", {});
+  assert.match(derniers("v2.accounts.create").at(-1).options.idempotencyKey, /-payDen2-1$/);
+  assert.ok((await db.doc("users/payDen2").get()).data().stripeConnectAccountId);
 });
 
 await test("fermer son compte : client Stripe (carte enregistrée) supprimé", async () => {
