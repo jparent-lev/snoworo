@@ -20,6 +20,8 @@ Code : `src/lib/mesure.js`, bandeau `src/components/BandeauMesure.jsx`, lien
 
 ## Mise en route (console, à faire une fois)
 
+Fait pour la propriété G-62SJDTB2KX (avenant accepté le 11 novembre 2026).
+
 1. analytics.google.com : créer une propriété « Snowro » (fuseau
    America/Toronto, devise CAD), puis un flux Web pour `snowro.com`.
    Copier l'identifiant de mesure `G-…`.
