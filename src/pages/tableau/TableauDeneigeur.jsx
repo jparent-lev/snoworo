@@ -1,5 +1,4 @@
 import { useEffect, useMemo, useState } from "react";
-import { Link } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import { ecouterDemandesOuvertes, ecouterMesJobs, lireAdressePrivee, lirePrive } from "../../lib/demandes";
 import { preparerPhoto } from "../../lib/photo";
@@ -11,6 +10,7 @@ import { formatArgent } from "../../lib/formatArgent";
 import { decoderGeohash, distanceMetres } from "../../lib/geo";
 import { dateCourte, debutSemaine, echeance, estAujourdhui, heure, ilYa, millis } from "../../lib/temps";
 import Rangee from "../../components/Rangee";
+import EtapesDemarrage from "../../components/EtapesDemarrage";
 import { CRITERES, EncartVideo, Modale, ModaleSignalement, noteTexte } from "./elements";
 import Conversation, { BoutonMessages } from "./Conversation";
 import "./Tableau.css";
@@ -103,30 +103,7 @@ export default function TableauDeneigeur({ conversation, onConversationFermee })
         <p className="tableau__simulation">Période de test : aucun paiement réel n'est fait pour l'instant.</p>
       )}
 
-      {(!villeGeoId || !compteActif) && (
-        <div className="bandeau">
-          <div>
-            <h3>{villeGeoId ? "Une étape avant d'accepter des demandes" : "Une étape avant de voir les demandes"}</h3>
-            <p className="carte-job__meta" style={{ marginTop: 4 }}>
-              {villeGeoId
-                ? "Votre compte de versement Stripe reçoit l'argent de vos demandes. Cette étape ne se fait qu'une seule fois."
-                : "Votre adresse de service détermine votre ville : vous ne voyez jamais de demandes ailleurs."}
-            </p>
-            <div className="bandeau__etapes">
-              <span className="bandeau__ok">✓ Profil</span>
-              <span className={villeGeoId ? "bandeau__ok" : "bandeau__manque"}>{villeGeoId ? "✓" : "○"} Adresse de service</span>
-              {PAIEMENT_REEL ? (
-                <span className={compteActif ? "bandeau__ok" : "bandeau__manque"}>{compteActif ? "✓" : "○"} Compte de versement</span>
-              ) : (
-                <span className="bandeau__manque">○ Compte de versement (bientôt)</span>
-              )}
-            </div>
-          </div>
-          <Link to="/parametres" className="btn btn--principal">
-            {villeGeoId ? "Configurer mes versements" : "Ajouter mon adresse"}
-          </Link>
-        </div>
-      )}
+      <EtapesDemarrage profile={profile} />
 
       <div className="chiffres">
         <div className="chiffre">
