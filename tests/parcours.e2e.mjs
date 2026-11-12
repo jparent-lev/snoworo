@@ -375,7 +375,7 @@ async function connexion(cle, largeur = 1280) {
     assert.ok(boite.x + boite.width <= 390, `bouton jusqu'à ${boite.x + boite.width} px`);
     assert.equal(await p.evaluate(() => document.documentElement.scrollWidth), 390);
   });
-  await test("Marc : cellulaire vérifié par code, puis consentement aux textos, texto d'essai, nouvelle version", async () => {
+  await test("Marc : cellulaire vérifié par code, puis consentement aux textos, nouvelle version", async () => {
     const appelsTel = [];
     let refusTwilio = true;
     await p.route("**/envoyerCodeTelephone", (r) => {
@@ -392,7 +392,6 @@ async function connexion(cle, largeur = 1280) {
       appelsTel.push(r.request().postDataJSON().data);
       return r.fulfill({ json: { result: { ok: true, numero: "+14185551234" } } });
     });
-    await p.route("**/envoyerTexteEssai", (r) => r.fulfill({ json: { result: { ok: true, prochainEssaiAt: Date.now() + 10 * 60 * 1000 } } }));
     // Sans cellulaire vérifié, l'interrupteur des textos est grisé.
     const sms = p.getByRole("switch", { name: "Notifications SMS" });
     assert.equal(await sms.isDisabled(), true);
@@ -407,17 +406,12 @@ async function connexion(cle, largeur = 1280) {
     await db.doc(`users/${uid.marc}`).update({ telephoneVerifie: "+14185551234" });
     await p.getByText("(418) 555-1234").waitFor();
     await p.locator(".statut-connect", { hasText: "Vérifié" }).waitFor();
-    // Numéro vérifié : l'interrupteur s'active, le texto d'essai part vers ce numéro.
+    // Numéro vérifié : l'interrupteur s'active ; plus de texto d'essai.
     await p.waitForFunction(() => !document.querySelector('[aria-label="Notifications SMS"]')?.disabled);
     await sms.click();
     await p.waitForFunction(() => document.querySelector('[aria-label="Notifications SMS"]')?.getAttribute("aria-checked") === "true");
     assert.equal((await db.doc(`users/${uid.marc}`).get()).data().consents.notificationsSMS.version, 2);
-    await p.getByRole("button", { name: "M'envoyer un texto d'essai" }).click();
-    await p.getByText("Texto d'essai envoyé au (418) 555-1234.").waitFor();
-    // Compte à rebours : le bouton reste désactivé jusqu'au prochain essai permis.
-    const rebours = p.getByRole("button", { name: /^Nouvel essai dans (9:5\d|10:00)$/ });
-    await rebours.waitFor();
-    assert.equal(await rebours.isDisabled(), true);
+    assert.equal(await p.getByRole("button", { name: /texto d'essai/ }).count(), 0);
     // Accord donné à une version antérieure du texte : redemandé.
     await db.doc(`users/${uid.marc}`).update({ "consents.notificationsSMS.version": 1 });
     await p.getByRole("button", { name: "Accepter le nouveau texte" }).click();

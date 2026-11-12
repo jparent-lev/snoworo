@@ -6,12 +6,10 @@ import { messageServeur } from "./erreurs";
 const envoyerCodeCallable = httpsCallable(functions, "envoyerCodeTelephone");
 const verifierCodeCallable = httpsCallable(functions, "verifierCodeTelephone");
 const retirerCallable = httpsCallable(functions, "retirerTelephone");
-const texteEssaiCallable = httpsCallable(functions, "envoyerTexteEssai");
 
 export const envoyerCodeTelephone = (numero) => envoyerCodeCallable({ numero });
 export const verifierCodeTelephone = async (code) => (await verifierCodeCallable({ code })).data;
 export const retirerTelephone = () => retirerCallable({});
-export const envoyerTexteEssai = () => texteEssaiCallable({});
 
 export function formaterNumero(e164) {
   const c = String(e164 ?? "").replace(/^\+1/, "");
@@ -30,8 +28,6 @@ export function messageTelephone(err) {
       return "Trop de codes envoyés à ce numéro aujourd'hui. Réessayez demain.";
     case "plafond-atteint":
       return "Les codes par texto sont temporairement indisponibles. Réessayez demain.";
-    case "attendre-essai":
-      return "Un texto d'essai vient de partir. Attendez 10 minutes avant d'en demander un autre.";
     case "telephone-non-verifie":
       return "Vérifiez d'abord votre cellulaire.";
     case "textos-non-configures":

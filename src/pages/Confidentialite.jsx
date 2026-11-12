@@ -95,7 +95,7 @@ export default function Confidentialite() {
           <strong>Notifications SMS :</strong> recevoir un texto lorsqu'une demande est publiée près de chez vous
           (déneigeurs), lorsque votre demande est acceptée ou faite, et lorsque l'autre personne vous écrit (qui
           a écrit, jamais le contenu). Il faut d'abord vérifier votre numéro de cellulaire par un code reçu par
-          texto; le numéro ne sert qu'à ces avis et aux textos d'essai que vous demandez vous-même. Vous pouvez
+          texto; le numéro ne sert qu'à ces avis et à ce code de vérification. Vous pouvez
           retirer le consentement ou le numéro en tout temps dans les paramètres (retirer le numéro retire aussi le
           consentement), ou répondre STOP à l'un de nos textos : le consentement est alors retiré automatiquement.
           Si le texte de ce consentement change, nous vous redemandons votre accord avant tout nouvel envoi.
