@@ -93,6 +93,21 @@ Le test (`snowro-test`) reste en mode test ; seule la production change.
 5. TPS/TVQ sur les frais Snowro : validé avec le comptable (inscription,
    affichage sur les reçus).
 
+**Pièges rencontrés le 12 novembre 2026 (passage en production)**
+- Paiements et virements actifs ne suffisent pas : tant qu'une exigence reste
+  sur le compte de la plateforme, la création de comptes connectés est refusée
+  avec `account_create_activation_required` (code absent de la documentation).
+  Ici : `person_….verification.document_live_capture`, une pièce d'identité
+  du représentant photographiée en direct (Paramètres > Entreprise > État du
+  compte). Le processus d'identité a dû être repris plusieurs fois avant de
+  passer. Vérifier `requirements` du compte plateforme (connecteur Stripe ou
+  `GET /v1/accounts/{id}`) : vide partout, sinon le régler d'abord.
+- Le refus est aussi rejoué par la clé d'idempotence : depuis la PR #112, la
+  clé de création porte un numéro de tentative (`tentativeCompteStripe`),
+  augmenté à chaque échec.
+- Le tableau de bord Express (connect.stripe.com) n'a pas de lien de retour :
+  « Voir mes versements » l'ouvre dans un nouvel onglet.
+
 **Secrets (Cloud Shell, `snowro-app`)**, sans jamais afficher les valeurs :
 
 ```bash
