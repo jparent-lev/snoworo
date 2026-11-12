@@ -203,7 +203,7 @@ Cartes de test : `4242 4242 4242 4242` (fonctionne), `4000 0000 0000 0341`
 | 7 | Passage de Stripe en production | Stripe et GCP | Fait le 2026-11-10 : compte vérifié, webhook de production, secrets `sk_live_` et `whsec_` dans `snowro-app`, `STRIPE_MODE=live` et `pk_live_`. Reste : TPS/TVQ sur les frais Snowro avec le comptable |
 | 9 | Clé Google propre au projet de test (facultatif) | GCP `snowro-test` | Aujourd'hui, le test utilise la clé de production (`Snowro-Geo`). Pour séparer quotas et facturation : créer une clé dans `snowro-test`, y activer Geocoding API et Places API (New) (déjà activée), puis une nouvelle version de `GOOGLE_GEOCODING_API_KEY` dans `snowro-test` |
 | 10 | Moyens de paiement en mode production | Stripe, mode production | Refaire le tri fait dans la sandbox le 2026-10-02 |
-| 11 | Textos (Twilio) | Twilio, GCP `snowro-test` et `snowro-app` | En service dans les deux projets (compte approuvé dans Trust Hub, Canada permis). Numéro +1 581 892-5901 partagé (`TWILIO_NUMERO` dans `functions/.env.<projet>`), secrets `TWILIO_ACCOUNT_SID` et `TWILIO_AUTH_TOKEN` (les clés API du compte sont refusées). Webhook entrant (STOP) du numéro : `https://northamerica-northeast1-snowro-app.cloudfunctions.net/recevoirTexteTwilio` (POST) ; le STOP envoyé depuis le test ne retire donc pas le consentement dans `snowro-test`. Les secrets `TWILIO_API_KEY_SID` et `TWILIO_API_KEY_SECRET` ne servent plus (à supprimer). Reste : avenant DPA |
+| 11 | Textos (Twilio) | Twilio, GCP `snowro-test` et `snowro-app` | En service dans les deux projets (compte approuvé dans Trust Hub, Canada permis). Numéro +1 581 892-5901 partagé (`TWILIO_NUMERO` dans `functions/.env.<projet>`), secrets `TWILIO_ACCOUNT_SID` et `TWILIO_AUTH_TOKEN` (les clés API du compte sont refusées). Webhook entrant (STOP) du numéro, réglé dans Twilio le 12 novembre 2026 (l'URL de démo de Twilio y était restée) : `https://northamerica-northeast1-snowro-app.cloudfunctions.net/recevoirTexteTwilio` (POST), aucun Messaging Service ; le STOP envoyé depuis le test ne retire donc pas le consentement dans `snowro-test`. Les secrets `TWILIO_API_KEY_SID` et `TWILIO_API_KEY_SECRET` ne servent plus (à supprimer). Reste : avenant DPA |
 | 8 | DKIM Google Workspace, puis DMARC `quarantine` | Console Workspace, GoDaddy | `google._domainkey` encore absent |
 
 ## 7. Journal
@@ -231,3 +231,7 @@ Cartes de test : `4242 4242 4242 4242` (fonctionne), `4000 0000 0000 0341`
   Avis de nouvelles demandes aux déneigeurs par courriel
   (`avertirDeneigeursNouvelleDemande`) ; nouvel index composite `users`
   (`villeGeoId`, `role` array-contains), déployé par le workflow.
+- 2026-11-12 : textos testés en production (snowro.com) : numéro vérifié par
+  code, consentement SMS, texto d'essai, webhook STOP corrigé dans Twilio
+  (remplace l'URL de démo `demo.twilio.com`), aucune erreur dans les journaux
+  Twilio (heures affichées en heure du Pacifique dans la console).
