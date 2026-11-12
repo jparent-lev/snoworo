@@ -5,9 +5,9 @@ import { ecouterMesDemandes, lireAdressePrivee } from "../../lib/demandes";
 import { aNouveauMessage, ecouterLectures } from "../../lib/messagerie";
 import { PAIEMENT_REEL, relancerDemande } from "../../lib/paiements";
 import CarteDePaiement from "../../components/CarteDePaiement";
-import { annulerDemande, augmenterOffre, confirmerJob, evaluerJob, messageErreur } from "../../lib/cycleDemande";
+import { annulerDemande, augmenterOffre, confirmerJob, estEnRetard, evaluerJob, limiteRetard, messageErreur } from "../../lib/cycleDemande";
 import { formatArgent } from "../../lib/formatArgent";
-import { dateCourte, dureeRestante, echeance, ilYa, millis } from "../../lib/temps";
+import { dateCourte, dureeRestante, echeance, ilYa, millis, moment } from "../../lib/temps";
 import Rangee from "../../components/Rangee";
 import { EncartVideo, Etapes, Modale, ModaleEvaluation, ModalePhoto, ModaleSignalement, Personne } from "./elements";
 import Conversation, { BoutonMessages } from "./Conversation";
@@ -126,7 +126,11 @@ function RangHistorique({ demande: d, evaluable }) {
       <span>
         {d.titre}
         {d.statut === "annulee" ? (
-          <i> · annulée</i>
+          <i>
+            {" "}
+            · annulée
+            {d.annulation?.raison === "retard" ? " (retard du déneigeur), remboursée" : ""}
+          </i>
         ) : (
           <>
             {" "}
@@ -180,13 +184,15 @@ function CarteDemandeClient({ demande: d, nouveau, conversationOuverte, onConver
     }
   }
 
-  const attention = d.statut === "faite" || d.statut === "paiement_refuse";
+  const retard = estEnRetard(d);
+  const attention = d.statut === "faite" || d.statut === "paiement_refuse" || retard;
 
   return (
     <article className={`carte-job ${attention ? "carte-job--attention" : ""}`}>
       <div className="carte-job__haut">
         {d.statut === "ouverte" && <span className="badge badge--ocre">En attente d'un déneigeur</span>}
-        {d.statut === "matchee" && <span className="badge badge--ardoise">Acceptée</span>}
+        {d.statut === "matchee" && !retard && <span className="badge badge--ardoise">Acceptée</span>}
+        {retard && <span className="badge badge--argile">En retard</span>}
         {d.statut === "faite" && <span className="badge badge--argile">À confirmer</span>}
         {d.statut === "signalee" && <span className="badge badge--gris">Problème signalé</span>}
         {d.statut === "paiement_refuse" && <span className="badge badge--argile">Carte refusée</span>}
@@ -214,8 +220,15 @@ function CarteDemandeClient({ demande: d, nouveau, conversationOuverte, onConver
           trouve souvent preneur plus rapidement.
         </p>
       )}
-      {d.statut === "matchee" && (
+      {d.statut === "matchee" && !retard && (
         <p className="carte-job__note">Paiement retenu par Snowro jusqu'à ce que la demande soit confirmée.</p>
+      )}
+      {retard && (
+        <p className="carte-job__note">
+          {d.deneigeurPrenom} n'a pas encore marqué la demande faite. Vous pouvez lui écrire, ou l'annuler et être
+          remboursé. Sans nouvelles d'ici <b>{moment(limiteRetard(d)).toLowerCase()}</b>, elle sera annulée et vous serez remboursé
+          automatiquement.
+        </p>
       )}
       {d.statut === "faite" && (
         <p className="carte-job__note">
@@ -265,6 +278,11 @@ function CarteDemandeClient({ demande: d, nouveau, conversationOuverte, onConver
             </button>
           </>
         )}
+        {retard && (
+          <button type="button" className="btn btn--principal btn--petit" onClick={() => setModale("annulerRetard")}>
+            Annuler et être remboursé
+          </button>
+        )}
         {d.statut === "matchee" && (
           <button type="button" className="btn btn--lien" onClick={() => setModale("signaler")}>
             Signaler un problème
@@ -296,6 +314,30 @@ function CarteDemandeClient({ demande: d, nouveau, conversationOuverte, onConver
               }}
             >
               Annuler la demande
+            </button>
+          </div>
+        </Modale>
+      )}
+      {modale === "annulerRetard" && (
+        <Modale titre="Annuler et être remboursé ?" onFermer={() => setModale(null)}>
+          <p>
+            L'heure prévue est passée et {d.deneigeurPrenom} n'a pas marqué la demande faite. Si vous l'annulez, les{" "}
+            {formatArgent(d.remunerationOfferte)} vous sont remboursés en entier et {d.deneigeurPrenom} n'est pas payé.
+            Le remboursement apparaît sur votre relevé d'ici 5 à 10 jours ouvrables.
+          </p>
+          <div className="modale__actions">
+            <button type="button" className="btn btn--fantome" onClick={() => setModale(null)}>
+              Attendre encore
+            </button>
+            <button
+              type="button"
+              className="btn btn--principal"
+              onClick={() => {
+                setModale(null);
+                agir(() => annulerDemande({ demandeId: d.id }));
+              }}
+            >
+              Annuler et être remboursé
             </button>
           </div>
         </Modale>

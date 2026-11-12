@@ -41,6 +41,24 @@ garantir que `consents` existe toujours avec sa forme complète (`ville`/`villeG
 sont initialisés à `null` dès la création, remplis plus tard quand le déneigeur
 enregistre son adresse de service).
 
+### `users/{uid}/adresses/{adresseId}` : carnet d'adresses du client
+
+```
+nom                     // « Maison », « Parents »… (40 car.)
+lien, personneSurPlace  // « moi » | « proche », prénom facultatif
+adresse, adresseNormalisee, unite, placeId, saisie, geohash
+ville, villeGeoId, postalCodePrefix, quartier   // géocodage fait à l'ajout
+attestation             // { version, texte, at } : autorisation attestée
+createdAt
+```
+
+Ajout formel par `ajouterAdresse` (géocodage précis, attestation exigée),
+retrait par `supprimerAdresse` (`functions/src/carnet.js`) ; garde-fou de
+100 adresses. `publierDemande({ adresseId })` reprend l'adresse et son
+géocodage tels quels ; une adresse saisie pour une demande peut y être ajoutée
+(`enregistrer: { nom }`). Lecture par le propriétaire seulement, aucune
+écriture client (`firestore.rules`). Effacé avec le compte (`recursiveDelete`).
+
 ### `ville` / `villeGeoId` — intégrité du matching géographique
 
 Un déneigeur n'a **aucun** sélecteur de ville : `ville` (texte d'affichage,
@@ -122,6 +140,8 @@ déneigeur (décision produit) : le seul recours est de signaler un problème.
 
 ```
 adresse, geohash        // adresse saisie et geohash pleine précision
+lien, personneSurPlace  // « moi » | « proche », prénom montré au déneigeur
+attestation             // { source: carnet|demande, adresseId?, version, at }
 ```
 
 Lisible seulement par le client et, après acceptation, par le déneigeur
@@ -250,7 +270,10 @@ avant l'écriture).
   l'appartement) : c'est celle que voit le déneigeur. `saisie` : « suggestion »
   (choisie dans la liste, `suggererAdresses`) ou « texte » (saisie complète).
   Dans les deux cas, seule une adresse civique précise est acceptée (numéro et
-  rue, position sur le toit ou interpolée).
+  rue, position sur le toit ou interpolée). `lien` (« moi » ou « proche »),
+  `personneSurPlace` (prénom facultatif, vide pour « moi ») et `attestation`
+  (`{ source, adresseId?, version, at }`) : l'autorisation de faire déneiger
+  l'adresse, reprise du carnet ou cochée pour cette demande.
 - `photo-0`, `photo-1`, `photo-2` : `{ donnees, ajouteeAt, expireAt }`, de 1 à
   3 photos **obligatoires** envoyées avec `marquerFaite` (anciennes jobs : un
   seul document `photo`). L'app la réduit (1280 px) et la réencode en JPEG, ce qui

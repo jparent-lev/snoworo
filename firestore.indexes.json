@@ -105,6 +105,20 @@
           "arrayConfig": "CONTAINS"
         }
       ]
+    },
+    {
+      "collectionGroup": "demandes",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "statut",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "dateHeureSouhaitee",
+          "order": "ASCENDING"
+        }
+      ]
     }
   ],
   "fieldOverrides": []

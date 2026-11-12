@@ -21,8 +21,6 @@ const ESSAIS_MAX = 5;
 // plafond global par jour.
 export const CODES_PAR_NUMERO_PAR_JOUR = 3;
 export const PLAFOND_CODES_PAR_JOUR = 200;
-// Texto d'essai : seulement vers le numéro vérifié du compte.
-export const DELAI_TEXTE_ESSAI_MS = 10 * 60 * 1000;
 const JOUR_MS = 24 * 60 * 60 * 1000;
 
 const empreinte = (uid, code) => createHash("sha256").update(`${uid}:${code}`).digest("hex");
@@ -127,27 +125,4 @@ export const retirerTelephone = onCall({ region: REGION }, async (request) => {
   }
   await ref.update(maj);
   return { ok: true };
-});
-
-// Texto d'essai, à la demande, vers le numéro vérifié du compte seulement
-// (jamais vers un numéro saisi) : au plus un toutes les 10 minutes.
-export const envoyerTexteEssai = onCall({ region: REGION, secrets: SECRETS_SMS }, async (request) => {
-  const uid = exigerConnexion(request);
-  const profil = (await db.doc(`users/${uid}`).get()).data() ?? {};
-  if (!profil.telephoneVerifie) throw new HttpsError("failed-precondition", "telephone-non-verifie");
-  const ref = db.doc(`verificationsTelephone/${uid}`);
-  const maintenant = Date.now();
-  const dernier = (await ref.get()).data()?.essaiAt?.toMillis?.() ?? 0;
-  if (maintenant - dernier < DELAI_TEXTE_ESSAI_MS) {
-    throw new HttpsError("resource-exhausted", "attendre-essai", { restantMs: DELAI_TEXTE_ESSAI_MS - (maintenant - dernier) });
-  }
-  try {
-    await envoyerTexteBrut(profil.telephoneVerifie, "Snowro : texto d'essai. Vos avis par texto arriveront à ce numéro. Répondez STOP pour ne plus en recevoir.");
-  } catch (err) {
-    if (err.message === "textos-non-configures") throw new HttpsError("unavailable", "textos-non-configures");
-    logger.error(`Texto d'essai non envoyé : ${err.message}`, { uid, codeTwilio: err.codeTwilio ?? null });
-    throw new HttpsError("unavailable", "envoi-impossible", { codeTwilio: err.codeTwilio ?? null, statut: err.statut ?? null });
-  }
-  await ref.set({ essaiAt: Timestamp.fromMillis(maintenant) }, { merge: true });
-  return { ok: true, prochainEssaiAt: maintenant + DELAI_TEXTE_ESSAI_MS };
 });

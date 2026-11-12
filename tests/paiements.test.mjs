@@ -1,5 +1,6 @@
 // Paiements réels (PAIEMENT_REEL=true) contre l'émulateur Firestore, avec un
 // faux client Stripe qui note chaque appel : aucun appel à Stripe.
+import { createRequire } from "node:module";
 import assert from "node:assert/strict";
 import { fileURLToPath } from "node:url";
 
@@ -65,6 +66,7 @@ const fauxStripe = {
     },
   },
   transfers: { create: async (p, o) => (noter("transfers.create", p, o), { id: "tr_1" }) },
+  refunds: { create: async (p, o) => (noter("refunds.create", p, o), { id: "re_1" }) },
   accounts: {
     create: async () => { throw new Error("Accounts v1 ne doit plus être utilisé"); },
     createLoginLink: async () => ({ url: "https://connect.stripe.com/express/tableau" }),
@@ -98,7 +100,7 @@ await db.doc("users/payClient").set({ displayName: "Sophie Roy", email: "sophie@
 await db.doc("users/payDen").set({ displayName: "Éric Pelletier", email: "eric@exemple.ca", role: ["deneigeur_x"], villeGeoId: "ID_QUEBEC", connectStatus: "non_demarre" });
 const demain = new Date(Date.now() + 24 * 3600e3).toISOString();
 const photos = ["data:image/jpeg;base64," + Buffer.from([0xff, 0xd8, 0xff, 0xd9]).toString("base64")];
-const base = { adresse: "10, 4e Avenue, Québec", titre: "Entrée simple", typeService: "entree", montant: 50, dateHeureSouhaitee: demain };
+const base = { adresse: "10, 4e Avenue, Québec", lien: "moi", attestation: true, titre: "Entrée simple", typeService: "entree", montant: 50, dateHeureSouhaitee: demain };
 
 console.log("Paiements Stripe (faux Stripe)");
 await test("publier : refusé sans carte enregistrée", async () => {
@@ -188,6 +190,41 @@ await test("signaler une demande payée : virement bloqué", async () => {
   await appel(f.signalerProbleme, "payClient", { demandeId, motif: "absent" });
   assert.equal((await lire(demandeId)).paiement.statutPaiement, "bloque");
   assert.equal(derniers("transfers.create").length, 1);
+});
+await test("retard : le client annule une demande payée après l'heure prévue, remboursé en entier", async () => {
+  const { Timestamp } = createRequire(`${REPO}functions/package.json`)("firebase-admin/firestore");
+  const { demandeId } = await appel(f.publierDemande, "payClient", base);
+  await appel(f.accepterDemande, "payDen", { demandeId });
+  // Avant l'heure prévue : refusé.
+  await echoue(appel(f.annulerDemande, "payClient", { demandeId }), "failed-precondition", "avant l'heure");
+  await db.doc(`demandes/${demandeId}`).update({ dateHeureSouhaitee: Timestamp.fromMillis(Date.now() - 3600e3) });
+  const r = await appel(f.annulerDemande, "payClient", { demandeId });
+  assert.equal(r.rembourse, true);
+  const d = await lire(demandeId);
+  assert.equal(d.statut, "annulee"); assert.equal(d.annulation.par, "client"); assert.equal(d.annulation.raison, "retard");
+  assert.equal(d.paiement.statutPaiement, "rembourse"); assert.equal(d.paiement.stripeRefundId, "re_1");
+  const rf = derniers("refunds.create").at(-1);
+  assert.equal(rf.params.payment_intent, "pi_1"); assert.equal(rf.options.idempotencyKey, `remboursement-${demandeId}`);
+  assert.ok(courriels.some((c) => c.to[0] === "sophie@exemple.ca" && /annulée/.test(c.subject)), "courriel au client");
+  assert.ok(courriels.some((c) => c.to[0] === "eric@exemple.ca" && /annulée/.test(c.subject)), "courriel au déneigeur");
+});
+await test("retard : remboursement en échec reste « a_rembourser », réessayé par la tâche planifiée", async () => {
+  const { Timestamp } = createRequire(`${REPO}functions/package.json`)("firebase-admin/firestore");
+  const r = await import(`${REPO}functions/src/retards.js`);
+  const { demandeId } = await appel(f.publierDemande, "payClient", base);
+  await appel(f.accepterDemande, "payDen", { demandeId });
+  await db.doc(`demandes/${demandeId}`).update({ dateHeureSouhaitee: Timestamp.fromMillis(Date.now() - 13 * 3600e3) });
+  const creer = fauxStripe.refunds.create;
+  fauxStripe.refunds.create = async () => { throw new Error("Stripe indisponible"); };
+  await r.traiterRetardsMaintenant();
+  let d = await lire(demandeId);
+  assert.equal(d.statut, "annulee"); assert.equal(d.annulation.par, "automatique");
+  assert.equal(d.paiement.statutPaiement, "a_rembourser"); assert.equal(d.paiement.erreurRemboursement, "Stripe indisponible");
+  fauxStripe.refunds.create = creer;
+  await r.traiterRetardsMaintenant();
+  d = await lire(demandeId);
+  assert.equal(d.paiement.statutPaiement, "rembourse");
+  assert.equal(derniers("transfers.create").filter((t) => t.params.metadata?.demandeId === demandeId).length, 0, "aucun versement");
 });
 await test("carte refusée : demande en pause, déneigeur libéré, client averti par courriel", async () => {
   const { demandeId } = await appel(f.publierDemande, "payClient", base);

@@ -27,6 +27,12 @@ export function echeance(valeur, maintenant = new Date()) {
   return date ? `${jourRelatif(date, maintenant)} avant ${heure(date)}` : "";
 }
 
+// « Aujourd'hui à 20 h », « Demain à 8 h 30 »
+export function moment(valeur, maintenant = new Date()) {
+  const date = versDate(valeur);
+  return date ? `${jourRelatif(date, maintenant)} à ${heure(date)}` : "";
+}
+
 // « il y a 12 min », « il y a 2 h », « il y a 3 jours »
 export function ilYa(valeur, maintenant = new Date()) {
   const date = versDate(valeur);

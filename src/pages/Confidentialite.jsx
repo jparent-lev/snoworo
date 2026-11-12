@@ -65,6 +65,14 @@ export default function Confidentialite() {
           lue qu'à ce moment-là, jamais en arrière-plan.
         </li>
         <li>
+          <strong>Mes adresses :</strong> si vous enregistrez des adresses dans votre compte (chez vous, chez vos
+          parents, chez des amis), nous gardons pour chacune le nom que vous lui donnez, l'adresse exacte, si c'est
+          chez vous ou chez un proche, le prénom de la personne sur place si vous le donnez, et la date de votre
+          attestation d'autorisation. Ces adresses ne sont visibles que par vous. Celle d'une demande et le prénom
+          de la personne sur place sont montrés seulement au déneigeur de quartier qui l'accepte. Si vous indiquez
+          le prénom d'un proche, assurez-vous qu'il est d'accord.
+        </li>
+        <li>
           <strong>Demandes et demandes :</strong> le montant offert, le quartier indiqué, le statut de la demande,
           les messages échangés avec l'autre personne une fois le jumelage confirmé, les photos (de 1 à 3) prises
           par le déneigeur de quartier à la fin de la demande (visibles seulement par vous deux) et l'appréciation
@@ -95,7 +103,7 @@ export default function Confidentialite() {
           <strong>Notifications SMS :</strong> recevoir un texto lorsqu'une demande est publiée près de chez vous
           (déneigeurs), lorsque votre demande est acceptée ou faite, et lorsque l'autre personne vous écrit (qui
           a écrit, jamais le contenu). Il faut d'abord vérifier votre numéro de cellulaire par un code reçu par
-          texto; le numéro ne sert qu'à ces avis et aux textos d'essai que vous demandez vous-même. Vous pouvez
+          texto; le numéro ne sert qu'à ces avis et à ce code de vérification. Vous pouvez
           retirer le consentement ou le numéro en tout temps dans les paramètres (retirer le numéro retire aussi le
           consentement), ou répondre STOP à l'un de nos textos : le consentement est alors retiré automatiquement.
           Si le texte de ce consentement change, nous vous redemandons votre accord avant tout nouvel envoi.
@@ -192,6 +200,11 @@ export default function Confidentialite() {
           <strong>Liste d'attente :</strong> jusqu'à ce que vous nous demandiez de vous en retirer, ou au plus 24 mois
           après votre inscription : elle est alors effacée automatiquement. Une inscription dont l'adresse courriel
           n'a pas été confirmée (lien envoyé par courriel) est effacée après 7 jours.
+        </li>
+        <li>
+          <strong>Mes adresses :</strong> tant que votre compte est ouvert. Vous pouvez en retirer une en tout
+          temps dans vos paramètres ; elles sont toutes effacées à la fermeture du compte. Une demande déjà publiée
+          garde son adresse selon les règles des demandes.
         </li>
         <li>
           <strong>Messages envoyés par « Nous écrire » :</strong> effacés automatiquement 24 mois après leur

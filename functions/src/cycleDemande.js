@@ -3,9 +3,11 @@ import { onSchedule } from "firebase-functions/v2/scheduler";
 import { logger } from "firebase-functions/v2";
 import { FieldValue, Timestamp } from "firebase-admin/firestore";
 import { db } from "./admin.js";
-import { AdresseImprecise, GEOCODING_API_KEY, villeDepuisAdresse, villeDepuisPlaceId } from "./geocoding.js";
+import { GEOCODING_API_KEY } from "./geocoding.js";
+import { ATTESTATION, enregistrerDansCarnet, geocoderAdresse, lireAdresseCarnet, validerLieu } from "./carnet.js";
 import { RESEND_API_KEY } from "./courriels.js";
-import { STRIPE_SECRET_KEY, avertirCarteRefusee, paiementReel, prelever, profilStripe, verser } from "./paiements.js";
+import { STRIPE_SECRET_KEY, avertirCarteRefusee, paiementReel, prelever, profilStripe, rembourser, verser } from "./paiements.js";
+import { annulerPourRetard, avertirAnnulationRetard, estEnRetard } from "./retards.js";
 
 // Cycle de vie d'une demande, entièrement côté serveur (les Firestore rules
 // refusent toute écriture client sur demandes/) :
@@ -17,8 +19,10 @@ import { STRIPE_SECRET_KEY, avertirCarteRefusee, paiementReel, prelever, profilS
 //
 // Pas d'annulation une fois la demande acceptée, ni par le client ni par le
 // déneigeur (décision produit : pas de porte de sortie pour laisser une demande
-// en plan au profit d'une plus payante). Après l'acceptation, le seul recours
-// est « Signaler un problème ».
+// en plan au profit d'une plus payante). Exception, le retard : une fois
+// l'heure limite passée sans « C'est fait », le client peut annuler et être
+// remboursé, et c'est automatique 12 h plus tard (functions/src/retards.js).
+// Sinon, le recours est « Signaler un problème ».
 //
 // Paiement (functions/src/paiements.js) : réel par Stripe Connect quand
 // PAIEMENT_REEL est vrai, sinon SIMULÉ : mêmes montants (config/frais), mais
@@ -123,18 +127,16 @@ async function lireDemande(tx, demandeId, { uid, role, statuts }) {
 }
 
 // ---- Publier ----
-// L'adresse est géocodée ici (jamais la position du téléphone, qui peut être
-// au travail) : ville/villeGeoId en découlent, comme partout ailleurs.
-// De préférence `placeId` (adresse choisie dans les suggestions), sinon
-// `adresse` en texte. Dans les deux cas, seule une adresse civique précise est
-// acceptée, et c'est l'adresse reconnue par Google qui est enregistrée.
+// L'adresse vient du carnet du client (`adresseId`, déjà géocodée et
+// attestée à l'ajout), ou est saisie pour cette demande : géocodée ici
+// (jamais la position du téléphone), numéro civique exigé, avec le lien
+// (« moi » ou « proche »), le prénom de la personne sur place et
+// l'attestation d'autorisation (functions/src/carnet.js). Elle peut alors
+// être ajoutée au carnet (`enregistrer: { nom }`).
 // `unite` : appartement ou logement (fréquent dans les plex), ajouté tel quel.
 export const publierDemande = onCall({ region: REGION, secrets: [GEOCODING_API_KEY] }, async (request) => {
   const uid = exigerConnexion(request);
   const d = request.data ?? {};
-  const placeId = typeof d.placeId === "string" && d.placeId ? d.placeId.slice(0, 300) : null;
-  const adresseSaisie = placeId ? "" : texte(d.adresse, { max: 200, requis: true, nom: "Adresse" });
-  const unite = texte(d.unite, { max: 20, nom: "Appartement" });
   const titre = texte(d.titre, { max: 80, requis: true, nom: "Titre" });
   const description = texte(d.description, { max: 600, nom: "Description" });
   if (!TYPES_SERVICE.has(d.typeService)) throw new HttpsError("invalid-argument", "Type de service invalide.");
@@ -147,22 +149,29 @@ export const publierDemande = onCall({ region: REGION, secrets: [GEOCODING_API_K
     throw new HttpsError("invalid-argument", "L'heure souhaitée doit être au moins 30 minutes plus tard.");
   }
 
-  let lieu;
-  try {
-    lieu = placeId
-      ? await villeDepuisPlaceId(placeId)
-      : await villeDepuisAdresse(adresseSaisie, { exigerPrecision: true });
-  } catch (err) {
-    if (err instanceof AdresseImprecise) throw new HttpsError("invalid-argument", err.message);
-    throw new HttpsError("failed-precondition", `Adresse introuvable : ${err.message}`);
-  }
-  const adresseReconnue = lieu.adresseNormalisee.replace(/, Canada$/, "");
-  const adresse = unite ? `${adresseReconnue} (app. ${unite})` : adresseReconnue;
-
   const profil = profilStripe((await db.doc(`users/${uid}`).get()).data() ?? {});
   // Rien n'est prélevé à la publication, mais il faut une carte pour que
   // l'acceptation puisse prélever.
   if (paiementReel() && !profil.carte?.paymentMethodId) throw new HttpsError("failed-precondition", "carte-requise");
+
+  let lieu;
+  let lien;
+  let personneSurPlace;
+  let attestation;
+  if (d.adresseId) {
+    const enCarnet = await lireAdresseCarnet(uid, d.adresseId);
+    lieu = enCarnet;
+    ({ lien, personneSurPlace } = enCarnet);
+    attestation = { source: "carnet", adresseId: d.adresseId, version: enCarnet.attestation?.version ?? null };
+  } else {
+    ({ lien, personneSurPlace } = validerLieu(d));
+    lieu = await geocoderAdresse(d);
+    attestation = { source: "demande", version: ATTESTATION.version };
+    const nomCarnet = d.enregistrer ? texte(d.enregistrer.nom, { max: 40, requis: true, nom: "Nom de l'adresse" }) : "";
+    if (nomCarnet) attestation.adresseId = await enregistrerDansCarnet(uid, { nom: nomCarnet, lieu, lien, personneSurPlace });
+  }
+  const { adresse } = lieu;
+
   const ref = db.collection("demandes").doc();
   const batch = db.batch();
   batch.set(ref, {
@@ -170,7 +179,7 @@ export const publierDemande = onCall({ region: REGION, secrets: [GEOCODING_API_K
     donneurPrenom: prenom(profil.displayName),
     statut: "ouverte",
     adresseGeohash: lieu.geohash.slice(0, PRECISION_GEOHASH_PUBLIC),
-    postalCodePrefix: lieu.postalCodePrefix,
+    postalCodePrefix: lieu.postalCodePrefix ?? null,
     quartier: lieu.quartier ?? null,
     ville: lieu.ville,
     villeGeoId: lieu.villeGeoId,
@@ -194,13 +203,19 @@ export const publierDemande = onCall({ region: REGION, secrets: [GEOCODING_API_K
   });
   // Adresse exacte : lisible seulement par le client et, après acceptation,
   // par le déneigeur choisi (firestore.rules).
+  // Prénom de la personne sur place (adresse d'un proche) : montré au
+  // déneigeur avec l'adresse. Attestation d'autorisation : datée, gardée avec
+  // la demande.
   batch.set(db.doc(`demandes/${ref.id}/prive/adresse`), {
     adresse,
-    adresseNormalisee: adresseReconnue,
-    unite,
+    adresseNormalisee: lieu.adresseNormalisee,
+    unite: lieu.unite ?? "",
     placeId: lieu.placeId ?? null,
-    saisie: placeId ? "suggestion" : "texte",
+    saisie: lieu.saisie ?? null,
     geohash: lieu.geohash,
+    lien,
+    personneSurPlace: personneSurPlace || "",
+    attestation: { ...attestation, at: FieldValue.serverTimestamp() },
   });
   // Publier une demande fait de vous un client, si ce n'était pas déjà le cas.
   batch.set(db.doc(`users/${uid}`), { role: FieldValue.arrayUnion("donneur_ouvrage") }, { merge: true });
@@ -526,14 +541,33 @@ export const signalerProbleme = onCall({ region: REGION }, async (request) => {
   });
 });
 
-// ---- Annuler (client, seulement tant que personne n'a accepté) ----
-export const annulerDemande = onCall({ region: REGION }, async (request) => {
+// ---- Annuler (client) ----
+// Sans frais tant que personne n'a accepté. Une fois acceptée : seulement si
+// l'heure limite est passée sans « C'est fait » (retard), et le client est
+// alors remboursé en entier (functions/src/retards.js).
+export const annulerDemande = onCall({ region: REGION, secrets: [STRIPE_SECRET_KEY, RESEND_API_KEY] }, async (request) => {
   const uid = exigerConnexion(request);
-  return db.runTransaction(async (tx) => {
-    const { ref } = await lireDemande(tx, request.data?.demandeId, { uid, role: "client", statuts: ["ouverte"] });
-    tx.update(ref, { statut: "annulee", annuleeAt: FieldValue.serverTimestamp() });
-    return { ok: true };
+  const demandeId = request.data?.demandeId;
+  const retard = await db.runTransaction(async (tx) => {
+    const { ref, demande } = await lireDemande(tx, demandeId, { uid, role: "client", statuts: ["ouverte", "matchee"] });
+    if (demande.statut === "ouverte") {
+      tx.update(ref, { statut: "annulee", annuleeAt: FieldValue.serverTimestamp() });
+      return null;
+    }
+    if (!estEnRetard(demande)) {
+      throw new HttpsError(
+        "failed-precondition",
+        "Une demande acceptée ne peut être annulée qu'une fois l'heure prévue passée sans que le travail soit fait.",
+      );
+    }
+    annulerPourRetard(tx, ref, demande, { par: "client" });
+    return demande;
   });
+  if (retard) {
+    await rembourser(demandeId);
+    await avertirAnnulationRetard(demandeId, retard, { par: "client" });
+  }
+  return { ok: true, rembourse: Boolean(retard) };
 });
 
 // ---- Augmenter l'offre (client, tant que personne n'a accepté) ----

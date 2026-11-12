@@ -66,6 +66,8 @@ for (const [id, d] of Object.entries(demandes)) {
   await db.doc(`demandes/${id}`).set(pub);
   await db.doc(`demandes/${id}/prive/adresse`).set({ adresse });
 }
+// D1 est chez la mère de Paul : le déneigeur voit qui sera sur place.
+await db.doc("demandes/D1/prive/adresse").set({ lien: "proche", personneSurPlace: "Ginette" }, { merge: true });
 console.log("Données de test en place");
 
 // ---- Navigateur ----
@@ -146,6 +148,7 @@ async function connexion(cle, largeur = 1280) {
     await carteD1(p).getByRole("button", { name: "Je prends la demande" }).click();
     await p.getByRole("button", { name: "Je m'engage" }).click();
     await p.getByText("1234, 3e Avenue, Québec").waitFor({ timeout: 15000 });
+    await p.locator(".carte-job", { hasText: "1234, 3e Avenue" }).getByText("Sur place : Ginette").waitFor();
     const d = (await db.doc("demandes/D1").get()).data();
     assert.equal(d.statut, "matchee"); assert.equal(d.deneigeurId, uid.marc); assert.equal(d.paiement.montantDeneigeur, 39.4);
     const itineraire = p.locator(".carte-job", { hasText: "1234, 3e Avenue" }).getByRole("link", { name: "Itinéraire" });
@@ -341,6 +344,10 @@ async function connexion(cle, largeur = 1280) {
   });
   await test("Marc : adresse de service choisie dans les suggestions, envoyée par placeId", async () => {
     await p.goto("http://localhost:4190/parametres");
+    // Adresse déjà enregistrée : confirmée, formulaire replié.
+    await p.locator(".statut-connect", { hasText: "Enregistrée" }).first().waitFor();
+    assert.equal(await p.getByRole("combobox").count(), 0);
+    await p.getByRole("button", { name: "Changer d'adresse" }).click();
     const champ = p.getByRole("combobox");
     await champ.fill("155 rue des Saul");
     await p.getByRole("option", { name: /155 Rue des Saules Est/ }).click();
@@ -351,10 +358,14 @@ async function connexion(cle, largeur = 1280) {
     assert.equal(await p.getByRole("button", { name: "Me déconnecter" }).isVisible(), true);
     assert.equal(await p.getByRole("navigation", { name: "Aide" }).getByRole("link", { name: "Aide" }).getAttribute("href"), "/#faq");
     await p.getByRole("button", { name: "Utiliser cette adresse" }).click();
-    await p.getByText("✓ Adresse enregistrée : 155 Rue des Saules Est, Québec, QC, Canada").waitFor();
+    await p.getByText("✓ Mise à jour à partir de : 155 Rue des Saules Est, Québec, QC, Canada").waitFor();
     assert.deepEqual(appels, [{ placeId: "ChIJ_saules" }]);
+    assert.equal(await p.getByRole("combobox").count(), 0, "formulaire replié après l'enregistrement");
+    await p.locator("#adresse").scrollIntoViewIfNeeded();
+    await p.screenshot({ path: `${D}/e2e-adresse-enregistree-390.png` });
   });
   await test("Marc : sans suggestion choisie, rien n'est envoyé", async () => {
+    await p.getByRole("button", { name: "Changer d'adresse" }).click();
     await p.getByRole("combobox").fill("155 rue des Saul");
     await p.getByRole("option", { name: /155 Rue des Saules Est/ }).waitFor();
     await p.getByRole("combobox").press("Escape");
@@ -367,7 +378,7 @@ async function connexion(cle, largeur = 1280) {
     assert.ok(boite.x + boite.width <= 390, `bouton jusqu'à ${boite.x + boite.width} px`);
     assert.equal(await p.evaluate(() => document.documentElement.scrollWidth), 390);
   });
-  await test("Marc : cellulaire vérifié par code, puis consentement aux textos, texto d'essai, nouvelle version", async () => {
+  await test("Marc : cellulaire vérifié par code, puis consentement aux textos, nouvelle version", async () => {
     const appelsTel = [];
     let refusTwilio = true;
     await p.route("**/envoyerCodeTelephone", (r) => {
@@ -384,7 +395,6 @@ async function connexion(cle, largeur = 1280) {
       appelsTel.push(r.request().postDataJSON().data);
       return r.fulfill({ json: { result: { ok: true, numero: "+14185551234" } } });
     });
-    await p.route("**/envoyerTexteEssai", (r) => r.fulfill({ json: { result: { ok: true, prochainEssaiAt: Date.now() + 10 * 60 * 1000 } } }));
     // Sans cellulaire vérifié, l'interrupteur des textos est grisé.
     const sms = p.getByRole("switch", { name: "Notifications SMS" });
     assert.equal(await sms.isDisabled(), true);
@@ -397,22 +407,18 @@ async function connexion(cle, largeur = 1280) {
     await p.getByRole("button", { name: "Vérifier" }).click();
     assert.deepEqual(appelsTel, [{ numero: "418 555-1234" }, { code: "123456" }]);
     await db.doc(`users/${uid.marc}`).update({ telephoneVerifie: "+14185551234" });
-    await p.getByText("✓ (418) 555-1234 vérifié").waitFor();
-    // Numéro vérifié : l'interrupteur s'active, le texto d'essai part vers ce numéro.
+    await p.getByText("(418) 555-1234").waitFor();
+    await p.locator(".statut-connect", { hasText: "Vérifié" }).waitFor();
+    // Numéro vérifié : l'interrupteur s'active ; plus de texto d'essai.
     await p.waitForFunction(() => !document.querySelector('[aria-label="Notifications SMS"]')?.disabled);
     await sms.click();
     await p.waitForFunction(() => document.querySelector('[aria-label="Notifications SMS"]')?.getAttribute("aria-checked") === "true");
     assert.equal((await db.doc(`users/${uid.marc}`).get()).data().consents.notificationsSMS.version, 2);
-    await p.getByRole("button", { name: "M'envoyer un texto d'essai" }).click();
-    await p.getByText("Texto d'essai envoyé au (418) 555-1234.").waitFor();
-    // Compte à rebours : le bouton reste désactivé jusqu'au prochain essai permis.
-    const rebours = p.getByRole("button", { name: /^Nouvel essai dans (9:5\d|10:00)$/ });
-    await rebours.waitFor();
-    assert.equal(await rebours.isDisabled(), true);
+    assert.equal(await p.getByRole("button", { name: /texto d'essai/ }).count(), 0);
     // Accord donné à une version antérieure du texte : redemandé.
     await db.doc(`users/${uid.marc}`).update({ "consents.notificationsSMS.version": 1 });
     await p.getByRole("button", { name: "Accepter le nouveau texte" }).click();
-    await p.getByText(/^Activé le \d{1,2} \S+ \d{4}$/).waitFor();
+    await p.locator(".statut-connect--ok", { hasText: /^✓Activé le \d{1,2} \S+ \d{4}$/ }).waitFor();
     await p.screenshot({ path: `${D}/e2e-cellulaire-390.png`, fullPage: true });
     assert.equal(await p.evaluate(() => document.documentElement.scrollWidth), 390);
   });
@@ -638,6 +644,92 @@ async function connexion(cle, largeur = 1280) {
     await pb.screenshot({ path: `${D}/e2e-credit-1280.png`, fullPage: true });
   });
   await bureau.close();
+}
+
+// Retard : demande acceptée dont l'heure prévue est passée sans « C'est fait ».
+{
+  await db.doc("demandes/M9").set(base({ donneurOuvrageId: uid.mireille, donneurPrenom: "Mireille", titre: "Entrée oubliée", typeService: "entree", remunerationOfferte: 35, dateHeureSouhaitee: ts(-2 * H), adresseGeohash: g7(46.827, -71.221), statut: "matchee", deneigeurId: uid.julie, deneigeurPrenom: "Julie", deneigeurNote: { moyenne: 4.9, nombre: 41 }, matchedAt: ts(-5 * H), paiement: paiement(35, "simule_retenu"), adresse: "5, 3e Rue, Québec" }));
+  const { p, ctx } = await connexion("mireille", 390);
+  await test("Mireille : demande en retard, « Annuler et être remboursé » ; elle passe à l'historique, remboursée", async () => {
+    await p.goto("http://localhost:4190/tableau-de-bord?mode=client");
+    const carte = p.locator(".carte-job", { hasText: "Entrée oubliée" });
+    await carte.getByText("En retard").waitFor();
+    await carte.getByText(/elle sera annulée et vous serez remboursé automatiquement/).waitFor();
+    await p.screenshot({ path: `${D}/e2e-retard-client-390.png`, fullPage: true });
+    await carte.getByRole("button", { name: "Annuler et être remboursé" }).click();
+    await p.getByRole("dialog").getByRole("button", { name: "Annuler et être remboursé" }).click();
+    await p.getByText("annulée (retard du déneigeur), remboursée").waitFor();
+    const d = (await db.doc("demandes/M9").get()).data();
+    assert.equal(d.statut, "annulee"); assert.equal(d.annulation.par, "client"); assert.equal(d.paiement.statutPaiement, "simule_rembourse");
+  });
+  await ctx.close();
+}
+
+// Carnet d'adresses : ajout formel (lien + attestation), puis choix à la
+// publication. Géocodage et publication simulés (pas de clé Google ici).
+{
+  const { p, ctx } = await connexion("mireille", 390);
+  const ajouts = [];
+  const publications = [];
+  await p.route("**/suggererAdresses", (r) => r.fulfill({ json: { result: { suggestions: [
+    { placeId: "ChIJ_parents", principal: "42 Rue des Érables", secondaire: "Québec, QC, Canada" },
+  ] } } }));
+  await p.route("**/ajouterAdresse", async (r) => {
+    const data = r.request().postDataJSON().data;
+    ajouts.push(data);
+    await db.collection(`users/${uid.mireille}/adresses`).add({
+      nom: data.nom, lien: data.lien, personneSurPlace: data.personneSurPlace, adresse: "42 Rue des Érables, Québec, QC G1L 1A1",
+      attestation: { version: 1, at: Timestamp.now() }, createdAt: Timestamp.now(),
+    });
+    return r.fulfill({ json: { result: { adresseId: "x", adresse: "42 Rue des Érables", ville: "Québec" } } });
+  });
+  await p.route("**/publierDemande", (r) => {
+    publications.push(r.request().postDataJSON().data);
+    return r.fulfill({ json: { result: { demandeId: "nouvelle", ville: "Québec", adresse: "42 Rue des Érables" } } });
+  });
+  await test("Mireille : ajoute « Parents » à ses adresses ; lien et attestation exigés", async () => {
+    await p.goto("http://localhost:4190/parametres#adresses");
+    await p.getByRole("heading", { name: "Mes adresses" }).waitFor();
+    await p.getByText("Aucune adresse enregistrée").waitFor();
+    await p.getByRole("button", { name: "Ajouter une adresse" }).click();
+    await p.getByLabel("Nom").fill("Parents");
+    await p.getByRole("combobox").fill("42 rue des Éra");
+    await p.getByRole("option", { name: /42 Rue des Érables/ }).click();
+    await p.getByRole("button", { name: "Ajouter cette adresse" }).click();
+    await p.getByText("Indiquez si c'est chez vous ou chez un proche.").waitFor();
+    await p.getByLabel("Chez un proche").check();
+    await p.getByLabel("Prénom de la personne sur place (facultatif)").fill("Ginette");
+    await p.getByRole("button", { name: "Ajouter cette adresse" }).click();
+    await p.getByText("Confirmez que vous avez l'autorisation de faire déneiger cette adresse.").waitFor();
+    assert.equal(ajouts.length, 0);
+    await p.getByLabel(/Cette adresse est chez moi, ou chez une personne/).check();
+    assert.equal(await p.evaluate(() => document.documentElement.scrollWidth), 390);
+    await p.screenshot({ path: `${D}/e2e-carnet-ajout-390.png`, fullPage: true });
+    await p.getByRole("button", { name: "Ajouter cette adresse" }).click();
+    await p.locator(".statut-connect", { hasText: "Chez un proche · Ginette sur place" }).waitFor();
+    assert.deepEqual(ajouts, [{ nom: "Parents", placeId: "ChIJ_parents", unite: "", lien: "proche", personneSurPlace: "Ginette", attestation: true }]);
+    await p.screenshot({ path: `${D}/e2e-carnet-390.png`, fullPage: true });
+  });
+  await test("Mireille : publie à « Parents » depuis le carnet ; « Une autre adresse… » demande le lien et l'attestation", async () => {
+    await p.goto("http://localhost:4190/publier");
+    const choix = p.getByLabel("Adresse à déneiger");
+    await choix.waitFor();
+    assert.match(await choix.locator("option:checked").textContent(), /^Parents · 42 Rue des Érables/);
+    await p.getByText(/Chez un proche · Ginette sur place\. Montrée seulement/).waitFor();
+    assert.equal(await p.locator("input[role=combobox]").count(), 0, "pas de saisie avec une adresse du carnet");
+    await choix.selectOption("autre");
+    await p.getByText("À qui est cette adresse?").waitFor();
+    await p.getByRole("checkbox", { name: "Enregistrer dans mes adresses" }).waitFor();
+    await p.screenshot({ path: `${D}/e2e-publier-autre-390.png`, fullPage: true });
+    await choix.selectOption({ label: "Parents · 42 Rue des Érables, Québec, QC G1L 1A1" });
+    await p.getByRole("button", { name: "Publier la demande" }).click();
+    await p.waitForURL("**/tableau-de-bord");
+    assert.equal(publications.length, 1);
+    assert.ok(publications[0].adresseId, "adresseId envoyé");
+    assert.equal(publications[0].attestation, undefined);
+    assert.equal(publications[0].placeId, undefined);
+  });
+  await ctx.close();
 }
 
 // Mesure d'audience (Loi 25) : rien avant « Accepter », adresse nettoyée, retrait.

@@ -129,3 +129,32 @@
   color: var(--color-terre);
   font-size: 15px;
 }
+
+.auth-form__case--haut {
+  align-items: flex-start;
+  line-height: 1.45;
+}
+.auth-form__case--haut input {
+  flex: none;
+  margin-top: 2px;
+}
+
+.lieu-adresse {
+  border: 0;
+  padding: 0;
+  margin: 0;
+  min-width: 0;
+}
+.lieu-adresse legend {
+  padding: 0;
+  margin-bottom: 8px;
+}
+.lieu-adresse__choix {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 24px;
+}
+.lieu-adresse__choix .auth-form__case {
+  font-weight: 400;
+  color: var(--color-terre);
+}

@@ -29,10 +29,12 @@ export {
   webhookStripe,
 } from "./paiements.js";
 export { suggererAdresses } from "./suggestionsAdresse.js";
+export { traiterRetards } from "./retards.js";
+export { ajouterAdresse, supprimerAdresse } from "./carnet.js";
 export { purgerConservation } from "./conservation.js";
 export { fermerCompte } from "./compte.js";
 export { avertirDeneigeursNouvelleDemande } from "./alertesDemandes.js";
-export { envoyerCodeTelephone, verifierCodeTelephone, retirerTelephone, envoyerTexteEssai } from "./telephone.js";
+export { envoyerCodeTelephone, verifierCodeTelephone, retirerTelephone } from "./telephone.js";
 export { recevoirTexteTwilio } from "./textosEntrants.js";
 export { textosCycleDemande } from "./textosCycle.js";
 export { publierVillesPubliques } from "./villesPubliques.js";

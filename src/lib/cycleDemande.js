@@ -31,3 +31,11 @@ export function messageErreur(err) {
   }
   return message && err.code !== "functions/internal" ? message : "Une erreur est survenue. Veuillez réessayer.";
 }
+
+// Retard (functions/src/retards.js) : demande acceptée dont l'heure prévue est
+// passée sans « C'est fait ». Le client peut l'annuler et être remboursé ;
+// 12 h plus tard, c'est automatique.
+export const DELAI_RETARD_MS = 12 * 60 * 60 * 1000;
+const enMillis = (v) => (v?.toMillis ? v.toMillis() : v ? new Date(v).getTime() : 0);
+export const estEnRetard = (d, maintenant = Date.now()) => d.statut === "matchee" && enMillis(d.dateHeureSouhaitee) <= maintenant;
+export const limiteRetard = (d) => new Date(enMillis(d.dateHeureSouhaitee) + DELAI_RETARD_MS);
