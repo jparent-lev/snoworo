@@ -540,11 +540,26 @@ async function connexion(cle, largeur = 1280) {
     await p.getByRole("heading", { name: "Comment souhaitez-vous utiliser Snowro ?" }).waitFor();
     await p.getByRole("checkbox", { name: /Je veux déneiger/ }).click();
     await p.getByRole("button", { name: "Continuer" }).click();
-    await p.getByRole("heading", { name: "Une étape avant de voir les demandes" }).waitFor();
+    // Étapes de démarrage : liste numérotée, pastille sur « Paramètres ».
+    const etapes = p.getByRole("region", { name: "Une étape avant de commencer" });
+    await etapes.waitFor();
+    const libelles = await etapes.locator("li b").allTextContents();
+    assert.deepEqual(libelles, ["Ajouter votre adresse de service", "Vérifier votre cellulaire"]);
+    assert.equal(await p.getByLabel("1 étape à faire").textContent(), "1");
+    await p.screenshot({ path: `${D}/e2e-etapes-demarrage-390.png`, fullPage: true });
     // Bouton-lien lisible au survol (texte clair sur fond argile).
-    const bouton = p.getByRole("link", { name: "Ajouter mon adresse" });
+    const bouton = etapes.getByRole("link", { name: "Ajouter mon adresse" });
     await bouton.hover();
     assert.equal(await bouton.evaluate((el) => getComputedStyle(el).color), "rgb(255, 253, 248)");
+    // Le lien mène directement à la section, en haut de l'écran.
+    await bouton.click();
+    await p.waitForURL("**/parametres#adresse");
+    const titre = p.getByRole("heading", { name: "Votre adresse de service" });
+    await titre.waitFor();
+    await p.waitForFunction(() => {
+      const h = document.getElementById("adresse")?.getBoundingClientRect();
+      return h && h.top >= 0 && h.top < 200;
+    });
     const { uid: idLeo } = await auth.getUserByEmail("leo@test.ca");
     assert.deepEqual((await db.doc(`users/${idLeo}`).get()).data().role, ["deneigeur_x"]);
   });

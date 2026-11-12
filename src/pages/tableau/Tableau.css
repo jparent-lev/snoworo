@@ -854,3 +854,96 @@
   font-size: 15px;
   color: var(--color-texte-secondaire);
 }
+
+/* ---- Étapes de démarrage du déneigeur (components/EtapesDemarrage.jsx) ---- */
+.etapes-demarrage {
+  background: #fbf0d8;
+  border: 1.5px solid var(--color-ocre);
+  border-radius: 18px;
+  padding: 20px 22px;
+}
+
+.etapes-demarrage h2 {
+  margin: 0;
+  font-family: var(--font-titrage);
+  font-size: 22px;
+  color: var(--color-terre);
+}
+
+.etapes-demarrage__intro {
+  margin: 6px 0 14px;
+  font-size: 15px;
+  color: var(--color-texte-secondaire);
+}
+
+.etapes-demarrage__liste {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.etapes-demarrage__etape {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 14px;
+  padding: 12px 14px;
+  border-radius: 14px;
+  background: var(--color-surface-carte);
+  border: 1px solid var(--color-bordure);
+}
+
+.etapes-demarrage__num {
+  flex: none;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-weight: 700;
+  font-size: 15px;
+  background: var(--color-argile);
+  color: var(--color-surface-carte);
+}
+
+.etapes-demarrage__etape--faite {
+  background: transparent;
+  border-color: transparent;
+  padding-block: 4px;
+}
+
+.etapes-demarrage__etape--faite .etapes-demarrage__num {
+  background: #2f4a26;
+}
+
+.etapes-demarrage__etape--faite .etapes-demarrage__texte b {
+  color: #2f4a26;
+}
+
+.etapes-demarrage__texte {
+  flex: 1 1 220px;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 15px;
+}
+
+.etapes-demarrage__texte span {
+  font-size: 14px;
+  color: var(--color-texte-secondaire);
+}
+
+.etapes-demarrage__action {
+  flex: none;
+}
+
+@media (max-width: 520px) {
+  .etapes-demarrage__action {
+    flex: 1 1 100%;
+    text-align: center;
+  }
+}
