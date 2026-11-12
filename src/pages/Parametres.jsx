@@ -405,10 +405,17 @@ function SectionPaiement({ profile, deneigeur }) {
         <div className="parametres__item parametres__item--colonne">
           <div className="parametres__item-texte">
             <h3>Carte pour vos demandes</h3>
+            {/* Même pastille que le compte de versement : on voit d'un coup d'œil que c'est en place. */}
+            <span className={`statut-connect statut-connect--${carte ? "ok" : "neutre"}`}>
+              <span className="statut-connect__icone" aria-hidden="true">
+                {carte ? "✓" : "○"}
+              </span>
+              {carte ? "Enregistrée" : "Aucune carte"}
+            </span>
             <p>
               {carte
                 ? `${libelleCarte(carte)}. Elle n'est prélevée que lorsqu'un déneigeur de quartier accepte votre demande.`
-                : "Aucune carte enregistrée. Vous pourrez en ajouter une en publiant votre première demande."}
+                : "Vous pourrez en ajouter une en publiant votre première demande."}
             </p>
           </div>
           {changerCarte ? (
