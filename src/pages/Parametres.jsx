@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import { doc, setDoc } from "firebase/firestore";
 import { signOut } from "firebase/auth";
 import { auth, db } from "../lib/firebase";
@@ -130,6 +130,15 @@ export default function Parametres() {
     }
   }
 
+  // Lien d'une étape de démarrage (/parametres#paiement) : défile jusqu'à la
+  // section une fois le profil chargé.
+  const { hash } = useLocation();
+  const profilCharge = Boolean(profile);
+  useEffect(() => {
+    if (!hash || !profilCharge) return;
+    document.getElementById(hash.slice(1))?.scrollIntoView({ block: "start" });
+  }, [hash, profilCharge]);
+
   if (!profile) return null;
 
   const roles = profile.role ?? [];
@@ -144,7 +153,7 @@ export default function Parametres() {
 
       {roles.includes(ROLE_DENEIGEUR) && (
         <>
-      <h1>Votre adresse de service</h1>
+      <h1 id="adresse">Votre adresse de service</h1>
       <p className="parametres__intro">
         Elle détermine les demandes que vous pouvez voir : jamais hors de votre ville, même si la distance
         semble raisonnable.
@@ -220,7 +229,7 @@ export default function Parametres() {
 
       {TEXTOS && (
         <>
-          <h1>Votre cellulaire</h1>
+          <h1 id="cellulaire">Votre cellulaire</h1>
           <p className="parametres__intro">
             Vérifié une seule fois par un code, il sert aux avis par texto si vous les activez ci-dessous.
           </p>
@@ -356,7 +365,7 @@ function SectionPaiement({ profile, deneigeur }) {
 
   return (
     <>
-      <h1>Paiement</h1>
+      <h1 id="paiement">Paiement</h1>
       <div className="parametres__liste">
         <div className="parametres__item parametres__item--colonne">
           <div className="parametres__item-texte">

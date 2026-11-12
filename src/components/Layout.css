@@ -145,3 +145,24 @@
     font-size: 13px;
   }
 }
+
+/* Lien « Paramètres » : pastille du nombre d'étapes de démarrage à faire. */
+.layout__parametres {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.layout__pastille {
+  min-width: 20px;
+  height: 20px;
+  padding: 0 6px;
+  border-radius: 999px;
+  display: inline-grid;
+  place-items: center;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1;
+  background: var(--color-argile);
+  color: var(--color-surface-carte);
+}

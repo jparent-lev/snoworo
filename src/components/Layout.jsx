@@ -7,11 +7,13 @@ import { useMode } from "../lib/mode";
 import SnowroLockup from "./brand/SnowroLockup";
 import SnowroSymbol from "./brand/SnowroSymbol";
 import VersionFooter from "./VersionFooter";
+import { etapesRequisesManquantes } from "../lib/etapes";
 import "./Layout.css";
 
 export default function Layout() {
   const { user, profile } = useAuth();
   const { mode, changerMode, deuxRoles } = useMode(user?.uid, profile?.role ?? []);
+  const etapesAFaire = etapesRequisesManquantes(profile);
 
   return (
     <div className="layout">
@@ -48,7 +50,14 @@ export default function Layout() {
                 ))}
               </div>
             )}
-            <Link to="/parametres">Paramètres</Link>
+            <Link to="/parametres" className="layout__parametres">
+              Paramètres
+              {etapesAFaire > 0 && (
+                <span className="layout__pastille" aria-label={`${etapesAFaire} étape${etapesAFaire > 1 ? "s" : ""} à faire`}>
+                  {etapesAFaire}
+                </span>
+              )}
+            </Link>
             <button type="button" onClick={() => signOut(auth)} className="layout__deconnexion">
               Déconnexion
             </button>

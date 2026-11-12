@@ -243,3 +243,9 @@
   align-items: flex-start;
   gap: 10px;
 }
+
+/* Sections visées par les étapes de démarrage (/parametres#paiement) :
+   pas cachées sous l'en-tête collant. */
+.parametres__page h1[id] {
+  scroll-margin-top: 96px;
+}
