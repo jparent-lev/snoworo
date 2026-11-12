@@ -21,7 +21,7 @@ import {
 } from "../lib/paiements";
 import CarteDePaiement from "../components/CarteDePaiement";
 import { fermerCompte, messageFermeture } from "../lib/compte";
-import { envoyerCodeTelephone, envoyerTexteEssai, formaterNumero, messageTelephone, retirerTelephone, verifierCodeTelephone } from "../lib/telephone";
+import { envoyerCodeTelephone, formaterNumero, messageTelephone, retirerTelephone, verifierCodeTelephone } from "../lib/telephone";
 import ChampAdresse from "../components/ChampAdresse";
 import "./Parametres.css";
 import { messageServeur } from "../lib/erreurs";
@@ -520,10 +520,6 @@ function SectionFermeture() {
   );
 }
 
-// Numéro pour les textos : vérifié par un code reçu par texto
-// (functions/src/telephone.js). Affiché une fois le consentement accordé.
-// « Votre cellulaire » : le numéro appartient au compte, vérifié une seule fois
-// par un code. Le texto d'essai ne part que vers ce numéro vérifié.
 // Pastille d'état, la même partout dans les paramètres : ✓ vert quand c'est
 // en place, ○ neutre sinon (ton : ok | neutre | attente | alerte).
 function Pastille({ ton, children }) {
@@ -546,22 +542,8 @@ function dateConsentement(libelle, horodatage) {
   return `${libelle} le ${d.toLocaleDateString("fr-CA", { day: "numeric", month: "long", year: "numeric" })}`;
 }
 
-// Compte à rebours jusqu'à `fin` (millisecondes) : secondes restantes, 0 à la fin.
-function useCompteARebours(fin) {
-  const [maintenant, setMaintenant] = useState(() => Date.now());
-  useEffect(() => {
-    if (!fin || fin <= Date.now()) return undefined;
-    const t = setInterval(() => {
-      setMaintenant(Date.now());
-      if (Date.now() >= fin) clearInterval(t);
-    }, 1000);
-    return () => clearInterval(t);
-  }, [fin]);
-  return fin ? Math.max(0, Math.ceil((fin - maintenant) / 1000)) : 0;
-}
-
-const minSec = (s) => `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`;
-
+// « Votre cellulaire » : le numéro appartient au compte, vérifié une seule fois
+// par un code reçu par texto (functions/src/telephone.js).
 function SectionTelephone({ profile, smsActifs }) {
   const [numero, setNumero] = useState("");
   const [code, setCode] = useState("");
@@ -569,15 +551,10 @@ function SectionTelephone({ profile, smsActifs }) {
   const [modification, setModification] = useState(false);
   const [enCours, setEnCours] = useState(false);
   const [erreur, setErreur] = useState(null);
-  const [info, setInfo] = useState(null);
-  // Prochain texto d'essai permis (le serveur en limite un par 10 minutes).
-  const [prochainEssai, setProchainEssai] = useState(null);
-  const attenteEssai = useCompteARebours(prochainEssai);
 
   async function executer(action) {
     setEnCours(true);
     setErreur(null);
-    setInfo(null);
     try {
       await action();
     } catch (err) {
@@ -610,25 +587,6 @@ function SectionTelephone({ profile, smsActifs }) {
     });
   };
 
-  const essai = () =>
-    executer(async () => {
-      try {
-        const { data } = await envoyerTexteEssai();
-        setProchainEssai(data?.prochainEssaiAt ?? Date.now() + 10 * 60 * 1000);
-        setInfo(`Texto d'essai envoyé au ${formaterNumero(profile.telephoneVerifie)}.`);
-      } catch (err) {
-        // Déjà envoyé il y a moins de 10 minutes (autre onglet, page rechargée) :
-        // pas d'erreur, seulement le compte à rebours.
-        const restant = err?.details?.restantMs;
-        if (messageServeur(err) === "attendre-essai" && restant) {
-          setProchainEssai(Date.now() + restant);
-          setInfo("Un texto d'essai est parti il y a moins de 10 minutes.");
-          return;
-        }
-        throw err;
-      }
-    });
-
   const retirer = () => {
     if (!window.confirm("Retirer votre cellulaire ? Les avis par texto seront aussi désactivés.")) return;
     executer(() => retirerTelephone());
@@ -644,9 +602,6 @@ function SectionTelephone({ profile, smsActifs }) {
           <p>{smsActifs ? "Les avis par texto partent vers ce numéro." : "Activez « Notifications SMS » ci-dessous pour recevoir les avis à ce numéro."}</p>
         </div>
         <div className="parametres__actions">
-          <button type="button" className="btn btn--fantome" onClick={essai} disabled={enCours || attenteEssai > 0}>
-            {attenteEssai > 0 ? `Nouvel essai dans ${minSec(attenteEssai)}` : "M'envoyer un texto d'essai"}
-          </button>
           <button type="button" className="btn btn--lien" onClick={() => setModification(true)} disabled={enCours}>
             Changer
           </button>
@@ -654,7 +609,6 @@ function SectionTelephone({ profile, smsActifs }) {
             Retirer
           </button>
         </div>
-        {info && <p className="champ-adresse__ok" role="status">{info}</p>}
         {erreur && <p className="message-erreur" role="alert">{erreur}</p>}
       </div>
     );

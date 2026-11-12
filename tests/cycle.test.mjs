@@ -644,23 +644,16 @@ await test("textos : plafond global de codes par jour", async () => {
   assert.equal(e.message, "plafond-atteint");
   await db.doc(`limitesTelephone/jour-${jour}`).delete();
 });
-await test("textos : consentement refusé sans cellulaire vérifié ; texto d'essai vers le numéro vérifié seulement ; retrait du numéro retire l'accord", async () => {
+await test("textos : consentement refusé sans cellulaire vérifié ; retrait du numéro retire l'accord", async () => {
   globalThis.fetch = fetchTextos;
   textos.length = 0;
   const consents = await import(`${REPO}functions/src/consents.js`);
   await db.doc("users/essai1").set({ displayName: "Eva" });
   const e = await echoue(appel(consents.grantConsent, "essai1", { type: "notificationsSMS" }), "failed-precondition", "sans numéro");
   assert.equal(e.message, "telephone-non-verifie");
-  await echoue(appel(tel.envoyerTexteEssai, "essai1", {}), "failed-precondition", "essai sans numéro");
   await db.doc("users/essai1").update({ telephoneVerifie: "+14185553333" });
   await appel(consents.grantConsent, "essai1", { type: "notificationsSMS" });
   assert.equal((await db.doc("users/essai1").get()).data().consents.notificationsSMS.version, 2);
-  await appel(tel.envoyerTexteEssai, "essai1", {});
-  assert.equal(textos.length, 1);
-  assert.equal(textos[0].a, "+14185553333");
-  const e2 = await echoue(appel(tel.envoyerTexteEssai, "essai1", {}), "resource-exhausted", "un essai par 10 minutes");
-  assert.equal(e2.message, "attendre-essai");
-  assert.ok(e2.details.restantMs > 9 * 60 * 1000 && e2.details.restantMs <= 10 * 60 * 1000, `restantMs ${e2.details.restantMs}`);
   await appel(tel.retirerTelephone, "essai1", {});
   const p = (await db.doc("users/essai1").get()).data();
   assert.equal(p.telephoneVerifie, null);
