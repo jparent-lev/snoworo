@@ -782,6 +782,7 @@ async function connexion(cle, largeur = 1280) {
   });
   await test("connexion : « Mot de passe oublié? » et « lien de connexion » envoient la demande, même message qu'un compte existe ou non", async () => {
     await p.goto("http://localhost:4190/connexion");
+    assert.equal(await p.getByRole("link", { name: "← Retour à l'accueil" }).getAttribute("href"), "/");
     await p.getByRole("button", { name: "Recevoir un lien de connexion par courriel" }).click();
     await p.getByText("Entrez d'abord votre courriel ci-dessus.").waitFor();
     await p.getByLabel("Courriel").fill("nora@test.ca");

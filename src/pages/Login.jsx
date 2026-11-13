@@ -93,6 +93,9 @@ export default function Login() {
           Pas de compte ? <Link to="/inscription">Créer un compte</Link>
         </p>
       </form>
+      <Link to="/" className="auth-form__retour">
+        ← Retour à l'accueil
+      </Link>
       <VersionFooter className="auth-form__version" />
     </div>
   );
