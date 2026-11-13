@@ -153,6 +153,34 @@ await test("courriel non confirmé : publier et accepter refusés ; lien Snowro 
   assert.match(c.texte, /https:\/\/snowro\.com\/courriel\/confirmer\?code=x&y=1/);
   assert.doesNotMatch(c.html + c.texte, /—/, "pas de tiret cadratin");
 });
+await test("liens de compte : même réponse sans compte, rien envoyé ; liens Snowro ; courriels en français", async () => {
+  const lc = await import(`${REPO}functions/src/liensCompte.js`);
+  const appels = [];
+  const fetchAvant = globalThis.fetch;
+  globalThis.fetch = async (url, o) => { appels.push(String(url)); return fetchAvant(url, o); };
+  try {
+    assert.deepEqual(await appel(lc.demanderLienCompte, null, { courriel: "Personne@Exemple.ca", type: "reinitialisation" }), { ok: true });
+    assert.deepEqual(await appel(lc.demanderLienCompte, null, { courriel: "personne@exemple.ca", type: "connexion" }), { ok: true });
+    assert.equal(appels.filter((u) => u.includes("resend")).length, 0, "aucun courriel pour une adresse sans compte");
+  } finally {
+    globalThis.fetch = fetchAvant;
+  }
+  await echoue(appel(lc.demanderLienCompte, null, { courriel: "pas-un-courriel", type: "connexion" }), "invalid-argument", "adresse");
+  await echoue(appel(lc.demanderLienCompte, null, { courriel: "a@b.ca", type: "autre" }), "invalid-argument", "type");
+  assert.equal(
+    lc.lienVersSnowro("https://x.firebaseapp.com/__/auth/action?mode=resetPassword&oobCode=R1&apiKey=k&lang=en", "https://snowro.com", "/mot-de-passe", ["oobCode"]),
+    "https://snowro.com/mot-de-passe?code=R1",
+  );
+  assert.equal(
+    lc.lienVersSnowro("https://x.firebaseapp.com/__/auth/action?mode=signIn&oobCode=S1&apiKey=k&continueUrl=z&lang=en", "https://snowro.com", "/connexion/lien", ["mode", "oobCode", "apiKey", "lang"]),
+    "https://snowro.com/connexion/lien?mode=signIn&oobCode=S1&apiKey=k&lang=en",
+  );
+  for (const type of ["connexion", "reinitialisation"]) {
+    const c = lc.courrielLien(type, { prenom: "Luc", lien: "https://snowro.com/x?a=1&b=2" });
+    assert.match(c.html, /Bonjour Luc,/); assert.match(c.html, /a=1&amp;b=2/);
+    assert.doesNotMatch(c.html + c.texte, /\u2014/);
+  }
+});
 await test("accepter : hors ville refusé (exclusion dure), propre demande refusée, sans rôle refusé", async () => {
   await echoue(appel(f.accepterDemande, "den2", { demandeId: id }), "permission-denied", "hors ville");
   await echoue(appel(f.accepterDemande, "client1", { demandeId: id }), "permission-denied", "propre demande");

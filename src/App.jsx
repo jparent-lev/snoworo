@@ -12,6 +12,9 @@ import Conditions from "./pages/Conditions";
 import Medias, { PlancheLogos } from "./pages/Medias";
 import Admin from "./pages/Admin";
 import ConfirmerCourriel from "./pages/ConfirmerCourriel";
+import ConnexionLien from "./pages/ConnexionLien";
+import MotDePasseOublie from "./pages/MotDePasseOublie";
+import NouveauMotDePasse from "./pages/NouveauMotDePasse";
 import NousEcrire from "./pages/NousEcrire";
 import ConfirmerListe from "./pages/ConfirmerListe";
 import CreditImpot from "./pages/creditImpot/CreditImpot";
@@ -27,6 +30,9 @@ export default function App() {
       <Routes>
         <Route path="/" element={<Landing />} />
         <Route path="/connexion" element={<Login />} />
+        <Route path="/connexion/lien" element={<ConnexionLien />} />
+        <Route path="/mot-de-passe-oublie" element={<MotDePasseOublie />} />
+        <Route path="/mot-de-passe" element={<NouveauMotDePasse />} />
         <Route path="/inscription" element={<Signup />} />
         <Route path="/confidentialite" element={<Confidentialite />} />
         <Route path="/conditions" element={<Conditions />} />

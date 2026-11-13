@@ -760,6 +760,60 @@ async function connexion(cle, largeur = 1280) {
   await ctx.close();
 }
 
+// Mot de passe oublié et lien de connexion : pages de snowro.com avec de
+// vrais liens de l'émulateur Auth ; l'envoi par courriel est simulé.
+{
+  const ctx = await b.newContext({ viewport: { width: 390, height: 844 } });
+  const p = await ctx.newPage();
+  pageCourante = p;
+  const demandes = [];
+  await p.route("**/demanderLienCompte", (r) => {
+    demandes.push(r.request().postDataJSON().data);
+    return r.fulfill({ json: { result: { ok: true } } });
+  });
+  await test("connexion : « Mot de passe oublié? » et « lien de connexion » envoient la demande, même message qu'un compte existe ou non", async () => {
+    await p.goto("http://localhost:4190/connexion");
+    await p.getByRole("button", { name: "Recevoir un lien de connexion par courriel" }).click();
+    await p.getByText("Entrez d'abord votre courriel ci-dessus.").waitFor();
+    await p.getByLabel("Courriel").fill("nora@test.ca");
+    await p.getByRole("button", { name: "Recevoir un lien de connexion par courriel" }).click();
+    await p.getByText(/un lien de connexion vient de partir/).waitFor();
+    await p.screenshot({ path: `${D}/e2e-connexion-lien-390.png`, fullPage: true });
+    await p.getByRole("link", { name: "Mot de passe oublié?" }).click();
+    assert.equal(await p.getByLabel("Courriel").inputValue(), "nora@test.ca", "adresse reprise");
+    await p.getByRole("button", { name: "Recevoir le lien" }).click();
+    await p.getByText(/un lien pour choisir un nouveau mot de passe vient de partir/).waitFor();
+    assert.deepEqual(demandes, [{ courriel: "nora@test.ca", type: "connexion" }, { courriel: "nora@test.ca", type: "reinitialisation" }]);
+  });
+  await test("mot de passe oublié : le lien permet d'en choisir un nouveau et connecte ; le lien ne resert pas", async () => {
+    const code = new URL(await auth.generatePasswordResetLink("nora@test.ca")).searchParams.get("oobCode");
+    await p.goto(`http://localhost:4190/mot-de-passe?code=${encodeURIComponent(code)}`);
+    await p.getByText("Compte : nora@test.ca").waitFor({ timeout: 15000 });
+    await p.getByLabel("Nouveau mot de passe").fill("nouveaumdp");
+    await p.getByRole("button", { name: "Enregistrer et me connecter" }).click();
+    await p.waitForURL("**/tableau-de-bord");
+    await p.goto(`http://localhost:4190/mot-de-passe?code=${encodeURIComponent(code)}`);
+    await p.getByRole("heading", { name: "Ce lien ne fonctionne pas" }).waitFor();
+  });
+  await ctx.close();
+}
+{
+  const ctx = await b.newContext({ viewport: { width: 390, height: 844 } });
+  const p = await ctx.newPage();
+  pageCourante = p;
+  await test("lien de connexion : sur un autre appareil, l'adresse est redemandée, puis la personne est connectée", async () => {
+    const lien = new URL(await auth.generateSignInWithEmailLink("julie@test.ca", { url: "http://localhost:4190/connexion/lien", handleCodeInApp: true }));
+    const q = new URLSearchParams();
+    for (const k of ["mode", "oobCode", "apiKey", "lang"]) if (lien.searchParams.get(k)) q.set(k, lien.searchParams.get(k));
+    await p.goto(`http://localhost:4190/connexion/lien?${q}`);
+    await p.getByText("Pour terminer, confirmez l'adresse courriel").waitFor({ timeout: 15000 });
+    await p.getByLabel("Courriel").fill("julie@test.ca");
+    await p.getByRole("button", { name: "Me connecter" }).click();
+    await p.waitForURL("**/tableau-de-bord", { timeout: 15000 });
+  });
+  await ctx.close();
+}
+
 // Tableau admin : refusé à un compte ordinaire (vrai serveur, ADMIN_UIDS vide),
 // puis rendu avec des métriques simulées.
 {
