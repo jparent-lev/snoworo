@@ -31,6 +31,7 @@ export {
 export { suggererAdresses } from "./suggestionsAdresse.js";
 export { traiterRetards } from "./retards.js";
 export { metriquesAdmin } from "./tableauAdmin.js";
+export { analyticsAdmin } from "./analyticsAdmin.js";
 export { envoyerConfirmationCourriel } from "./courrielConfirmation.js";
 export { demanderLienCompte } from "./liensCompte.js";
 export { ajouterAdresse, supprimerAdresse } from "./carnet.js";
