@@ -11,6 +11,7 @@ import { decoderGeohash, distanceMetres } from "../../lib/geo";
 import { dateCourte, debutSemaine, echeance, estAujourdhui, heure, ilYa, millis, moment } from "../../lib/temps";
 import Rangee from "../../components/Rangee";
 import EtapesDemarrage from "../../components/EtapesDemarrage";
+import PrevisionNeige from "../../components/PrevisionNeige";
 import { CRITERES, EncartVideo, Modale, ModaleSignalement, noteTexte } from "./elements";
 import Conversation, { BoutonMessages } from "./Conversation";
 import "./Tableau.css";
@@ -104,6 +105,7 @@ export default function TableauDeneigeur({ conversation, onConversationFermee })
       )}
 
       <EtapesDemarrage profile={profile} />
+      <PrevisionNeige villeGeoId={villeGeoId} role="deneigeur" />
 
       <div className="chiffres">
         <div className="chiffre">

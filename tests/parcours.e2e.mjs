@@ -814,6 +814,43 @@ async function connexion(cle, largeur = 1280) {
   await ctx.close();
 }
 
+// Prévision de neige : graphique dans les deux tableaux de bord.
+{
+  const periode = (nom, neige, extra = {}) => ({ nom, texte: `${nom} : prévision.`, neige, cm: null, probabilite: null, temperature: { type: "min", valeur: -5 }, ...extra });
+  await db.doc("meteo/ID_QUEBEC").set({
+    ville: "Québec", station: { code: "s0000620", nom: "Québec", distanceKm: 2 }, lien: "https://meteo.gc.ca/fr/location/index.html?coords=46.81,-71.21",
+    emiseA: new Date().toISOString(),
+    periodes: [
+      periode("Ce soir et cette nuit", "accumulation", { cm: { min: 10, max: 15 } }),
+      periode("Samedi", "neige"),
+      periode("Samedi soir et nuit", "risque", { probabilite: 40 }),
+      periode("Dimanche", "aucune"),
+      periode("Dimanche soir et nuit", "aucune"),
+      periode("Lundi", "aucune"),
+    ],
+  });
+  const { p, ctx } = await connexion("mireille", 390);
+  await test("météo : le client voit la bordée prévue et peut publier avant ; le déneigeur, l'avertissement", async () => {
+    await p.goto("http://localhost:4190/tableau-de-bord?mode=client");
+    const prev = p.getByRole("region", { name: "Prévision de neige" });
+    await prev.getByText("Neige prévue ce soir et cette nuit à Québec : 10 à 15 cm.").waitFor({ timeout: 15000 });
+    await prev.getByText("40 %").waitFor();
+    assert.equal(await prev.getByRole("link", { name: "Publier avant la bordée" }).getAttribute("href"), "/publier");
+    assert.match(await prev.getByRole("link", { name: "Prévision complète" }).getAttribute("href"), /^https:\/\/meteo\.gc\.ca\//);
+    assert.equal(await p.evaluate(() => document.documentElement.scrollWidth), 390);
+    await prev.screenshot({ path: `${D}/e2e-prevision-client-390.png` });
+  });
+  await ctx.close();
+  const d = await connexion("marc", 1280);
+  await test("météo : déneigeur", async () => {
+    await d.p.goto("http://localhost:4190/tableau-de-bord");
+    await d.p.getByText("Bordée prévue ce soir et cette nuit à Québec : 10 à 15 cm. Les demandes risquent d'arriver tôt.").waitFor({ timeout: 15000 });
+    assert.equal(await d.p.getByRole("link", { name: "Publier avant la bordée" }).count(), 0);
+    await d.p.getByRole("region", { name: "Prévision de neige" }).screenshot({ path: `${D}/e2e-prevision-deneigeur-1280.png` });
+  });
+  await d.ctx.close();
+}
+
 // Tableau admin : refusé à un compte ordinaire (vrai serveur, ADMIN_UIDS vide),
 // puis rendu avec des métriques simulées.
 {
