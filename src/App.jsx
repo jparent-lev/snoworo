@@ -9,6 +9,7 @@ import PublierDemande from "./pages/PublierDemande";
 import Parametres from "./pages/Parametres";
 import Confidentialite from "./pages/Confidentialite";
 import Conditions from "./pages/Conditions";
+import Medias, { PlancheLogos } from "./pages/Medias";
 import NousEcrire from "./pages/NousEcrire";
 import ConfirmerListe from "./pages/ConfirmerListe";
 import CreditImpot from "./pages/creditImpot/CreditImpot";
@@ -28,6 +29,8 @@ export default function App() {
         <Route path="/confidentialite" element={<Confidentialite />} />
         <Route path="/conditions" element={<Conditions />} />
         <Route path="/nous-ecrire" element={<NousEcrire />} />
+        <Route path="/medias" element={<Medias />} />
+        {import.meta.env.DEV && <Route path="/medias/planche" element={<PlancheLogos />} />}
         <Route path="/liste/confirmer" element={<ConfirmerListe />} />
         {/* Sur le test seulement (VITE_PAGE_CREDIT_IMPOT, .env.test) ; ailleurs, retour à l'accueil. */}
         <Route path="/credit-impot" element={PAGE_CREDIT_IMPOT ? <CreditImpot /> : <Navigate to="/" replace />} />

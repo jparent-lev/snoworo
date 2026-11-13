@@ -28,6 +28,7 @@ export default function PiedDePage() {
           <a href="/#frais">Frais</a>
           <a href="/#deneigeur">Devenir déneigeur de quartier</a>
           <Link to="/inscription">Créer un compte</Link>
+          <Link to="/medias">Médias</Link>
         </div>
         <div className="pied__colonne">
           <span className="eyebrow pied__titre">Légal</span>
