@@ -9,6 +9,8 @@ import { annulerDemande, augmenterOffre, confirmerJob, estEnRetard, evaluerJob, 
 import { formatArgent } from "../../lib/formatArgent";
 import { dateCourte, dureeRestante, echeance, ilYa, millis, moment } from "../../lib/temps";
 import Rangee from "../../components/Rangee";
+import PrevisionNeige from "../../components/PrevisionNeige";
+import { ecouterCarnet } from "../../lib/carnet";
 import { EncartVideo, Etapes, Modale, ModaleEvaluation, ModalePhoto, ModaleSignalement, Personne } from "./elements";
 import Conversation, { BoutonMessages } from "./Conversation";
 import "./Tableau.css";
@@ -34,6 +36,8 @@ export default function TableauClient({ conversation, onConversationFermee }) {
 
   useEffect(() => ecouterMesDemandes(user.uid, setDemandes), [user.uid]);
   useEffect(() => ecouterLectures(user.uid, setLectures), [user.uid]);
+  const [carnet, setCarnet] = useState([]);
+  useEffect(() => ecouterCarnet(user.uid, setCarnet), [user.uid]);
 
   const { enCours, historique } = useMemo(() => {
     const liste = demandes ?? [];
@@ -46,6 +50,12 @@ export default function TableauClient({ conversation, onConversationFermee }) {
   const filtres = FILTRES.map((f) => ({ ...f, compte: enCours.filter((d) => f.statuts.includes(d.statut)).length }));
   const affichees = enCours.filter((d) => FILTRES.find((f) => f.cle === filtre).statuts.includes(d.statut));
   const prenom = (profile?.displayName || "").split(" ")[0];
+  // Ville de la prévision : première adresse du carnet, sinon dernière
+  // demande, sinon l'adresse de service (compte qui déneige aussi).
+  const villeMeteo =
+    carnet[0]?.villeGeoId ??
+    [...(demandes ?? [])].sort((a, b) => (b.createdAt?.toMillis?.() ?? 0) - (a.createdAt?.toMillis?.() ?? 0))[0]?.villeGeoId ??
+    profile?.villeGeoId;
 
   return (
     <div className="tableau">
@@ -61,6 +71,7 @@ export default function TableauClient({ conversation, onConversationFermee }) {
       {!PAIEMENT_REEL && (
         <p className="tableau__simulation">Période de test : aucun paiement réel n'est effectué pour l'instant.</p>
       )}
+      <PrevisionNeige villeGeoId={villeMeteo} role="client" />
 
       {demandes?.length === 0 && (
         <EncartVideo
