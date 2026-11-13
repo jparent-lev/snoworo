@@ -52,6 +52,9 @@ export default function MotDePasseOublie() {
           <Link to="/connexion">Retour à la connexion</Link>
         </p>
       </form>
+      <Link to="/" className="auth-form__retour">
+        ← Retour à l'accueil
+      </Link>
       <VersionFooter className="auth-form__version" />
     </div>
   );
