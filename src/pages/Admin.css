@@ -1,0 +1,48 @@
+.admin {
+  max-width: 1040px;
+  margin: 0 auto;
+  padding: 32px 16px 64px;
+  color: var(--color-terre);
+}
+.admin h1 { font-family: var(--font-titrage); margin: 0 0 4px; }
+.admin h2 { font-family: var(--font-titrage); margin: 40px 0 12px; font-size: 22px; }
+.admin h3 { margin: 0 0 8px; font-size: 16px; }
+.admin__entete { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; flex-wrap: wrap; }
+.admin__meta { font-size: 13.5px; color: var(--color-texte-secondaire); margin: 8px 0; }
+.admin__tuiles { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 12px; }
+.admin__tuile {
+  background: var(--color-surface-carte);
+  border: 1px solid var(--color-bordure);
+  border-radius: 14px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+.admin__tuile-libelle { font-size: 13px; font-weight: 700; color: var(--color-texte-secondaire); }
+.admin__tuile-valeur { font-family: var(--font-titrage); font-size: 32px; font-weight: 600; line-height: 1.1; font-variant-numeric: tabular-nums; }
+.admin__tuile-detail { font-size: 13px; color: var(--color-texte-secondaire); }
+.admin__graphique {
+  margin: 16px 0 0;
+  background: var(--color-surface-carte);
+  border: 1px solid var(--color-bordure);
+  border-radius: 14px;
+  padding: 16px;
+}
+.admin__graphique figcaption { display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; font-size: 14px; margin-bottom: 8px; }
+.admin__graphique figcaption span { color: var(--color-texte-secondaire); font-variant-numeric: tabular-nums; }
+.admin__graphique svg { width: 100%; height: auto; display: block; }
+.admin__barre { fill: var(--color-argile); }
+.admin__barre--survol { fill: var(--color-argile-foncee); }
+.admin__axe { stroke: var(--color-bordure); stroke-width: 1; }
+.admin__echelle { font-size: 11px; fill: var(--color-texte-secondaire); }
+.admin__colonnes { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 24px; margin-top: 32px; }
+.admin__table { width: 100%; border-collapse: collapse; font-size: 14.5px; font-variant-numeric: tabular-nums; }
+.admin__table th, .admin__table td { padding: 8px 6px; border-bottom: 1px solid var(--color-bordure); text-align: left; }
+.admin__table td { text-align: right; }
+.admin__table th[scope="row"] { font-weight: 400; }
+.admin__table thead th { font-size: 13px; color: var(--color-texte-secondaire); text-align: right; }
+.admin__table thead th:first-child { text-align: left; }
+.admin__defilement { overflow-x: auto; }
+.admin__table--villes { min-width: 520px; }

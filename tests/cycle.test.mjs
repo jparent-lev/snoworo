@@ -748,6 +748,46 @@ await test("textos : nouvelle demande, texto au déneigeur consentant même sans
   assert.equal((await ref.get()).data().alerte.envoyes, 1);
 });
 
+await test("admin : métriques agrégées ; accès réservé aux UID de ADMIN_UIDS", async () => {
+  const ta = await import(`${REPO}functions/src/tableauAdmin.js`);
+  const t = (ms) => ({ toMillis: () => ms });
+  const maintenant = Date.UTC(2026, 10, 13, 15, 0);
+  const H = 3600e3;
+  const m = ta.calculerMetriques({
+    users: [
+      { role: ["donneur_ouvrage"], createdAt: t(maintenant - 2 * H), ville: "Québec", carte: { derniers4: "4242" } },
+      { role: ["deneigeur_x"], createdAt: t(maintenant - 3 * 24 * H), ville: "Québec", villeGeoId: "ID_QUEBEC", connectStatus: "actif", telephoneVerifie: "+14185550000" },
+      { role: ["donneur_ouvrage", "deneigeur_x"], createdAt: t(maintenant - 40 * 24 * H), ville: "Lévis", villeGeoId: "ID_LEVIS" },
+      { role: [], createdAt: t(maintenant - 10 * H) },
+    ],
+    demandes: [
+      { statut: "ouverte", createdAt: t(maintenant - H), ville: "Québec" },
+      { statut: "completee", createdAt: t(maintenant - 30 * H), matchedAt: t(maintenant - 29 * H), faiteAt: t(maintenant - 20 * H), confirmeeAt: t(maintenant - 18 * H), ville: "Québec", paiement: { montantTotal: 40, fraisSnowro: 5.2, montantDeneigeur: 34.8, statutPaiement: "verse" } },
+      { statut: "annulee", createdAt: t(maintenant - 50 * H), matchedAt: t(maintenant - 49.5 * H), annulation: { raison: "retard" }, ville: "Lévis", paiement: { montantTotal: 30, statutPaiement: "rembourse" } },
+      { statut: "annulee", createdAt: t(maintenant - 60 * H), ville: "Lévis" },
+    ],
+    listeAttente: [{ confirmee: true, createdAt: t(maintenant - 2 * 24 * H) }, { confirmee: false, createdAt: t(maintenant - 20 * 24 * H) }],
+  }, maintenant);
+  assert.deepEqual(
+    { total: m.comptes.total, j1: m.comptes.j1, j7: m.comptes.j7, clients: m.comptes.clients, deneigeurs: m.comptes.deneigeurs, deux: m.comptes.deuxRoles, sans: m.comptes.sansRole, actifs: m.comptes.deneigeursVersementActif, cartes: m.comptes.cartes },
+    { total: 4, j1: 2, j7: 3, clients: 2, deneigeurs: 2, deux: 1, sans: 1, actifs: 1, cartes: 1 },
+  );
+  assert.equal(m.demandes.total, 4); assert.equal(m.demandes.ouvertesMaintenant, 1);
+  assert.equal(m.demandes.tauxAcceptation, 0.667, "2 acceptées sur 3 tranchées");
+  assert.equal(m.demandes.delaiMedianAcceptationMin, 45); assert.equal(m.demandes.delaiMedianConfirmationH, 2);
+  assert.equal(m.demandes.annuleesRetard, 1);
+  assert.deepEqual({ v: m.argent.volumeConfirme, f: m.argent.fraisSnowro, r: m.argent.rembourse, p: m.argent.panierMoyen }, { v: 40, f: 5.2, r: 30, p: 40 });
+  assert.deepEqual(m.listeAttente, { total: 2, confirmees: 1, j7: 1 });
+  assert.equal(m.parJour.length, 30);
+  assert.equal(m.parJour.reduce((s, j) => s + j.comptes, 0), 3, "le compte de 40 jours est hors fenêtre");
+  assert.equal(m.villes[0].ville, "Québec");
+  // Aucun renseignement identifiant dans la réponse.
+  assert.doesNotMatch(JSON.stringify(m), /4242|\+1418|ID_QUEBEC/);
+  // Accès.
+  await echoue(appel(ta.metriquesAdmin, null, {}), "unauthenticated", "sans connexion");
+  await echoue(appel(ta.metriquesAdmin, "client1", {}), "permission-denied", "pas admin");
+  assert.equal(ta.estAdmin("client1"), false);
+});
 await test("compteur public : déneigeurs par ville, seulement les villes d'au moins 10", async () => {
   const vp = await import(`${REPO}functions/src/villesPubliques.js`);
   const lot = db.batch();

@@ -30,6 +30,7 @@ export {
 } from "./paiements.js";
 export { suggererAdresses } from "./suggestionsAdresse.js";
 export { traiterRetards } from "./retards.js";
+export { metriquesAdmin } from "./tableauAdmin.js";
 export { ajouterAdresse, supprimerAdresse } from "./carnet.js";
 export { purgerConservation } from "./conservation.js";
 export { fermerCompte } from "./compte.js";
