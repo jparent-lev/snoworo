@@ -120,10 +120,10 @@ async function connexion(cle, largeur = 1280) {
     assert.ok(!titres.some((t) => t.includes("LÉVIS")), titres.join(", "));
     assert.equal(titres[0], "Entrée simple, chalet de ma mère");
   });
-  await test("Marc : tri « Plus payantes » et filtre « Outils fournis »", async () => {
+  await test("Marc : tri « Plus payantes » et filtre « Pelle sur place »", async () => {
     await p.selectOption(".rangee__tri select", "payantes");
     assert.equal(await p.locator(".rangee").nth(1).locator(".carte-job__titre").first().textContent(), "Toiture de cabanon");
-    await p.getByRole("tab", { name: "Outils fournis" }).click();
+    await p.getByRole("tab", { name: "Pelle sur place" }).click();
     assert.equal(await p.locator(".rangee").nth(1).locator(".carte-job").count(), 1);
     await p.getByRole("tab", { name: "Toutes" }).nth(1).click();
     await p.selectOption(".rangee__tri select", "proches");

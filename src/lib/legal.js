@@ -7,5 +7,5 @@ export const INFOS_LEGALES = {
   // Québec, même nom que le compte Stripe).
   nomLegal: "9508-2632 Québec inc.",
   responsableRenseignements: "Jonathan Parent",
-  miseAJour: "12 novembre 2026",
+  miseAJour: "13 novembre 2026",
 };

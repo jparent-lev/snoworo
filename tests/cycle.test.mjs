@@ -628,7 +628,7 @@ await test("nouvelle demande : courriel aux déneigeurs de la ville seulement, s
   assert.deepEqual(envoisAlerte.map((e) => e.to[0]).sort(), ["alex@exemple.ca", "marc@exemple.ca"], "Alex et Marc (Québec) ; pas Bea (désactivé), Carl (Lévis), Dom (averti il y a 5 min), Eve (a publié), Fred (pas déneigeur)");
   const courriel = envoisAlerte.find((e) => e.to[0] === "alex@exemple.ca");
   assert.match(courriel.subject, /Nouvelle demande à Limoilou : 39,40\u00A0\$ pour vous/);
-  assert.match(courriel.html, /Bonjour Alex/); assert.match(courriel.html, /km de chez vous/); assert.match(courriel.html, /outils fournis/);
+  assert.match(courriel.html, /Bonjour Alex/); assert.match(courriel.html, /km de chez vous/); assert.match(courriel.html, /pelle ou grattoir sur place/);
   assert.ok(!/3e Avenue|adresse exacte/.test(courriel.html.replace("jamais", "")), "aucune adresse");
   assert.ok((await db.doc("users/alA").get()).data().derniereAlerteDemandeAt);
   assert.equal((await ref.get()).data().alerte.envoyes, 2);

@@ -53,7 +53,7 @@ export function composerAlerte({ prenom, demande, montantDeneigeur, km, lien, vi
   const details = [
     `« ${demande.titre} »${distance ? `, ${distance}` : ""}.`,
     moment ? `Souhaitée : ${moment}.` : null,
-    `Pour vous : ${formatArgent(montantDeneigeur)}, frais déjà déduits${demande.outilsFournis ? " (outils fournis)" : ""}.`,
+    `Pour vous : ${formatArgent(montantDeneigeur)}, frais déjà déduits${demande.outilsFournis ? " (pelle ou grattoir sur place)" : ""}.`,
   ].filter(Boolean);
   const intro = `${prenom ? `Bonjour ${prenom}, une` : "Une"} demande vient d'être publiée près de chez vous. Le premier déneigeur qui accepte s'en occupe.`;
   const pied =
