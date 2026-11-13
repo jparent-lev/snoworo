@@ -33,15 +33,16 @@ const comptes = {
   julie: { email: "julie@test.ca", nom: "Julie Lavoie", role: ["donneur_ouvrage", "deneigeur_x"], ville: "Québec", villeGeoId: "ID_QUEBEC", addressGeohash: geohash.encode(46.83, -71.21), ratingAvg: 4.9, ratingCount: 35, nbJobsCompletees: 41 },
   paul: { email: "paul@test.ca", nom: "Paul Bergeron", role: ["donneur_ouvrage"] },
   zoe: { email: "zoe@test.ca", nom: "Zoé Fermé", role: ["donneur_ouvrage"] },
+  nora: { email: "nora@test.ca", nom: "Nora Nouvelle", role: ["donneur_ouvrage"], nonConfirme: true },
 };
 const uid = {};
 for (const [cle, c] of Object.entries(comptes)) {
-  const u = await auth.createUser({ email: c.email, password: "motdepasse", displayName: c.nom });
+  const u = await auth.createUser({ email: c.email, password: "motdepasse", displayName: c.nom, emailVerified: !c.nonConfirme });
   uid[cle] = u.uid;
 }
 await new Promise((r) => setTimeout(r, 3000)); // laisser onUserCreate créer les fiches
 for (const [cle, c] of Object.entries(comptes)) {
-  const { email, nom, ...reste } = c;
+  const { email, nom, nonConfirme, ...reste } = c;
   await db.doc(`users/${uid[cle]}`).set({ displayName: nom, email, ...reste }, { merge: true });
 }
 
@@ -728,6 +729,33 @@ async function connexion(cle, largeur = 1280) {
     assert.ok(publications[0].adresseId, "adresseId envoyé");
     assert.equal(publications[0].attestation, undefined);
     assert.equal(publications[0].placeId, undefined);
+  });
+  await ctx.close();
+}
+
+// Confirmation du courriel : bandeau tant que ce n'est pas fait, publication
+// refusée par le serveur, puis lien de confirmation (vrai émulateur Auth).
+{
+  const { p, ctx } = await connexion("nora", 390);
+  await test("Nora : courriel non confirmé, bandeau visible avec son adresse", async () => {
+    await p.goto("http://localhost:4190/publier");
+    const bandeau = p.locator(".bandeau-courriel");
+    await bandeau.getByText("Confirmez votre adresse courriel.").waitFor();
+    await bandeau.getByText("nora@test.ca").waitFor();
+    assert.equal(await p.evaluate(() => document.documentElement.scrollWidth), 390);
+    await p.screenshot({ path: `${D}/e2e-bandeau-courriel-390.png` });
+  });
+  await test("Nora : le lien du courriel confirme l'adresse ; le bandeau disparaît", async () => {
+    const lien = await auth.generateEmailVerificationLink("nora@test.ca");
+    const code = new URL(lien).searchParams.get("oobCode");
+    await p.goto(`http://localhost:4190/courriel/confirmer?code=${encodeURIComponent(code)}`);
+    await p.getByRole("heading", { name: "Adresse confirmée" }).waitFor({ timeout: 15000 });
+    assert.equal((await auth.getUserByEmail("nora@test.ca")).emailVerified, true);
+    await p.goto("http://localhost:4190/tableau-de-bord");
+    await p.waitForTimeout(1500);
+    assert.equal(await p.locator(".bandeau-courriel").count(), 0);
+    await p.goto(`http://localhost:4190/courriel/confirmer?code=${encodeURIComponent(code)}`);
+    await p.getByRole("heading", { name: "Ce lien ne fonctionne pas" }).waitFor();
   });
   await ctx.close();
 }

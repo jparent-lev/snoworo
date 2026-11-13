@@ -10,6 +10,7 @@ import SnowroLockup from "./brand/SnowroLockup";
 import SnowroSymbol from "./brand/SnowroSymbol";
 import VersionFooter from "./VersionFooter";
 import { etapesRequisesManquantes } from "../lib/etapes";
+import BandeauCourriel from "./BandeauCourriel";
 import "./Layout.css";
 
 export default function Layout() {
@@ -84,6 +85,7 @@ export default function Layout() {
           </nav>
         )}
       </header>
+      <BandeauCourriel />
       <main>
         <Outlet context={{ mode, changerMode }} />
       </main>

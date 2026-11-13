@@ -11,6 +11,7 @@ import Confidentialite from "./pages/Confidentialite";
 import Conditions from "./pages/Conditions";
 import Medias, { PlancheLogos } from "./pages/Medias";
 import Admin from "./pages/Admin";
+import ConfirmerCourriel from "./pages/ConfirmerCourriel";
 import NousEcrire from "./pages/NousEcrire";
 import ConfirmerListe from "./pages/ConfirmerListe";
 import CreditImpot from "./pages/creditImpot/CreditImpot";
@@ -33,6 +34,7 @@ export default function App() {
         <Route path="/medias" element={<Medias />} />
         {import.meta.env.DEV && <Route path="/medias/planche" element={<PlancheLogos />} />}
         <Route path="/liste/confirmer" element={<ConfirmerListe />} />
+        <Route path="/courriel/confirmer" element={<ConfirmerCourriel />} />
         {/* Sur le test seulement (VITE_PAGE_CREDIT_IMPOT, .env.test) ; ailleurs, retour à l'accueil. */}
         <Route path="/credit-impot" element={PAGE_CREDIT_IMPOT ? <CreditImpot /> : <Navigate to="/" replace />} />
         {/* Gabarit de l'image d'aperçu partagée (og-snowro.png), en développement seulement. */}

@@ -135,6 +135,24 @@ await test("carnet : ajout formel (nom, lien, attestation, géocodage précis), 
   await echoue(appel(f.publierDemande, "client1", { ...base, adresseId }), "not-found", "adresse supprimée");
   await echoue(appel(carnet.supprimerAdresse, "client1", { adresseId: "a/b" }), "invalid-argument", "chemin");
 });
+await test("courriel non confirmé : publier et accepter refusés ; lien Snowro et courriel en français", async () => {
+  const nonConfirme = (fn, uid, data) => fn.run({ auth: { uid, token: { email_verified: false } }, data });
+  const e = await echoue(nonConfirme(f.publierDemande, "client1", base), "failed-precondition", "publier sans courriel confirmé");
+  assert.equal(e.message, "courriel-non-confirme");
+  const { demandeId } = await appel(f.publierDemande, "client1", base);
+  await echoue(nonConfirme(f.accepterDemande, "den1", { demandeId }), "failed-precondition", "accepter sans courriel confirmé");
+  await f.accepterDemande.run({ auth: { uid: "den1", token: { email_verified: true } }, data: { demandeId } });
+  assert.equal((await lire(demandeId)).statut, "matchee");
+  const cc = await import(`${REPO}functions/src/courrielConfirmation.js`);
+  assert.equal(
+    cc.lienSnowro("https://snowro-app.firebaseapp.com/__/auth/action?mode=verifyEmail&oobCode=AbC-123_x&apiKey=k&lang=en", "https://snowro.com"),
+    "https://snowro.com/courriel/confirmer?code=AbC-123_x",
+  );
+  const c = cc.courrielConfirmation({ prenom: "Mireille <b>", lien: "https://snowro.com/courriel/confirmer?code=x&y=1" });
+  assert.match(c.html, /Bonjour Mireille &lt;b&gt;,/); assert.match(c.html, /code=x&amp;y=1/);
+  assert.match(c.texte, /https:\/\/snowro\.com\/courriel\/confirmer\?code=x&y=1/);
+  assert.doesNotMatch(c.html + c.texte, /—/, "pas de tiret cadratin");
+});
 await test("accepter : hors ville refusé (exclusion dure), propre demande refusée, sans rôle refusé", async () => {
   await echoue(appel(f.accepterDemande, "den2", { demandeId: id }), "permission-denied", "hors ville");
   await echoue(appel(f.accepterDemande, "client1", { demandeId: id }), "permission-denied", "propre demande");
