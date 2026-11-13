@@ -1,4 +1,5 @@
 import { onSchedule } from "firebase-functions/v2/scheduler";
+import { onCall, HttpsError } from "firebase-functions/v2/https";
 import { logger } from "firebase-functions";
 import { FieldValue } from "firebase-admin/firestore";
 import geohash from "ngeohash";
@@ -126,8 +127,8 @@ async function fichiersRecents(codes, maintenant, recuperer) {
   return trouves;
 }
 
-export async function rafraichirMeteoMaintenant({ maintenant = Date.now(), recuperer = fetch } = {}) {
-  const villes = await villesActives();
+// Prévisions des villes données (position connue) → meteo/{villeGeoId}.
+async function ecrirePrevisions(villes, maintenant, recuperer) {
   const parVille = villes.map((v) => ({ ...v, station: stationLaPlusProche(v) }));
   const codes = new Set(parVille.map((v) => v.station.code));
   const fichiers = await fichiersRecents(codes, maintenant, recuperer);
@@ -156,9 +157,54 @@ export async function rafraichirMeteoMaintenant({ maintenant = Date.now(), recup
     ecrites++;
   }
   if (ecrites) await lot.commit();
-  logger.info(`Météo : ${ecrites} ville(s) sur ${villes.length}, ${fichiers.size} station(s).`);
+  return { ecrites, stations: fichiers.size };
+}
+
+export async function rafraichirMeteoMaintenant({ maintenant = Date.now(), recuperer = fetch } = {}) {
+  const villes = await villesActives();
+  const { ecrites, stations } = await ecrirePrevisions(villes, maintenant, recuperer);
+  logger.info(`Météo : ${ecrites} ville(s) sur ${villes.length}, ${stations} station(s).`);
   return { villes: villes.length, ecrites };
 }
+
+// Une ville sans prévision récente (nouvelle adresse, nouvelle demande) : le
+// tableau de bord la demande tout de suite plutôt que d'attendre l'heure
+// suivante. Rien n'est refait si la prévision a moins de 75 minutes.
+export const FRAICHEUR_MS = 75 * 60 * 1000;
+async function positionDeLaVille(villeGeoId) {
+  const essais = [
+    [db.collection("users").where("villeGeoId", "==", villeGeoId).select("ville", "addressGeohash").limit(5), "addressGeohash"],
+    [db.collectionGroup("adresses").where("villeGeoId", "==", villeGeoId).select("ville", "geohash").limit(5), "geohash"],
+    [db.collection("demandes").where("villeGeoId", "==", villeGeoId).select("ville", "adresseGeohash").limit(5), "adresseGeohash"],
+  ];
+  for (const [requete, champ] of essais) {
+    const doc = (await requete.get()).docs.find((d) => d.get(champ));
+    if (doc) {
+      const { latitude, longitude } = geohash.decode(doc.get(champ));
+      return { villeGeoId, ville: doc.get("ville") ?? null, lat: latitude, lon: longitude };
+    }
+  }
+  return null;
+}
+
+export async function prevoirVilleMaintenant(villeGeoId, { maintenant = Date.now(), recuperer = fetch } = {}) {
+  const actuelle = (await db.doc(`meteo/${villeGeoId}`).get()).data();
+  const age = maintenant - (actuelle?.recupereeAt?.toMillis?.() ?? 0);
+  if (actuelle && age < FRAICHEUR_MS) return { aJour: true };
+  const position = await positionDeLaVille(villeGeoId);
+  if (!position) return { aJour: false, ecrites: 0 };
+  const { ecrites } = await ecrirePrevisions([position], maintenant, recuperer);
+  return { aJour: false, ecrites };
+}
+
+export const prevoirVille = onCall({ region: REGION }, async (request) => {
+  if (!request.auth) throw new HttpsError("unauthenticated", "Connexion requise.");
+  const { villeGeoId } = request.data ?? {};
+  if (typeof villeGeoId !== "string" || !villeGeoId || villeGeoId.length > 200 || villeGeoId.includes("/")) {
+    throw new HttpsError("invalid-argument", "Ville invalide.");
+  }
+  return prevoirVilleMaintenant(villeGeoId);
+});
 
 export const rafraichirMeteo = onSchedule({ schedule: "every 60 minutes", region: REGION, timeZone: "America/Toronto" }, async () => {
   await rafraichirMeteoMaintenant();

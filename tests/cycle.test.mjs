@@ -873,6 +873,18 @@ await test("météo : lecture d'Environnement Canada, station la plus proche, un
   assert.equal(qc.station.code, "s0000620"); assert.equal(qc.periodes.length, 6);
   assert.match(qc.lien, /^https:\/\/meteo\.gc\.ca\/fr\/location\/index\.html\?coords=46\.81,-71\.21$/);
   assert.ok(appelsMeteo.every((u) => u.startsWith("https://dd.weather.gc.ca/today/citypage_weather/QC/")), "seulement des stations, jamais une adresse");
+  // À la demande : rien refait si la prévision est récente ; une ville nouvelle est préparée tout de suite.
+  const n = appelsMeteo.length;
+  assert.deepEqual(await mt.prevoirVilleMaintenant("ID_QUEBEC", { recuperer }), { aJour: true });
+  assert.equal(appelsMeteo.length, n, "aucun appel pour une prévision fraîche");
+  await db.doc("meteo/ID_LEVIS").delete();
+  const r2 = await mt.prevoirVilleMaintenant("ID_LEVIS", { recuperer });
+  assert.equal(r2.ecrites, 1);
+  // Position simulée de « Lévis » (46.803, -71.178) : la station la plus proche est celle de Québec.
+  assert.equal((await db.doc("meteo/ID_LEVIS").get()).data().station.code, mt.stationLaPlusProche({ lat: 46.8032, lon: -71.1779 }).code);
+  assert.deepEqual(await mt.prevoirVilleMaintenant("ID_INCONNUE", { recuperer }), { aJour: false, ecrites: 0 });
+  await echoue(appel(mt.prevoirVille, null, { villeGeoId: "ID_QUEBEC" }), "unauthenticated", "sans connexion");
+  await echoue(appel(mt.prevoirVille, "client1", { villeGeoId: "a/b" }), "invalid-argument", "chemin");
 });
 await test("compteur public : déneigeurs par ville, seulement les villes d'au moins 10", async () => {
   const vp = await import(`${REPO}functions/src/villesPubliques.js`);
