@@ -158,3 +158,30 @@
   font-weight: 400;
   color: var(--color-terre);
 }
+
+.auth-form__lien--droite {
+  text-align: right;
+  margin-top: -6px;
+}
+.auth-form__separateur {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: var(--color-texte-secondaire);
+  font-size: 13px;
+}
+.auth-form__separateur::before,
+.auth-form__separateur::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: var(--color-bordure);
+}
+.auth-form__bouton-secondaire {
+  width: 100%;
+  white-space: normal;
+}
+a.auth-form__bouton {
+  text-align: center;
+  text-decoration: none;
+}
