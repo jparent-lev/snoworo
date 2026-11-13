@@ -87,6 +87,9 @@ export default function NouveauMotDePasse() {
           </>
         )}
       </form>
+      <Link to="/" className="auth-form__retour">
+        ← Retour à l'accueil
+      </Link>
       <VersionFooter className="auth-form__version" />
     </div>
   );

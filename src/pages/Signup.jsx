@@ -75,6 +75,9 @@ export default function Signup() {
           Déjà un compte ? <Link to="/connexion">Se connecter</Link>
         </p>
       </form>
+      <Link to="/" className="auth-form__retour">
+        ← Retour à l'accueil
+      </Link>
       <VersionFooter className="auth-form__version" />
     </div>
   );
