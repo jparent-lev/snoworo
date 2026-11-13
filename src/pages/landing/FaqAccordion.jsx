@@ -27,6 +27,12 @@ const THEMES = [
         r: "Non, ni par le client ni par le déneigeur de quartier : accepter, c'est s'engager. Personne ne laisse tomber votre demande pour une plus payante. Si un problème survient (absence, travail inachevé, accès impossible), on utilise « Signaler un problème » : le paiement reste retenu et nous tranchons selon les faits.",
       },
       {
+        // Aligné sur les Conditions (sections 4, 5, 9 et 10) : ne rien promettre
+        // de plus qu'elles (aucune assurance fournie par Snowro).
+        q: "Et s'il y a un bris ou un accident ?",
+        r: "Le déneigeur de quartier travaille à son compte : il est responsable de son travail et des dommages qu'il cause en le faisant. Si quelque chose est abîmé, signalez-le avec « Signaler un problème » : le paiement reste retenu pendant que nous examinons la situation, photos de fin de travail et messages à l'appui, et le client peut être remboursé en tout ou en partie. Snowro ne fournit pas d'assurance : chacun vérifie sa propre protection (assurance habitation pour le client, protection personnelle pour le déneigeur). Pour éviter les mauvaises surprises, le client signale d'avance ce qui pourrait être dangereux ou fragile, comme des marches glacées ou une voiture garée près de l'entrée, et le déneigeur travaille de façon sécuritaire avec son propre équipement.",
+      },
+      {
         q: "Qu'est-ce que l'autre personne voit de moi ?",
         r: "Avant qu'une demande soit acceptée, les déneigeurs voient seulement le quartier, la distance et votre prénom. L'adresse exacte n'est montrée qu'à celui qui accepte. Vous vous écrivez ensuite dans la messagerie de Snowro, sans échanger vos numéros. Vos messages et les photos de fin de demande ne sont vus que par vous deux, et ils sont effacés 30 jours après la demande.",
       },
