@@ -54,10 +54,12 @@ export default function PrevisionNeige({ villeGeoId }) {
   return (
     <div className={`pastille-neige pastille-neige--${ton}`} title={titre}>
       <Flocon />
-      <span>{texte}</span>
-      <a href={meteo.lien} target="_blank" rel="noopener noreferrer" className="pastille-neige__lien">
-        Prévisions complètes
-      </a>
+      <span className="pastille-neige__corps">
+        <span>{texte}</span>
+        <a href={meteo.lien} target="_blank" rel="noopener noreferrer" className="pastille-neige__lien">
+          Prévisions complètes
+        </a>
+      </span>
     </div>
   );
 }

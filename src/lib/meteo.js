@@ -12,7 +12,8 @@ export function ecouterMeteo(villeGeoId, onChange) {
   );
 }
 
-export const libelleCm = (cm) => (cm.min === cm.max ? `${cm.min} cm` : `${cm.min} à ${cm.max} cm`);
+// Espaces insécables : « 10 à 15 cm » ne se coupe jamais.
+export const libelleCm = (cm) => (cm.min === cm.max ? `${cm.min}\u00A0cm` : `${cm.min}\u00A0à\u00A0${cm.max}\u00A0cm`);
 
 // Ville sans prévision récente : le serveur la prépare tout de suite
 // (functions/src/meteo.js, prevoirVille).

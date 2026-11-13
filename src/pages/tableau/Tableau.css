@@ -840,13 +840,32 @@
 }
 
 /* ---- Encart vidéo des comptes sans activité ---- */
+.encart-video__fermer {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 36px;
+  height: 36px;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--color-texte-secondaire);
+  font-size: 24px;
+  line-height: 1;
+  cursor: pointer;
+}
+.encart-video__fermer:hover { background: rgba(59, 42, 31, 0.08); color: var(--color-terre); }
+.encart-video__fermer:focus-visible { outline: 2px solid var(--color-argile); outline-offset: 2px; }
+
 .encart-video {
+  position: relative;
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
   gap: 16px 24px;
-  padding: 18px 20px;
+  /* À droite, la place du bouton « Fermer ». */
+  padding: 18px 56px 18px 20px;
   border-radius: 18px;
   background: var(--color-lin);
   border: 1px solid var(--color-bordure);
