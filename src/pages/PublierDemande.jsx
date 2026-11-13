@@ -236,8 +236,14 @@ export default function PublierDemande() {
 
         <label className="auth-form__case">
           <input type="checkbox" checked={outilsFournis} onChange={(e) => setOutilsFournis(e.target.checked)} />
-          Je fournis la pelle ou le grattoir sur place
+          Je laisse une pelle ou un grattoir à la disposition du déneigeur
         </label>
+        {outilsFournis && (
+          <p className="auth-form__aide">
+            Outils à main seulement : jamais de souffleuse ni d'autre appareil motorisé. Assurez-vous qu'ils sont en bon état ; le
+            déneigeur reste libre d'utiliser son propre équipement.
+          </p>
+        )}
 
         <label className="auth-form__champ">
           Au plus tard

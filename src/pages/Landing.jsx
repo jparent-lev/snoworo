@@ -145,7 +145,7 @@ export default function Landing() {
           {[
             {
               titre: "Vous publiez",
-              texte: "Votre adresse, ce qu'il y a à pelleter, les outils fournis ou non, le moment souhaité et le montant offert. Deux minutes suffisent.",
+              texte: "Votre adresse, ce qu'il y a à pelleter, si vous laissez une pelle sur place, le moment souhaité et le montant offert. Deux minutes suffisent.",
             },
             {
               titre: "Le quartier reçoit l'appel",
@@ -183,7 +183,7 @@ export default function Landing() {
           <div className="landing__bloc-paiement-cartes">
             {[
               { scene: "notes", titre: "Des déneigeurs de quartier notés", texte: "Chaque demande donne lieu à une appréciation. Un travail bâclé se sait, et cela ferme des portes." },
-              { scene: "entente", titre: "Une entente claire dès le départ", texte: "Prix, heure souhaitée, outils fournis ou non : tout est écrit avant que quelqu'un accepte." },
+              { scene: "entente", titre: "Une entente claire dès le départ", texte: "Prix, heure souhaitée, pelle laissée sur place ou non : tout est écrit avant que quelqu'un accepte." },
               { scene: "paiement", titre: "Paiement sécurisé", texte: "Traité par Stripe, retenu jusqu'à ce que la demande soit confirmée faite." },
             ].map((c) => (
               <div key={c.titre} className="landing__mini-carte landing__mini-carte--scene">

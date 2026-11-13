@@ -20,11 +20,17 @@ const THEMES = [
       },
       {
         q: "Pourquoi pas simplement le groupe Facebook du quartier ?",
-        r: "Pour un coup de pelle entre voisins qui se connaissent, un groupe fait très bien l'affaire. Snowro est utile quand vous ne connaissez personne, que c'est la veille d'une bonne bordée ou que vous partez tôt demain matin. Votre demande est envoyée à tous les déneigeurs de quartier disponibles du secteur en même temps, sans attendre une réponse dans un fil de commentaires. Chaque déneigeur de quartier a une note publique bâtie demande après demande, plutôt qu'un profil anonyme. Et l'entente (prix, heure, outils fournis ou non) est écrite d'avance, sans négociation sur le perron.",
+        r: "Pour un coup de pelle entre voisins qui se connaissent, un groupe fait très bien l'affaire. Snowro est utile quand vous ne connaissez personne, que c'est la veille d'une bonne bordée ou que vous partez tôt demain matin. Votre demande est envoyée à tous les déneigeurs de quartier disponibles du secteur en même temps, sans attendre une réponse dans un fil de commentaires. Chaque déneigeur de quartier a une note publique bâtie demande après demande, plutôt qu'un profil anonyme. Et l'entente (prix, heure, pelle laissée sur place ou non) est écrite d'avance, sans négociation sur le perron.",
       },
       {
         q: "Une demande acceptée peut-elle être annulée ?",
         r: "Non, ni par le client ni par le déneigeur de quartier : accepter, c'est s'engager. Personne ne laisse tomber votre demande pour une plus payante. Si un problème survient (absence, travail inachevé, accès impossible), on utilise « Signaler un problème » : le paiement reste retenu et nous tranchons selon les faits.",
+      },
+      {
+        // Aligné sur les Conditions (sections 4, 5, 9 et 10) : ne rien promettre
+        // de plus qu'elles (aucune assurance fournie par Snowro).
+        q: "Et s'il y a un bris ou un accident ?",
+        r: "Le déneigeur de quartier travaille à son compte : il est responsable de son travail et des dommages qu'il cause en le faisant. Si quelque chose est abîmé, signalez-le avec « Signaler un problème » : le paiement reste retenu pendant que nous examinons la situation, photos de fin de travail et messages à l'appui, et le client peut être remboursé en tout ou en partie. Snowro ne fournit pas d'assurance : chacun vérifie sa propre protection (assurance habitation pour le client, protection personnelle pour le déneigeur). Pour éviter les mauvaises surprises, le client signale d'avance ce qui pourrait être dangereux ou fragile, comme des marches glacées ou une voiture garée près de l'entrée, et le déneigeur travaille de façon sécuritaire avec son propre équipement. Le client peut laisser une pelle ou un grattoir à sa disposition, en bon état, mais jamais de souffleuse ni d'autre appareil motorisé.",
       },
       {
         q: "Qu'est-ce que l'autre personne voit de moi ?",
