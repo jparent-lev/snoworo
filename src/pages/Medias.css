@@ -1,0 +1,102 @@
+.medias__contact {
+  background: var(--color-surface-carte, #fffdf8);
+  border: 1px solid var(--color-bordure);
+  border-radius: var(--radius-panneau, 16px);
+  padding: 20px 24px;
+  margin: 24px 0 8px;
+}
+.medias__contact h2 {
+  margin-top: 0 !important;
+}
+.medias__note {
+  font-size: 14px;
+  color: var(--color-texte-secondaire);
+}
+.medias__grille {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 16px;
+  margin: 16px 0;
+}
+.medias__grille--videos {
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+}
+.medias__carte {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-width: 0;
+}
+.medias__carte figcaption {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 14px;
+}
+.medias__carte figcaption span {
+  color: var(--color-texte-secondaire);
+}
+.medias__apercu {
+  aspect-ratio: 16 / 10;
+  border-radius: 12px;
+  border: 1px solid var(--color-bordure);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  padding: 16px;
+}
+.medias__apercu img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+}
+.medias__apercu--clair { background: #fffdf8; }
+.medias__apercu--fonce { background: #3b2a20; }
+.medias__apercu--image { padding: 0; background: var(--color-surface-secondaire); }
+.medias__apercu--image img { width: 100%; height: 100%; object-fit: cover; }
+.medias__video {
+  width: 100%;
+  height: auto;
+  border-radius: 12px;
+  background: #000;
+}
+.medias__liens {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 14px;
+}
+.medias__telecharger {
+  font-weight: 700;
+}
+
+/* Planche (dev) : rendu des PNG. */
+.medias__planche {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 40px;
+  padding: 40px;
+}
+.medias__lockup {
+  display: inline-flex;
+  align-items: center;
+  gap: 56px;
+  padding: 24px;
+}
+.medias__lockup-texte {
+  font-family: var(--font-titrage);
+  font-weight: 600;
+  font-size: 150px;
+  letter-spacing: -0.012em;
+  line-height: 1;
+  color: var(--color-terre);
+}
+.medias__lockup--inverse .medias__lockup-texte {
+  color: var(--color-lin, #ede0cc);
+}
+.medias__symbole {
+  display: inline-block;
+  line-height: 0;
+}
