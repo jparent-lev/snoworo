@@ -6,6 +6,7 @@ import { auth, db } from "../lib/firebase";
 import VersionFooter from "../components/VersionFooter";
 import "./AuthForm.css";
 import { mesurer } from "../lib/mesure";
+import { envoyerConfirmationCourriel } from "../lib/courriel";
 
 export default function Signup() {
   const [displayName, setDisplayName] = useState("");
@@ -28,6 +29,9 @@ export default function Signup() {
       // sans jamais toucher aux rôles (voir functions/src/onUserCreate.js).
       await setDoc(doc(db, "users", user.uid), { displayName }, { merge: true });
       mesurer("sign_up", { method: "courriel" });
+      // Lien de confirmation du courriel : un échec n'empêche pas l'inscription
+      // (le bandeau du tableau de bord permet de le renvoyer).
+      envoyerConfirmationCourriel().catch(() => {});
       navigate("/tableau-de-bord");
     } catch (err) {
       setErreur(traduireErreur(err.code));

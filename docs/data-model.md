@@ -26,6 +26,7 @@ connectStatus: "non_demarre" | "en_attente" | "actif" | "restreint"   // 🔒 vo
 
 telephoneVerifie: string | null    // 🔒 +1XXXXXXXXXX, écrit par verifierCodeTelephone (textos)
 telephoneVerifieAt                 // 🔒
+confirmationCourriel: { envoyeAt }  // 🔒 dernier lien de confirmation du courriel (au plus un par minute)
 alertesDemandesCourriel: boolean   // false = plus d'avis de nouvelles demandes (absent = actifs)
 derniereAlerteDemandeAt            // dernier avis envoyé (au plus un toutes les 20 min)
 

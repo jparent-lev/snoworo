@@ -27,9 +27,10 @@ service cloud.firestore {
       // (functions/src/paiements.js) ; jamais le numéro, seulement un résumé.
       // telephoneVerifie, telephoneVerifieAt : écrits par verifierCodeTelephone
       // après le code reçu par texto (functions/src/telephone.js).
+      // confirmationCourriel : date du dernier lien envoyé (anti-abus du renvoi).
       return ['consents', 'proSubscription', 'ville', 'villeGeoId', 'stripeConnectAccountId', 'connectStatus', 'tentativeCompteStripe',
               'ratingAvg', 'ratingCount', 'ratingCriteres', 'nbJobsCompletees', 'stripeCustomerId', 'carte', 'carteMiseAJourAt',
-              'telephoneVerifie', 'telephoneVerifieAt', 'stripeMode'];
+              'telephoneVerifie', 'telephoneVerifieAt', 'stripeMode', 'confirmationCourriel'];
     }
 
     function abonneProActif() {

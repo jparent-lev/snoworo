@@ -36,6 +36,10 @@ export default function Conditions() {
         <li>Vous devez avoir 18 ans ou plus pour créer un compte, publier une demande ou déneiger.</li>
         <li>Les renseignements que vous fournissez doivent être exacts et à jour, y compris l'adresse à déneiger.</li>
         <li>
+          Vous confirmez votre adresse courriel par le lien que nous vous envoyons avant de publier ou d'accepter une
+          première demande.
+        </li>
+        <li>
           Votre compte est personnel. Vous êtes responsable de ce qui s'y fait; avisez-nous sans délai si vous croyez que
           quelqu'un d'autre y a accès.
         </li>

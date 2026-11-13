@@ -1,0 +1,20 @@
+.bandeau-courriel {
+  max-width: 1040px;
+  margin: 16px auto 0;
+  padding: 14px 18px;
+  background: #fbf0dc;
+  border: 1px solid #e8c98a;
+  border-radius: 14px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px 20px;
+  color: var(--color-terre);
+  font-size: 14.5px;
+  box-sizing: border-box;
+}
+.bandeau-courriel p { margin: 0; flex: 1 1 320px; min-width: 0; overflow-wrap: anywhere; }
+.bandeau-courriel__actions { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.bandeau-courriel .message-erreur { flex-basis: 100%; }
+@media (max-width: 1072px) { .bandeau-courriel { margin: 16px 16px 0; } }
