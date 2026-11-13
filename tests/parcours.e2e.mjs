@@ -732,6 +732,41 @@ async function connexion(cle, largeur = 1280) {
   await ctx.close();
 }
 
+// Tableau admin : refusé à un compte ordinaire (vrai serveur, ADMIN_UIDS vide),
+// puis rendu avec des métriques simulées.
+{
+  const { p, ctx } = await connexion("paul", 390);
+  await test("admin : un compte ordinaire voit « Accès réservé », sans lien Admin", async () => {
+    await p.goto("http://localhost:4190/admin");
+    await p.getByRole("heading", { name: "Accès réservé" }).waitFor({ timeout: 15000 });
+    assert.equal(await p.getByRole("link", { name: "Admin" }).count(), 0);
+  });
+  const jours = Array.from({ length: 30 }, (_, i) => {
+    const d = new Date(Date.now() - (29 - i) * 864e5);
+    return { jour: d.toISOString().slice(0, 10), comptes: i % 4, demandes: i % 3 };
+  });
+  await p.route("**/metriquesAdmin", (r) => r.fulfill({ json: { result: {
+    genereA: new Date().toISOString(),
+    comptes: { total: 128, j1: 9, j7: 41, j30: 120, clients: 90, deneigeurs: 46, deuxRoles: 8, sansRole: 0, deneigeursAdresse: 40, deneigeursVersementActif: 31, cartes: 72, cellulaires: 50, smsConsentis: 33 },
+    demandes: { total: 64, j1: 5, j7: 30, j30: 60, ouvertesMaintenant: 4, acceptees: 52, annuleesRetard: 1, signalees: 2, tauxAcceptation: 0.867, delaiMedianAcceptationMin: 38, delaiMedianConfirmationH: 3.5, parStatut: { ouverte: 4, matchee: 6, faite: 3, completee: 41, signalee: 2, annulee: 8 } },
+    argent: { volumeConfirme: 1845, fraisSnowro: 229.6, montantDeneigeurs: 1615.4, nbConfirmees: 41, enRetenue: 280, rembourse: 35, panierMoyen: 45 },
+    listeAttente: { total: 210, confirmees: 180, j7: 12 },
+    parJour: jours,
+    villes: [{ ville: "Québec", deneigeurs: 38, clients: 70, demandes: 55, ouvertes: 3, completees: 36 }, { ville: "Lévis", deneigeurs: 8, clients: 12, demandes: 9, ouvertes: 1, completees: 5 }],
+  } } }));
+  await test("admin : tuiles, graphiques sur 30 jours et tableaux, sans défilement horizontal à 390 px", async () => {
+    await p.goto("http://localhost:4190/admin");
+    await p.getByRole("heading", { name: "Tableau de bord" }).waitFor();
+    await p.locator(".admin__tuile", { hasText: "Comptes" }).getByText("128").waitFor();
+    await p.getByText("+9 en 24 h · +41 en 7 jours").first().waitFor();
+    await p.getByText("87 %").waitFor();
+    assert.equal(await p.locator(".admin__graphique").count(), 2);
+    assert.equal(await p.evaluate(() => document.documentElement.scrollWidth), 390);
+    await p.screenshot({ path: `${D}/e2e-admin-390.png`, fullPage: true });
+  });
+  await ctx.close();
+}
+
 // Mesure d'audience (Loi 25) : rien avant « Accepter », adresse nettoyée, retrait.
 {
   const ctx = await b.newContext({ viewport: { width: 390, height: 844 }, mesure: true });

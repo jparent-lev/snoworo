@@ -10,6 +10,7 @@ import Parametres from "./pages/Parametres";
 import Confidentialite from "./pages/Confidentialite";
 import Conditions from "./pages/Conditions";
 import Medias, { PlancheLogos } from "./pages/Medias";
+import Admin from "./pages/Admin";
 import NousEcrire from "./pages/NousEcrire";
 import ConfirmerListe from "./pages/ConfirmerListe";
 import CreditImpot from "./pages/creditImpot/CreditImpot";
@@ -53,6 +54,14 @@ export default function App() {
             element={
               <RequireAuth>
                 <PublierDemande />
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/admin"
+            element={
+              <RequireAuth>
+                <Admin />
               </RequireAuth>
             }
           />
