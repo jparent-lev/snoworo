@@ -1,52 +1,25 @@
-.prevision {
-  background: var(--color-surface-carte);
-  border: 1px solid var(--color-bordure);
-  border-radius: var(--radius-panneau, 16px);
-  padding: 16px 18px;
-  margin: 0 0 20px;
-}
-.prevision--bordee { border-color: #e8c98a; background: #fffaf0; }
-.prevision__resume { margin: 0 0 12px; font-weight: 700; color: var(--color-terre); }
-.prevision__periodes {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: grid;
-  grid-template-columns: repeat(6, minmax(0, 1fr));
-  gap: 6px;
-}
-.prevision__periode {
-  display: flex;
-  flex-direction: column;
+.pastille-neige {
+  display: inline-flex;
+  flex-wrap: wrap;
   align-items: center;
-  gap: 4px;
-  text-align: center;
-  min-width: 0;
-  padding: 8px 2px;
-  border-radius: 10px;
+  gap: 4px 8px;
+  margin: 0;
+  padding: 5px 12px;
+  border-radius: 999px;
+  font-size: 13.5px;
+  line-height: 1.35;
+  background: var(--color-surface-secondaire);
+  border: 1px solid var(--color-bordure);
+  color: var(--color-terre);
+  max-width: 100%;
+  box-sizing: border-box;
 }
-.prevision__periode--accumulation { background: #fbf0dc; }
-.prevision__nom { font-size: 12px; font-weight: 700; color: var(--color-texte-secondaire); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
-.prevision__flocon { width: 22px; height: 22px; }
-.prevision__flocon--accumulation { stroke: var(--color-argile); }
-.prevision__flocon--neige { stroke: var(--color-ardoise); }
-.prevision__flocon--risque { stroke: var(--color-ardoise); opacity: 0.55; }
-.prevision__flocon--aucune { stroke: var(--color-bordure); }
-.prevision__barre-zone { height: 44px; width: 14px; display: flex; align-items: flex-end; border-bottom: 1px solid var(--color-bordure); }
-.prevision__barre { width: 100%; border-radius: 4px 4px 0 0; background: var(--color-argile); }
-.prevision__periode--neige .prevision__barre,
-.prevision__periode--risque .prevision__barre { background: var(--color-ardoise); opacity: 0.5; }
-.prevision__valeur { font-size: 13px; font-weight: 700; font-variant-numeric: tabular-nums; color: var(--color-terre); }
-.prevision__periode--aucune .prevision__valeur { font-weight: 400; color: var(--color-texte-secondaire); }
-.prevision__temp { font-size: 11.5px; color: var(--color-texte-secondaire); white-space: nowrap; }
-.prevision__pied { margin-top: 12px; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; font-size: 12.5px; color: var(--color-texte-secondaire); }
-.prevision__pied a:not(.btn) { color: var(--color-argile-foncee); }
-.prevision__cta { padding: 8px 14px; font-size: 14px; }
+.pastille-neige__flocon { width: 16px; height: 16px; flex: none; color: var(--color-texte-secondaire); }
+.pastille-neige--bordee { background: #fbf0dc; border-color: #e8c98a; font-weight: 700; }
+.pastille-neige--bordee .pastille-neige__flocon { color: var(--color-argile); }
+.pastille-neige--neige .pastille-neige__flocon { color: var(--color-ardoise); }
+.pastille-neige--attente { color: var(--color-texte-secondaire); }
+.pastille-neige__lien { font-weight: 400; font-size: 12.5px; color: var(--color-argile-foncee); white-space: nowrap; }
 @media (max-width: 560px) {
-  /* Sur téléphone : les trois prochaines périodes (environ 36 h). */
-  .prevision__periodes { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-  .prevision__periode:nth-child(n + 4) { display: none; }
+  .pastille-neige { border-radius: 14px; }
 }
-.prevision__pied strong { font-weight: 700; color: var(--color-terre); }
-.prevision__pied .prevision__vieille { color: var(--color-erreur); }
-.prevision--attente .prevision__resume { margin-bottom: 0; }

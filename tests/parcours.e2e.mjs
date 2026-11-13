@@ -830,24 +830,22 @@ async function connexion(cle, largeur = 1280) {
     ],
   });
   const { p, ctx } = await connexion("mireille", 390);
-  await test("météo : le client voit la bordée prévue et peut publier avant ; le déneigeur, l'avertissement", async () => {
+  await test("météo : pastille « Bordée prévue » sous le bonjour du client, avec le lien vers Environnement Canada", async () => {
     await p.goto("http://localhost:4190/tableau-de-bord?mode=client");
-    const prev = p.getByRole("region", { name: "Prévision de neige" });
-    await prev.getByText("Neige prévue ce soir et cette nuit à Québec : 10 à 15 cm.").waitFor({ timeout: 15000 });
-    await prev.getByText("40 %").waitFor();
-    await prev.getByText(/^Actualisée à \d/).waitFor();
-    assert.equal(await prev.getByRole("link", { name: "Publier avant la bordée" }).getAttribute("href"), "/publier");
-    assert.match(await prev.getByRole("link", { name: "Prévision complète" }).getAttribute("href"), /^https:\/\/meteo\.gc\.ca\//);
+    const pastille = p.locator(".pastille-neige");
+    await pastille.getByText("Bordée prévue ce soir et cette nuit : 10 à 15 cm").waitFor({ timeout: 15000 });
+    assert.match(await pastille.getByRole("link", { name: "Prévisions complètes" }).getAttribute("href"), /^https:\/\/meteo\.gc\.ca\//);
+    assert.match(await pastille.getAttribute("title"), /station Québec, actualisée à/);
     assert.equal(await p.evaluate(() => document.documentElement.scrollWidth), 390);
-    await prev.screenshot({ path: `${D}/e2e-prevision-client-390.png` });
+    await p.locator(".tableau__salut").screenshot({ path: `${D}/e2e-pastille-neige-390.png` });
   });
   await ctx.close();
+  await db.doc("meteo/ID_QUEBEC").update({ periodes: [periode("Samedi", "aucune"), periode("Dimanche", "aucune")] });
   const d = await connexion("marc", 1280);
-  await test("météo : déneigeur", async () => {
+  await test("météo : sans neige prévue, le déneigeur voit « Pas de bordée prévue pour le moment »", async () => {
     await d.p.goto("http://localhost:4190/tableau-de-bord");
-    await d.p.getByText("Bordée prévue ce soir et cette nuit à Québec : 10 à 15 cm. Les demandes risquent d'arriver tôt.").waitFor({ timeout: 15000 });
-    assert.equal(await d.p.getByRole("link", { name: "Publier avant la bordée" }).count(), 0);
-    await d.p.getByRole("region", { name: "Prévision de neige" }).screenshot({ path: `${D}/e2e-prevision-deneigeur-1280.png` });
+    await d.p.locator(".pastille-neige").getByText("Pas de bordée prévue pour le moment").waitFor({ timeout: 15000 });
+    await d.p.locator(".tableau__salut").screenshot({ path: `${D}/e2e-pastille-neige-deneigeur-1280.png` });
   });
   await d.ctx.close();
 }
