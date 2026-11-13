@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { ecouterMeteo, libelleCm, nomCourt, resumePrevision } from "../lib/meteo";
+import { FRAICHEUR_MS, demanderPrevision, ecouterMeteo, libelleCm, nomCourt, resumePrevision } from "../lib/meteo";
 import "./PrevisionNeige.css";
 
 // Prévision de neige des prochaines périodes pour la ville de l'utilisateur :
@@ -26,14 +26,46 @@ function libellePeriode(p) {
   return "Aucune";
 }
 
+const heure = (d) => d.toLocaleTimeString("fr-CA", { hour: "numeric", minute: "2-digit" });
+function quand(d) {
+  const jour = new Date();
+  if (d.toDateString() === jour.toDateString()) return `à ${heure(d)}`;
+  return `le ${d.toLocaleDateString("fr-CA", { day: "numeric", month: "long" })} à ${heure(d)}`;
+}
+
 export default function PrevisionNeige({ villeGeoId, role }) {
-  const [meteo, setMeteo] = useState(null);
+  const [meteo, setMeteo] = useState(undefined); // undefined = en cours
+  const [demandee, setDemandee] = useState(null);
+  const [indisponible, setIndisponible] = useState(false);
   useEffect(() => (villeGeoId ? ecouterMeteo(villeGeoId, setMeteo) : undefined), [villeGeoId]);
-  if (!villeGeoId || !meteo?.periodes?.length) return null;
+  // Aucune prévision, ou trop vieille : on la demande une fois au serveur,
+  // et la dernière connue reste affichée en attendant.
+  useEffect(() => {
+    if (!villeGeoId || meteo === undefined || demandee === villeGeoId) return;
+    const recue = meteo?.recupereeAt?.toMillis?.() ?? 0;
+    if (!meteo || Date.now() - recue > FRAICHEUR_MS) {
+      setDemandee(villeGeoId);
+      setIndisponible(false);
+      demanderPrevision(villeGeoId).then((r) => {
+        if (!r?.data?.aJour && !r?.data?.ecrites) setIndisponible(true);
+      });
+    }
+  }, [villeGeoId, meteo, demandee]);
+  if (!villeGeoId) return null;
+  if (!meteo?.periodes?.length) {
+    return (
+      <section className="prevision prevision--attente" aria-label="Prévision de neige">
+        <p className="prevision__resume">Prévision de neige</p>
+        <p className="prevision__pied">{indisponible ? "Prévision indisponible pour l'instant. Nouvel essai à la prochaine visite." : "Chargement de la prévision d'Environnement Canada…"}</p>
+      </section>
+    );
+  }
 
   const periodes = meteo.periodes.slice(0, 6);
   const bordee = periodes.some((p) => p.neige === "accumulation");
-  const emise = meteo.emiseA ? new Date(meteo.emiseA).toLocaleTimeString("fr-CA", { hour: "numeric", minute: "2-digit" }) : null;
+  const emise = meteo.emiseA ? new Date(meteo.emiseA) : null;
+  const recue = meteo.recupereeAt?.toDate?.() ?? null;
+  const vieille = recue && Date.now() - recue.getTime() > 3 * 3600e3;
 
   return (
     <section className={`prevision ${bordee ? "prevision--bordee" : ""}`} aria-label="Prévision de neige">
@@ -60,8 +92,9 @@ export default function PrevisionNeige({ villeGeoId, role }) {
       </ol>
       <div className="prevision__pied">
         <span>
-          Source : Environnement et Changement climatique Canada, station {meteo.station?.nom}
-          {emise ? `, prévision de ${emise}` : ""}.{" "}
+          {recue && <strong className={vieille ? "prevision__vieille" : ""}>Actualisée {quand(recue)}. </strong>}
+          {emise && `Prévision émise ${quand(emise)}. `}
+          Source : Environnement et Changement climatique Canada, station {meteo.station?.nom}.{" "}
           <a href={meteo.lien} target="_blank" rel="noopener noreferrer">
             Prévision complète
           </a>

@@ -1,5 +1,6 @@
 import { doc, onSnapshot } from "firebase/firestore";
-import { db } from "./firebase";
+import { httpsCallable } from "firebase/functions";
+import { db, functions } from "./firebase";
 
 // Prévisions de neige par ville (functions/src/meteo.js), mises à jour toutes
 // les heures à partir d'Environnement Canada.
@@ -43,3 +44,9 @@ export function resumePrevision(periodes, { ville, role }) {
   const dernier = periodes.at(-1);
   return `Aucune neige prévue${lieu}${dernier ? ` d'ici ${dernier.nom.toLowerCase()}` : ""}.`;
 }
+
+// Ville sans prévision récente : le serveur la prépare tout de suite
+// (functions/src/meteo.js, prevoirVille).
+const fnPrevoir = httpsCallable(functions, "prevoirVille");
+export const demanderPrevision = (villeGeoId) => fnPrevoir({ villeGeoId }).catch(() => null);
+export const FRAICHEUR_MS = 75 * 60 * 1000;

@@ -47,3 +47,6 @@
   .prevision__periodes { grid-template-columns: repeat(3, minmax(0, 1fr)); }
   .prevision__periode:nth-child(n + 4) { display: none; }
 }
+.prevision__pied strong { font-weight: 700; color: var(--color-terre); }
+.prevision__pied .prevision__vieille { color: var(--color-erreur); }
+.prevision--attente .prevision__resume { margin-bottom: 0; }

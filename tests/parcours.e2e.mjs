@@ -819,7 +819,7 @@ async function connexion(cle, largeur = 1280) {
   const periode = (nom, neige, extra = {}) => ({ nom, texte: `${nom} : prévision.`, neige, cm: null, probabilite: null, temperature: { type: "min", valeur: -5 }, ...extra });
   await db.doc("meteo/ID_QUEBEC").set({
     ville: "Québec", station: { code: "s0000620", nom: "Québec", distanceKm: 2 }, lien: "https://meteo.gc.ca/fr/location/index.html?coords=46.81,-71.21",
-    emiseA: new Date().toISOString(),
+    emiseA: new Date().toISOString(), recupereeAt: Timestamp.now(),
     periodes: [
       periode("Ce soir et cette nuit", "accumulation", { cm: { min: 10, max: 15 } }),
       periode("Samedi", "neige"),
@@ -835,6 +835,7 @@ async function connexion(cle, largeur = 1280) {
     const prev = p.getByRole("region", { name: "Prévision de neige" });
     await prev.getByText("Neige prévue ce soir et cette nuit à Québec : 10 à 15 cm.").waitFor({ timeout: 15000 });
     await prev.getByText("40 %").waitFor();
+    await prev.getByText(/^Actualisée à \d/).waitFor();
     assert.equal(await prev.getByRole("link", { name: "Publier avant la bordée" }).getAttribute("href"), "/publier");
     assert.match(await prev.getByRole("link", { name: "Prévision complète" }).getAttribute("href"), /^https:\/\/meteo\.gc\.ca\//);
     assert.equal(await p.evaluate(() => document.documentElement.scrollWidth), 390);
