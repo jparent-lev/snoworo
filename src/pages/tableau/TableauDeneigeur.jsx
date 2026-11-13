@@ -99,13 +99,13 @@ export default function TableauDeneigeur({ conversation, onConversationFermee })
           <h1>Bonjour{prenom ? ` ${prenom}` : ""}</h1>
           <p>{profile?.ville ? `Vous déneigez à ${profile.ville}` : "Ajoutez votre adresse de service pour voir les demandes"}</p>
         </div>
+        <PrevisionNeige villeGeoId={villeGeoId} />
       </div>
       {!PAIEMENT_REEL && (
         <p className="tableau__simulation">Période de test : aucun paiement réel n'est fait pour l'instant.</p>
       )}
 
       <EtapesDemarrage profile={profile} />
-      <PrevisionNeige villeGeoId={villeGeoId} role="deneigeur" />
 
       <div className="chiffres">
         <div className="chiffre">

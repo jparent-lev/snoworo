@@ -64,14 +64,16 @@ export default function TableauClient({ conversation, onConversationFermee }) {
           <h1>Bonjour{prenom ? ` ${prenom}` : ""}</h1>
           <p>Vos demandes de déneigement</p>
         </div>
-        <Link to="/publier" className="btn btn--principal">
-          + Publier une demande
-        </Link>
+        <div className="tableau__salut-droite">
+          <PrevisionNeige villeGeoId={villeMeteo} />
+          <Link to="/publier" className="btn btn--principal">
+            + Publier une demande
+          </Link>
+        </div>
       </div>
       {!PAIEMENT_REEL && (
         <p className="tableau__simulation">Période de test : aucun paiement réel n'est effectué pour l'instant.</p>
       )}
-      <PrevisionNeige villeGeoId={villeMeteo} role="client" />
 
       {demandes?.length === 0 && (
         <EncartVideo

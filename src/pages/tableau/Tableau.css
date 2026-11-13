@@ -22,6 +22,16 @@
   font-size: clamp(27px, 3.4vw, 34px);
 }
 
+/* Côté droit : pastille météo (et, pour le client, « Publier »). Sous le
+   bonjour quand la place manque. */
+.tableau__salut-droite {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px 14px;
+}
+
 .tableau__salut p {
   color: var(--color-texte-secondaire);
   margin-top: 4px;
@@ -799,6 +809,11 @@
 
   .tableau__salut .btn {
     width: 100%;
+  }
+
+  .tableau__salut-droite {
+    width: 100%;
+    justify-content: flex-start;
   }
 
   .bandeau {
