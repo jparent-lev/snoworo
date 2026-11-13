@@ -829,10 +829,62 @@ await test("admin : métriques agrégées ; accès réservé aux UID de ADMIN_UI
   assert.equal(m.villes[0].ville, "Québec");
   // Aucun renseignement identifiant dans la réponse.
   assert.doesNotMatch(JSON.stringify(m), /4242|\+1418|ID_QUEBEC/);
+  const ga = await import(`${REPO}functions/src/analyticsAdmin.js`);
+  const ligne = (dims, vals) => ({ dimensionValues: dims.map((value) => ({ value })), metricValues: vals.map((value) => ({ value: String(value) })) });
+  const f2 = ga.mettreEnForme({
+    totaux: { rows: [ligne(["j7"], [40, 55, 30]), ligne(["j30"], [120, 160, 90])] },
+    canaux: { rows: [ligne(["Organic Search"], [70, 60]), ligne(["Referral"], [30, 25])] },
+    evenements: { rows: [ligne(["sign_up"], [12]), ligne(["demande_publiee"], [5])] },
+    parJour: { rows: [ligne(["20261113"], [9]), ligne(["20261112"], [4])] },
+  });
+  assert.deepEqual(f2.visiteurs, { j7: 40, j30: 120 }); assert.deepEqual(f2.sessions, { j7: 55, j30: 160 });
+  assert.equal(f2.canaux[0].canal, "Organic Search"); assert.equal(f2.evenements.sign_up, 12); assert.equal(f2.evenements.demande_confirmee, 0);
+  assert.deepEqual(f2.parJour, [{ jour: "2026-11-12", visiteurs: 4 }, { jour: "2026-11-13", visiteurs: 9 }]);
+  await echoue(appel(ga.analyticsAdmin, "client1", {}), "permission-denied", "GA pas admin");
   // Accès.
   await echoue(appel(ta.metriquesAdmin, null, {}), "unauthenticated", "sans connexion");
   await echoue(appel(ta.metriquesAdmin, "client1", {}), "permission-denied", "pas admin");
   assert.equal(ta.estAdmin("client1"), false);
+});
+await test("météo : lecture d'Environnement Canada, station la plus proche, une prévision par ville active", async () => {
+  const mt = await import(`${REPO}functions/src/meteo.js`);
+  const xml = readFileSync(`${REPO}tests/fixtures/meteo-quebec.xml`, "utf8");
+  const p = mt.lirePrevision(xml);
+  assert.equal(p.periodes.length, 6);
+  assert.equal(p.periodes[0].nom, "Ce soir et cette nuit"); assert.equal(p.periodes[0].neige, "aucune");
+  assert.deepEqual({ n: p.periodes[2].neige, pr: p.periodes[2].probabilite }, { n: "risque", pr: 30 });
+  assert.deepEqual(p.periodes[1].temperature, { type: "max", valeur: 5 });
+  assert.deepEqual(mt.accumulationTexte("Neige. Accumulation de 15 à 20 cm. Minimum moins 5."), { min: 15, max: 20 });
+  assert.deepEqual(mt.accumulationTexte("Neige faible. Accumulation d'environ 2 cm."), { min: 2, max: 2 });
+  const bordee = mt.lirePrevision(`<siteData><forecast><period textForecastName="Ce soir et cette nuit">ce soir et cette nuit</period><textSummary>Neige. Accumulation de 10 à 15 cm. Minimum moins 6.</textSummary><precipitation><textSummary/><precipType start="0" end="12">neige</precipType><accumulation><name>snow</name><amount unitType="metric" units="cm">10</amount></accumulation></precipitation><temperatures><temperature unitType="metric" units="C" class="low">-6</temperature></temperatures></forecast></siteData>`);
+  assert.deepEqual({ n: bordee.periodes[0].neige, cm: bordee.periodes[0].cm }, { n: "accumulation", cm: { min: 10, max: 15 } });
+  assert.equal(mt.stationLaPlusProche({ lat: 46.83, lon: -71.22 }).nom, "Québec");
+  assert.equal(mt.stationLaPlusProche({ lat: 46.80, lon: -71.18 }).code.length, 8);
+  // Rafraîchissement : villes actives (déneigeurs, carnets, demandes) → meteo/{villeGeoId}.
+  const appelsMeteo = [];
+  const recuperer = async (url) => {
+    appelsMeteo.push(url);
+    if (url.endsWith("/")) return { ok: true, text: async () => '<a href="20261113T010130.649Z_MSC_CitypageWeather_s0000620_fr.xml">x</a> <a href="20261113T010130.649Z_MSC_CitypageWeather_s0000416_fr.xml">y</a>' };
+    return { ok: true, text: async () => xml };
+  };
+  const r = await mt.rafraichirMeteoMaintenant({ maintenant: Date.UTC(2026, 10, 13, 1, 30), recuperer });
+  assert.ok(r.ecrites >= 1);
+  const qc = (await db.doc("meteo/ID_QUEBEC").get()).data();
+  assert.equal(qc.station.code, "s0000620"); assert.equal(qc.periodes.length, 6);
+  assert.match(qc.lien, /^https:\/\/meteo\.gc\.ca\/fr\/location\/index\.html\?coords=46\.81,-71\.21$/);
+  assert.ok(appelsMeteo.every((u) => u.startsWith("https://dd.weather.gc.ca/today/citypage_weather/QC/")), "seulement des stations, jamais une adresse");
+  // À la demande : rien refait si la prévision est récente ; une ville nouvelle est préparée tout de suite.
+  const n = appelsMeteo.length;
+  assert.deepEqual(await mt.prevoirVilleMaintenant("ID_QUEBEC", { recuperer }), { aJour: true });
+  assert.equal(appelsMeteo.length, n, "aucun appel pour une prévision fraîche");
+  await db.doc("meteo/ID_LEVIS").delete();
+  const r2 = await mt.prevoirVilleMaintenant("ID_LEVIS", { recuperer });
+  assert.equal(r2.ecrites, 1);
+  // Position simulée de « Lévis » (46.803, -71.178) : la station la plus proche est celle de Québec.
+  assert.equal((await db.doc("meteo/ID_LEVIS").get()).data().station.code, mt.stationLaPlusProche({ lat: 46.8032, lon: -71.1779 }).code);
+  assert.deepEqual(await mt.prevoirVilleMaintenant("ID_INCONNUE", { recuperer }), { aJour: false, ecrites: 0 });
+  await echoue(appel(mt.prevoirVille, null, { villeGeoId: "ID_QUEBEC" }), "unauthenticated", "sans connexion");
+  await echoue(appel(mt.prevoirVille, "client1", { villeGeoId: "a/b" }), "invalid-argument", "chemin");
 });
 await test("compteur public : déneigeurs par ville, seulement les villes d'au moins 10", async () => {
   const vp = await import(`${REPO}functions/src/villesPubliques.js`);

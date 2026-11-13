@@ -164,7 +164,6 @@ async function connexion(cle, largeur = 1280) {
     await dlg.getByRole("img", { name: "Photo 2" }).waitFor();
     await p.screenshot({ path: `${D}/e2e-faite-photo-1280.png` });
     await p.getByRole("button", { name: "Oui, c'est fait" }).click();
-    await p.waitForFunction(async () => true);
     for (let i = 0; i < 30 && (await db.doc("demandes/D1").get()).data().statut !== "faite"; i++) await new Promise((r) => setTimeout(r, 500));
     assert.equal((await db.doc("demandes/D1").get()).data().statut, "faite");
     assert.equal((await db.doc("demandes/D1").get()).data().nbPhotos, 2);
@@ -579,6 +578,16 @@ async function connexion(cle, largeur = 1280) {
     assert.ok(await p.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth), "défilement horizontal");
     await p.screenshot({ path: `${D}/e2e-encart-video-390.png` });
   });
+  await test("Zoé : ferme l'encart vidéo ; il ne revient plus, même après rechargement", async () => {
+    await p.locator(".encart-video").getByRole("button", { name: "Fermer et ne plus afficher" }).click();
+    assert.equal(await p.locator(".encart-video").count(), 0);
+    for (let i = 0; i < 50 && !(await db.doc(`users/${uid.zoe}`).get()).data().encartsFermes; i++) await new Promise((r) => setTimeout(r, 100));
+    await p.reload();
+    await p.getByRole("heading", { name: /Bonjour Zoé/ }).waitFor();
+    await p.waitForTimeout(1000);
+    assert.equal(await p.locator(".encart-video").count(), 0, "encart fermé pour de bon");
+    assert.deepEqual((await db.doc(`users/${uid.zoe}`).get()).data().encartsFermes, ["faireDeneiger"]);
+  });
   await test("Zoé : ferme son compte depuis Paramètres (confirmation FERMER), compte de connexion supprimé", async () => {
     await p.goto("http://localhost:4190/parametres");
     await p.getByRole("button", { name: "Fermer mon compte" }).click();
@@ -814,6 +823,42 @@ async function connexion(cle, largeur = 1280) {
   await ctx.close();
 }
 
+// Prévision de neige : graphique dans les deux tableaux de bord.
+{
+  const periode = (nom, neige, extra = {}) => ({ nom, texte: `${nom} : prévision.`, neige, cm: null, probabilite: null, temperature: { type: "min", valeur: -5 }, ...extra });
+  await db.doc("meteo/ID_QUEBEC").set({
+    ville: "Québec", station: { code: "s0000620", nom: "Québec", distanceKm: 2 }, lien: "https://meteo.gc.ca/fr/location/index.html?coords=46.81,-71.21",
+    emiseA: new Date().toISOString(), recupereeAt: Timestamp.now(),
+    periodes: [
+      periode("Ce soir et cette nuit", "accumulation", { cm: { min: 10, max: 15 } }),
+      periode("Samedi", "neige"),
+      periode("Samedi soir et nuit", "risque", { probabilite: 40 }),
+      periode("Dimanche", "aucune"),
+      periode("Dimanche soir et nuit", "aucune"),
+      periode("Lundi", "aucune"),
+    ],
+  });
+  const { p, ctx } = await connexion("mireille", 390);
+  await test("météo : pastille « Bordée prévue » sous le bonjour du client, avec le lien vers Environnement Canada", async () => {
+    await p.goto("http://localhost:4190/tableau-de-bord?mode=client");
+    const pastille = p.locator(".pastille-neige");
+    await pastille.getByText("Bordée prévue ce soir et cette nuit : 10\u00A0à\u00A015\u00A0cm").waitFor({ timeout: 15000 });
+    assert.match(await pastille.getByRole("link", { name: "Prévisions complètes" }).getAttribute("href"), /^https:\/\/meteo\.gc\.ca\//);
+    assert.match(await pastille.getAttribute("title"), /station Québec, actualisée à/);
+    assert.equal(await p.evaluate(() => document.documentElement.scrollWidth), 390);
+    await p.locator(".tableau__salut").screenshot({ path: `${D}/e2e-pastille-neige-390.png` });
+  });
+  await ctx.close();
+  await db.doc("meteo/ID_QUEBEC").update({ periodes: [periode("Samedi", "aucune"), periode("Dimanche", "aucune")] });
+  const d = await connexion("marc", 1280);
+  await test("météo : sans neige prévue, le déneigeur voit « Pas de bordée prévue pour le moment »", async () => {
+    await d.p.goto("http://localhost:4190/tableau-de-bord");
+    await d.p.locator(".pastille-neige").getByText("Pas de bordée prévue pour le moment").waitFor({ timeout: 15000 });
+    await d.p.locator(".tableau__salut").screenshot({ path: `${D}/e2e-pastille-neige-deneigeur-1280.png` });
+  });
+  await d.ctx.close();
+}
+
 // Tableau admin : refusé à un compte ordinaire (vrai serveur, ADMIN_UIDS vide),
 // puis rendu avec des métriques simulées.
 {
@@ -836,13 +881,21 @@ async function connexion(cle, largeur = 1280) {
     parJour: jours,
     villes: [{ ville: "Québec", deneigeurs: 38, clients: 70, demandes: 55, ouvertes: 3, completees: 36 }, { ville: "Lévis", deneigeurs: 8, clients: 12, demandes: 9, ouvertes: 1, completees: 5 }],
   } } }));
+  await p.route("**/analyticsAdmin", (r) => r.fulfill({ json: { result: {
+    configure: true, visiteurs: { j7: 340, j30: 900 }, nouveaux: { j7: 300, j30: 800 }, sessions: { j7: 410, j30: 1100 },
+    canaux: [{ canal: "Organic Search", sessions: 500, visiteurs: 420 }, { canal: "Referral", sessions: 300, visiteurs: 250 }],
+    evenements: { sign_up: 90, choix_role: 85, demande_publiee: 40, demande_acceptee: 32, demande_confirmee: 25, cta_clic: 210, video_ouverte: 60 },
+    parJour: jours.map((j, i) => ({ jour: j.jour, visiteurs: 10 + i })),
+  } } }));
   await test("admin : tuiles, graphiques sur 30 jours et tableaux, sans défilement horizontal à 390 px", async () => {
     await p.goto("http://localhost:4190/admin");
     await p.getByRole("heading", { name: "Tableau de bord" }).waitFor();
     await p.locator(".admin__tuile", { hasText: "Comptes" }).getByText("128").waitFor();
     await p.getByText("+9 en 24 h · +41 en 7 jours").first().waitFor();
     await p.getByText("87 %").waitFor();
-    assert.equal(await p.locator(".admin__graphique").count(), 2);
+    await p.getByText("Recherche (Google, Bing)").waitFor();
+    await p.getByText("90 · 10 %").waitFor();
+    assert.equal(await p.locator(".admin__graphique").count(), 3);
     assert.equal(await p.evaluate(() => document.documentElement.scrollWidth), 390);
     await p.screenshot({ path: `${D}/e2e-admin-390.png`, fullPage: true });
   });

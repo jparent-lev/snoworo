@@ -25,3 +25,15 @@
   domaines autorisés.
 - Même réponse qu'un compte existe ou non ; rien n'est envoyé sans compte ; un
   lien par minute par adresse (`envoisCompte`, effacé après 24 h).
+
+# Google Analytics dans /admin (functions/src/analyticsAdmin.js)
+
+- `GA_PROPERTY_ID` (functions/.env.snowro-app) : identifiant numérique de la
+  propriété GA4. Vide sur test.
+- Accès : le compte de service des fonctions
+  (`938452694811-compute@developer.gserviceaccount.com`, projet snowro-app) a le
+  rôle « Lecteur » sur la propriété ; l'API « Google Analytics Data API » est
+  activée dans le projet Google Cloud snowro-app.
+- Rapports : visiteurs, nouveaux, sessions (7 et 30 jours), canaux, événements
+  clés (entonnoir), visiteurs par jour. Seuls les visiteurs consentants sont
+  comptés.

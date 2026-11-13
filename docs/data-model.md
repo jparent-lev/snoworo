@@ -180,6 +180,18 @@ nbDemandesOuvertes, nbDemandesCompletees, remunerationMoyenne
 
 Aucune référence à un `userId` ou `demandeId` dans les deux cas.
 
+## `meteo/{villeGeoId}`
+
+Prévision de neige de la ville (functions/src/meteo.js, toutes les heures),
+tirée de la station Environnement Canada la plus proche. Lisible par les
+comptes connectés, écrite par le serveur seulement.
+
+```
+ville, station: { code, nom, distanceKm }, lien, emiseA, recupereeAt
+periodes: [{ nom, texte, neige: "accumulation" | "neige" | "risque" | "aucune",
+             cm: { min, max } | null, probabilite, temperature: { type, valeur } }]
+```
+
 ## `config/frais`
 
 ```

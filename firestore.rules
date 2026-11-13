@@ -38,6 +38,13 @@ service cloud.firestore {
         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.proSubscription.status == 'active';
     }
 
+    // Prévisions de neige par ville (functions/src/meteo.js) : données
+    // publiques d'Environnement Canada, lues par les comptes connectés.
+    match /meteo/{villeGeoId} {
+      allow read: if estConnecte();
+      allow write: if false;
+    }
+
     // ---- users ----
     // Lecture par le propriétaire SEULEMENT : la fiche contient courriel et
     // téléphone (Loi 25). Ce que les autres doivent voir (prénom, note) est

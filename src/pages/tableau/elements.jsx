@@ -1,6 +1,9 @@
 import { useEffect, useRef, useState } from "react";
 import { messageErreur, signalerProbleme } from "../../lib/cycleDemande";
 import VideoSnowro from "../../components/VideoSnowro";
+import { arrayUnion, doc, setDoc } from "firebase/firestore";
+import { db } from "../../lib/firebase";
+import { useAuth } from "../../context/AuthContext";
 import { lirePrive } from "../../lib/demandes";
 import { ROLE_CLIENT, ROLE_DENEIGEUR } from "../../lib/mode";
 
@@ -319,9 +322,21 @@ export function ModalePhoto({ demande, onFermer }) {
 }
 
 // Encart d'accueil des comptes sans activité : la vidéo du parcours.
+// Fermé une fois, il ne revient plus : le choix est gardé dans la fiche
+// (users/{uid}.encartsFermes), donc sur tous les appareils.
 export function EncartVideo({ video, titre, texte, libelle }) {
+  const { user, profile } = useAuth();
+  const [ferme, setFerme] = useState(false);
+  if (ferme || profile?.encartsFermes?.includes(video)) return null;
+  const fermer = () => {
+    setFerme(true);
+    if (user) setDoc(doc(db, "users", user.uid), { encartsFermes: arrayUnion(video) }, { merge: true }).catch(() => {});
+  };
   return (
     <section className="encart-video">
+      <button type="button" className="encart-video__fermer" onClick={fermer} aria-label="Fermer et ne plus afficher">
+        <span aria-hidden="true">×</span>
+      </button>
       <div className="encart-video__texte">
         <h2>{titre}</h2>
         <p>{texte}</p>

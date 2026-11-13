@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { useAuth } from "../context/AuthContext";
-import { lireMetriquesAdmin } from "../lib/admin";
+import { lireAnalyticsAdmin, lireMetriquesAdmin } from "../lib/admin";
+import { messageServeur } from "../lib/erreurs";
 import { formatArgent } from "../lib/formatArgent";
 import "./Admin.css";
 
@@ -16,6 +17,22 @@ const STATUTS = [
   ["paiement_refuse", "Carte refusée"],
   ["annulee", "Annulées"],
 ];
+
+// Canaux par défaut de GA4, en français.
+const CANAUX = {
+  Direct: "Direct (adresse tapée, favoris)",
+  "Organic Search": "Recherche (Google, Bing)",
+  "Paid Search": "Recherche payante",
+  "Organic Social": "Réseaux sociaux",
+  "Paid Social": "Réseaux sociaux payants",
+  Referral: "Sites référents (médias, liens)",
+  Email: "Courriels",
+  "Organic Video": "Vidéo",
+  Display: "Bannières",
+  Unassigned: "Non attribué",
+  "Cross-network": "Multiréseau",
+  "Organic Shopping": "Magasinage",
+};
 
 const nombre = (n) => (n == null ? "-" : n.toLocaleString("fr-CA"));
 const pourcent = (x) => (x == null ? "-" : `${Math.round(x * 100)} %`);
@@ -74,15 +91,101 @@ function BarresParJour({ titre, serie, cle }) {
   );
 }
 
+function SectionGa({ ga, jours }) {
+  if (ga === null) return <p className="admin__meta">Chargement de Google Analytics…</p>;
+  if (ga.erreur) return <p className="message-erreur" role="alert">{ga.erreur}</p>;
+  if (!ga.configure) return <p className="admin__meta">Google Analytics n'est pas branché sur cet environnement.</p>;
+  const visiteursParJour = Object.fromEntries(ga.parJour.map((j) => [j.jour, j.visiteurs]));
+  const serie = jours.map((j) => ({ jour: j.jour, visiteurs: visiteursParJour[j.jour] ?? 0 }));
+  const e = ga.evenements;
+  const etapes = [
+    ["Visiteurs", ga.visiteurs.j30],
+    ["Comptes créés", e.sign_up],
+    ["Demandes publiées", e.demande_publiee],
+    ["Demandes acceptées", e.demande_acceptee],
+    ["Demandes confirmées", e.demande_confirmee],
+  ];
+  return (
+    <>
+      <div className="admin__tuiles">
+        <Tuile libelle="Visiteurs" valeur={nombre(ga.visiteurs.j7)} detail={`7 jours · ${nombre(ga.visiteurs.j30)} en 30 jours`} />
+        <Tuile libelle="Nouveaux visiteurs" valeur={nombre(ga.nouveaux.j7)} detail={`7 jours · ${nombre(ga.nouveaux.j30)} en 30 jours`} />
+        <Tuile libelle="Sessions" valeur={nombre(ga.sessions.j7)} detail={`7 jours · ${nombre(ga.sessions.j30)} en 30 jours`} />
+        <Tuile libelle="Clics sur les appels à l'action" valeur={nombre(e.cta_clic)} detail={`30 jours · ${nombre(e.video_ouverte)} vidéos ouvertes`} />
+      </div>
+      <BarresParJour titre="Visiteurs par jour" serie={serie} cle="visiteurs" />
+      <div className="admin__colonnes">
+        <section>
+          <h3>Provenance des visites (30 jours)</h3>
+          <table className="admin__table">
+            <thead>
+              <tr>
+                <th scope="col">Canal</th>
+                <th scope="col">Sessions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {ga.canaux.map((c) => (
+                <tr key={c.canal}>
+                  <th scope="row">{CANAUX[c.canal] ?? c.canal}</th>
+                  <td>{nombre(c.sessions)}</td>
+                </tr>
+              ))}
+              {ga.canaux.length === 0 && (
+                <tr>
+                  <th scope="row">Aucune visite mesurée</th>
+                  <td>0</td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </section>
+        <section>
+          <h3>Entonnoir (30 jours)</h3>
+          <table className="admin__table">
+            <tbody>
+              {etapes.map(([libelle, n], i) => (
+                <tr key={libelle}>
+                  <th scope="row">{libelle}</th>
+                  <td>
+                    {nombre(n)}
+                    {i > 0 && etapes[i - 1][1] > 0 && <span className="admin__taux"> · {pourcent(n / etapes[i - 1][1])}</span>}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </section>
+      </div>
+      <p className="admin__meta">
+        Seuls les visiteurs qui acceptent la mesure sont comptés (Loi 25) : les chiffres réels sont plus élevés. Les comptes et
+        demandes ci-dessous, eux, sont exacts.
+      </p>
+    </>
+  );
+}
+
 export default function Admin() {
   const { user } = useAuth();
   const [m, setM] = useState(null);
   const [erreur, setErreur] = useState(null);
   const [enCours, setEnCours] = useState(false);
+  const [ga, setGa] = useState(null); // null = en cours ; { erreur } ; données
 
   const charger = useCallback(async () => {
     setEnCours(true);
     setErreur(null);
+    setGa(null);
+    lireAnalyticsAdmin()
+      .then(setGa)
+      .catch((err) =>
+        setGa({
+          erreur:
+            messageServeur(err) === "acces-ga"
+              ? "Le compte de service des fonctions n'a pas encore accès à la propriété Google Analytics (rôle « Lecteur »), ou l'API Analytics Data n'est pas activée."
+              : "Google Analytics ne répond pas pour l'instant.",
+        }),
+      );
     try {
       setM(await lireMetriquesAdmin());
       // Le serveur vient peut-être d'ajouter { admin: true } : rafraîchir le
@@ -130,6 +233,9 @@ export default function Admin() {
 
       {m && (
         <>
+          <h2>Visites (Google Analytics)</h2>
+          <SectionGa ga={ga} jours={m.parJour} />
+
           <h2>Acquisition</h2>
           <div className="admin__tuiles">
             <Tuile libelle="Comptes" valeur={nombre(m.comptes.total)} detail={`+${nombre(m.comptes.j1)} en 24 h · +${nombre(m.comptes.j7)} en 7 jours`} />
