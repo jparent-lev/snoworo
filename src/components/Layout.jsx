@@ -1,4 +1,6 @@
+import { useEffect, useState } from "react";
 import { Link, Outlet } from "react-router-dom";
+import { onIdTokenChanged } from "firebase/auth";
 import LienTemoins from "./LienTemoins";
 import { signOut } from "firebase/auth";
 import { auth } from "../lib/firebase";
@@ -8,12 +10,26 @@ import SnowroLockup from "./brand/SnowroLockup";
 import SnowroSymbol from "./brand/SnowroSymbol";
 import VersionFooter from "./VersionFooter";
 import { etapesRequisesManquantes } from "../lib/etapes";
+import BandeauCourriel from "./BandeauCourriel";
 import "./Layout.css";
 
 export default function Layout() {
   const { user, profile } = useAuth();
   const { mode, changerMode, deuxRoles } = useMode(user?.uid, profile?.role ?? []);
   const etapesAFaire = etapesRequisesManquantes(profile);
+  // Lien « Admin » : revendication posée par le serveur (metriquesAdmin) ;
+  // l'accès lui-même est revérifié par le serveur à chaque appel.
+  const [admin, setAdmin] = useState(false);
+  useEffect(
+    () =>
+      onIdTokenChanged(auth, (u) => {
+        if (!u) return setAdmin(false);
+        u.getIdTokenResult()
+          .then((r) => setAdmin(r.claims.admin === true))
+          .catch(() => setAdmin(false));
+      }),
+    [],
+  );
 
   return (
     <div className="layout">
@@ -50,6 +66,11 @@ export default function Layout() {
                 ))}
               </div>
             )}
+            {admin && (
+              <Link to="/admin" className="layout__parametres">
+                Admin
+              </Link>
+            )}
             <Link to="/parametres" className="layout__parametres">
               Paramètres
               {etapesAFaire > 0 && (
@@ -64,6 +85,7 @@ export default function Layout() {
           </nav>
         )}
       </header>
+      <BandeauCourriel />
       <main>
         <Outlet context={{ mode, changerMode }} />
       </main>

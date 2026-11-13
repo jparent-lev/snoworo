@@ -37,10 +37,10 @@ async function effacerNonConfirmees() {
 
 // Compteurs anti-abus des codes par texto (functions/src/telephone.js) :
 // utiles 24 heures, effacés après 48.
-async function effacerLimitesTelephone() {
+async function effacerExpires(collection) {
   let total = 0;
   for (;;) {
-    const lot = await db.collection("limitesTelephone").where("expireAt", "<=", Timestamp.now()).limit(400).get();
+    const lot = await db.collection(collection).where("expireAt", "<=", Timestamp.now()).limit(400).get();
     if (lot.empty) return total;
     const batch = db.batch();
     lot.docs.forEach((d) => batch.delete(d.ref));
@@ -55,7 +55,9 @@ export async function appliquerConservation() {
   const nonConfirmees = await effacerNonConfirmees();
   const listeAttente = await effacerAvant("listeAttente", CONSERVATION_LISTE_ATTENTE_MS);
   const messagesContact = await effacerAvant("messagesContact", CONSERVATION_MESSAGES_CONTACT_MS);
-  await effacerLimitesTelephone();
+  await effacerExpires("limitesTelephone");
+  // Anti-abus des liens de compte (functions/src/liensCompte.js) : 24 heures.
+  await effacerExpires("envoisCompte");
   if (nonConfirmees || listeAttente || messagesContact) {
     logger.info(
       `Conservation : ${nonConfirmees} inscription(s) non confirmée(s), ${listeAttente} inscription(s) de plus de 24 mois et ${messagesContact} message(s) « Nous écrire » effacés.`,

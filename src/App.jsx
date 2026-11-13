@@ -10,6 +10,11 @@ import Parametres from "./pages/Parametres";
 import Confidentialite from "./pages/Confidentialite";
 import Conditions from "./pages/Conditions";
 import Medias, { PlancheLogos } from "./pages/Medias";
+import Admin from "./pages/Admin";
+import ConfirmerCourriel from "./pages/ConfirmerCourriel";
+import ConnexionLien from "./pages/ConnexionLien";
+import MotDePasseOublie from "./pages/MotDePasseOublie";
+import NouveauMotDePasse from "./pages/NouveauMotDePasse";
 import NousEcrire from "./pages/NousEcrire";
 import ConfirmerListe from "./pages/ConfirmerListe";
 import CreditImpot from "./pages/creditImpot/CreditImpot";
@@ -25,6 +30,9 @@ export default function App() {
       <Routes>
         <Route path="/" element={<Landing />} />
         <Route path="/connexion" element={<Login />} />
+        <Route path="/connexion/lien" element={<ConnexionLien />} />
+        <Route path="/mot-de-passe-oublie" element={<MotDePasseOublie />} />
+        <Route path="/mot-de-passe" element={<NouveauMotDePasse />} />
         <Route path="/inscription" element={<Signup />} />
         <Route path="/confidentialite" element={<Confidentialite />} />
         <Route path="/conditions" element={<Conditions />} />
@@ -32,6 +40,7 @@ export default function App() {
         <Route path="/medias" element={<Medias />} />
         {import.meta.env.DEV && <Route path="/medias/planche" element={<PlancheLogos />} />}
         <Route path="/liste/confirmer" element={<ConfirmerListe />} />
+        <Route path="/courriel/confirmer" element={<ConfirmerCourriel />} />
         {/* Sur le test seulement (VITE_PAGE_CREDIT_IMPOT, .env.test) ; ailleurs, retour à l'accueil. */}
         <Route path="/credit-impot" element={PAGE_CREDIT_IMPOT ? <CreditImpot /> : <Navigate to="/" replace />} />
         {/* Gabarit de l'image d'aperçu partagée (og-snowro.png), en développement seulement. */}
@@ -53,6 +62,14 @@ export default function App() {
             element={
               <RequireAuth>
                 <PublierDemande />
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/admin"
+            element={
+              <RequireAuth>
+                <Admin />
               </RequireAuth>
             }
           />

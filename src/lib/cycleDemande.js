@@ -25,6 +25,9 @@ export function messageErreur(err) {
   const message = messageServeur(err);
   if (message === "deja-prise") return "Un autre déneigeur de quartier vient de la prendre.";
   if (message === "photos-requises") return "Ajoutez au moins une photo du travail terminé.";
+  if (message === "courriel-non-confirme") {
+    return "Confirmez d'abord votre adresse courriel : cliquez sur le lien que nous vous avons envoyé (bandeau en haut de la page).";
+  }
   if (message === "carte-requise") return "Ajoutez d'abord une carte de paiement. Rien n'est prélevé avant qu'un déneigeur accepte.";
   if (message === "carte-refusee") {
     return "La carte du client a été refusée. Sa demande est en pause le temps qu'il la mette à jour.";

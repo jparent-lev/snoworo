@@ -72,6 +72,13 @@ function exigerConnexion(request) {
   return request.auth.uid;
 }
 
+// Courriel confirmé (functions/src/courrielConfirmation.js) avant de publier
+// ou d'accepter une demande. Le jeton d'un compte courriel porte toujours
+// email_verified ; seul un refus explicite (false) bloque.
+function exigerCourrielConfirme(request) {
+  if (request.auth?.token?.email_verified === false) throw new HttpsError("failed-precondition", "courriel-non-confirme");
+}
+
 function prenom(nom) {
   return (nom || "").trim().split(/\s+/)[0] || "Voisin";
 }
@@ -136,6 +143,7 @@ async function lireDemande(tx, demandeId, { uid, role, statuts }) {
 // `unite` : appartement ou logement (fréquent dans les plex), ajouté tel quel.
 export const publierDemande = onCall({ region: REGION, secrets: [GEOCODING_API_KEY] }, async (request) => {
   const uid = exigerConnexion(request);
+  exigerCourrielConfirme(request);
   const d = request.data ?? {};
   const titre = texte(d.titre, { max: 80, requis: true, nom: "Titre" });
   const description = texte(d.description, { max: 600, nom: "Description" });
@@ -230,6 +238,7 @@ export const publierDemande = onCall({ region: REGION, secrets: [GEOCODING_API_K
 // service, même si la demande est à 500 m de l'autre côté du pont.
 export const accepterDemande = onCall({ region: REGION, secrets: [STRIPE_SECRET_KEY, RESEND_API_KEY] }, async (request) => {
   const uid = exigerConnexion(request);
+  exigerCourrielConfirme(request);
   const { demandeId } = request.data ?? {};
   if (typeof demandeId !== "string" || !demandeId) throw new HttpsError("invalid-argument", "demandeId requis.");
   const frais = await lireFrais();

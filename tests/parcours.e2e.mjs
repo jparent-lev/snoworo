@@ -33,15 +33,16 @@ const comptes = {
   julie: { email: "julie@test.ca", nom: "Julie Lavoie", role: ["donneur_ouvrage", "deneigeur_x"], ville: "Québec", villeGeoId: "ID_QUEBEC", addressGeohash: geohash.encode(46.83, -71.21), ratingAvg: 4.9, ratingCount: 35, nbJobsCompletees: 41 },
   paul: { email: "paul@test.ca", nom: "Paul Bergeron", role: ["donneur_ouvrage"] },
   zoe: { email: "zoe@test.ca", nom: "Zoé Fermé", role: ["donneur_ouvrage"] },
+  nora: { email: "nora@test.ca", nom: "Nora Nouvelle", role: ["donneur_ouvrage"], nonConfirme: true },
 };
 const uid = {};
 for (const [cle, c] of Object.entries(comptes)) {
-  const u = await auth.createUser({ email: c.email, password: "motdepasse", displayName: c.nom });
+  const u = await auth.createUser({ email: c.email, password: "motdepasse", displayName: c.nom, emailVerified: !c.nonConfirme });
   uid[cle] = u.uid;
 }
 await new Promise((r) => setTimeout(r, 3000)); // laisser onUserCreate créer les fiches
 for (const [cle, c] of Object.entries(comptes)) {
-  const { email, nom, ...reste } = c;
+  const { email, nom, nonConfirme, ...reste } = c;
   await db.doc(`users/${uid[cle]}`).set({ displayName: nom, email, ...reste }, { merge: true });
 }
 
@@ -728,6 +729,122 @@ async function connexion(cle, largeur = 1280) {
     assert.ok(publications[0].adresseId, "adresseId envoyé");
     assert.equal(publications[0].attestation, undefined);
     assert.equal(publications[0].placeId, undefined);
+  });
+  await ctx.close();
+}
+
+// Confirmation du courriel : bandeau tant que ce n'est pas fait, publication
+// refusée par le serveur, puis lien de confirmation (vrai émulateur Auth).
+{
+  const { p, ctx } = await connexion("nora", 390);
+  await test("Nora : courriel non confirmé, bandeau visible avec son adresse", async () => {
+    await p.goto("http://localhost:4190/publier");
+    const bandeau = p.locator(".bandeau-courriel");
+    await bandeau.getByText("Confirmez votre adresse courriel.").waitFor();
+    await bandeau.getByText("nora@test.ca").waitFor();
+    assert.equal(await p.evaluate(() => document.documentElement.scrollWidth), 390);
+    await p.screenshot({ path: `${D}/e2e-bandeau-courriel-390.png` });
+  });
+  await test("Nora : le lien du courriel confirme l'adresse ; le bandeau disparaît", async () => {
+    const lien = await auth.generateEmailVerificationLink("nora@test.ca");
+    const code = new URL(lien).searchParams.get("oobCode");
+    await p.goto(`http://localhost:4190/courriel/confirmer?code=${encodeURIComponent(code)}`);
+    await p.getByRole("heading", { name: "Adresse confirmée" }).waitFor({ timeout: 15000 });
+    assert.equal((await auth.getUserByEmail("nora@test.ca")).emailVerified, true);
+    await p.goto("http://localhost:4190/tableau-de-bord");
+    await p.waitForTimeout(1500);
+    assert.equal(await p.locator(".bandeau-courriel").count(), 0);
+    await p.goto(`http://localhost:4190/courriel/confirmer?code=${encodeURIComponent(code)}`);
+    await p.getByRole("heading", { name: "Ce lien ne fonctionne pas" }).waitFor();
+  });
+  await ctx.close();
+}
+
+// Mot de passe oublié et lien de connexion : pages de snowro.com avec de
+// vrais liens de l'émulateur Auth ; l'envoi par courriel est simulé.
+{
+  const ctx = await b.newContext({ viewport: { width: 390, height: 844 } });
+  const p = await ctx.newPage();
+  pageCourante = p;
+  const demandes = [];
+  await p.route("**/demanderLienCompte", (r) => {
+    demandes.push(r.request().postDataJSON().data);
+    return r.fulfill({ json: { result: { ok: true } } });
+  });
+  await test("connexion : « Mot de passe oublié? » et « lien de connexion » envoient la demande, même message qu'un compte existe ou non", async () => {
+    await p.goto("http://localhost:4190/connexion");
+    await p.getByRole("button", { name: "Recevoir un lien de connexion par courriel" }).click();
+    await p.getByText("Entrez d'abord votre courriel ci-dessus.").waitFor();
+    await p.getByLabel("Courriel").fill("nora@test.ca");
+    await p.getByRole("button", { name: "Recevoir un lien de connexion par courriel" }).click();
+    await p.getByText(/un lien de connexion vient de partir/).waitFor();
+    await p.screenshot({ path: `${D}/e2e-connexion-lien-390.png`, fullPage: true });
+    await p.getByRole("link", { name: "Mot de passe oublié?" }).click();
+    assert.equal(await p.getByLabel("Courriel").inputValue(), "nora@test.ca", "adresse reprise");
+    await p.getByRole("button", { name: "Recevoir le lien" }).click();
+    await p.getByText(/un lien pour choisir un nouveau mot de passe vient de partir/).waitFor();
+    assert.deepEqual(demandes, [{ courriel: "nora@test.ca", type: "connexion" }, { courriel: "nora@test.ca", type: "reinitialisation" }]);
+  });
+  await test("mot de passe oublié : le lien permet d'en choisir un nouveau et connecte ; le lien ne resert pas", async () => {
+    const code = new URL(await auth.generatePasswordResetLink("nora@test.ca")).searchParams.get("oobCode");
+    await p.goto(`http://localhost:4190/mot-de-passe?code=${encodeURIComponent(code)}`);
+    await p.getByText("Compte : nora@test.ca").waitFor({ timeout: 15000 });
+    await p.getByLabel("Nouveau mot de passe").fill("nouveaumdp");
+    await p.getByRole("button", { name: "Enregistrer et me connecter" }).click();
+    await p.waitForURL("**/tableau-de-bord");
+    await p.goto(`http://localhost:4190/mot-de-passe?code=${encodeURIComponent(code)}`);
+    await p.getByRole("heading", { name: "Ce lien ne fonctionne pas" }).waitFor();
+  });
+  await ctx.close();
+}
+{
+  const ctx = await b.newContext({ viewport: { width: 390, height: 844 } });
+  const p = await ctx.newPage();
+  pageCourante = p;
+  await test("lien de connexion : sur un autre appareil, l'adresse est redemandée, puis la personne est connectée", async () => {
+    const lien = new URL(await auth.generateSignInWithEmailLink("julie@test.ca", { url: "http://localhost:4190/connexion/lien", handleCodeInApp: true }));
+    const q = new URLSearchParams();
+    for (const k of ["mode", "oobCode", "apiKey", "lang"]) if (lien.searchParams.get(k)) q.set(k, lien.searchParams.get(k));
+    await p.goto(`http://localhost:4190/connexion/lien?${q}`);
+    await p.getByText("Pour terminer, confirmez l'adresse courriel").waitFor({ timeout: 15000 });
+    await p.getByLabel("Courriel").fill("julie@test.ca");
+    await p.getByRole("button", { name: "Me connecter" }).click();
+    await p.waitForURL("**/tableau-de-bord", { timeout: 15000 });
+  });
+  await ctx.close();
+}
+
+// Tableau admin : refusé à un compte ordinaire (vrai serveur, ADMIN_UIDS vide),
+// puis rendu avec des métriques simulées.
+{
+  const { p, ctx } = await connexion("paul", 390);
+  await test("admin : un compte ordinaire voit « Accès réservé », sans lien Admin", async () => {
+    await p.goto("http://localhost:4190/admin");
+    await p.getByRole("heading", { name: "Accès réservé" }).waitFor({ timeout: 15000 });
+    assert.equal(await p.getByRole("link", { name: "Admin" }).count(), 0);
+  });
+  const jours = Array.from({ length: 30 }, (_, i) => {
+    const d = new Date(Date.now() - (29 - i) * 864e5);
+    return { jour: d.toISOString().slice(0, 10), comptes: i % 4, demandes: i % 3 };
+  });
+  await p.route("**/metriquesAdmin", (r) => r.fulfill({ json: { result: {
+    genereA: new Date().toISOString(),
+    comptes: { total: 128, j1: 9, j7: 41, j30: 120, clients: 90, deneigeurs: 46, deuxRoles: 8, sansRole: 0, deneigeursAdresse: 40, deneigeursVersementActif: 31, cartes: 72, cellulaires: 50, smsConsentis: 33 },
+    demandes: { total: 64, j1: 5, j7: 30, j30: 60, ouvertesMaintenant: 4, acceptees: 52, annuleesRetard: 1, signalees: 2, tauxAcceptation: 0.867, delaiMedianAcceptationMin: 38, delaiMedianConfirmationH: 3.5, parStatut: { ouverte: 4, matchee: 6, faite: 3, completee: 41, signalee: 2, annulee: 8 } },
+    argent: { volumeConfirme: 1845, fraisSnowro: 229.6, montantDeneigeurs: 1615.4, nbConfirmees: 41, enRetenue: 280, rembourse: 35, panierMoyen: 45 },
+    listeAttente: { total: 210, confirmees: 180, j7: 12 },
+    parJour: jours,
+    villes: [{ ville: "Québec", deneigeurs: 38, clients: 70, demandes: 55, ouvertes: 3, completees: 36 }, { ville: "Lévis", deneigeurs: 8, clients: 12, demandes: 9, ouvertes: 1, completees: 5 }],
+  } } }));
+  await test("admin : tuiles, graphiques sur 30 jours et tableaux, sans défilement horizontal à 390 px", async () => {
+    await p.goto("http://localhost:4190/admin");
+    await p.getByRole("heading", { name: "Tableau de bord" }).waitFor();
+    await p.locator(".admin__tuile", { hasText: "Comptes" }).getByText("128").waitFor();
+    await p.getByText("+9 en 24 h · +41 en 7 jours").first().waitFor();
+    await p.getByText("87 %").waitFor();
+    assert.equal(await p.locator(".admin__graphique").count(), 2);
+    assert.equal(await p.evaluate(() => document.documentElement.scrollWidth), 390);
+    await p.screenshot({ path: `${D}/e2e-admin-390.png`, fullPage: true });
   });
   await ctx.close();
 }
