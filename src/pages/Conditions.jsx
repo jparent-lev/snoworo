@@ -80,6 +80,11 @@ export default function Conditions() {
           la demande comme si elle était chez vous, y compris de son paiement.
         </li>
         <li>
+          Vous pouvez laisser une pelle ou un grattoir à la disposition du déneigeur de quartier : des outils à main
+          seulement, jamais de souffleuse ni d'autre appareil motorisé. Vous vous assurez qu'ils sont en bon état ; le
+          déneigeur de quartier reste libre d'utiliser son propre équipement.
+        </li>
+        <li>
           Vous vous engagez à rendre l'endroit accessible et à signaler tout ce qui pourrait être dangereux ou
           fragile (marches glacées, objets cachés sous la neige, voiture à ne pas accrocher, etc.).
         </li>
@@ -98,7 +103,9 @@ export default function Conditions() {
         </li>
         <li>
           En acceptant une demande, vous vous engagez à faire la demande décrite, au moment convenu, avec soin et de
-          façon sécuritaire, en utilisant votre propre équipement.
+          façon sécuritaire, en utilisant votre propre équipement ou, si vous le voulez, la pelle ou le grattoir que le
+          client laisse à votre disposition, après avoir vérifié qu'ils sont en bon état. N'utilisez jamais une souffleuse
+          ni un autre appareil motorisé appartenant au client.
         </li>
         <li>
           Avant de marquer une demande faite, vous prenez sur place de 1 à 3 photos du travail terminé. Elles ne

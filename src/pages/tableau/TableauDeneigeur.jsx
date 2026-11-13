@@ -33,7 +33,7 @@ const FILTRES_DEMANDES = [
   { cle: "stationnement", libelle: "Stationnement", garde: (d) => d.typeService === "stationnement" },
   { cle: "autre", libelle: "Autre", garde: (d) => d.typeService === "autre" || d.typeService === "toiture" },
   { cle: "aujourdhui", libelle: "Aujourd'hui", garde: (d) => estAujourdhui(d.dateHeureSouhaitee) },
-  { cle: "outils", libelle: "Outils fournis", garde: (d) => d.outilsFournis },
+  { cle: "outils", libelle: "Pelle sur place", garde: (d) => d.outilsFournis },
 ];
 
 const TRIS = [
@@ -267,7 +267,7 @@ function CarteJob({ job: j, nouveau, conversationOuverte, onConversationFermee }
           </div>
         </div>
       )}
-      {j.outilsFournis && j.statut === "matchee" && <span className="carte-job__etiquette">Outils fournis sur place</span>}
+      {j.outilsFournis && j.statut === "matchee" && <span className="carte-job__etiquette">Pelle ou grattoir sur place</span>}
 
       <div className="carte-job__ligne">
         <span className="carte-job__prix">{net != null ? formatArgent(net) : ""}</span>
@@ -477,7 +477,7 @@ function CarteDemandeOuverte({ demande: d, frais, compteActif }) {
       <div className="carte-job__meta">
         {d.description ? `${d.description} · ` : ""}Offert par {d.donneurPrenom} · {ilYa(d.createdAt)}
       </div>
-      {d.outilsFournis && <span className="carte-job__etiquette" style={{ alignSelf: "flex-start" }}>Outils fournis sur place</span>}
+      {d.outilsFournis && <span className="carte-job__etiquette" style={{ alignSelf: "flex-start" }}>Pelle ou grattoir sur place</span>}
       <div className="carte-job__ligne">
         <span className="carte-job__prix">{formatArgent(d.remunerationOfferte)}</span>
         <span className="carte-job__meta">{formatArgent(net)} pour vous</span>
