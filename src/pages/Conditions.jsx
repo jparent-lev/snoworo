@@ -11,15 +11,6 @@ export default function Conditions() {
 
   return (
     <PageLegale surtitre="Légal" titre="Conditions d'utilisation" miseAJour={miseAJour}>
-      <div className="page-legale__encadre">
-        <p>
-          <strong>Où en est Snowro :</strong> le service n'est pas encore ouvert. Pour l'instant, le site sert
-          à rejoindre la liste d'attente et à nous écrire. Les sections sur les demandes et les paiements
-          décrivent comment le service fonctionnera à son ouverture; nous vous demanderons de nouveau d'accepter ces
-          conditions au moment de créer votre compte.
-        </p>
-      </div>
-
       <h2>1. Qui nous sommes</h2>
       <p>
         Snowro est une plateforme exploitée à Québec par la société {nomLegal} (« Snowro », « nous »). En utilisant

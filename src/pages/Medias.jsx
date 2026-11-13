@@ -49,7 +49,7 @@ export default function Medias() {
           <br />
           <a href={`mailto:${CONTACT.courriel}`}>{CONTACT.courriel}</a>
         </p>
-        <p className="medias__note">Entrevues en français, en studio, au téléphone ou sur le terrain.</p>
+        <p className="medias__note">Entrevues en français, en studio ou au téléphone.</p>
       </div>
 
       <h2>En bref</h2>
