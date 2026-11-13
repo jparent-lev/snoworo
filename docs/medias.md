@@ -1,6 +1,7 @@
 # Trousse médias (snowro.com/medias)
 
-Page publique `src/pages/Medias.jsx`, liée dans le pied de page (« Médias »).
+Page `src/pages/Medias.jsx`, donnée seulement de façon ciblée (communiqués,
+courriels aux journalistes) : aucun lien sur le site, `noindex`.
 
 - Contact médias : constante `CONTACT` en tête du fichier.
 - Logos : `public/medias/snowro-logo.png` (couleur, sur tuile lin),
