@@ -836,13 +836,21 @@ async function connexion(cle, largeur = 1280) {
     parJour: jours,
     villes: [{ ville: "Québec", deneigeurs: 38, clients: 70, demandes: 55, ouvertes: 3, completees: 36 }, { ville: "Lévis", deneigeurs: 8, clients: 12, demandes: 9, ouvertes: 1, completees: 5 }],
   } } }));
+  await p.route("**/analyticsAdmin", (r) => r.fulfill({ json: { result: {
+    configure: true, visiteurs: { j7: 340, j30: 900 }, nouveaux: { j7: 300, j30: 800 }, sessions: { j7: 410, j30: 1100 },
+    canaux: [{ canal: "Organic Search", sessions: 500, visiteurs: 420 }, { canal: "Referral", sessions: 300, visiteurs: 250 }],
+    evenements: { sign_up: 90, choix_role: 85, demande_publiee: 40, demande_acceptee: 32, demande_confirmee: 25, cta_clic: 210, video_ouverte: 60 },
+    parJour: jours.map((j, i) => ({ jour: j.jour, visiteurs: 10 + i })),
+  } } }));
   await test("admin : tuiles, graphiques sur 30 jours et tableaux, sans défilement horizontal à 390 px", async () => {
     await p.goto("http://localhost:4190/admin");
     await p.getByRole("heading", { name: "Tableau de bord" }).waitFor();
     await p.locator(".admin__tuile", { hasText: "Comptes" }).getByText("128").waitFor();
     await p.getByText("+9 en 24 h · +41 en 7 jours").first().waitFor();
     await p.getByText("87 %").waitFor();
-    assert.equal(await p.locator(".admin__graphique").count(), 2);
+    await p.getByText("Recherche (Google, Bing)").waitFor();
+    await p.getByText("90 · 10 %").waitFor();
+    assert.equal(await p.locator(".admin__graphique").count(), 3);
     assert.equal(await p.evaluate(() => document.documentElement.scrollWidth), 390);
     await p.screenshot({ path: `${D}/e2e-admin-390.png`, fullPage: true });
   });

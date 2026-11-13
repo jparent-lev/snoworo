@@ -829,6 +829,18 @@ await test("admin : métriques agrégées ; accès réservé aux UID de ADMIN_UI
   assert.equal(m.villes[0].ville, "Québec");
   // Aucun renseignement identifiant dans la réponse.
   assert.doesNotMatch(JSON.stringify(m), /4242|\+1418|ID_QUEBEC/);
+  const ga = await import(`${REPO}functions/src/analyticsAdmin.js`);
+  const ligne = (dims, vals) => ({ dimensionValues: dims.map((value) => ({ value })), metricValues: vals.map((value) => ({ value: String(value) })) });
+  const f2 = ga.mettreEnForme({
+    totaux: { rows: [ligne(["j7"], [40, 55, 30]), ligne(["j30"], [120, 160, 90])] },
+    canaux: { rows: [ligne(["Organic Search"], [70, 60]), ligne(["Referral"], [30, 25])] },
+    evenements: { rows: [ligne(["sign_up"], [12]), ligne(["demande_publiee"], [5])] },
+    parJour: { rows: [ligne(["20261113"], [9]), ligne(["20261112"], [4])] },
+  });
+  assert.deepEqual(f2.visiteurs, { j7: 40, j30: 120 }); assert.deepEqual(f2.sessions, { j7: 55, j30: 160 });
+  assert.equal(f2.canaux[0].canal, "Organic Search"); assert.equal(f2.evenements.sign_up, 12); assert.equal(f2.evenements.demande_confirmee, 0);
+  assert.deepEqual(f2.parJour, [{ jour: "2026-11-12", visiteurs: 4 }, { jour: "2026-11-13", visiteurs: 9 }]);
+  await echoue(appel(ga.analyticsAdmin, "client1", {}), "permission-denied", "GA pas admin");
   // Accès.
   await echoue(appel(ta.metriquesAdmin, null, {}), "unauthenticated", "sans connexion");
   await echoue(appel(ta.metriquesAdmin, "client1", {}), "permission-denied", "pas admin");

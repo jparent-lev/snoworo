@@ -46,3 +46,4 @@
 .admin__table thead th:first-child { text-align: left; }
 .admin__defilement { overflow-x: auto; }
 .admin__table--villes { min-width: 520px; }
+.admin__taux { color: var(--color-texte-secondaire); font-size: 13px; }
