@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import PageLegale from "../components/PageLegale";
 import SnowroSymbol from "../components/brand/SnowroSymbol";
 import { VIDEOS } from "../components/VideoSnowro";
@@ -31,7 +32,16 @@ function Telecharger({ href, children }) {
   );
 }
 
+// Page donnée seulement aux médias, à la pièce : aucun lien sur le site et
+// pas d'indexation par les moteurs de recherche.
 export default function Medias() {
+  useEffect(() => {
+    const meta = document.createElement("meta");
+    meta.name = "robots";
+    meta.content = "noindex, nofollow";
+    document.head.appendChild(meta);
+    return () => meta.remove();
+  }, []);
   return (
     <PageLegale surtitre="Médias" titre="Trousse médias">
       <p>
