@@ -1,11 +1,10 @@
 .pastille-neige {
   display: inline-flex;
-  flex-wrap: wrap;
   align-items: center;
-  gap: 4px 8px;
+  gap: 12px;
   margin: 0;
-  padding: 5px 12px;
-  border-radius: 999px;
+  padding: 8px 16px 8px 12px;
+  border-radius: 16px;
   font-size: 13.5px;
   line-height: 1.35;
   background: var(--color-surface-secondaire);
@@ -14,12 +13,12 @@
   max-width: 100%;
   box-sizing: border-box;
 }
-.pastille-neige__flocon { width: 16px; height: 16px; flex: none; color: var(--color-texte-secondaire); }
-.pastille-neige--bordee { background: #fbf0dc; border-color: #e8c98a; font-weight: 700; }
+/* Texte sur la première ligne, lien dessous ; l'icône centrée verticalement. */
+.pastille-neige__corps { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.pastille-neige__flocon { width: 26px; height: 26px; flex: none; color: var(--color-texte-secondaire); }
+.pastille-neige--bordee { background: #fbf0dc; border-color: #e8c98a; }
+.pastille-neige--bordee .pastille-neige__corps > span:first-child { font-weight: 700; }
 .pastille-neige--bordee .pastille-neige__flocon { color: var(--color-argile); }
 .pastille-neige--neige .pastille-neige__flocon { color: var(--color-ardoise); }
 .pastille-neige--attente { color: var(--color-texte-secondaire); }
-.pastille-neige__lien { font-weight: 400; font-size: 12.5px; color: var(--color-argile-foncee); white-space: nowrap; }
-@media (max-width: 560px) {
-  .pastille-neige { border-radius: 14px; }
-}
+.pastille-neige__lien { font-size: 12.5px; color: var(--color-argile-foncee); align-self: flex-start; }

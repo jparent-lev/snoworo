@@ -164,7 +164,6 @@ async function connexion(cle, largeur = 1280) {
     await dlg.getByRole("img", { name: "Photo 2" }).waitFor();
     await p.screenshot({ path: `${D}/e2e-faite-photo-1280.png` });
     await p.getByRole("button", { name: "Oui, c'est fait" }).click();
-    await p.waitForFunction(async () => true);
     for (let i = 0; i < 30 && (await db.doc("demandes/D1").get()).data().statut !== "faite"; i++) await new Promise((r) => setTimeout(r, 500));
     assert.equal((await db.doc("demandes/D1").get()).data().statut, "faite");
     assert.equal((await db.doc("demandes/D1").get()).data().nbPhotos, 2);
@@ -579,6 +578,16 @@ async function connexion(cle, largeur = 1280) {
     assert.ok(await p.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth), "défilement horizontal");
     await p.screenshot({ path: `${D}/e2e-encart-video-390.png` });
   });
+  await test("Zoé : ferme l'encart vidéo ; il ne revient plus, même après rechargement", async () => {
+    await p.locator(".encart-video").getByRole("button", { name: "Fermer et ne plus afficher" }).click();
+    assert.equal(await p.locator(".encart-video").count(), 0);
+    for (let i = 0; i < 50 && !(await db.doc(`users/${uid.zoe}`).get()).data().encartsFermes; i++) await new Promise((r) => setTimeout(r, 100));
+    await p.reload();
+    await p.getByRole("heading", { name: /Bonjour Zoé/ }).waitFor();
+    await p.waitForTimeout(1000);
+    assert.equal(await p.locator(".encart-video").count(), 0, "encart fermé pour de bon");
+    assert.deepEqual((await db.doc(`users/${uid.zoe}`).get()).data().encartsFermes, ["faireDeneiger"]);
+  });
   await test("Zoé : ferme son compte depuis Paramètres (confirmation FERMER), compte de connexion supprimé", async () => {
     await p.goto("http://localhost:4190/parametres");
     await p.getByRole("button", { name: "Fermer mon compte" }).click();
@@ -833,7 +842,7 @@ async function connexion(cle, largeur = 1280) {
   await test("météo : pastille « Bordée prévue » sous le bonjour du client, avec le lien vers Environnement Canada", async () => {
     await p.goto("http://localhost:4190/tableau-de-bord?mode=client");
     const pastille = p.locator(".pastille-neige");
-    await pastille.getByText("Bordée prévue ce soir et cette nuit : 10 à 15 cm").waitFor({ timeout: 15000 });
+    await pastille.getByText("Bordée prévue ce soir et cette nuit : 10\u00A0à\u00A015\u00A0cm").waitFor({ timeout: 15000 });
     assert.match(await pastille.getByRole("link", { name: "Prévisions complètes" }).getAttribute("href"), /^https:\/\/meteo\.gc\.ca\//);
     assert.match(await pastille.getAttribute("title"), /station Québec, actualisée à/);
     assert.equal(await p.evaluate(() => document.documentElement.scrollWidth), 390);
