@@ -221,6 +221,7 @@ function CarteDemandeClient({ demande: d, nouveau, conversationOuverte, onConver
           texte={d.statut === "faite" ? `${d.deneigeurPrenom} dit que c'est fait` : `${d.deneigeurPrenom} s'en occupe`}
         />
       )}
+      {d.deneigeurJeune && <span className="carte-job__etiquette">Jeune déneigeur, accompagné d'un parent</span>}
 
       <div className="carte-job__ligne">
         <span className="heure">⏱ {echeance(d.dateHeureSouhaitee)}</span>

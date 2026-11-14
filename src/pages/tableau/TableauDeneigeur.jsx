@@ -11,6 +11,7 @@ import { decoderGeohash, distanceMetres } from "../../lib/geo";
 import { dateCourte, debutSemaine, echeance, estAujourdhui, heure, ilYa, millis, moment } from "../../lib/temps";
 import Rangee from "../../components/Rangee";
 import EtapesDemarrage from "../../components/EtapesDemarrage";
+import { jourLocal, respecteRegles, resumeRegles } from "../../lib/jeunes";
 import PrevisionNeige from "../../components/PrevisionNeige";
 import { CRITERES, EncartVideo, Modale, ModaleSignalement, noteTexte } from "./elements";
 import Conversation, { BoutonMessages } from "./Conversation";
@@ -59,7 +60,8 @@ export default function TableauDeneigeur({ conversation, onConversationFermee })
   const [tri, setTri] = useState("proches");
   const villeGeoId = profile?.villeGeoId;
   // Sans paiement réel, aucun compte de versement n'est exigé.
-  const compteActif = !PAIEMENT_REEL || profilStripe(profile)?.connectStatus === "actif";
+  // Jeune déneigeur : le compte de versement est celui du parent (vérifié par le serveur).
+  const compteActif = !PAIEMENT_REEL || Boolean(profile?.parentId) || profilStripe(profile)?.connectStatus === "actif";
 
   useEffect(() => ecouterMesJobs(user.uid, setJobs), [user.uid]);
   useEffect(() => ecouterLectures(user.uid, setLectures), [user.uid]);
@@ -80,14 +82,31 @@ export default function TableauDeneigeur({ conversation, onConversationFermee })
   const jobsAffichees = listeJobs.filter((j) => FILTRES_JOBS.find((f) => f.cle === filtreJobs).statuts.includes(j.statut));
 
   const geohashService = profile?.addressGeohash;
+  // Jeune déneigeur : seulement les demandes qui respectent ses règles
+  // (le serveur les revérifie à l'acceptation).
+  const parentId = profile?.parentId;
+  const reglesJeune = profile?.jeune;
+  const ouvertesPermises = useMemo(() => {
+    if (!parentId) return ouvertes;
+    const jeune = reglesJeune ?? {};
+    if (jeune.pause || jeune.retire) return [];
+    const parJour = {};
+    for (const j of jobs ?? []) {
+      if (j.statut === "annulee" || !j.dateHeureSouhaitee) continue;
+      const cle = jourLocal(j.dateHeureSouhaitee.toMillis());
+      parJour[cle] = (parJour[cle] ?? 0) + 1;
+    }
+    return ouvertes.filter((d) => respecteRegles(d, { regles: jeune.regles, maison: geohashService, parJour }));
+  }, [ouvertes, jobs, parentId, reglesJeune, geohashService]);
+
   const demandes = useMemo(() => {
     const depart = geohashService ? decoderGeohash(geohashService) : null;
     const garde = FILTRES_DEMANDES.find((f) => f.cle === filtreDemandes).garde;
-    return ouvertes
+    return ouvertesPermises
       .filter((d) => d.donneurOuvrageId !== user.uid && garde(d))
       .map((d) => ({ ...d, distanceM: depart && d.adresseGeohash ? distanceMetres(depart, decoderGeohash(d.adresseGeohash)) : null }))
       .sort(TRIS.find((t) => t.cle === tri).comparer);
-  }, [ouvertes, geohashService, filtreDemandes, tri, user.uid]);
+  }, [ouvertesPermises, geohashService, filtreDemandes, tri, user.uid]);
 
   const prenom = (profile?.displayName || "").split(" ")[0];
   const nbJobs = profile?.nbJobsCompletees ?? 0;
@@ -105,6 +124,13 @@ export default function TableauDeneigeur({ conversation, onConversationFermee })
         <p className="tableau__simulation">Période de test : aucun paiement réel n'est fait pour l'instant.</p>
       )}
 
+      {profile?.parentId && (
+        <p className="tableau__simulation">
+          {profile.jeune?.pause
+            ? "Ton profil est en pause : vois avec ton parent."
+            : `Tes règles : ${resumeRegles(profile.jeune?.regles)}. Ton parent est avisé à chaque demande que tu acceptes.`}
+        </p>
+      )}
       <EtapesDemarrage profile={profile} />
 
       <div className="chiffres">
@@ -187,7 +213,13 @@ export default function TableauDeneigeur({ conversation, onConversationFermee })
           filtreActif={filtreDemandes}
           onFiltre={setFiltreDemandes}
           tri={{ valeur: tri, onChange: setTri, options: TRIS }}
-          vide={ouvertes.length ? "Aucune demande avec ce filtre." : `Aucune demande ouverte à ${profile.ville} pour l'instant.`}
+          vide={
+            parentId
+              ? "Aucune demande qui respecte tes règles pour l'instant."
+              : ouvertes.length
+                ? "Aucune demande avec ce filtre."
+                : `Aucune demande ouverte à ${profile.ville} pour l'instant.`
+          }
         >
           {demandes.map((d) => (
             <CarteDemandeOuverte key={d.id} demande={d} frais={frais} compteActif={compteActif} />

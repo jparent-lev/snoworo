@@ -860,6 +860,99 @@ async function connexion(cle, largeur = 1280) {
   await d.ctx.close();
 }
 
+// Jeunes déneigeurs (projet pilote) : le parent invite (envoi simulé), le
+// jeune crée son accès par le lien (vrais serveurs de l'émulateur), voit ses
+// règles ; le parent annule une demande acceptée par son jeune.
+{
+  const maison = geohash.encode(46.8263, -71.2206);
+  const parent = await auth.createUser({ email: "pauline@test.ca", password: "motdepasse", displayName: "Pauline Parent", emailVerified: true });
+  await new Promise((r) => setTimeout(r, 1500));
+  await db.doc(`users/${parent.uid}`).set({ displayName: "Pauline Parent", email: "pauline@test.ca", role: ["deneigeur_x"], ville: "Québec", villeGeoId: "ID_QUEBEC", addressGeohash: maison }, { merge: true });
+  comptes.pauline = { email: "pauline@test.ca" };
+  uid.pauline = parent.uid;
+  const { p, ctx } = await connexion("pauline", 390);
+  const invitations = [];
+  await p.route("**/inviterJeune", (r) => { invitations.push(r.request().postDataJSON().data); return r.fulfill({ json: { result: { invitationId: "x" } } }); });
+  await test("parent : invite son jeune avec ses règles (attestation exigée)", async () => {
+    await p.goto("http://localhost:4190/parametres#jeunes");
+    await p.getByRole("heading", { name: "Jeune déneigeur" }).waitFor();
+    await p.getByRole("button", { name: "Inviter mon jeune" }).click();
+    await p.getByLabel("Son prénom").fill("Léo");
+    await p.getByLabel(/Son courriel/).fill("leo.jeune@test.ca");
+    await p.getByLabel("Son année de naissance").fill(String(new Date().getFullYear() - 15));
+    assert.equal(await p.getByRole("button", { name: "Envoyer l'invitation" }).isDisabled(), true, "attestation exigée");
+    await p.getByLabel(/Je suis son parent ou tuteur légal/).check();
+    assert.equal(await p.evaluate(() => document.documentElement.scrollWidth), 390);
+    await p.screenshot({ path: `${D}/e2e-jeune-invitation-390.png`, fullPage: true });
+    await p.getByRole("button", { name: "Envoyer l'invitation" }).click();
+    await p.getByText("✓ Invitation envoyée à leo.jeune@test.ca.").waitFor();
+    assert.deepEqual(invitations[0].regles, { heureDebut: 7, heureFin: 20, rayonKm: 1, maxParJour: 2 });
+    assert.equal(invitations[0].attestation, true);
+  });
+  await ctx.close();
+
+  // Invitation posée comme le ferait inviterJeune (le courriel ne part pas dans l'émulateur).
+  const { Timestamp: Ts } = req("firebase-admin/firestore");
+  await db.doc("invitationsJeunes/invE2E").set({ parentId: parent.uid, jeton: "jetonE2E", statut: "invite", prenom: "Léo", courriel: "leo.jeune@test.ca", anneeNaissance: new Date().getFullYear() - 15, regles: { heureDebut: 7, heureFin: 20, rayonKm: 1, maxParJour: 2 }, pause: false, expireAt: Ts.fromMillis(Date.now() + 864e5) });
+  await db.doc(`users/${parent.uid}`).set({ jeunes: { invE2E: { statut: "invite", prenom: "Léo", courriel: "leo.jeune@test.ca", regles: { heureDebut: 7, heureFin: 20, rayonKm: 1, maxParJour: 2 }, pause: false } } }, { merge: true });
+  // Deux demandes demain à 10 h, heure de Québec (15 h UTC) : à côté de la maison, et à plus de 1 km.
+  const demain10hQc = (() => { const x = new Date(); return Timestamp.fromMillis(Date.UTC(x.getUTCFullYear(), x.getUTCMonth(), x.getUTCDate() + 1, 15)); })();
+  await db.doc("demandes/JV").set(base({ donneurOuvrageId: uid.paul, donneurPrenom: "Paul", titre: "Entrée voisine pour Léo", typeService: "entree", remunerationOfferte: 25, dateHeureSouhaitee: demain10hQc, adresseGeohash: maison.slice(0, 7) }));
+  await db.doc("demandes/JF").set(base({ donneurOuvrageId: uid.paul, donneurPrenom: "Paul", titre: "Entrée lointaine pour Léo", typeService: "entree", remunerationOfferte: 25, dateHeureSouhaitee: demain10hQc, adresseGeohash: g7(46.80, -71.25) }));
+  const ctxJ = await b.newContext({ viewport: { width: 390, height: 844 } });
+  const pj = await ctxJ.newPage();
+  pageCourante = pj;
+  await test("jeune : le lien d'invitation crée son accès, lié au parent ; il voit ses règles", async () => {
+    await pj.goto("http://localhost:4190/jeune/rejoindre?i=invE2E&j=jetonE2E");
+    await pj.getByRole("heading", { name: "Bienvenue Léo!" }).waitFor({ timeout: 15000 });
+    await pj.getByText(/Pauline t'invite à déneiger avec Snowro/).waitFor();
+    await pj.getByLabel("Choisis un mot de passe").fill("motdepasse");
+    assert.equal(await pj.getByRole("button", { name: "Créer mon accès" }).isDisabled(), true);
+    await pj.getByLabel(/J'accepte ces règles/).check();
+    await pj.screenshot({ path: `${D}/e2e-jeune-rejoindre-390.png`, fullPage: true });
+    await pj.getByRole("button", { name: "Créer mon accès" }).click();
+    await pj.waitForURL("**/tableau-de-bord", { timeout: 15000 });
+    await pj.getByText(/Tes règles : de 7 h à 20 h, à 1 km ou moins de la maison/).waitFor({ timeout: 15000 });
+    await pj.getByRole("heading", { name: "Bonjour Léo" }).waitFor();
+    assert.equal(await pj.locator(".bandeau-courriel").count(), 0, "courriel confirmé par l'invitation");
+    await pj.getByText("Entrée voisine pour Léo").waitFor({ timeout: 15000 });
+    assert.equal(await pj.getByText("Entrée lointaine pour Léo").count(), 0, "demande hors rayon cachée");
+    assert.equal(await pj.getByText("Toiture de cabanon").count(), 0, "demande à 1,7 km cachée");
+    await pj.screenshot({ path: `${D}/e2e-jeune-tableau-390.png`, fullPage: true });
+    const leo = await auth.getUserByEmail("leo.jeune@test.ca");
+    assert.equal(leo.emailVerified, true);
+    const fiche = (await db.doc(`users/${leo.uid}`).get()).data();
+    assert.deepEqual({ p: fiche.parentId, v: fiche.villeGeoId }, { p: parent.uid, v: "ID_QUEBEC" });
+    assert.equal((await db.doc(`users/${parent.uid}`).get()).data().jeunes.invE2E.statut, "actif");
+    uid.leo = leo.uid;
+  });
+  await ctxJ.close();
+
+  // Une demande acceptée par Léo ; Pauline l'annule par le lien de l'avis.
+  await db.doc("demandes/J1").set(base({ donneurOuvrageId: uid.mireille, donneurPrenom: "Mireille", titre: "Entrée de Mireille", typeService: "entree", remunerationOfferte: 30, dateHeureSouhaitee: demain8h, adresseGeohash: maison.slice(0, 7), statut: "matchee", deneigeurId: uid.leo, deneigeurPrenom: "Léo", deneigeurJeune: true, deneigeurParentId: parent.uid, matchedAt: ts(-0.1 * H), paiement: paiement(30, "simule_retenu") }));
+  const c2 = await connexion("pauline", 390);
+  await test("parent : « Annuler la demande » depuis le lien de l'avis ; la demande redevient ouverte", async () => {
+    await c2.p.goto("http://localhost:4190/jeune/annuler?d=J1");
+    await c2.p.getByRole("button", { name: "Annuler la demande" }).click();
+    await c2.p.getByRole("heading", { name: "Demande annulée" }).waitFor({ timeout: 15000 });
+    const dJ = (await db.doc("demandes/J1").get()).data();
+    assert.deepEqual({ s: dJ.statut, d: dJ.deneigeurId }, { s: "ouverte", d: null });
+  });
+  await test("parent : modifie les règles de son jeune (rayon, maximum par jour)", async () => {
+    await c2.p.goto("http://localhost:4190/parametres#jeunes");
+    await c2.p.getByRole("button", { name: "Modifier les règles" }).click();
+    await c2.p.getByLabel("Rayon (km)").fill("2");
+    await c2.p.getByLabel("Demandes par jour").fill("3");
+    await c2.p.screenshot({ path: `${D}/e2e-jeune-regles-390.png`, fullPage: true });
+    await c2.p.getByRole("button", { name: "Enregistrer" }).click();
+    await c2.p.getByText("✓ Règles de Léo mises à jour.").waitFor({ timeout: 15000 });
+    await c2.p.getByText(/Règles : de 7 h à 20 h, à 2 km ou moins de la maison, 3 demandes par jour au plus\./).waitFor();
+    const r = (await db.doc(`users/${uid.leo}`).get()).data().jeune.regles;
+    assert.deepEqual({ k: r.rayonKm, m: r.maxParJour }, { k: 2, m: 3 });
+  });
+  await c2.ctx.close();
+}
+
 // Tableau admin : refusé à un compte ordinaire (vrai serveur, ADMIN_UIDS vide),
 // puis rendu avec des métriques simulées.
 {

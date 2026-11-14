@@ -794,6 +794,124 @@ await test("textos : nouvelle demande, texto au déneigeur consentant même sans
   assert.equal((await ref.get()).data().alerte.envoyes, 1);
 });
 
+await test("jeunes déneigeurs (pilote) : invitation par le parent, règles, avis, veto, versement au parent", async () => {
+  process.env.JEUNES_PILOTE = "true";
+  const jn = await import(`${REPO}functions/src/jeunes.js`);
+  const { getAuth } = await import(`${REPO}functions/node_modules/firebase-admin/lib/auth/index.js`);
+  const envois = [];
+  const fetchAvant = globalThis.fetch;
+  globalThis.fetch = async (url, o) => {
+    if (String(url).includes("resend")) { envois.push(JSON.parse(o.body)); return { ok: true, json: async () => ({ id: "re_1" }) }; }
+    if (String(url).includes("twilio")) { envois.push({ texto: String(o.body) }); return { ok: true, json: async () => ({ sid: "SM1" }) }; }
+    return fetchAvant(url, o);
+  };
+  try {
+    const maison = geohashLib.encode(46.8263, -71.2206);
+    await db.doc("users/parentJ").set({ displayName: "Paula Parent", email: "paula@exemple.ca", role: ["deneigeur_x"], villeGeoId: "ID_QUEBEC", ville: "Québec", addressGeohash: maison });
+    const parent = (data) => jn.inviterJeune.run({ auth: { uid: "parentJ", token: { email_verified: true } }, data });
+    const an = new Date().getFullYear();
+    const invite = { courriel: "Leo@Exemple.ca", prenom: "Léo", anneeNaissance: an - 15, attestation: true, regles: { heureDebut: 7, heureFin: 20, rayonKm: 1, maxParJour: 1 } };
+    await echoue(parent({ ...invite, anneeNaissance: an - 13 }), "invalid-argument", "13 ans");
+    await echoue(parent({ ...invite, anneeNaissance: an - 18 }), "invalid-argument", "18 ans");
+    await echoue(parent({ ...invite, attestation: false }), "invalid-argument", "sans attestation");
+    await echoue(parent({ ...invite, regles: { heureDebut: 20, heureFin: 8 } }), "invalid-argument", "heures à l'envers");
+    const { invitationId } = await parent(invite);
+    const inv = (await db.doc(`invitationsJeunes/${invitationId}`).get()).data();
+    assert.equal(inv.courriel, "leo@exemple.ca");
+    assert.ok(envois.some((e) => e.to?.[0] === "leo@exemple.ca" && e.text.includes(`/jeune/rejoindre?i=${invitationId}&j=${inv.jeton}`)));
+    assert.equal((await db.doc("users/parentJ").get()).data().jeunes[invitationId].statut, "invite");
+    // Règles modifiées avant l'acceptation : l'invitation suit.
+    await jn.reglerJeune.run({ auth: { uid: "parentJ" }, data: { invitationId, regles: { heureDebut: 7, heureFin: 20, rayonKm: 2, maxParJour: 1 } } });
+    assert.equal((await db.doc(`invitationsJeunes/${invitationId}`).get()).data().regles.rayonKm, 2);
+    const infos = await jn.lireInvitationJeune.run({ data: { i: invitationId, j: inv.jeton } });
+    assert.deepEqual({ p: infos.prenom, pp: infos.prenomParent }, { p: "Léo", pp: "Paula" });
+    await echoue(jn.lireInvitationJeune.run({ data: { i: invitationId, j: "faux" } }), "not-found", "mauvais jeton");
+
+    const auth = getAuth();
+    const leo = await auth.createUser({ email: "leo@exemple.ca", password: "motdepasse" });
+    const autre = await auth.createUser({ email: "autre@exemple.ca", password: "motdepasse" });
+    await echoue(jn.accepterInvitationJeune.run({ auth: { uid: autre.uid }, data: { i: invitationId, j: inv.jeton, consentement: true } }), "permission-denied", "autre adresse");
+    await echoue(jn.accepterInvitationJeune.run({ auth: { uid: leo.uid }, data: { i: invitationId, j: inv.jeton } }), "invalid-argument", "sans consentement");
+    await jn.accepterInvitationJeune.run({ auth: { uid: leo.uid }, data: { i: invitationId, j: inv.jeton, consentement: true } });
+    const pLeo = (await db.doc(`users/${leo.uid}`).get()).data();
+    assert.deepEqual({ p: pLeo.parentId, v: pLeo.villeGeoId, r: pLeo.role }, { p: "parentJ", v: "ID_QUEBEC", r: ["deneigeur_x"] });
+    assert.equal(pLeo.jeune.regles.rayonKm, 2, "règles modifiées avant l'acceptation");
+    assert.equal((await auth.getUser(leo.uid)).emailVerified, true, "courriel confirmé par l'invitation");
+    await echoue(jn.accepterInvitationJeune.run({ auth: { uid: leo.uid }, data: { i: invitationId, j: inv.jeton, consentement: true } }), "not-found", "lien déjà utilisé");
+
+    // Demandes : demain 10 h (permise), demain 22 h (hors heures), à 3 km (trop loin).
+    const d = new Date(); const demainUTC = (h) => Timestamp.fromMillis(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate() + 1, h));
+    const { Timestamp } = await import(`${REPO}functions/node_modules/firebase-admin/lib/firestore/index.js`);
+    const demande = (id, x) => db.doc(`demandes/${id}`).set({ statut: "ouverte", donneurOuvrageId: "client1", donneurPrenom: "Mireille", titre: "Entrée", villeGeoId: "ID_QUEBEC", quartier: "Limoilou", adresseGeohash: maison.slice(0, 7), remunerationOfferte: 40, ...x });
+    await demande("jA", { dateHeureSouhaitee: demainUTC(15) });
+    await demande("jB", { dateHeureSouhaitee: demainUTC(15) });
+    await demande("jSoir", { dateHeureSouhaitee: Timestamp.fromMillis(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate() + 2, 3)) });
+    await demande("jLoin", { dateHeureSouhaitee: demainUTC(16), adresseGeohash: geohashLib.encode(46.80, -71.25).slice(0, 7) });
+    const accepterLeo = (id) => f.accepterDemande.run({ auth: { uid: leo.uid, token: { email_verified: true } }, data: { demandeId: id } });
+    assert.match((await echoue(accepterLeo("jSoir"), "failed-precondition", "hors heures")).message, /heures permises/);
+    assert.match((await echoue(accepterLeo("jLoin"), "failed-precondition", "trop loin")).message, /Trop loin/);
+    envois.length = 0;
+    await accepterLeo("jA");
+    const dA = await lire("jA");
+    assert.deepEqual({ s: dA.statut, j: dA.deneigeurJeune, p: dA.deneigeurParentId }, { s: "matchee", j: true, p: "parentJ" });
+    assert.ok(envois.some((e) => e.to?.[0] === "paula@exemple.ca" && e.text.includes("/jeune/annuler?d=jA")), "parent avisé");
+    assert.match((await echoue(accepterLeo("jB"), "failed-precondition", "max par jour")).message, /Maximum de 1/);
+
+    // Veto du parent : seulement lui ; la demande redevient ouverte.
+    await echoue(jn.annulerParParent.run({ auth: { uid: "client1" }, data: { demandeId: "jA" } }), "permission-denied", "pas le parent");
+    await jn.annulerParParent.run({ auth: { uid: "parentJ" }, data: { demandeId: "jA" } });
+    const dA2 = await lire("jA");
+    assert.deepEqual({ s: dA2.statut, d: dA2.deneigeurId, r: dA2.remiseEnLigne, pj: dA2.deneigeurParentId }, { s: "ouverte", d: null, r: 1, pj: undefined });
+    assert.equal(dA2.historiqueAnnulations[0].par, "parent");
+
+    // Signalement par le client sur une demande du jeune : le parent reçoit
+    // l'avis et le verbatim des messages.
+    await accepterLeo("jB");
+    const { Timestamp: T2 } = await import(`${REPO}functions/node_modules/firebase-admin/lib/firestore/index.js`);
+    await db.collection("messages/jB/messages").add({ expediteurId: "client1", contenu: "Bonjour, l'entrée est à gauche.", createdAt: T2.fromMillis(Date.now() - 60000) });
+    await db.collection("messages/jB/messages").add({ expediteurId: leo.uid, contenu: "Parfait, j'arrive à 9 h.", createdAt: T2.now() });
+    envois.length = 0;
+    await f.signalerProbleme.run({ auth: { uid: "client1" }, data: { demandeId: "jB", motif: "incomplet", details: "Les marches ne sont pas faites." } });
+    const avis = envois.find((e) => e.to?.[0] === "paula@exemple.ca");
+    assert.ok(avis, "parent avisé du signalement");
+    assert.match(avis.subject, /Problème signalé sur une demande de Léo/);
+    assert.match(avis.text, /Le client \(Mireille\) a signalé un problème/);
+    assert.match(avis.text, /travail incomplet/);
+    assert.match(avis.text, /Les marches ne sont pas faites\./);
+    assert.match(avis.text, /Mireille : Bonjour, l'entrée est à gauche\.\n.*Léo : Parfait, j'arrive à 9 h\./);
+    // Règles pures (avis de nouvelles demandes).
+    assert.equal(jn.horsRegles({ heureDebut: 7, heureFin: 20, rayonKm: 1 }, { maison, demande: { dateHeureSouhaitee: demainUTC(15), adresseGeohash: maison.slice(0, 7) } }), null);
+    assert.match(jn.horsRegles({ heureDebut: 7, heureFin: 20, rayonKm: 1 }, { maison, demande: { dateHeureSouhaitee: demainUTC(15), adresseGeohash: geohashLib.encode(46.80, -71.25).slice(0, 7) } }), /Trop loin/);
+
+    // Règles modifiées après l'acceptation : la fiche du jeune et celle du parent suivent.
+    await jn.reglerJeune.run({ auth: { uid: "parentJ" }, data: { invitationId, regles: { heureDebut: 8, heureFin: 18, rayonKm: 1, maxParJour: 3 } } });
+    assert.deepEqual((await db.doc(`users/${leo.uid}`).get()).data().jeune.regles, { heureDebut: 8, heureFin: 18, rayonKm: 1, maxParJour: 3 });
+    assert.equal((await db.doc("users/parentJ").get()).data().jeunes[invitationId].regles.heureFin, 18);
+    await echoue(jn.reglerJeune.run({ auth: { uid: "parentJ" }, data: { invitationId, regles: { heureDebut: 19, heureFin: 9 } } }), "invalid-argument", "règles invalides");
+
+    // Pause, puis retrait de l'accord.
+    await jn.reglerJeune.run({ auth: { uid: "parentJ" }, data: { invitationId, pause: true } });
+    await demande("jC", { dateHeureSouhaitee: Timestamp.fromMillis(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate() + 3, 15)) });
+    assert.match((await echoue(accepterLeo("jC"), "failed-precondition", "pause")).message, /pause/);
+    await jn.reglerJeune.run({ auth: { uid: "parentJ" }, data: { invitationId, retirer: true } });
+    const pLeo2 = (await db.doc(`users/${leo.uid}`).get()).data();
+    assert.deepEqual({ r: pLeo2.role, x: pLeo2.jeune.retire }, { r: [], x: true });
+    await echoue(jn.reglerJeune.run({ auth: { uid: "client1" }, data: { invitationId, pause: false } }), "not-found", "pas son jeune");
+    // Invitation jamais utilisée : effacée à son expiration ; l'acceptée reste.
+    await db.doc("invitationsJeunes/invExp").set({ parentId: "parentJ", statut: "invite", jeton: "x", expireAt: Timestamp.fromMillis(Date.now() - 1000) });
+    await db.doc("users/parentJ").set({ jeunes: { invExp: { statut: "invite", prenom: "Zoé" } } }, { merge: true });
+    await db.doc(`invitationsJeunes/${invitationId}`).update({ expireAt: Timestamp.fromMillis(Date.now() - 1000) });
+    const cons = await import(`${REPO}functions/src/conservation.js`);
+    await cons.appliquerConservation();
+    assert.equal((await db.doc("invitationsJeunes/invExp").get()).exists, false);
+    assert.equal((await db.doc("users/parentJ").get()).data().jeunes.invExp, undefined);
+    assert.equal((await db.doc(`invitationsJeunes/${invitationId}`).get()).exists, true, "invitation acceptée gardée (attestation)");
+    // Un jeune ne publie pas de demande.
+    await echoue(f.publierDemande.run({ auth: { uid: leo.uid, token: { email_verified: true } }, data: base }), "permission-denied", "jeune publie");
+  } finally {
+    globalThis.fetch = fetchAvant;
+  }
+});
 await test("admin : métriques agrégées ; accès réservé aux UID de ADMIN_UIDS", async () => {
   const ta = await import(`${REPO}functions/src/tableauAdmin.js`);
   const t = (ms) => ({ toMillis: () => ms });

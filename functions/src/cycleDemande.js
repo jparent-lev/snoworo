@@ -1,3 +1,4 @@
+import { SECRETS_AVIS_PARENT, avertirParent, avertirParentSignalement, verifierJeune } from "./jeunes.js";
 import { onCall, HttpsError } from "firebase-functions/v2/https";
 import { onSchedule } from "firebase-functions/v2/scheduler";
 import { logger } from "firebase-functions/v2";
@@ -158,6 +159,7 @@ export const publierDemande = onCall({ region: REGION, secrets: [GEOCODING_API_K
   }
 
   const profil = profilStripe((await db.doc(`users/${uid}`).get()).data() ?? {});
+  if (profil.parentId) throw new HttpsError("permission-denied", "Un compte de jeune déneigeur ne peut pas publier de demande.");
   // Rien n'est prélevé à la publication, mais il faut une carte pour que
   // l'acceptation puisse prélever.
   if (paiementReel() && !profil.carte?.paymentMethodId) throw new HttpsError("failed-precondition", "carte-requise");
@@ -236,7 +238,7 @@ export const publierDemande = onCall({ region: REGION, secrets: [GEOCODING_API_K
 // Premier arrivé, premier servi (transaction). Le filtre de ville est une
 // exclusion dure : un déneigeur ne peut jamais accepter hors de sa ville de
 // service, même si la demande est à 500 m de l'autre côté du pont.
-export const accepterDemande = onCall({ region: REGION, secrets: [STRIPE_SECRET_KEY, RESEND_API_KEY] }, async (request) => {
+export const accepterDemande = onCall({ region: REGION, secrets: [STRIPE_SECRET_KEY, ...SECRETS_AVIS_PARENT] }, async (request) => {
   const uid = exigerConnexion(request);
   exigerCourrielConfirme(request);
   const { demandeId } = request.data ?? {};
@@ -244,6 +246,8 @@ export const accepterDemande = onCall({ region: REGION, secrets: [STRIPE_SECRET_
   const frais = await lireFrais();
   const reel = paiementReel();
 
+  let parentJeune = null;
+  let profilJeune = null;
   const demande = await db.runTransaction(async (tx) => {
     const ref = db.doc(`demandes/${demandeId}`);
     const userRef = db.doc(`users/${uid}`);
@@ -260,13 +264,19 @@ export const accepterDemande = onCall({ region: REGION, secrets: [STRIPE_SECRET_
     if (!profil.villeGeoId || profil.villeGeoId !== demande.villeGeoId) {
       throw new HttpsError("permission-denied", "Cette demande est hors de votre ville de service.");
     }
-    if (reel && profilStripe(profil).connectStatus !== "actif") {
+    // Jeune déneigeur (projet pilote, jeunes.js) : règles du parent, et le
+    // compte de versement est celui du parent.
+    if (profil.parentId) {
+      parentJeune = await verifierJeune(tx, { uid, profil, demande });
+    } else if (reel && profilStripe(profil).connectStatus !== "actif") {
       throw new HttpsError("failed-precondition", "Configurez votre compte de paiement avant d'accepter des demandes.");
     }
 
+    profilJeune = profil.parentId ? profil : null;
     tx.update(ref, {
       statut: "matchee",
       deneigeurId: uid,
+      ...(profil.parentId ? { deneigeurJeune: true, deneigeurParentId: profil.parentId } : {}),
       deneigeurPrenom: prenom(profil.displayName),
       deneigeurNote: { moyenne: profil.ratingAvg ?? 0, nombre: profil.nbJobsCompletees ?? 0 },
       matchedAt: FieldValue.serverTimestamp(),
@@ -281,6 +291,7 @@ export const accepterDemande = onCall({ region: REGION, secrets: [STRIPE_SECRET_
     });
     return demande;
   });
+  if (parentJeune) await avertirParent(demandeId, demande, profilJeune, parentJeune);
   if (!reel) return { ok: true };
 
   // Prélèvement hors transaction (une transaction peut être rejouée ; un
@@ -522,13 +533,13 @@ export const purgerPhotos = onSchedule(
 );
 
 // ---- Signaler un problème (client ou déneigeur) ----
-export const signalerProbleme = onCall({ region: REGION }, async (request) => {
+export const signalerProbleme = onCall({ region: REGION, secrets: SECRETS_AVIS_PARENT }, async (request) => {
   const uid = exigerConnexion(request);
   const { demandeId, motif } = request.data ?? {};
   if (!MOTIFS_SIGNALEMENT.has(motif)) throw new HttpsError("invalid-argument", "Motif invalide.");
   const details = texte(request.data?.details, { max: 1000, nom: "Détails" });
 
-  return db.runTransaction(async (tx) => {
+  const resultat = await db.runTransaction(async (tx) => {
     const ref = db.doc(`demandes/${demandeId}`);
     const snap = await tx.get(ref);
     if (!snap.exists) throw new HttpsError("not-found", "Demande introuvable.");
@@ -546,8 +557,11 @@ export const signalerProbleme = onCall({ region: REGION }, async (request) => {
       "paiement.statutPaiement": demande.paiement?.statutPaiement === "retenu" ? "bloque" : "simule_bloque",
       confirmationAutoAt: null,
     });
-    return { ok: true };
+    return { ok: true, jeune: Boolean(demande.deneigeurParentId) };
   });
+  // Jeune déneigeur (jeunes.js) : le parent reçoit l'avis et les messages.
+  if (resultat.jeune) await avertirParentSignalement(demandeId);
+  return { ok: true };
 });
 
 // ---- Annuler (client) ----
