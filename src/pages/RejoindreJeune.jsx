@@ -20,7 +20,7 @@ export default function RejoindreJeune() {
   const i = params.get("i") ?? "";
   const j = params.get("j") ?? "";
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, signalerChangementCompte } = useAuth();
   const [info, setInfo] = useState(null);
   const [erreur, setErreur] = useState(null);
   const [motDePasse, setMotDePasse] = useState("");
@@ -47,8 +47,10 @@ export default function RejoindreJeune() {
         }
       }
       await accepterInvitationJeune({ i, j, consentement });
+      // Le serveur vient de confirmer le courriel : recharger le compte.
       await auth.currentUser?.reload();
       await auth.currentUser?.getIdToken(true);
+      signalerChangementCompte();
       navigate("/tableau-de-bord", { replace: true });
     } catch (err) {
       setErreur(

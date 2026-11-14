@@ -895,6 +895,10 @@ async function connexion(cle, largeur = 1280) {
   const { Timestamp: Ts } = req("firebase-admin/firestore");
   await db.doc("invitationsJeunes/invE2E").set({ parentId: parent.uid, jeton: "jetonE2E", statut: "invite", prenom: "Léo", courriel: "leo.jeune@test.ca", anneeNaissance: new Date().getFullYear() - 15, regles: { heureDebut: 7, heureFin: 20, rayonKm: 1, maxParJour: 2 }, pause: false, expireAt: Ts.fromMillis(Date.now() + 864e5) });
   await db.doc(`users/${parent.uid}`).set({ jeunes: { invE2E: { statut: "invite", prenom: "Léo", courriel: "leo.jeune@test.ca", regles: { heureDebut: 7, heureFin: 20, rayonKm: 1, maxParJour: 2 }, pause: false } } }, { merge: true });
+  // Deux demandes demain à 10 h, heure de Québec (15 h UTC) : à côté de la maison, et à plus de 1 km.
+  const demain10hQc = (() => { const x = new Date(); return Timestamp.fromMillis(Date.UTC(x.getUTCFullYear(), x.getUTCMonth(), x.getUTCDate() + 1, 15)); })();
+  await db.doc("demandes/JV").set(base({ donneurOuvrageId: uid.paul, donneurPrenom: "Paul", titre: "Entrée voisine pour Léo", typeService: "entree", remunerationOfferte: 25, dateHeureSouhaitee: demain10hQc, adresseGeohash: maison.slice(0, 7) }));
+  await db.doc("demandes/JF").set(base({ donneurOuvrageId: uid.paul, donneurPrenom: "Paul", titre: "Entrée lointaine pour Léo", typeService: "entree", remunerationOfferte: 25, dateHeureSouhaitee: demain10hQc, adresseGeohash: g7(46.80, -71.25) }));
   const ctxJ = await b.newContext({ viewport: { width: 390, height: 844 } });
   const pj = await ctxJ.newPage();
   pageCourante = pj;
@@ -909,6 +913,12 @@ async function connexion(cle, largeur = 1280) {
     await pj.getByRole("button", { name: "Créer mon accès" }).click();
     await pj.waitForURL("**/tableau-de-bord", { timeout: 15000 });
     await pj.getByText(/Tes règles : de 7 h à 20 h, à 1 km ou moins de la maison/).waitFor({ timeout: 15000 });
+    await pj.getByRole("heading", { name: "Bonjour Léo" }).waitFor();
+    assert.equal(await pj.locator(".bandeau-courriel").count(), 0, "courriel confirmé par l'invitation");
+    await pj.getByText("Entrée voisine pour Léo").waitFor({ timeout: 15000 });
+    assert.equal(await pj.getByText("Entrée lointaine pour Léo").count(), 0, "demande hors rayon cachée");
+    assert.equal(await pj.getByText("Toiture de cabanon").count(), 0, "demande à 1,7 km cachée");
+    await pj.screenshot({ path: `${D}/e2e-jeune-tableau-390.png`, fullPage: true });
     const leo = await auth.getUserByEmail("leo.jeune@test.ca");
     assert.equal(leo.emailVerified, true);
     const fiche = (await db.doc(`users/${leo.uid}`).get()).data();

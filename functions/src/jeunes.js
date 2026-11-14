@@ -62,6 +62,19 @@ function distanceKm(h1, h2) {
   return 12742 * Math.asin(Math.sqrt(h));
 }
 
+// Règles du parent (heures permises, rayon autour de la maison) : null si la
+// demande les respecte, sinon la raison. Pur : sert à l'acceptation et aux
+// avis de nouvelles demandes. Le maximum par jour est vérifié à part.
+export function horsRegles(regles = REGLES_DEFAUT, { maison, demande }) {
+  const r = { ...REGLES_DEFAUT, ...regles };
+  const h = heureLocale(demande.dateHeureSouhaitee.toMillis());
+  if (h < r.heureDebut || h >= r.heureFin) return `Hors de tes heures permises (${r.heureDebut} h à ${r.heureFin} h).`;
+  if (maison && demande.adresseGeohash && distanceKm(maison, demande.adresseGeohash) > r.rayonKm) {
+    return `Trop loin de la maison (plus de ${r.rayonKm} km).`;
+  }
+  return null;
+}
+
 // Vérifie qu'un jeune peut accepter cette demande (appelé dans la
 // transaction de accepterDemande). Renvoie le profil du parent.
 export async function verifierJeune(tx, { uid, profil, demande }) {
@@ -77,13 +90,8 @@ export async function verifierJeune(tx, { uid, profil, demande }) {
   }
   const regles = { ...REGLES_DEFAUT, ...(jeune.regles ?? {}) };
   const quand = demande.dateHeureSouhaitee.toMillis();
-  const h = heureLocale(quand);
-  if (h < regles.heureDebut || h >= regles.heureFin) {
-    throw new HttpsError("failed-precondition", `Hors de tes heures permises (${regles.heureDebut} h à ${regles.heureFin} h).`);
-  }
-  if (parent.addressGeohash && demande.adresseGeohash && distanceKm(parent.addressGeohash, demande.adresseGeohash) > regles.rayonKm) {
-    throw new HttpsError("failed-precondition", `Trop loin de la maison (plus de ${regles.rayonKm} km).`);
-  }
+  const raison = horsRegles(regles, { maison: parent.addressGeohash, demande });
+  if (raison) throw new HttpsError("failed-precondition", raison);
   const memeJour = await tx.get(db.collection("demandes").where("deneigeurId", "==", uid));
   const jour = jourLocal(quand);
   const nb = memeJour.docs.filter((d) => {
@@ -212,6 +220,7 @@ export const accepterInvitationJeune = onCall({ region: REGION }, async (request
       userRef,
       {
         role: ["deneigeur_x"],
+        displayName: (moi.data() ?? {}).displayName || inv.prenom,
         parentId: inv.parentId,
         jeune: { invitationId: ref.id, prenom: inv.prenom, anneeNaissance: inv.anneeNaissance, regles: inv.regles, pause: false, consentementAt: FieldValue.serverTimestamp() },
         // Même secteur que la maison : jamais une autre adresse.
@@ -338,3 +347,66 @@ export async function avertirParent(demandeId, demande, jeune, parent) {
   }
 }
 export const SECRETS_AVIS_PARENT = [RESEND_API_KEY, ...SECRETS_SMS];
+
+// Signalement sur une demande de son jeune (par le client ou par le jeune) :
+// le parent reçoit l'avis et le verbatim des messages échangés. Ne lève
+// jamais : l'avis ne doit pas faire échouer le signalement.
+export const MOTIFS_LIBELLES = {
+  absent: "absence",
+  incomplet: "travail incomplet",
+  acces: "accès impossible",
+  autre: "autre problème",
+};
+export function verbatimMessages(messages, noms) {
+  if (!messages.length) return ["(Aucun message échangé.)"];
+  return messages.map((m) => {
+    const quand = m.createdAt?.toDate?.().toLocaleString("fr-CA", { timeZone: FUSEAU, dateStyle: "short", timeStyle: "short" }) ?? "";
+    return `[${quand}] ${noms[m.expediteurId] ?? "Snowro"} : ${m.contenu}`;
+  });
+}
+
+export async function avertirParentSignalement(demandeId) {
+  try {
+    const demande = (await db.doc(`demandes/${demandeId}`).get()).data();
+    if (!demande?.deneigeurParentId || !demande.signalement) return false;
+    const [parentSnap, jeuneSnap, msgs] = await Promise.all([
+      db.doc(`users/${demande.deneigeurParentId}`).get(),
+      db.doc(`users/${demande.deneigeurId}`).get(),
+      db.collection(`messages/${demandeId}/messages`).orderBy("createdAt", "asc").limit(200).get(),
+    ]);
+    const parent = parentSnap.data();
+    if (!parent?.email) return false;
+    const prenomJeune = jeuneSnap.data()?.jeune?.prenom ?? demande.deneigeurPrenom ?? "Votre jeune";
+    const s = demande.signalement;
+    const qui = s.par === "client" ? `Le client (${demande.donneurPrenom ?? "client"})` : prenomJeune;
+    const entete = `${qui} a signalé un problème sur « ${demande.titre} »${demande.quartier ? `, ${demande.quartier}` : ""} : ${MOTIFS_LIBELLES[s.motif] ?? s.motif}.`;
+    const details = s.details ? `Détails : « ${s.details} »` : "Aucun détail ajouté.";
+    const verbatim = verbatimMessages(
+      msgs.docs.map((d) => d.data()),
+      { [demande.donneurOuvrageId]: demande.donneurPrenom ?? "Client", [demande.deneigeurId]: prenomJeune },
+    );
+    const suite = "Le paiement est retenu le temps que Snowro examine la situation. Nous vous écrirons. Vous pouvez répondre à ce courriel pour donner votre version.";
+    await envoyerCourriel({
+      a: parent.email,
+      sujet: `Problème signalé sur une demande de ${prenomJeune}`,
+      html: gabaritCourriel({
+        titre: `Problème signalé sur une demande de ${echapperHtml(prenomJeune)}`,
+        paragraphes: [
+          echapperHtml(entete),
+          echapperHtml(details),
+          echapperHtml(suite),
+          `<strong>Messages échangés</strong><br>${verbatim.map(echapperHtml).join("<br>")}`,
+        ],
+        piedDePage: "Vous recevez cet avis parce que votre jeune participe au projet pilote des jeunes déneigeurs de Snowro.",
+      }),
+      texte: [entete, details, "", suite, "", "Messages échangés :", ...verbatim].join("\n"),
+      cleIdempotence: `signalement-parent-${demandeId}`,
+      type: "signalement_parent",
+    });
+    await envoyerTexto(parent, `Snowro : ${entete} Détails et messages envoyés par courriel.`, { contexte: "signalement parent" });
+    return true;
+  } catch (err) {
+    logger.error(`Avis de signalement au parent non envoyé (${demandeId}) : ${err.message}`);
+    return false;
+  }
+}

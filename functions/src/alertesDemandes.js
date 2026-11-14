@@ -1,3 +1,4 @@
+import { horsRegles } from "./jeunes.js";
 import { onDocumentCreated } from "firebase-functions/v2/firestore";
 import { logger } from "firebase-functions/v2";
 import { FieldValue } from "firebase-admin/firestore";
@@ -95,6 +96,9 @@ export const avertirDeneigeursNouvelleDemande = onDocumentCreated(
     for (const doc of candidats.docs) {
       const u = doc.data();
       if (doc.id === demande.donneurOuvrageId) continue;
+      // Jeune déneigeur : seulement les demandes qui respectent les règles de
+      // son parent (heures, rayon), et jamais en pause.
+      if (u.parentId && (u.jeune?.pause || u.jeune?.retire || horsRegles(u.jeune?.regles, { maison: u.addressGeohash, demande }))) continue;
       const parCourriel = Boolean(u.email) && u.alertesDemandesCourriel !== false;
       const parTexto = peutRecevoirTextos(u);
       if (!parCourriel && !parTexto) continue;
