@@ -181,7 +181,8 @@ export async function prelever(demandeId, demande) {
       },
       // Une tentative par demande et par carte : relancer après un échec avec
       // une nouvelle carte crée un nouveau prélèvement.
-      { idempotencyKey: `prelevement-${demandeId}-${client.carte.paymentMethodId}` },
+      // Demande remise en ligne (annulée par le parent d'un jeune) : nouvelle clé.
+      { idempotencyKey: `prelevement-${demandeId}-${client.carte.paymentMethodId}${demande.remiseEnLigne ? `-r${demande.remiseEnLigne}` : ""}` },
     );
     if (intent.status !== "succeeded") return { ok: false, raison: `Paiement ${intent.status}.` };
     return { ok: true, paymentIntentId: intent.id, chargeId: intent.latest_charge };
@@ -227,7 +228,9 @@ export async function verser(demandeId) {
   const ref = db.doc(`demandes/${demandeId}`);
   const demande = (await ref.get()).data();
   if (demande?.paiement?.statutPaiement !== "a_verser") return false;
-  const deneigeur = profilStripe((await db.doc(`users/${demande.deneigeurId}`).get()).data() ?? {});
+  // Jeune déneigeur (jeunes.js) : le compte de versement est celui du parent.
+  const titulaire = demande.deneigeurParentId ?? demande.deneigeurId;
+  const deneigeur = profilStripe((await db.doc(`users/${titulaire}`).get()).data() ?? {});
   try {
     if (!deneigeur.stripeConnectAccountId) throw new Error("compte de paiement du déneigeur absent");
     const virement = await stripe().transfers.create(
