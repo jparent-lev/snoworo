@@ -12,6 +12,9 @@ import Conditions from "./pages/Conditions";
 import Medias, { PlancheLogos } from "./pages/Medias";
 import Admin from "./pages/Admin";
 import ConfirmerCourriel from "./pages/ConfirmerCourriel";
+import RejoindreJeune from "./pages/RejoindreJeune";
+import AnnulerParParent from "./pages/AnnulerParParent";
+import { JEUNES_PILOTE } from "./lib/jeunes";
 import ConnexionLien from "./pages/ConnexionLien";
 import MotDePasseOublie from "./pages/MotDePasseOublie";
 import NouveauMotDePasse from "./pages/NouveauMotDePasse";
@@ -41,6 +44,7 @@ export default function App() {
         {import.meta.env.DEV && <Route path="/medias/planche" element={<PlancheLogos />} />}
         <Route path="/liste/confirmer" element={<ConfirmerListe />} />
         <Route path="/courriel/confirmer" element={<ConfirmerCourriel />} />
+        {JEUNES_PILOTE && <Route path="/jeune/rejoindre" element={<RejoindreJeune />} />}
         {/* Sur le test seulement (VITE_PAGE_CREDIT_IMPOT, .env.test) ; ailleurs, retour à l'accueil. */}
         <Route path="/credit-impot" element={PAGE_CREDIT_IMPOT ? <CreditImpot /> : <Navigate to="/" replace />} />
         {/* Gabarit de l'image d'aperçu partagée (og-snowro.png), en développement seulement. */}
@@ -65,6 +69,16 @@ export default function App() {
               </RequireAuth>
             }
           />
+          {JEUNES_PILOTE && (
+            <Route
+              path="/jeune/annuler"
+              element={
+                <RequireAuth>
+                  <AnnulerParParent />
+                </RequireAuth>
+              }
+            />
+          )}
           <Route
             path="/admin"
             element={

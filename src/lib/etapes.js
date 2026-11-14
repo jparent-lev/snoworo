@@ -21,7 +21,8 @@ export function etapesDemarrage(profile) {
       lien: "/parametres#adresse",
       action: "Ajouter mon adresse",
     },
-    PAIEMENT_REEL && {
+    // Jeune déneigeur : les paiements vont au compte de son parent.
+    PAIEMENT_REEL && !profile.parentId && {
       cle: "versement",
       titre: "Configurer votre compte de versement",
       detail:

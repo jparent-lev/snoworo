@@ -24,6 +24,10 @@ export const mettreAJourAdresseUtilisateur = onCall(
     if (!geohash && !adresse?.trim() && !placeId) {
       throw new HttpsError("invalid-argument", "placeId, adresse ou geohash requis.");
     }
+    // Jeune déneigeur (jeunes.js) : son secteur est celui de la maison du parent.
+    if ((await db.doc(`users/${request.auth.uid}`).get()).get("parentId")) {
+      throw new HttpsError("permission-denied", "Ton adresse de service est celle de la maison de ton parent.");
+    }
 
     let derive;
     try {

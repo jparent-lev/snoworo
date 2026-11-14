@@ -23,6 +23,8 @@ import CarteDePaiement from "../components/CarteDePaiement";
 import { fermerCompte, messageFermeture } from "../lib/compte";
 import { envoyerCodeTelephone, formaterNumero, messageTelephone, retirerTelephone, verifierCodeTelephone } from "../lib/telephone";
 import ChampAdresse from "../components/ChampAdresse";
+import SectionJeunes from "../components/SectionJeunes";
+import { JEUNES_PILOTE, resumeRegles } from "../lib/jeunes";
 import LieuAdresse from "../components/LieuAdresse";
 import { LIEU_VIDE, ajouterAdresse, ecouterCarnet, erreurLieu, libelleLien, supprimerAdresse } from "../lib/carnet";
 import "./Parametres.css";
@@ -154,11 +156,26 @@ export default function Parametres() {
 
   return (
     <div className="parametres__page">
-      <h1>Comment vous utilisez Snowro</h1>
-      <p className="parametres__intro">Vous pouvez avoir les deux rôles : une bascule Client / Déneigeur apparaît alors en haut de la page.</p>
-      <ChoixRoles valeur={roles} onChange={changerRoles} />
+      {profile.parentId ? (
+        <>
+          <h1>Ton compte de jeune déneigeur</h1>
+          <div className="parametres__compte-jeune">
+            <p>
+              Ton compte est lié à celui de ton parent. Tu déneiges près de la maison : {resumeRegles(profile.jeune?.regles)}.
+              Ton parent est avisé à chaque demande que tu acceptes, et les paiements arrivent dans son compte.
+            </p>
+            {profile.ville && <p className="parametres__meta">Secteur : {profile.ville}, celui de la maison.</p>}
+          </div>
+        </>
+      ) : (
+        <>
+          <h1>Comment vous utilisez Snowro</h1>
+          <p className="parametres__intro">Vous pouvez avoir les deux rôles : une bascule Client / Déneigeur apparaît alors en haut de la page.</p>
+          <ChoixRoles valeur={roles} onChange={changerRoles} />
+        </>
+      )}
 
-      {roles.includes(ROLE_DENEIGEUR) && (
+      {roles.includes(ROLE_DENEIGEUR) && !profile.parentId && (
         <>
       <h1 id="adresse">Votre adresse de service</h1>
       <p className="parametres__intro">
@@ -260,9 +277,11 @@ export default function Parametres() {
         </>
       )}
 
+      {JEUNES_PILOTE && roles.includes(ROLE_DENEIGEUR) && !profile.parentId && <SectionJeunes profile={profile} />}
+
       {roles.includes(ROLE_CLIENT) && <SectionCarnet uid={user.uid} />}
 
-      {PAIEMENT_REEL && <SectionPaiement profile={profile} deneigeur={roles.includes(ROLE_DENEIGEUR)} />}
+      {PAIEMENT_REEL && !profile.parentId && <SectionPaiement profile={profile} deneigeur={roles.includes(ROLE_DENEIGEUR)} />}
 
       {TEXTOS && (
         <>

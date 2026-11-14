@@ -7,6 +7,8 @@
   justify-content: center;
   gap: var(--space-6);
   padding: var(--space-8);
+  /* Place pour la version, en bas de page. */
+  padding-bottom: calc(var(--space-8) + 40px);
 }
 
 /* Sous la carte : retour à l'accueil (pages de connexion et d'inscription). */
@@ -196,3 +198,5 @@ a.auth-form__bouton {
   text-align: center;
   text-decoration: none;
 }
+.jeunes__securite ul { margin: 6px 0 0; padding-left: 18px; }
+.jeunes__securite li { margin-bottom: 2px; }

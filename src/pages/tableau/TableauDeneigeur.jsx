@@ -11,6 +11,7 @@ import { decoderGeohash, distanceMetres } from "../../lib/geo";
 import { dateCourte, debutSemaine, echeance, estAujourdhui, heure, ilYa, millis, moment } from "../../lib/temps";
 import Rangee from "../../components/Rangee";
 import EtapesDemarrage from "../../components/EtapesDemarrage";
+import { resumeRegles } from "../../lib/jeunes";
 import PrevisionNeige from "../../components/PrevisionNeige";
 import { CRITERES, EncartVideo, Modale, ModaleSignalement, noteTexte } from "./elements";
 import Conversation, { BoutonMessages } from "./Conversation";
@@ -59,7 +60,8 @@ export default function TableauDeneigeur({ conversation, onConversationFermee })
   const [tri, setTri] = useState("proches");
   const villeGeoId = profile?.villeGeoId;
   // Sans paiement réel, aucun compte de versement n'est exigé.
-  const compteActif = !PAIEMENT_REEL || profilStripe(profile)?.connectStatus === "actif";
+  // Jeune déneigeur : le compte de versement est celui du parent (vérifié par le serveur).
+  const compteActif = !PAIEMENT_REEL || Boolean(profile?.parentId) || profilStripe(profile)?.connectStatus === "actif";
 
   useEffect(() => ecouterMesJobs(user.uid, setJobs), [user.uid]);
   useEffect(() => ecouterLectures(user.uid, setLectures), [user.uid]);
@@ -105,6 +107,13 @@ export default function TableauDeneigeur({ conversation, onConversationFermee })
         <p className="tableau__simulation">Période de test : aucun paiement réel n'est fait pour l'instant.</p>
       )}
 
+      {profile?.parentId && (
+        <p className="tableau__simulation">
+          {profile.jeune?.pause
+            ? "Ton profil est en pause : vois avec ton parent."
+            : `Tes règles : ${resumeRegles(profile.jeune?.regles)}. Ton parent est avisé à chaque demande que tu acceptes.`}
+        </p>
+      )}
       <EtapesDemarrage profile={profile} />
 
       <div className="chiffres">
