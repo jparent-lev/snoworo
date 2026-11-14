@@ -1,4 +1,4 @@
-import { SECRETS_AVIS_PARENT, avertirParent, verifierJeune } from "./jeunes.js";
+import { SECRETS_AVIS_PARENT, avertirParent, avertirParentSignalement, verifierJeune } from "./jeunes.js";
 import { onCall, HttpsError } from "firebase-functions/v2/https";
 import { onSchedule } from "firebase-functions/v2/scheduler";
 import { logger } from "firebase-functions/v2";
@@ -533,13 +533,13 @@ export const purgerPhotos = onSchedule(
 );
 
 // ---- Signaler un problème (client ou déneigeur) ----
-export const signalerProbleme = onCall({ region: REGION }, async (request) => {
+export const signalerProbleme = onCall({ region: REGION, secrets: SECRETS_AVIS_PARENT }, async (request) => {
   const uid = exigerConnexion(request);
   const { demandeId, motif } = request.data ?? {};
   if (!MOTIFS_SIGNALEMENT.has(motif)) throw new HttpsError("invalid-argument", "Motif invalide.");
   const details = texte(request.data?.details, { max: 1000, nom: "Détails" });
 
-  return db.runTransaction(async (tx) => {
+  const resultat = await db.runTransaction(async (tx) => {
     const ref = db.doc(`demandes/${demandeId}`);
     const snap = await tx.get(ref);
     if (!snap.exists) throw new HttpsError("not-found", "Demande introuvable.");
@@ -557,8 +557,11 @@ export const signalerProbleme = onCall({ region: REGION }, async (request) => {
       "paiement.statutPaiement": demande.paiement?.statutPaiement === "retenu" ? "bloque" : "simule_bloque",
       confirmationAutoAt: null,
     });
-    return { ok: true };
+    return { ok: true, jeune: Boolean(demande.deneigeurParentId) };
   });
+  // Jeune déneigeur (jeunes.js) : le parent reçoit l'avis et les messages.
+  if (resultat.jeune) await avertirParentSignalement(demandeId);
+  return { ok: true };
 });
 
 // ---- Annuler (client) ----

@@ -860,9 +860,29 @@ await test("jeunes déneigeurs (pilote) : invitation par le parent, règles, avi
     assert.deepEqual({ s: dA2.statut, d: dA2.deneigeurId, r: dA2.remiseEnLigne, pj: dA2.deneigeurParentId }, { s: "ouverte", d: null, r: 1, pj: undefined });
     assert.equal(dA2.historiqueAnnulations[0].par, "parent");
 
+    // Signalement par le client sur une demande du jeune : le parent reçoit
+    // l'avis et le verbatim des messages.
+    await accepterLeo("jB");
+    const { Timestamp: T2 } = await import(`${REPO}functions/node_modules/firebase-admin/lib/firestore/index.js`);
+    await db.collection("messages/jB/messages").add({ expediteurId: "client1", contenu: "Bonjour, l'entrée est à gauche.", createdAt: T2.fromMillis(Date.now() - 60000) });
+    await db.collection("messages/jB/messages").add({ expediteurId: leo.uid, contenu: "Parfait, j'arrive à 9 h.", createdAt: T2.now() });
+    envois.length = 0;
+    await f.signalerProbleme.run({ auth: { uid: "client1" }, data: { demandeId: "jB", motif: "incomplet", details: "Les marches ne sont pas faites." } });
+    const avis = envois.find((e) => e.to?.[0] === "paula@exemple.ca");
+    assert.ok(avis, "parent avisé du signalement");
+    assert.match(avis.subject, /Problème signalé sur une demande de Léo/);
+    assert.match(avis.text, /Le client \(Mireille\) a signalé un problème/);
+    assert.match(avis.text, /travail incomplet/);
+    assert.match(avis.text, /Les marches ne sont pas faites\./);
+    assert.match(avis.text, /Mireille : Bonjour, l'entrée est à gauche\.\n.*Léo : Parfait, j'arrive à 9 h\./);
+    // Règles pures (avis de nouvelles demandes).
+    assert.equal(jn.horsRegles({ heureDebut: 7, heureFin: 20, rayonKm: 1 }, { maison, demande: { dateHeureSouhaitee: demainUTC(15), adresseGeohash: maison.slice(0, 7) } }), null);
+    assert.match(jn.horsRegles({ heureDebut: 7, heureFin: 20, rayonKm: 1 }, { maison, demande: { dateHeureSouhaitee: demainUTC(15), adresseGeohash: geohashLib.encode(46.80, -71.25).slice(0, 7) } }), /Trop loin/);
+
     // Pause, puis retrait de l'accord.
     await jn.reglerJeune.run({ auth: { uid: "parentJ" }, data: { invitationId, pause: true } });
-    assert.match((await echoue(accepterLeo("jB"), "failed-precondition", "pause")).message, /pause/);
+    await demande("jC", { dateHeureSouhaitee: Timestamp.fromMillis(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate() + 3, 15)) });
+    assert.match((await echoue(accepterLeo("jC"), "failed-precondition", "pause")).message, /pause/);
     await jn.reglerJeune.run({ auth: { uid: "parentJ" }, data: { invitationId, retirer: true } });
     const pLeo2 = (await db.doc(`users/${leo.uid}`).get()).data();
     assert.deepEqual({ r: pLeo2.role, x: pLeo2.jeune.retire }, { r: [], x: true });

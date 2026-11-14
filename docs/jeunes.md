@@ -31,10 +31,19 @@ jeune lui sont versés (`demande.deneigeurParentId`, `verser`).
 
 Le client voit « Jeune déneigeur, accompagné d'un parent ».
 
+Filtrage : la liste du tableau de bord du jeune et les avis de nouvelles
+demandes ne montrent que les demandes qui respectent ses règles
+(`horsRegles` côté serveur, `respecteRegles` côté site) ; aucune en pause.
+
+Signalement : si un problème est signalé sur une demande du jeune (par le
+client ou par le jeune), le parent reçoit un courriel avec le motif, les
+détails et le verbatim des messages échangés, plus un texto s'il y a consenti
+(`avertirParentSignalement`).
+
 ## Limites connues du pilote
 
-- Les avis de nouvelles demandes et la liste du tableau du jeune ne filtrent
-  pas encore selon ses règles ; elles sont appliquées à l'acceptation.
-- Le parent ne voit pas encore les messages échangés par son jeune.
+- Le parent ne voit pas les messages en continu : seulement lors d'un
+  signalement. À mentionner dans la Confidentialité (le client échange avec
+  un jeune dont le parent peut lire la conversation en cas de problème).
 - À valider avant la production : avis juridique (Jessica), traitement fiscal
   du revenu versé au parent (comptable), Conditions et Confidentialité.
