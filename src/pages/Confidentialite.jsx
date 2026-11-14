@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import PageLegale from "../components/PageLegale";
 import { INFOS_LEGALES } from "../lib/legal";
+import { JEUNES_PILOTE } from "../lib/jeunes";
 
 // Politique de confidentialité — exigée par la Loi 25 (Loi sur la protection
 // des renseignements personnels dans le secteur privé, art. 3.2 et 8.2) avant
@@ -181,6 +182,13 @@ export default function Confidentialite() {
         l'adresse) ; chacun peut désactiver ces avis dans ses paramètres. Votre note, elle, est visible des
         autres utilisateurs.
       </p>
+      {JEUNES_PILOTE && (
+        <p>
+          Si la demande est acceptée par un jeune déneigeur (projet pilote, voir plus bas), la mention « Jeune
+          déneigeur, accompagné d'un parent » apparaît sur la demande, et son parent peut lire vos messages avec lui
+          si un problème est signalé.
+        </p>
+      )}
       <p>
         Nous pouvons aussi devoir communiquer des renseignements lorsque la loi l'exige, par exemple à la suite
         d'une ordonnance d'un tribunal.
@@ -267,9 +275,49 @@ export default function Confidentialite() {
       <h2>Âge minimum</h2>
       <p>
         Snowro s'adresse aux personnes de 14 ans et plus pour la liste d'attente, et de 18 ans et plus pour
-        créer un compte, publier une demande ou déneiger. Nous ne collectons pas sciemment de renseignements sur
+        créer un compte, publier une demande ou déneiger{JEUNES_PILOTE ? ", sauf le projet pilote des jeunes déneigeurs décrit ci-dessous" : ""}. Nous ne collectons pas sciemment de renseignements sur
         des enfants de moins de 14 ans.
       </p>
+
+      {JEUNES_PILOTE && (
+        <>
+          <h2>Jeunes déneigeurs (projet pilote)</h2>
+          <p>
+            Un parent ou tuteur légal qui déneige avec Snowro peut inviter son jeune de 14 à 17 ans à déneiger près de
+            la maison, selon des règles qu'il fixe.
+          </p>
+          <ul>
+            <li>
+              <strong>Ce que le parent nous fournit :</strong> le prénom, le courriel et l'année de naissance du jeune,
+              ses règles (heures permises, distance de la maison, nombre de demandes par jour) et une attestation
+              datée qu'il est son parent ou tuteur et qu'il consent à sa participation.
+            </li>
+            <li>
+              <strong>Le compte du jeune :</strong> le jeune crée son propre accès avec l'adresse invitée et consent
+              lui-même à l'utilisation de ses renseignements, comme la loi le permet dès 14 ans. Son secteur est
+              celui de la maison du parent ; nous ne collectons pas d'autre adresse pour lui.
+            </li>
+            <li>
+              <strong>Les paiements :</strong> Stripe ne permet pas à un mineur d'avoir un compte de versement. Les
+              paiements des demandes du jeune sont donc versés au compte du parent, et Stripe ne reçoit aucun
+              renseignement sur le jeune.
+            </li>
+            <li>
+              <strong>Ce que le parent voit :</strong> un avis à chaque demande acceptée par son jeune (titre,
+              quartier, heure et prénom du client, sans l'adresse exacte). Si un problème est signalé sur une
+              demande de son jeune, par le client ou par le jeune, le parent reçoit aussi le motif, les détails
+              et le texte des messages échangés entre le client et le jeune, pour pouvoir en discuter avec lui.
+              Le parent ne voit pas les messages autrement.
+            </li>
+            <li>
+              <strong>Combien de temps :</strong> le lien entre le parent et le jeune, et les règles, sont gardés
+              tant que le parent maintient son accord. Le parent peut le retirer en tout temps dans ses
+              paramètres ; le jeune ne peut alors plus accepter de demandes, et ses renseignements suivent les
+              règles de conservation habituelles. Une invitation non utilisée expire après 7 jours.
+            </li>
+          </ul>
+        </>
+      )}
 
       <h2>Changements à cette politique</h2>
       <p>
