@@ -887,6 +887,15 @@ await test("jeunes déneigeurs (pilote) : invitation par le parent, règles, avi
     const pLeo2 = (await db.doc(`users/${leo.uid}`).get()).data();
     assert.deepEqual({ r: pLeo2.role, x: pLeo2.jeune.retire }, { r: [], x: true });
     await echoue(jn.reglerJeune.run({ auth: { uid: "client1" }, data: { invitationId, pause: false } }), "not-found", "pas son jeune");
+    // Invitation jamais utilisée : effacée à son expiration ; l'acceptée reste.
+    await db.doc("invitationsJeunes/invExp").set({ parentId: "parentJ", statut: "invite", jeton: "x", expireAt: Timestamp.fromMillis(Date.now() - 1000) });
+    await db.doc("users/parentJ").set({ jeunes: { invExp: { statut: "invite", prenom: "Zoé" } } }, { merge: true });
+    await db.doc(`invitationsJeunes/${invitationId}`).update({ expireAt: Timestamp.fromMillis(Date.now() - 1000) });
+    const cons = await import(`${REPO}functions/src/conservation.js`);
+    await cons.appliquerConservation();
+    assert.equal((await db.doc("invitationsJeunes/invExp").get()).exists, false);
+    assert.equal((await db.doc("users/parentJ").get()).data().jeunes.invExp, undefined);
+    assert.equal((await db.doc(`invitationsJeunes/${invitationId}`).get()).exists, true, "invitation acceptée gardée (attestation)");
     // Un jeune ne publie pas de demande.
     await echoue(f.publierDemande.run({ auth: { uid: leo.uid, token: { email_verified: true } }, data: base }), "permission-denied", "jeune publie");
   } finally {

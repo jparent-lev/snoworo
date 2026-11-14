@@ -1,6 +1,6 @@
 import { onSchedule } from "firebase-functions/v2/scheduler";
 import { logger } from "firebase-functions/v2";
-import { Timestamp } from "firebase-admin/firestore";
+import { FieldValue, Timestamp } from "firebase-admin/firestore";
 import { db } from "./admin.js";
 
 // Durées de conservation promises dans la politique de confidentialité
@@ -49,6 +49,24 @@ async function effacerExpires(collection) {
   }
 }
 
+// Invitations de jeunes déneigeurs jamais utilisées (functions/src/jeunes.js),
+// effacées à leur expiration (7 jours) ; aussi retirées de la fiche du parent.
+// Une invitation acceptée est gardée : elle porte l'attestation du parent.
+async function effacerInvitationsJeunesExpirees() {
+  const lot = await db.collection("invitationsJeunes").where("expireAt", "<=", Timestamp.now()).limit(400).get();
+  const batch = db.batch();
+  let n = 0;
+  for (const d of lot.docs) {
+    const inv = d.data();
+    if (inv.statut !== "invite") continue;
+    batch.delete(d.ref);
+    batch.set(db.doc(`users/${inv.parentId}`), { jeunes: { [d.id]: FieldValue.delete() } }, { merge: true });
+    n++;
+  }
+  if (n) await batch.commit();
+  return n;
+}
+
 // Une fois par jour : liste d'attente et messages « Nous écrire » de plus de
 // 24 mois, inscriptions jamais confirmées après 7 jours.
 export async function appliquerConservation() {
@@ -58,6 +76,7 @@ export async function appliquerConservation() {
   await effacerExpires("limitesTelephone");
   // Anti-abus des liens de compte (functions/src/liensCompte.js) : 24 heures.
   await effacerExpires("envoisCompte");
+  await effacerInvitationsJeunesExpirees();
   if (nonConfirmees || listeAttente || messagesContact) {
     logger.info(
       `Conservation : ${nonConfirmees} inscription(s) non confirmée(s), ${listeAttente} inscription(s) de plus de 24 mois et ${messagesContact} message(s) « Nous écrire » effacés.`,
