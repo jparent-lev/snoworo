@@ -820,6 +820,9 @@ await test("jeunes déneigeurs (pilote) : invitation par le parent, règles, avi
     assert.equal(inv.courriel, "leo@exemple.ca");
     assert.ok(envois.some((e) => e.to?.[0] === "leo@exemple.ca" && e.text.includes(`/jeune/rejoindre?i=${invitationId}&j=${inv.jeton}`)));
     assert.equal((await db.doc("users/parentJ").get()).data().jeunes[invitationId].statut, "invite");
+    // Règles modifiées avant l'acceptation : l'invitation suit.
+    await jn.reglerJeune.run({ auth: { uid: "parentJ" }, data: { invitationId, regles: { heureDebut: 7, heureFin: 20, rayonKm: 2, maxParJour: 1 } } });
+    assert.equal((await db.doc(`invitationsJeunes/${invitationId}`).get()).data().regles.rayonKm, 2);
     const infos = await jn.lireInvitationJeune.run({ data: { i: invitationId, j: inv.jeton } });
     assert.deepEqual({ p: infos.prenom, pp: infos.prenomParent }, { p: "Léo", pp: "Paula" });
     await echoue(jn.lireInvitationJeune.run({ data: { i: invitationId, j: "faux" } }), "not-found", "mauvais jeton");
@@ -832,6 +835,7 @@ await test("jeunes déneigeurs (pilote) : invitation par le parent, règles, avi
     await jn.accepterInvitationJeune.run({ auth: { uid: leo.uid }, data: { i: invitationId, j: inv.jeton, consentement: true } });
     const pLeo = (await db.doc(`users/${leo.uid}`).get()).data();
     assert.deepEqual({ p: pLeo.parentId, v: pLeo.villeGeoId, r: pLeo.role }, { p: "parentJ", v: "ID_QUEBEC", r: ["deneigeur_x"] });
+    assert.equal(pLeo.jeune.regles.rayonKm, 2, "règles modifiées avant l'acceptation");
     assert.equal((await auth.getUser(leo.uid)).emailVerified, true, "courriel confirmé par l'invitation");
     await echoue(jn.accepterInvitationJeune.run({ auth: { uid: leo.uid }, data: { i: invitationId, j: inv.jeton, consentement: true } }), "not-found", "lien déjà utilisé");
 
@@ -878,6 +882,12 @@ await test("jeunes déneigeurs (pilote) : invitation par le parent, règles, avi
     // Règles pures (avis de nouvelles demandes).
     assert.equal(jn.horsRegles({ heureDebut: 7, heureFin: 20, rayonKm: 1 }, { maison, demande: { dateHeureSouhaitee: demainUTC(15), adresseGeohash: maison.slice(0, 7) } }), null);
     assert.match(jn.horsRegles({ heureDebut: 7, heureFin: 20, rayonKm: 1 }, { maison, demande: { dateHeureSouhaitee: demainUTC(15), adresseGeohash: geohashLib.encode(46.80, -71.25).slice(0, 7) } }), /Trop loin/);
+
+    // Règles modifiées après l'acceptation : la fiche du jeune et celle du parent suivent.
+    await jn.reglerJeune.run({ auth: { uid: "parentJ" }, data: { invitationId, regles: { heureDebut: 8, heureFin: 18, rayonKm: 1, maxParJour: 3 } } });
+    assert.deepEqual((await db.doc(`users/${leo.uid}`).get()).data().jeune.regles, { heureDebut: 8, heureFin: 18, rayonKm: 1, maxParJour: 3 });
+    assert.equal((await db.doc("users/parentJ").get()).data().jeunes[invitationId].regles.heureFin, 18);
+    await echoue(jn.reglerJeune.run({ auth: { uid: "parentJ" }, data: { invitationId, regles: { heureDebut: 19, heureFin: 9 } } }), "invalid-argument", "règles invalides");
 
     // Pause, puis retrait de l'accord.
     await jn.reglerJeune.run({ auth: { uid: "parentJ" }, data: { invitationId, pause: true } });

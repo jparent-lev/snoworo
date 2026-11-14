@@ -27,6 +27,7 @@ const versRegles = (v) => ({ heureDebut: Number(v.heureDebut), heureFin: Number(
 
 export default function SectionJeunes({ profile }) {
   const [form, setForm] = useState(null);
+  const [edition, setEdition] = useState(null); // { id, regles }
   const [enCours, setEnCours] = useState(false);
   const [erreur, setErreur] = useState(null);
   const [message, setMessage] = useState(null);
@@ -55,11 +56,25 @@ export default function SectionJeunes({ profile }) {
 
   async function regler(id, changement) {
     setErreur(null);
+    setMessage(null);
     try {
       await reglerJeune({ invitationId: id, ...changement });
+      return true;
     } catch (err) {
       setErreur(messageServeur(err) || "Une erreur est survenue.");
+      return false;
     }
+  }
+
+  async function enregistrerRegles(e) {
+    e.preventDefault();
+    setEnCours(true);
+    const prenom = profile.jeunes?.[edition.id]?.prenom;
+    if (await regler(edition.id, { regles: versRegles(edition.regles) })) {
+      setEdition(null);
+      setMessage(`Règles de ${prenom} mises à jour.`);
+    }
+    setEnCours(false);
   }
 
   return (
@@ -75,10 +90,29 @@ export default function SectionJeunes({ profile }) {
           <div key={id} className="parametres__item jeunes__fiche">
             <div className="parametres__item-texte">
               <h3>{j.prenom}</h3>
-              <p>{j.statut === "invite" ? `Invitation envoyée à ${j.courriel}, en attente.` : `Actif : ${resumeRegles(j.regles)}.`}</p>
+              <p>{j.statut === "invite" ? `Invitation envoyée à ${j.courriel}, en attente.` : "Actif."}</p>
+              <p className="parametres__meta">Règles : {resumeRegles(j.regles)}.</p>
               {j.pause && <p className="parametres__meta">En pause : aucune nouvelle demande.</p>}
+              {edition?.id === id && (
+                <form className="jeunes__edition" onSubmit={enregistrerRegles} noValidate>
+                  <ChampsRegles valeur={edition.regles} onChange={(r) => setEdition({ id, regles: r })} disabled={enCours} />
+                  <div className="parametres__carnet-actions">
+                    <button type="submit" className="auth-form__bouton" disabled={enCours}>
+                      {enCours ? "Enregistrement…" : "Enregistrer"}
+                    </button>
+                    <button type="button" className="btn btn--lien" onClick={() => setEdition(null)} disabled={enCours}>
+                      Annuler
+                    </button>
+                  </div>
+                </form>
+              )}
             </div>
             <div className="jeunes__actions">
+              {edition?.id !== id && (
+                <button type="button" className="btn btn--fantome" onClick={() => { setEdition({ id, regles: { ...REGLES_DEFAUT, ...j.regles } }); setMessage(null); }}>
+                  Modifier les règles
+                </button>
+              )}
               {j.statut === "actif" && (
                 <button type="button" className="btn btn--fantome" onClick={() => regler(id, { pause: !j.pause })}>
                   {j.pause ? "Reprendre" : "Mettre en pause"}

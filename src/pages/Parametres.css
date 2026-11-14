@@ -280,3 +280,8 @@
 .jeunes__regle input { width: 100%; box-sizing: border-box; }
 .jeunes__actions { display: flex; flex-direction: column; align-items: flex-end; gap: 6px; flex: none; }
 .parametres__compte-jeune { background: #fbf0dc; border: 1px solid #e8c98a; border-radius: 14px; padding: 16px 18px; }
+.jeunes__edition { margin-top: 12px; display: flex; flex-direction: column; gap: 12px; }
+@media (max-width: 560px) {
+  .jeunes__fiche { flex-direction: column; }
+  .jeunes__actions { align-items: flex-start; flex-direction: row; flex-wrap: wrap; }
+}

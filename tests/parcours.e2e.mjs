@@ -938,6 +938,18 @@ async function connexion(cle, largeur = 1280) {
     const dJ = (await db.doc("demandes/J1").get()).data();
     assert.deepEqual({ s: dJ.statut, d: dJ.deneigeurId }, { s: "ouverte", d: null });
   });
+  await test("parent : modifie les règles de son jeune (rayon, maximum par jour)", async () => {
+    await c2.p.goto("http://localhost:4190/parametres#jeunes");
+    await c2.p.getByRole("button", { name: "Modifier les règles" }).click();
+    await c2.p.getByLabel("Rayon (km)").fill("2");
+    await c2.p.getByLabel("Demandes par jour").fill("3");
+    await c2.p.screenshot({ path: `${D}/e2e-jeune-regles-390.png`, fullPage: true });
+    await c2.p.getByRole("button", { name: "Enregistrer" }).click();
+    await c2.p.getByText("✓ Règles de Léo mises à jour.").waitFor({ timeout: 15000 });
+    await c2.p.getByText(/Règles : de 7 h à 20 h, à 2 km ou moins de la maison, 3 demandes par jour au plus\./).waitFor();
+    const r = (await db.doc(`users/${uid.leo}`).get()).data().jeune.regles;
+    assert.deepEqual({ k: r.rayonKm, m: r.maxParJour }, { k: 2, m: 3 });
+  });
   await c2.ctx.close();
 }
 

@@ -261,6 +261,9 @@ export const reglerJeune = onCall({ region: REGION }, async (request) => {
     lot.set(db.doc(`users/${fiche.uid}`), jeuneMaj, { merge: true });
   } else if (retirer === true) {
     lot.update(db.doc(`invitationsJeunes/${invitationId}`), { statut: "retire", jeton: FieldValue.delete() });
+  } else if (maj.regles) {
+    // Invitation pas encore acceptée : le jeune recevra les nouvelles règles.
+    lot.update(db.doc(`invitationsJeunes/${invitationId}`), { regles: maj.regles });
   }
   await lot.commit();
   return { ok: true };
