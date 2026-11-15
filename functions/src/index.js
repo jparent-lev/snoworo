@@ -31,7 +31,7 @@ export {
 export { suggererAdresses } from "./suggestionsAdresse.js";
 export { traiterRetards } from "./retards.js";
 export { metriquesAdmin } from "./tableauAdmin.js";
-export { inviterJeune, lireInvitationJeune, accepterInvitationJeune, reglerJeune, annulerParParent } from "./jeunes.js";
+export { inviterJeune, lireInvitationJeune, accepterInvitationJeune, reglerJeune } from "./jeunes.js";
 export { analyticsAdmin } from "./analyticsAdmin.js";
 export { rafraichirMeteo, prevoirVille } from "./meteo.js";
 export { envoyerConfirmationCourriel } from "./courrielConfirmation.js";

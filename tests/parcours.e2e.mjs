@@ -928,15 +928,11 @@ async function connexion(cle, largeur = 1280) {
   });
   await ctxJ.close();
 
-  // Une demande acceptée par Léo ; Pauline l'annule par le lien de l'avis.
-  await db.doc("demandes/J1").set(base({ donneurOuvrageId: uid.mireille, donneurPrenom: "Mireille", titre: "Entrée de Mireille", typeService: "entree", remunerationOfferte: 30, dateHeureSouhaitee: demain8h, adresseGeohash: maison.slice(0, 7), statut: "matchee", deneigeurId: uid.leo, deneigeurPrenom: "Léo", deneigeurJeune: true, deneigeurParentId: parent.uid, matchedAt: ts(-0.1 * H), paiement: paiement(30, "simule_retenu") }));
   const c2 = await connexion("pauline", 390);
-  await test("parent : « Annuler la demande » depuis le lien de l'avis ; la demande redevient ouverte", async () => {
-    await c2.p.goto("http://localhost:4190/jeune/annuler?d=J1");
-    await c2.p.getByRole("button", { name: "Annuler la demande" }).click();
-    await c2.p.getByRole("heading", { name: "Demande annulée" }).waitFor({ timeout: 15000 });
-    const dJ = (await db.doc("demandes/J1").get()).data();
-    assert.deepEqual({ s: dJ.statut, d: dJ.deneigeurId }, { s: "ouverte", d: null });
+  await test("parent : pas de lien d'annulation (pas de droit de veto)", async () => {
+    const r = await c2.p.goto("http://localhost:4190/jeune/annuler?d=J1");
+    assert.equal(await c2.p.getByRole("button", { name: "Annuler la demande" }).count(), 0);
+    assert.ok(r);
   });
   await test("parent : modifie les règles de son jeune (rayon, maximum par jour)", async () => {
     await c2.p.goto("http://localhost:4190/parametres#jeunes");

@@ -23,10 +23,11 @@ jeune lui sont versés (`demande.deneigeurParentId`, `verser`).
    (`accepterInvitationJeune`) : `users/{jeune}.parentId`, `jeune`, secteur
    copié de la maison ; courriel confirmé par le lien.
 3. Le jeune accepte des demandes : `verifierJeune` applique les règles.
-4. Le parent est avisé (courriel, texto s'il y a consenti) avec un lien
-   `/jeune/annuler?d=…` : droit de veto tant que le travail n'est pas fait
-   (`annulerParParent` : remboursement, demande remise en ligne, nouvelle clé
-   de prélèvement `-r{n}`).
+4. Le parent est avisé (courriel, texto s'il y a consenti), pour
+   information. Pas de droit de veto : une demande acceptée ne s'annule pas,
+   comme pour tout déneigeur (retiré le 15 novembre 2026, une annulation par
+   le parent nuisait à la confiance du client). Un vrai problème passe par
+   « Signaler un problème ».
 5. Le parent peut mettre en pause ou retirer son accord (`reglerJeune`).
 
 Le client voit « Jeune déneigeur, accompagné d'un parent ».

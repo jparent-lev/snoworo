@@ -102,15 +102,10 @@
   font-size: 15px;
 }
 
-.jeunes-accueil__avis-actions {
-  display: flex;
-  gap: 16px;
+.jeunes-accueil__avis-note {
   margin-top: 4px;
-  font-weight: 600;
-}
-
-.jeunes-accueil__avis-annuler {
-  color: var(--color-erreur);
+  font-size: 13px;
+  font-style: italic;
 }
 
 .jeunes-accueil__exemple {
