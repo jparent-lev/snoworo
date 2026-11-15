@@ -17,8 +17,6 @@ export {
   annulerDemande,
   augmenterOffre,
 } from "./cycleDemande.js";
-export { rejoindreListeAttente, confirmerListeAttente } from "./listeAttente.js";
-export { envoyerConfirmationListeAttente } from "./confirmationListeAttente.js";
 export { envoyerMessageContact } from "./contact.js";
 export { notifierNouveauMessage } from "./messagerie.js";
 export {

@@ -211,6 +211,10 @@ fraisPct: 8`, identiques aux valeurs par défaut de la maquette).
 
 ## `listeAttente/{courriel}` et `listeAttente/pro:{courriel}`
 
+**Fermée.** Plus aucune inscription : il ne reste que les entrées déjà
+créées, purgées par `appliquerConservation` (non confirmées après 7 jours,
+toutes après 24 mois) et effacées à la fermeture d'un compte. Historique :
+
 ```
 nom                     // nom complet
 courriel, codePostal

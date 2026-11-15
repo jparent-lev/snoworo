@@ -25,9 +25,8 @@ import "./Landing.css";
 
 // Accueil : Snowro est ouvert. Les appels à l'action mènent à la création de
 // compte ; le rôle (faire déneiger, déneiger ou les deux) se choisit à la
-// première visite du tableau de bord. La liste d'attente n'est plus proposée
-// (les liens de confirmation déjà envoyés fonctionnent toujours,
-// /liste/confirmer). Structure d'origine : design_handoff_snowro_site ; le menu
+// première visite du tableau de bord. La liste d'attente est fermée
+// (/liste/confirmer redirige vers l'accueil). Structure d'origine : design_handoff_snowro_site ; le menu
 // hamburger mobile est un ajout hors maquette (le prototype ne couvrait pas
 // ce cas — le nav en flex-wrap se cassait en plusieurs lignes désordonnées
 // sous ~900px).
