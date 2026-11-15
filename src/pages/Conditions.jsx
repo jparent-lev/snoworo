@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import PageLegale from "../components/PageLegale";
 import { INFOS_LEGALES } from "../lib/legal";
+import { JEUNES_PILOTE } from "../lib/jeunes";
 
 // Conditions d'utilisation — doivent rester cohérentes avec la FAQ
 // (landing/FaqAccordion.jsx : premier qui accepte, paiement retenu, absence =
@@ -33,7 +34,11 @@ export default function Conditions() {
 
       <h2>3. Votre compte</h2>
       <ul>
-        <li>Vous devez avoir 18 ans ou plus pour créer un compte, publier une demande ou déneiger.</li>
+        <li>
+          Vous devez avoir 18 ans ou plus pour créer un compte, publier une demande ou déneiger.
+          {JEUNES_PILOTE &&
+            " Exception, projet pilote : un jeune de 14 à 17 ans peut déneiger sur invitation d'un parent titulaire d'un compte, qui fixe ses règles, reçoit ses paiements et répond de lui. Il ne peut pas publier de demande."}
+        </li>
         <li>Les renseignements que vous fournissez doivent être exacts et à jour, y compris l'adresse à déneiger.</li>
         <li>
           Vous confirmez votre adresse courriel par le lien que nous vous envoyons avant de publier ou d'accepter une

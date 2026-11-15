@@ -82,8 +82,8 @@ export default function SectionJeunes({ profile }) {
       <h1 id="jeunes">Jeune déneigeur</h1>
       <p className="parametres__intro">
         Projet pilote : votre jeune de 14 à 17 ans déneige près de la maison avec son propre accès. Les paiements arrivent dans
-        votre compte de versement. Vous fixez ses règles une fois, vous êtes avisé à chaque demande acceptée et vous pouvez en
-        annuler une tant que le travail n'est pas fait.
+        votre compte de versement. Vous fixez ses règles une fois et vous êtes avisé à chaque demande acceptée. Comme pour tout
+        déneigeur, une demande acceptée ne s'annule pas : ajustez ses règles ou mettez-le en pause pour les prochaines.
       </p>
       <div className="parametres__liste">
         {jeunes.map(([id, j]) => (

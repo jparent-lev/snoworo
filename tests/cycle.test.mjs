@@ -854,24 +854,20 @@ await test("jeunes déneigeurs (pilote) : invitation par le parent, règles, avi
     await accepterLeo("jA");
     const dA = await lire("jA");
     assert.deepEqual({ s: dA.statut, j: dA.deneigeurJeune, p: dA.deneigeurParentId }, { s: "matchee", j: true, p: "parentJ" });
-    assert.ok(envois.some((e) => e.to?.[0] === "paula@exemple.ca" && e.text.includes("/jeune/annuler?d=jA")), "parent avisé");
+    const avisParent = envois.find((e) => e.to?.[0] === "paula@exemple.ca");
+    assert.ok(avisParent, "parent avisé");
+    assert.doesNotMatch(avisParent.text + avisParent.html, /annuler/i, "pas de droit de veto");
     assert.match((await echoue(accepterLeo("jB"), "failed-precondition", "max par jour")).message, /Maximum de 1/);
 
-    // Veto du parent : seulement lui ; la demande redevient ouverte.
-    await echoue(jn.annulerParParent.run({ auth: { uid: "client1" }, data: { demandeId: "jA" } }), "permission-denied", "pas le parent");
-    await jn.annulerParParent.run({ auth: { uid: "parentJ" }, data: { demandeId: "jA" } });
-    const dA2 = await lire("jA");
-    assert.deepEqual({ s: dA2.statut, d: dA2.deneigeurId, r: dA2.remiseEnLigne, pj: dA2.deneigeurParentId }, { s: "ouverte", d: null, r: 1, pj: undefined });
-    assert.equal(dA2.historiqueAnnulations[0].par, "parent");
+    assert.equal(jn.annulerParParent, undefined, "pas de droit de veto");
 
     // Signalement par le client sur une demande du jeune : le parent reçoit
     // l'avis et le verbatim des messages.
-    await accepterLeo("jB");
     const { Timestamp: T2 } = await import(`${REPO}functions/node_modules/firebase-admin/lib/firestore/index.js`);
-    await db.collection("messages/jB/messages").add({ expediteurId: "client1", contenu: "Bonjour, l'entrée est à gauche.", createdAt: T2.fromMillis(Date.now() - 60000) });
-    await db.collection("messages/jB/messages").add({ expediteurId: leo.uid, contenu: "Parfait, j'arrive à 9 h.", createdAt: T2.now() });
+    await db.collection("messages/jA/messages").add({ expediteurId: "client1", contenu: "Bonjour, l'entrée est à gauche.", createdAt: T2.fromMillis(Date.now() - 60000) });
+    await db.collection("messages/jA/messages").add({ expediteurId: leo.uid, contenu: "Parfait, j'arrive à 9 h.", createdAt: T2.now() });
     envois.length = 0;
-    await f.signalerProbleme.run({ auth: { uid: "client1" }, data: { demandeId: "jB", motif: "incomplet", details: "Les marches ne sont pas faites." } });
+    await f.signalerProbleme.run({ auth: { uid: "client1" }, data: { demandeId: "jA", motif: "incomplet", details: "Les marches ne sont pas faites." } });
     const avis = envois.find((e) => e.to?.[0] === "paula@exemple.ca");
     assert.ok(avis, "parent avisé du signalement");
     assert.match(avis.subject, /Problème signalé sur une demande de Léo/);

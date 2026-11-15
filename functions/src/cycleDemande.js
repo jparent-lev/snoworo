@@ -291,7 +291,7 @@ export const accepterDemande = onCall({ region: REGION, secrets: [STRIPE_SECRET_
     });
     return demande;
   });
-  if (parentJeune) await avertirParent(demandeId, demande, profilJeune, parentJeune);
+  if (parentJeune) await avertirParent(demande, profilJeune, parentJeune);
   if (!reel) return { ok: true };
 
   // Prélèvement hors transaction (une transaction peut être rejouée ; un
