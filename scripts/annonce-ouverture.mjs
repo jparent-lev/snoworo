@@ -6,8 +6,16 @@
 // effacé. Les journaux du dépôt sont publics : on n'y écrit que des nombres,
 // jamais un courriel ou un nom.
 import { createHash } from "node:crypto";
-import { db } from "../functions/src/admin.js";
 import { echapperHtml, envoyerCourriel, gabaritCourriel } from "../functions/src/courriels.js";
+
+// Identifiants de la fédération GitHub (« external_account ») : firebase-admin
+// 12 ne sait pas les lire à l'initialisation, mais le client Firestore oui. On
+// les cache le temps d'initialiser l'app (identifiants par défaut), puis on
+// les remet pour Firestore.
+const fichierIdentifiants = process.env.GOOGLE_APPLICATION_CREDENTIALS;
+delete process.env.GOOGLE_APPLICATION_CREDENTIALS;
+const { db } = await import("../functions/src/admin.js");
+if (fichierIdentifiants) process.env.GOOGLE_APPLICATION_CREDENTIALS = fichierIdentifiants;
 
 const ENVOYER = process.env.ENVOYER === "oui";
 if (process.env.GCLOUD_PROJECT !== "snowro-app") throw new Error("Production seulement (snowro-app).");
