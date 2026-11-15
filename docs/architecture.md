@@ -18,7 +18,7 @@ structure figées par `design_handoff_snowro_site`.
 - Calculateur de frais interactif : lit `config/frais` (lecture publique) en
   temps réel, aucune valeur codée en dur — voir `src/lib/config.js`.
 - Liste d'attente : retirée depuis l'ouverture (annonce envoyée aux inscrits
-  le 15 novembre 2026, collection `listeAttente` à effacer dans la console) ;
+  le 15 novembre 2026, collection `listeAttente` effacée le même jour) ;
   `/liste/confirmer` redirige vers l'accueil.
 - Aperçu des liens partagés : balises Open
   Graph et Twitter (`twitter:title`, `twitter:description`, `twitter:image`)
