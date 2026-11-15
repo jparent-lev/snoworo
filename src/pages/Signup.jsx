@@ -7,6 +7,7 @@ import VersionFooter from "../components/VersionFooter";
 import "./AuthForm.css";
 import { mesurer } from "../lib/mesure";
 import { envoyerConfirmationCourriel } from "../lib/courriel";
+import { JEUNES_PILOTE } from "../lib/jeunes";
 
 export default function Signup() {
   const [displayName, setDisplayName] = useState("");
@@ -67,6 +68,7 @@ export default function Signup() {
           En créant un compte, vous confirmez avoir 18 ans ou plus et acceptez les{" "}
           <Link to="/conditions">conditions d'utilisation</Link>. Nous traitons vos renseignements selon notre{" "}
           <Link to="/confidentialite">politique de confidentialité</Link>.
+          {JEUNES_PILOTE && " Les jeunes de 14 à 17 ans ne s'inscrivent pas ici : un parent les invite depuis son compte."}
         </p>
         <button type="submit" className="auth-form__bouton" disabled={enCours}>
           {enCours ? "Création…" : "Créer mon compte"}

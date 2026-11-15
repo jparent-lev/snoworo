@@ -1159,7 +1159,13 @@
   margin-bottom: 26px;
 }
 
-.landing__profils span {
+.landing__profils a {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.landing__profils span,
+.landing__profils a {
   display: flex;
   align-items: center;
   gap: 12px;

@@ -1,0 +1,163 @@
+.jeunes-accueil__cta {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.jeunes-accueil__note {
+  font-size: 14px;
+  color: var(--color-texte-secondaire);
+}
+
+.jeunes-accueil__note a {
+  color: inherit;
+  font-weight: 600;
+}
+
+/* ---- Aperçu : fiche du jeune et avis ---- */
+
+.jeunes-accueil__apercu {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  max-width: 420px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.jeunes-accueil__fiche,
+.jeunes-accueil__avis {
+  background: var(--color-surface-carte);
+  border: 1px solid var(--color-bordure);
+  border-radius: 18px;
+  padding: 20px 22px;
+  box-shadow: 0 22px 36px -30px rgba(59, 42, 31, 0.55);
+}
+
+.jeunes-accueil__fiche-entete {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.jeunes-accueil__fiche-entete div {
+  display: flex;
+  flex-direction: column;
+}
+
+.jeunes-accueil__avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: var(--color-ocre);
+  color: var(--color-surface-carte);
+  font-weight: 700;
+}
+
+.jeunes-accueil__actif {
+  font-size: 13px;
+  color: var(--color-texte-secondaire);
+}
+
+.jeunes-accueil__regles {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.jeunes-accueil__regles span {
+  font-size: 13.5px;
+  padding: 5px 11px;
+  border-radius: 999px;
+  background: var(--color-surface-secondaire);
+  border: 1px solid var(--color-bordure);
+}
+
+.jeunes-accueil__lien {
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: underline;
+  color: var(--color-terre);
+}
+
+.jeunes-accueil__avis {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 14px;
+  color: var(--color-texte-secondaire);
+  margin-left: 28px;
+  border-left: 5px solid var(--color-ocre);
+}
+
+.jeunes-accueil__avis-titre {
+  font-weight: 700;
+  color: var(--color-terre);
+  font-size: 15px;
+}
+
+.jeunes-accueil__avis-actions {
+  display: flex;
+  gap: 16px;
+  margin-top: 4px;
+  font-weight: 600;
+}
+
+.jeunes-accueil__avis-annuler {
+  color: var(--color-erreur);
+}
+
+.jeunes-accueil__exemple {
+  align-self: flex-end;
+  font-size: 12px;
+  color: var(--color-texte-secondaire);
+}
+
+/* ---- Les quatre mécanismes ---- */
+
+.jeunes-accueil__grille {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(230px, 100%), 1fr));
+  gap: 22px;
+  margin-top: 44px;
+}
+
+.jeunes-accueil__carte {
+  background: var(--color-surface-carte);
+  border: 1px solid var(--color-bordure);
+  border-radius: 18px;
+  padding: 22px 22px 26px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.jeunes-accueil__numero {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: var(--color-ardoise);
+  color: var(--color-texte-sur-sombre);
+  font-weight: 700;
+  font-size: 14px;
+}
+
+.jeunes-accueil__carte-titre {
+  font-size: 19px;
+  margin: 4px 0 0;
+  letter-spacing: -0.01em;
+}
+
+@media (max-width: 480px) {
+  .jeunes-accueil__avis {
+    margin-left: 0;
+  }
+}

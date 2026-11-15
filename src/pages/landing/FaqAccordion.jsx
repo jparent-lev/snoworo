@@ -1,5 +1,6 @@
 import { useState } from "react";
 import "./FaqAccordion.css";
+import { JEUNES_PILOTE } from "../../lib/jeunes";
 
 // FAQ par thème : Général (les deux rôles), Je fais déneiger (clients), Je
 // déneige (déneigeurs de quartier). Les réponses suivent les règles réelles
@@ -91,6 +92,15 @@ const THEMES = [
         q: "Et si j'ai un imprévu sérieux après avoir accepté une demande ?",
         r: "Une demande acceptée ne s'annule pas : le client compte sur vous. Si un imprévu sérieux vous empêche d'y aller, écrivez immédiatement au client dans la messagerie et utilisez « Signaler un problème » : nous examinerons la situation avec vous deux. Pour éviter cela, n'acceptez que les demandes que vous êtes certain de pouvoir faire à l'heure.",
       },
+      // Projet pilote (test.snowro.com seulement), docs/jeunes.md.
+      ...(JEUNES_PILOTE
+        ? [
+            {
+              q: "Mon ado de 14 à 17 ans peut-il déneiger avec Snowro ?",
+              r: "Oui, dans le cadre d'un projet pilote et avec votre accord. Vous créez votre compte, puis vous l'invitez depuis vos paramètres (section Jeune déneigeur). Vous fixez ses règles une fois : heures permises, distance de la maison et nombre de demandes par jour. Il ne voit que les demandes qui les respectent. Vous êtes avisé par courriel et texto à chaque demande qu'il accepte et vous pouvez l'annuler tant que le travail n'est pas fait. Les paiements arrivent dans votre compte de versement, et en cas de signalement vous recevez l'avis et les messages échangés.",
+            },
+          ]
+        : []),
     ],
   },
 ];

@@ -10,6 +10,8 @@ import ParcoursDemande from "./landing/ParcoursDemande";
 import VillesPubliques from "./landing/VillesPubliques";
 import SceneProtection from "./landing/ScenesProtection";
 import VideoSnowro from "../components/VideoSnowro";
+import JeunesDeneigeurs from "./landing/JeunesDeneigeurs";
+import { JEUNES_PILOTE } from "../lib/jeunes";
 import {
   CapNeige,
   CarteVilles,
@@ -272,6 +274,12 @@ export default function Landing() {
                 <Icone nom="camion" className="decor-icone--ocre" />
                 Un professionnel du déneigement qui souhaite combler les temps libres de sa tournée
               </span>
+              {JEUNES_PILOTE && (
+                <a href="#jeunes">
+                  <Icone nom="etudiant" className="decor-icone--ocre" />
+                  Un ado de 14 à 17 ans, avec l'accord et l'encadrement d'un parent
+                </a>
+              )}
             </div>
             <Link to="/inscription" data-mesure="section_deneigeur" className="landing__bouton-ocre landing__bouton-neige landing__bouton-neige--d">
               Devenir déneigeur de quartier
@@ -303,6 +311,9 @@ export default function Landing() {
           </div>
         </div>
       </section>
+
+      {/* 6 bis. Jeunes déneigeurs (projet pilote, test seulement) */}
+      {JEUNES_PILOTE && <JeunesDeneigeurs />}
 
       {/* 7. Snowro Pro : section retirée temporairement (V2). Les styles
           landing__pro-* restent dans Landing.css et ApercuZonesPro dans Decors.jsx. */}
