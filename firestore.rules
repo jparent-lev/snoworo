@@ -114,13 +114,6 @@ service cloud.firestore {
       allow read, write: if false;
     }
 
-    // ---- listeAttente (pré-lancement, fermée) ----
-    // Entrées existantes seulement, jamais accessibles côté client
-    // (functions/src/listeAttente.js).
-    match /listeAttente/{document} {
-      allow read, write: if false;
-    }
-
     // ---- verificationsTelephone (codes de vérification par texto) ----
     // Empreinte du code seulement, gérée par functions/src/telephone.js.
     match /verificationsTelephone/{document} {
@@ -142,7 +135,7 @@ service cloud.firestore {
     }
 
     // ---- messagesContact (formulaire « Nous écrire » du site vitrine) ----
-    // Même principe que listeAttente : écrit uniquement par
+    // Écrit uniquement par
     // envoyerMessageContact (Admin SDK), jamais lu depuis un client.
     match /messagesContact/{document} {
       allow read, write: if false;

@@ -515,7 +515,6 @@ function SectionFermeture() {
           <ul className="parametres__liste-fermeture">
             <li>votre profil, votre adresse et votre carte enregistrée;</li>
             <li>dans vos demandes publiées et acceptées : votre prénom, les adresses, les photos, les évaluations et les messages;</li>
-            <li>votre inscription à la liste d'attente, s'il y a lieu.</li>
           </ul>
           <p>Vos demandes encore ouvertes sont annulées. Vous pourrez créer un nouveau compte plus tard.</p>
           <form onSubmit={fermer} style={{ display: "flex", flexDirection: "column", gap: 12 }}>
