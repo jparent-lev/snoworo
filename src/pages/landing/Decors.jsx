@@ -172,6 +172,35 @@ export function IllustrationEtape({ etape }) {
 /* ---- Icônes (bloc « Ce qui vous protège », profils de déneigeurs) ---- */
 
 const ICONES = {
+  // Section des jeunes déneigeurs (JeunesDeneigeurs.jsx).
+  invitation: (
+    <g className="decor-icone__trait">
+      <rect x="3.5" y="6" width="17" height="12.5" rx="2" />
+      <path d="M4 7 L12 13 L20 7" />
+      <path d="M16.5 3 V7 M14.5 5 H18.5" className="decor-icone__trait-argile" />
+    </g>
+  ),
+  regles: (
+    <g className="decor-icone__trait">
+      <path d="M4 7 H20 M4 12 H20 M4 17 H20" />
+      <circle cx="9" cy="7" r="2" className="decor-icone__plein-terre" />
+      <circle cx="15.5" cy="12" r="2" className="decor-icone__plein-terre" />
+      <circle cx="7" cy="17" r="2" className="decor-icone__plein-terre" />
+    </g>
+  ),
+  avis: (
+    <g className="decor-icone__trait">
+      <path d="M6.5 16.5 V11 A5.5 5.5 0 0 1 17.5 11 V16.5 L19 18 H5 Z" />
+      <path d="M10.2 20.3 A2 2 0 0 0 13.8 20.3" />
+      <circle cx="18.2" cy="5.8" r="2.2" className="decor-icone__plein-ocre" />
+    </g>
+  ),
+  bouclier: (
+    <g className="decor-icone__trait">
+      <path d="M12 3.2 L19 6 V11.5 C19 15.8 16 19 12 20.8 C8 19 5 15.8 5 11.5 V6 Z" />
+      <path d="M8.8 12 L11.2 14.4 L15.6 9.8" className="decor-icone__trait-argile" />
+    </g>
+  ),
   note: (
     <path
       d="M12 3.2 L14.6 8.9 L20.8 9.5 L16.1 13.6 L17.5 19.7 L12 16.5 L6.5 19.7 L7.9 13.6 L3.2 9.5 L9.4 8.9 Z"
