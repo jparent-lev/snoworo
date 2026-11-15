@@ -80,11 +80,25 @@ function courriel(prenom) {
   return { html, texte: [...lignes, "", "Jonathan Parent, fondateur", "Snowro"].join("\n\n") };
 }
 
+// Effacement : le compte de service du déploiement peut lire Firestore mais
+// pas toujours effacer. Un refus n'arrête rien : on compte et on continue
+// (effacement à faire dans la console).
+let effacementsRefuses = 0;
+const effacer = async (refs) => {
+  try {
+    await Promise.all(refs.map((r) => r.delete()));
+  } catch {
+    effacementsRefuses += refs.length;
+  }
+};
+
 let envoyes = 0;
 let echecs = 0;
 for (const [adresse, p] of destinataires) {
   const { html, texte } = courriel(p.prenom);
   try {
+    // Même clé qu'au premier passage : si ce courriel est déjà parti (moins
+    // de 24 h), Resend renvoie la réponse d'origine sans le renvoyer.
     await envoyerCourriel({
       a: adresse,
       sujet: "Snowro est ouvert",
@@ -93,18 +107,19 @@ for (const [adresse, p] of destinataires) {
       cleIdempotence: `annonce-ouverture-${createHash("sha256").update(adresse).digest("hex").slice(0, 32)}`,
       type: "annonce_ouverture",
     });
-    // Effacée dès l'envoi : une relance du workflow n'écrit pas deux fois.
-    await Promise.all(p.refs.map((r) => r.delete()));
     envoyes++;
+    // Effacée dès l'envoi : une relance du workflow n'écrit pas deux fois.
+    await effacer(p.refs);
   } catch {
     echecs++;
   }
   await pause(600); // Resend : 2 envois par seconde au plus.
 }
-for (const c of dejaInscrits) await Promise.all(parCourriel.get(c).refs.map((r) => r.delete()));
-await Promise.all(nonConfirmees.map((r) => r.delete()));
+for (const c of dejaInscrits) await effacer(parCourriel.get(c).refs);
+await effacer(nonConfirmees);
 
 const restantes = (await db.collection("listeAttente").count().get()).data().count;
-console.log(`Envoyés : ${envoyes}, échecs : ${echecs} (entrées gardées pour une relance)`);
+console.log(`Envoyés (ou déjà envoyés, confirmés par Resend) : ${envoyes}, échecs : ${echecs} (entrées gardées pour une relance)`);
+console.log(`Effacements refusés : ${effacementsRefuses}`);
 console.log(`Entrées restantes dans listeAttente : ${restantes}`);
 process.exit(echecs ? 1 : 0);
