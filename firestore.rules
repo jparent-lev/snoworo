@@ -114,10 +114,9 @@ service cloud.firestore {
       allow read, write: if false;
     }
 
-    // ---- listeAttente (site vitrine de pré-lancement) ----
-    // Jamais de lecture/écriture directe côté client : rejoindreListeAttente
-    // (callable, public, sans authentification) valide et géocode avant
-    // d'écrire via l'Admin SDK. Voir design_handoff_snowro_site/README.md.
+    // ---- listeAttente (pré-lancement, fermée) ----
+    // Entrées existantes seulement, jamais accessibles côté client
+    // (functions/src/listeAttente.js).
     match /listeAttente/{document} {
       allow read, write: if false;
     }

@@ -17,19 +17,11 @@ structure figées par `design_handoff_snowro_site`.
 
 - Calculateur de frais interactif : lit `config/frais` (lecture publique) en
   temps réel, aucune valeur codée en dur — voir `src/lib/config.js`.
-- Inscription à la liste : `rejoindreListeAttente` (callable publique, sans
-  authentification), qui valide et géocode le code postal avant d'écrire dans
-  `listeAttente/{courriel}` — voir `data-model.md`.
-- Courriel de confirmation à la première inscription
-  (`envoyerConfirmationListeAttente`, lien de double confirmation envoyé à chaque nouveau jeton ; `confirmerListeAttente` valide le lien de la page `/liste/confirmer`),
-  expédié depuis `allo@snowro.com`.
-- Partage après l'inscription (`src/pages/landing/PartageListe.jsx`) :
-  message prêt à partager adapté au rôle et à la ville, partage natif du
-  téléphone, copie du message ou du lien, raccourcis Facebook, WhatsApp,
-  texto et courriel. **Partage simple, sans suivi** : le même lien
-  (`https://snowro.com`) pour tout le monde, on ne note pas qui a invité qui
-  (décision produit ; ajouter un suivi demanderait une mise à jour de la
-  politique de confidentialité). Aperçu des liens partagés : balises Open
+- Liste d'attente : fermée depuis l'ouverture. L'inscription, la confirmation
+  par courriel et le partage après l'inscription sont retirés ;
+  `/liste/confirmer` redirige vers l'accueil. Les entrées existantes restent
+  dans `listeAttente` jusqu'à leur effacement (voir `data-model.md`).
+- Aperçu des liens partagés : balises Open
   Graph et Twitter (`twitter:title`, `twitter:description`, `twitter:image`)
   dans `index.html`, image `public/og-snowro.png` (1200 x 630) ; icône
   `public/apple-touch-icon.png` (180 x 180, fond plein) pour iOS. L'image

@@ -9,7 +9,7 @@ const LONGUEUR_MAX_NOM = 120;
 const LONGUEUR_MAX_MESSAGE = 5000;
 
 // Formulaire « Nous écrire » du site vitrine — public (aucune authentification
-// requise), même principe que rejoindreListeAttente : validation et écriture
+// requise) : validation et écriture
 // uniquement côté serveur, collection fermée à tout accès client
 // (firestore.rules). Les messages se lisent dans la console Firebase
 // (collection messagesContact) ; aucun courriel n'est envoyé.

@@ -18,7 +18,6 @@ import ConnexionLien from "./pages/ConnexionLien";
 import MotDePasseOublie from "./pages/MotDePasseOublie";
 import NouveauMotDePasse from "./pages/NouveauMotDePasse";
 import NousEcrire from "./pages/NousEcrire";
-import ConfirmerListe from "./pages/ConfirmerListe";
 import CreditImpot from "./pages/creditImpot/CreditImpot";
 import ApercuPartage from "./pages/ApercuPartage";
 import BandeauMesure from "./components/BandeauMesure";
@@ -41,7 +40,8 @@ export default function App() {
         <Route path="/nous-ecrire" element={<NousEcrire />} />
         <Route path="/medias" element={<Medias />} />
         {import.meta.env.DEV && <Route path="/medias/planche" element={<PlancheLogos />} />}
-        <Route path="/liste/confirmer" element={<ConfirmerListe />} />
+        {/* Liste d'attente fermée : les vieux liens de confirmation mènent à l'accueil. */}
+        <Route path="/liste/confirmer" element={<Navigate to="/" replace />} />
         <Route path="/courriel/confirmer" element={<ConfirmerCourriel />} />
         {JEUNES_PILOTE && <Route path="/jeune/rejoindre" element={<RejoindreJeune />} />}
         {/* Sur le test seulement (VITE_PAGE_CREDIT_IMPOT, .env.test) ; ailleurs, retour à l'accueil. */}
