@@ -181,8 +181,7 @@ export async function prelever(demandeId, demande) {
       },
       // Une tentative par demande et par carte : relancer après un échec avec
       // une nouvelle carte crée un nouveau prélèvement.
-      // Demande remise en ligne (annulée par le parent d'un jeune) : nouvelle clé.
-      { idempotencyKey: `prelevement-${demandeId}-${client.carte.paymentMethodId}${demande.remiseEnLigne ? `-r${demande.remiseEnLigne}` : ""}` },
+      { idempotencyKey: `prelevement-${demandeId}-${client.carte.paymentMethodId}` },
     );
     if (intent.status !== "succeeded") return { ok: false, raison: `Paiement ${intent.status}.` };
     return { ok: true, paymentIntentId: intent.id, chargeId: intent.latest_charge };

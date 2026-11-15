@@ -13,7 +13,6 @@ import Medias, { PlancheLogos } from "./pages/Medias";
 import Admin from "./pages/Admin";
 import ConfirmerCourriel from "./pages/ConfirmerCourriel";
 import RejoindreJeune from "./pages/RejoindreJeune";
-import AnnulerParParent from "./pages/AnnulerParParent";
 import { JEUNES_PILOTE } from "./lib/jeunes";
 import ConnexionLien from "./pages/ConnexionLien";
 import MotDePasseOublie from "./pages/MotDePasseOublie";
@@ -69,16 +68,6 @@ export default function App() {
               </RequireAuth>
             }
           />
-          {JEUNES_PILOTE && (
-            <Route
-              path="/jeune/annuler"
-              element={
-                <RequireAuth>
-                  <AnnulerParParent />
-                </RequireAuth>
-              }
-            />
-          )}
           <Route
             path="/admin"
             element={

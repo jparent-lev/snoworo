@@ -12,7 +12,6 @@ export const inviterJeune = appeler("inviterJeune");
 export const lireInvitationJeune = appeler("lireInvitationJeune");
 export const accepterInvitationJeune = appeler("accepterInvitationJeune");
 export const reglerJeune = appeler("reglerJeune");
-export const annulerParParent = appeler("annulerParParent");
 
 export const REGLES_DEFAUT = { heureDebut: 7, heureFin: 20, rayonKm: 1, maxParJour: 2 };
 export const resumeRegles = (r = REGLES_DEFAUT) =>

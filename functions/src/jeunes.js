@@ -7,7 +7,7 @@ import { randomBytes } from "node:crypto";
 import geohash from "ngeohash";
 import { db } from "./admin.js";
 import { RESEND_API_KEY, echapperHtml, envoyerCourriel, gabaritCourriel } from "./courriels.js";
-import { STRIPE_SECRET_KEY, URL_SITE, paiementReel, profilStripe, rembourser } from "./paiements.js";
+import { URL_SITE, paiementReel, profilStripe } from "./paiements.js";
 import { SECRETS_SMS, envoyerTexto } from "./sms.js";
 
 // Jeunes déneigeurs (14 à 17 ans), PROJET PILOTE limité à test.snowro.com
@@ -17,8 +17,10 @@ import { SECRETS_SMS, envoyerTexto } from "./sms.js";
 //
 // Encadrement sans friction : le parent fixe des règles une fois (heures,
 // rayon autour de la maison, demandes par jour), il est avisé de chaque
-// demande acceptée et garde un droit de veto (annulerParParent) tant que le
-// travail n'est pas fait. Aucune approbation demande par demande.
+// demande acceptée (à titre d'information) et peut mettre son jeune en pause
+// ou retirer son accord. Aucune approbation demande par demande, et pas
+// d'annulation par le parent : une demande acceptée ne s'annule pas, comme
+// pour tout déneigeur. Un vrai problème passe par « Signaler un problème ».
 const REGION = "northamerica-northeast1";
 export const JEUNES_PILOTE = defineBoolean("JEUNES_PILOTE", { default: false });
 const FUSEAU = "America/Toronto";
@@ -269,65 +271,13 @@ export const reglerJeune = onCall({ region: REGION }, async (request) => {
   return { ok: true };
 });
 
-// ---- Droit de veto : le parent annule une demande acceptée par son jeune ----
-// Tant que le travail n'est pas marqué fait : le client est remboursé et la
-// demande redevient visible pour les autres déneigeurs.
-export const annulerParParent = onCall({ region: REGION, secrets: [STRIPE_SECRET_KEY, RESEND_API_KEY] }, async (request) => {
-  exigerPilote();
-  const uid = request.auth?.uid;
-  if (!uid) throw new HttpsError("unauthenticated", "Connexion requise.");
-  const demandeId = request.data?.demandeId;
-  if (typeof demandeId !== "string" || !demandeId || demandeId.includes("/")) throw new HttpsError("invalid-argument", "demandeId requis.");
-  const ref = db.doc(`demandes/${demandeId}`);
-  const avant = await db.runTransaction(async (tx) => {
-    const demande = (await tx.get(ref)).data();
-    if (!demande || demande.deneigeurParentId !== uid) throw new HttpsError("permission-denied", "Cette demande n'a pas été acceptée par votre jeune.");
-    if (demande.statut !== "matchee") throw new HttpsError("failed-precondition", "Le travail est déjà fait ou la demande n'est plus active.");
-    const statut = demande.paiement?.statutPaiement;
-    if (statut === "retenu") tx.update(ref, { "paiement.statutPaiement": "a_rembourser" });
-    return demande;
-  });
-  if (avant.paiement?.statutPaiement === "retenu") await rembourser(demandeId);
-  const apres = (await ref.get()).data();
-  await ref.update({
-    statut: "ouverte",
-    deneigeurId: null,
-    deneigeurPrenom: null,
-    deneigeurNote: null,
-    deneigeurJeune: FieldValue.delete(),
-    deneigeurParentId: FieldValue.delete(),
-    matchedAt: null,
-    paiement: null,
-    // Nouveau prélèvement (nouvelle clé) si quelqu'un d'autre accepte.
-    remiseEnLigne: FieldValue.increment(1),
-    historiqueAnnulations: FieldValue.arrayUnion({ par: "parent", at: Timestamp.now(), paiement: apres.paiement ?? null }),
-  });
-  const client = (await db.doc(`users/${avant.donneurOuvrageId}`).get()).data();
-  if (client?.email) {
-    const lignes = [
-      `Le jeune déneigeur qui avait accepté « ${avant.titre} » ne pourra finalement pas y aller.`,
-      paiementReel() ? "Le montant prélevé vous est remboursé." : "Rien ne vous a été prélevé.",
-      "Votre demande est de nouveau visible pour les déneigeurs de votre quartier.",
-    ];
-    await envoyerCourriel({
-      a: client.email,
-      sujet: "Votre demande est de nouveau ouverte",
-      html: gabaritCourriel({ titre: "Votre demande est de nouveau ouverte", paragraphes: lignes.map(echapperHtml), piedDePage: "Snowro" }),
-      texte: lignes.join("\n"),
-      type: "annulation_parent",
-    }).catch((err) => logger.error(`Avis au client non envoyé : ${err.message}`));
-  }
-  return { ok: true };
-});
-
 // Avis au parent quand son jeune accepte une demande (courriel et texto).
-export async function avertirParent(demandeId, demande, jeune, parent) {
-  const lien = `${URL_SITE.value()}/jeune/annuler?d=${demandeId}`;
+export async function avertirParent(demande, jeune, parent) {
   const quand = demande.dateHeureSouhaitee.toDate().toLocaleString("fr-CA", { timeZone: FUSEAU, weekday: "long", hour: "numeric", minute: "2-digit" });
   const prenomJeune = jeune.jeune?.prenom ?? "Votre jeune";
   const quartier = demande.quartier ? `, ${demande.quartier}` : "";
   const resume = `${prenomJeune} a accepté « ${demande.titre} »${quartier}, avant ${quand}, pour le client ${demande.donneurPrenom ?? ""}.`;
-  await envoyerTexto(parent, `Snowro : ${resume} Pour annuler : ${lien}`, { contexte: "avis parent" });
+  await envoyerTexto(parent, `Snowro : ${resume}`, { contexte: "avis parent" });
   if (!parent.email) return;
   try {
     await envoyerCourriel({
@@ -337,12 +287,12 @@ export async function avertirParent(demandeId, demande, jeune, parent) {
         titre: `${echapperHtml(prenomJeune)} a accepté une demande`,
         paragraphes: [
           echapperHtml(resume),
-          "L'adresse exacte est dans le tableau de bord de votre jeune. Rien à faire si tout vous convient.",
-          `<a href="${echapperHtml(lien)}" style="color:#9E4E23;font-weight:700;">Annuler cette demande</a> (possible tant que le travail n'est pas fait ; le client est remboursé).`,
+          "L'adresse exacte est dans le tableau de bord de votre jeune. Cet avis est pour information : rien à faire.",
+          "S'il y a un problème sur place, votre jeune ou le client utilise « Signaler un problème » : vous recevrez l'avis et les messages échangés.",
         ],
         piedDePage: "Vous recevez cet avis parce que votre jeune participe au projet pilote des jeunes déneigeurs de Snowro.",
       }),
-      texte: [resume, "", `Annuler : ${lien}`].join("\n"),
+      texte: resume,
       type: "avis_parent",
     });
   } catch (err) {

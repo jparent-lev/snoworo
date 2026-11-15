@@ -48,7 +48,8 @@ libellé exact. ✱ = point nouveau depuis la dernière liste.
    ou faut-il interdire les heures de classe et plafonner les heures par
    semaine pour les moins de 16 ans ?
 9. ✱ Responsabilité du parent : il invite son jeune, fixe les règles, reçoit
-   les avis et les paiements, et peut annuler une demande. Est-il
+   les avis et les paiements, et peut mettre son jeune en pause (sans
+   annuler une demande déjà acceptée). Est-il
    responsable du travail et des dommages causés par son jeune ? Faut-il une
    entente de participation signée ?
 10. ✱ Attestation d'autorité parentale : une case à cocher datée

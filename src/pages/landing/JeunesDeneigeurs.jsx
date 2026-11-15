@@ -19,7 +19,7 @@ const MECANISMES = [
   {
     titre: "Vous êtes avisé",
     texte:
-      "Un courriel et un texto à chaque demande qu'il accepte. Si quelque chose ne vous convient pas, vous l'annulez tant que le travail n'est pas fait : le client est remboursé.",
+      "Un courriel et un texto à chaque demande qu'il accepte, pour savoir où il est et quand. Comme pour tout déneigeur, une demande acceptée est un engagement envers le client.",
   },
   {
     titre: "Vous gardez la main",
@@ -70,10 +70,7 @@ export default function JeunesDeneigeurs() {
           <div className="jeunes-accueil__avis">
             <span className="jeunes-accueil__avis-titre">Léo a accepté une demande</span>
             <span>Entrée simple, rue des Érables · demain 16 h · 30 $</span>
-            <span className="jeunes-accueil__avis-actions">
-              <span>Tout est beau</span>
-              <span className="jeunes-accueil__avis-annuler">Annuler la demande</span>
-            </span>
+            <span className="jeunes-accueil__avis-note">Pour information : rien à faire.</span>
           </div>
           <span className="jeunes-accueil__exemple">Exemple</span>
         </div>
