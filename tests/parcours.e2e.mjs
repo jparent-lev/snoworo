@@ -956,7 +956,6 @@ async function connexion(cle, largeur = 1280) {
     comptes: { total: 128, j1: 9, j7: 41, j30: 120, clients: 90, deneigeurs: 46, deuxRoles: 8, sansRole: 0, deneigeursAdresse: 40, deneigeursVersementActif: 31, cartes: 72, cellulaires: 50, smsConsentis: 33 },
     demandes: { total: 64, j1: 5, j7: 30, j30: 60, ouvertesMaintenant: 4, acceptees: 52, annuleesRetard: 1, signalees: 2, tauxAcceptation: 0.867, delaiMedianAcceptationMin: 38, delaiMedianConfirmationH: 3.5, parStatut: { ouverte: 4, matchee: 6, faite: 3, completee: 41, signalee: 2, annulee: 8 } },
     argent: { volumeConfirme: 1845, fraisSnowro: 229.6, montantDeneigeurs: 1615.4, nbConfirmees: 41, enRetenue: 280, rembourse: 35, panierMoyen: 45 },
-    listeAttente: { total: 210, confirmees: 180, j7: 12 },
     parJour: jours,
     villes: [{ ville: "Québec", deneigeurs: 38, clients: 70, demandes: 55, ouvertes: 3, completees: 36 }, { ville: "Lévis", deneigeurs: 8, clients: 12, demandes: 9, ouvertes: 1, completees: 5 }],
   } } }));

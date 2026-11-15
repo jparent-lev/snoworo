@@ -462,19 +462,11 @@ console.log("Conservation et fermeture de compte (Loi 25)");
 const cons = await import(`${REPO}functions/src/conservation.js`);
 const compte = await import(`${REPO}functions/src/compte.js`);
 const { getAuth } = createRequire(`${REPO}functions/package.json`)("firebase-admin/auth");
-await test("conservation : liste d'attente et « Nous écrire » après 24 mois, inscriptions non confirmées après 7 jours", async () => {
+await test("conservation : « Nous écrire » après 24 mois", async () => {
   const vieux = TS.fromMillis(Date.now() - 731 * 24 * 3600e3);
-  await db.doc("listeAttente/vieux@exemple.ca").set({ courriel: "vieux@exemple.ca", createdAt: vieux });
-  await db.doc("listeAttente/recent@exemple.ca").set({ courriel: "recent@exemple.ca", createdAt: TS.now() });
   await db.doc("messagesContact/vieux").set({ courriel: "a@exemple.ca", createdAt: vieux });
   await db.doc("messagesContact/recent").set({ courriel: "b@exemple.ca", createdAt: TS.now() });
-  await db.doc("listeAttente/jamais@exemple.ca").set({ courriel: "jamais@exemple.ca", confirmee: false, createdAt: TS.now(), jetonExpireAt: TS.fromMillis(Date.now() - 1000) });
-  await db.doc("listeAttente/encore@exemple.ca").set({ courriel: "encore@exemple.ca", confirmee: false, createdAt: TS.now(), jetonExpireAt: TS.fromMillis(Date.now() + 3600e3) });
-  assert.deepEqual(await cons.appliquerConservation(), { nonConfirmees: 1, listeAttente: 1, messagesContact: 1 });
-  assert.equal((await db.doc("listeAttente/jamais@exemple.ca").get()).exists, false, "non confirmée après 7 jours");
-  assert.equal((await db.doc("listeAttente/encore@exemple.ca").get()).exists, true, "lien encore valide");
-  assert.equal((await db.doc("listeAttente/vieux@exemple.ca").get()).exists, false);
-  assert.equal((await db.doc("listeAttente/recent@exemple.ca").get()).exists, true);
+  assert.deepEqual(await cons.appliquerConservation(), { messagesContact: 1 });
   assert.equal((await db.doc("messagesContact/recent").get()).exists, true);
 });
 await test("fermer son compte : refusé pendant une demande en cours ou sans confirmation", async () => {
@@ -493,12 +485,10 @@ await test("fermer son compte : refusé pendant une demande en cours ou sans con
   }
   await db.doc("demandes/ferm-paiement").delete();
 });
-await test("fermer son compte : profil, connexion, adresses, photos, messages et liste d'attente effacés ; paiement gardé", async () => {
+await test("fermer son compte : profil, connexion, adresses, photos, et messages effacés ; paiement gardé", async () => {
   const { uid } = await getAuth().createUser({ email: "ferme@exemple.ca", password: "motdepasse" });
   await db.doc(`users/${uid}`).set({ displayName: "Zoé Fermé", email: "Ferme@exemple.ca", role: ["donneur_ouvrage", "deneigeur_x"] });
   await db.doc(`users/${uid}/lectures/d1`).set({ luAt: TS.now() });
-  await db.doc("listeAttente/ferme@exemple.ca").set({ courriel: "ferme@exemple.ca", createdAt: TS.now() });
-  await db.doc("listeAttente/pro:ferme@exemple.ca").set({ courriel: "ferme@exemple.ca", role: "pro", createdAt: TS.now() });
   await db.doc("demandes/ferm-client").set({ statut: "completee", donneurOuvrageId: uid, donneurPrenom: "Zoé", titre: "Entrée", description: "Code de porte 1234", deneigeurId: "den1", deneigeurPrenom: "Marc", paiement: { montantTotal: 40, statutPaiement: "verse" } });
   await db.doc("demandes/ferm-client/prive/adresse").set({ adresse: "1 rue X" });
   await db.collection("messages/ferm-client/messages").add({ expediteurId: uid, contenu: "Salut" });
@@ -508,8 +498,6 @@ await test("fermer son compte : profil, connexion, adresses, photos, messages et
   assert.deepEqual(await appel(compte.fermerCompte, uid, { confirmation: "FERMER" }), { ok: true });
   assert.equal((await db.doc(`users/${uid}`).get()).exists, false);
   assert.equal((await db.doc(`users/${uid}/lectures/d1`).get()).exists, false);
-  assert.equal((await db.doc("listeAttente/ferme@exemple.ca").get()).exists, false);
-  assert.equal((await db.doc("listeAttente/pro:ferme@exemple.ca").get()).exists, false);
   await assert.rejects(getAuth().getUser(uid), /no user record|user-not-found/i);
   const c = await lire("ferm-client");
   assert.equal(c.donneurPrenom, "Compte fermé"); assert.equal(c.description, ""); assert.equal(c.titre, "Entrée");
@@ -843,7 +831,6 @@ await test("admin : métriques agrégées ; accès réservé aux UID de ADMIN_UI
       { statut: "annulee", createdAt: t(maintenant - 50 * H), matchedAt: t(maintenant - 49.5 * H), annulation: { raison: "retard" }, ville: "Lévis", paiement: { montantTotal: 30, statutPaiement: "rembourse" } },
       { statut: "annulee", createdAt: t(maintenant - 60 * H), ville: "Lévis" },
     ],
-    listeAttente: [{ confirmee: true, createdAt: t(maintenant - 2 * 24 * H) }, { confirmee: false, createdAt: t(maintenant - 20 * 24 * H) }],
   }, maintenant);
   assert.deepEqual(
     { total: m.comptes.total, j1: m.comptes.j1, j7: m.comptes.j7, clients: m.comptes.clients, deneigeurs: m.comptes.deneigeurs, deux: m.comptes.deuxRoles, sans: m.comptes.sansRole, actifs: m.comptes.deneigeursVersementActif, cartes: m.comptes.cartes },
@@ -854,7 +841,6 @@ await test("admin : métriques agrégées ; accès réservé aux UID de ADMIN_UI
   assert.equal(m.demandes.delaiMedianAcceptationMin, 45); assert.equal(m.demandes.delaiMedianConfirmationH, 2);
   assert.equal(m.demandes.annuleesRetard, 1);
   assert.deepEqual({ v: m.argent.volumeConfirme, f: m.argent.fraisSnowro, r: m.argent.rembourse, p: m.argent.panierMoyen }, { v: 40, f: 5.2, r: 30, p: 40 });
-  assert.deepEqual(m.listeAttente, { total: 2, confirmees: 1, j7: 1 });
   assert.equal(m.parJour.length, 30);
   assert.equal(m.parJour.reduce((s, j) => s + j.comptes, 0), 3, "le compte de 40 jours est hors fenêtre");
   assert.equal(m.villes[0].ville, "Québec");

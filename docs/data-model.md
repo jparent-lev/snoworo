@@ -209,48 +209,6 @@ la future Cloud Function de paiement ou la console Firebase, voir
 n'existe pas, `src/lib/config.js` sert des valeurs de secours (`fraisFixe: 2,
 fraisPct: 8`, identiques aux valeurs par défaut de la maquette).
 
-## `listeAttente/{courriel}` et `listeAttente/pro:{courriel}`
-
-**Fermée.** Plus aucune inscription : il ne reste que les entrées déjà
-créées, purgées par `appliquerConservation` (non confirmées après 7 jours,
-toutes après 24 mois) et effacées à la fermeture d'un compte. Historique :
-
-```
-nom                     // nom complet
-courriel, codePostal
-confirmee: boolean      // double confirmation : false tant que le lien du courriel n'est pas cliqué
-                        // (absent = inscription antérieure, considérée confirmée)
-confirmeeAt
-jetonConfirmation, jetonEnvoyeAt, jetonExpireAt   // lien de confirmation (7 jours), retirés à la confirmation
-role: "client" | "deneigeur" | "les_deux" | "pro"   // facultatif : précisé après l'inscription
-entreprise              // nom de l'entreprise, role "pro" seulement
-ville, villeGeoId       // dérivés par géocodage serveur du codePostal
-createdAt
-confirmation: {         // écrit par envoyerConfirmationListeAttente (envoi du lien)
-  statut: "envoyee" | "echec",
-  resendId: string | null,
-  envoyeeAt: timestamp | null,
-  erreur: string | null
-}
-```
-
-Le courriel de confirmation part à la **création** du document seulement
-(`functions/src/confirmationListeAttente.js`, envoi par Resend via
-`functions/src/courriels.js`) : une réinscription ne renvoie rien. Un envoi
-en échec n'annule jamais l'inscription ; les documents avec
-`confirmation.statut == "echec"` sont à relancer à la main.
-
-Site vitrine de pré-lancement (`design_handoff_snowro_site`) — collecte
-d'inscriptions à la liste d'attente. Le document est identifié par le
-courriel normalisé, préfixé `pro:` pour Snowro Pro afin que la même personne
-puisse être à la fois cliente et intéressée par Pro (segmentation par `role`)
-(une réinscription met à jour l'entrée plutôt que d'en
-créer une deuxième). Écrit uniquement par la Cloud Function callable
-publique `rejoindreListeAttente` (`functions/src/listeAttente.js`), qui
-valide le format du courriel/code postal, filtre les soumissions de bots
-(honeypot) et géocode le code postal — jamais lu ni écrit directement par le
-client (`allow read, write: if false`).
-
 ## `messagesContact/{messageId}`
 
 ```
@@ -263,8 +221,7 @@ createdAt
 
 Formulaire « Nous écrire » du site vitrine (`src/pages/NousEcrire.jsx`).
 Écrit uniquement par la Cloud Function callable publique
-`envoyerMessageContact` (`functions/src/contact.js`) — même principe que
-`listeAttente` : validation et honeypot côté serveur, jamais lu ni écrit
+`envoyerMessageContact` (`functions/src/contact.js`) : validation et honeypot côté serveur, jamais lu ni écrit
 directement par le client (`allow read, write: if false`). Aucun courriel
 n'est envoyé : les messages se consultent dans la console Firebase.
 Conservation annoncée dans la politique de confidentialité : 24 mois après le
@@ -355,15 +312,13 @@ Durées promises dans `src/pages/Confidentialite.jsx`, appliquées automatiqueme
 | Donnée | Effacée | Par |
 |---|---|---|
 | Photos de fin de job, messages, `prive/avis` | 30 jours après « faite » (`photoExpireAt`), sauf job signalée | `purgerPhotos` (tous les jours, 3 h 17) |
-| `listeAttente` | 24 mois après `createdAt` | `purgerConservation` (tous les jours, 3 h 37) |
-| `messagesContact` | 24 mois après `createdAt` | `purgerConservation` |
+| `messagesContact` | 24 mois après `createdAt` | `purgerConservation` (tous les jours, 3 h 37) |
 
 `fermerCompte` (callable, `functions/src/compte.js`) : refusé pendant une job
 en cours ou un versement en attente ; annule les demandes ouvertes ; dans
 chaque demande, remplace le prénom par « Compte fermé » et efface
 description, adresse, photos, évaluation et conversation (le registre de
-paiement est gardé 6 ans) ; efface `users/{uid}` (et `lectures`), l'entrée de
-liste d'attente, les offres reçues et le client Stripe ; supprime le compte
+paiement est gardé 6 ans) ; efface `users/{uid}` (et `lectures`), les offres reçues et le client Stripe ; supprime le compte
 Auth en dernier.
 
 ## `verificationsTelephone/{uid}`
