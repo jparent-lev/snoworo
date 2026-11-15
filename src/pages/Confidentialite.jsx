@@ -74,7 +74,7 @@ export default function Confidentialite() {
           le prénom d'un proche, assurez-vous qu'il est d'accord.
         </li>
         <li>
-          <strong>Demandes et demandes :</strong> le montant offert, le quartier indiqué, le statut de la demande,
+          <strong>Demandes :</strong> le montant offert, le quartier indiqué, le statut de la demande,
           les messages échangés avec l'autre personne une fois le jumelage confirmé, les photos (de 1 à 3) prises
           par le déneigeur de quartier à la fin de la demande (visibles seulement par vous deux) et l'appréciation
           laissée par le client (des étoiles sur trois critères : ponctualité, communication et qualité du
