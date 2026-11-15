@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { REGLES_DEFAUT, inviterJeune, reglerJeune, resumeRegles } from "../lib/jeunes";
 import { messageServeur } from "../lib/erreurs";
+import Pastille from "./Pastille";
 
 // Paramètres du parent : inviter son jeune (14 à 17 ans), fixer ses règles
 // une fois, mettre en pause ou retirer son accord (projet pilote).
@@ -90,9 +91,20 @@ export default function SectionJeunes({ profile }) {
           <div key={id} className="parametres__item jeunes__fiche">
             <div className="parametres__item-texte">
               <h3>{j.prenom}</h3>
-              <p>{j.statut === "invite" ? `Invitation envoyée à ${j.courriel}, en attente.` : "Actif."}</p>
+              {j.statut === "invite" ? (
+                <>
+                  <Pastille ton="attente">Invitation envoyée</Pastille>
+                  <p>En attente de {j.courriel}.</p>
+                </>
+              ) : j.pause ? (
+                <>
+                  <Pastille ton="attente">En pause</Pastille>
+                  <p>Aucune nouvelle demande pour l'instant.</p>
+                </>
+              ) : (
+                <Pastille ton="ok">Actif</Pastille>
+              )}
               <p className="parametres__meta">Règles : {resumeRegles(j.regles)}.</p>
-              {j.pause && <p className="parametres__meta">En pause : aucune nouvelle demande.</p>}
               {edition?.id === id && (
                 <form className="jeunes__edition" onSubmit={enregistrerRegles} noValidate>
                   <ChampsRegles valeur={edition.regles} onChange={(r) => setEdition({ id, regles: r })} disabled={enCours} />
