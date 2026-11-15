@@ -40,7 +40,7 @@ function mediane(valeurs) {
 const dans = (ms, maintenant, jours) => ms != null && ms >= maintenant - jours * JOUR_MS;
 
 // Calcul pur, testable : listes de documents (data()) → métriques.
-export function calculerMetriques({ users, demandes, listeAttente }, maintenant = Date.now()) {
+export function calculerMetriques({ users, demandes }, maintenant = Date.now()) {
   const jours = [];
   for (let i = NB_JOURS - 1; i >= 0; i--) jours.push(jourLocal(maintenant - i * JOUR_MS));
   const parJour = Object.fromEntries(jours.map((j) => [j, { jour: j, comptes: 0, demandes: 0 }]));
@@ -130,19 +130,11 @@ export function calculerMetriques({ users, demandes, listeAttente }, maintenant 
   for (const k of Object.keys(argent)) if (k !== "nbConfirmees") argent[k] = arrondir(argent[k]);
   argent.panierMoyen = argent.nbConfirmees ? arrondir(argent.volumeConfirme / argent.nbConfirmees) : null;
 
-  const attente = { total: 0, confirmees: 0, j7: 0 };
-  for (const l of listeAttente) {
-    attente.total++;
-    if (l.confirmee !== false) attente.confirmees++;
-    if (dans(enMillis(l.createdAt), maintenant, 7)) attente.j7++;
-  }
-
   return {
     genereA: new Date(maintenant).toISOString(),
     comptes,
     demandes: demandesMetriques,
     argent,
-    listeAttente: attente,
     parJour: jours.map((j) => parJour[j]),
     villes: [...villes.values()]
       .filter((v) => v.ville !== "Inconnue" || v.demandes > 0)
@@ -160,11 +152,10 @@ export const metriquesAdmin = onCall({ region: REGION }, async (request) => {
     await getAuth().setCustomUserClaims(uid, { ...(customClaims ?? {}), admin: true });
   }
   // Seulement les champs utiles (select) : rien d'identifiant n'est lu.
-  const [users, demandes, listeAttente] = await Promise.all([
+  const [users, demandes] = await Promise.all([
     db.collection("users").select("role", "createdAt", "villeGeoId", "ville", "connectStatus", "carte", "telephoneVerifie", "consents").get(),
     db.collection("demandes").select("statut", "createdAt", "matchedAt", "faiteAt", "confirmeeAt", "paiement", "ville", "annulation", "signalement").get(),
-    db.collection("listeAttente").select("confirmee", "createdAt").get(),
   ]);
   const donnees = (s) => s.docs.map((x) => x.data());
-  return calculerMetriques({ users: donnees(users), demandes: donnees(demandes), listeAttente: donnees(listeAttente) });
+  return calculerMetriques({ users: donnees(users), demandes: donnees(demandes) });
 });

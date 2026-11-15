@@ -5,7 +5,7 @@ import { JEUNES_PILOTE } from "../lib/jeunes";
 
 // Politique de confidentialité — exigée par la Loi 25 (Loi sur la protection
 // des renseignements personnels dans le secteur privé, art. 3.2 et 8.2) avant
-// toute collecte, y compris la liste d'attente. Doit rester fidèle à ce que le
+// toute collecte. Doit rester fidèle à ce que le
 // code collecte réellement (docs/data-model.md) : un nouveau champ, un
 // nouveau fournisseur ou un nouveau type de consentement se reflète ici, avec
 // une nouvelle date dans INFOS_LEGALES.miseAJour.
@@ -34,14 +34,6 @@ export default function Confidentialite() {
       </p>
 
       <h2>Ce que nous collectons, et pourquoi</h2>
-
-      <h3>Liste d'attente</h3>
-      <p>
-        Votre nom complet, votre courriel, votre code postal et, si vous le précisez, ce que vous voulez faire (faire déneiger,
-        déneiger ou les deux). À partir du code postal,
-        nous déduisons votre ville. Ces renseignements servent à savoir quelles villes ouvrir en premier et à vous écrire lorsque Snowro ouvre
-        dans votre secteur. Rien d'autre.
-      </p>
 
       <h3>Formulaire « Nous écrire »</h3>
       <p>
@@ -205,11 +197,6 @@ export default function Confidentialite() {
       <h2>Combien de temps nous les conservons</h2>
       <ul>
         <li>
-          <strong>Liste d'attente :</strong> jusqu'à ce que vous nous demandiez de vous en retirer, ou au plus 24 mois
-          après votre inscription : elle est alors effacée automatiquement. Une inscription dont l'adresse courriel
-          n'a pas été confirmée (lien envoyé par courriel) est effacée après 7 jours.
-        </li>
-        <li>
           <strong>Mes adresses :</strong> tant que votre compte est ouvert. Vous pouvez en retirer une en tout
           temps dans vos paramètres ; elles sont toutes effacées à la fermeture du compte. Une demande déjà publiée
           garde son adresse selon les règles des demandes.
@@ -242,8 +229,8 @@ export default function Confidentialite() {
         Les échanges avec le site sont chiffrés (HTTPS). L'accès à la base de données est réservé aux
         utilisateurs connectés et encadré par des règles de sécurité : les renseignements sensibles (ville,
         consentements, statut de paiement) ne peuvent être modifiés que par nos fonctions serveur, jamais
-        directement depuis votre appareil, et la liste d'attente comme les messages « Nous écrire » ne sont
-        accessibles à aucun utilisateur. Si un incident de confidentialité présentant un risque sérieux de
+        directement depuis votre appareil, et les messages « Nous écrire » ne sont accessibles à aucun
+        utilisateur. Si un incident de confidentialité présentant un risque sérieux de
         préjudice survenait, nous vous en aviserions, ainsi que la Commission d'accès à l'information, comme le prévoit
         la loi.
       </p>
@@ -274,9 +261,9 @@ export default function Confidentialite() {
 
       <h2>Âge minimum</h2>
       <p>
-        Snowro s'adresse aux personnes de 14 ans et plus pour la liste d'attente, et de 18 ans et plus pour
-        créer un compte, publier une demande ou déneiger{JEUNES_PILOTE ? ", sauf le projet pilote des jeunes déneigeurs décrit ci-dessous" : ""}. Nous ne collectons pas sciemment de renseignements sur
-        des enfants de moins de 14 ans.
+        Snowro s'adresse aux personnes de 18 ans et plus pour créer un compte, publier une demande ou
+        déneiger{JEUNES_PILOTE ? ", sauf le projet pilote des jeunes déneigeurs décrit ci-dessous" : ""}. Nous ne collectons pas sciemment de renseignements sur
+        des personnes de moins de {JEUNES_PILOTE ? "14" : "18"} ans.
       </p>
 
       {JEUNES_PILOTE && (

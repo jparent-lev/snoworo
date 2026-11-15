@@ -25,7 +25,6 @@
 | Messages entre client et déneigeur, photos de fin de job (sans métadonnées GPS) | Exécution de la job, preuve | Moyenne ; effacés 30 jours après la job |
 | Paiement : identifiants Stripe, montants ; identité et compte bancaire du déneigeur (chez Stripe seulement) | Paiement et versement | Élevée (financière), mais détenue par Stripe |
 | Numéro de cellulaire vérifié (textos, avec consentement) | Avis par texto | Moyenne ; retirable en tout temps |
-| Liste d'attente : courriel, code postal, rôle | Choisir les villes à ouvrir | Faible ; effacée après 24 mois |
 | « Nous écrire » : nom, courriel, message | Répondre | Faible à moyenne ; effacé après 24 mois |
 | Mesure d'audience, seulement après consentement : identifiant pseudonyme du témoin _ga, pages vues (adresse sans paramètres sauf utm_*), provenance, appareil, ville approximative (adresse IP non conservée par GA4), étapes franchies | Améliorer le site, mesurer les campagnes | Faible ; aucun nom, courriel, adresse ni identifiant de compte ; conservé 2 mois |
 

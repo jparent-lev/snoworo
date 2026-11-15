@@ -2,7 +2,7 @@
 
 - Page `src/pages/Admin.jsx`, données de la callable `metriquesAdmin`
   (`functions/src/tableauAdmin.js`) : chiffres agrégés seulement (comptes,
-  rôles, déneigeurs prêts à être payés, liste d'attente, demandes par statut,
+  rôles, déneigeurs prêts à être payés, demandes par statut,
   taux et délais d'acceptation, argent, villes, séries de 30 jours en heure de
   Québec). Aucun nom, courriel, adresse ni identifiant n'est renvoyé.
 - Accès : `ADMIN_UIDS` dans `functions/.env.snowro-app` et

@@ -245,7 +245,6 @@ export default function Admin() {
               valeur={nombre(m.comptes.deneigeurs)}
               detail={`${nombre(m.comptes.deneigeursVersementActif)} prêts à être payés · ${nombre(m.comptes.deneigeursAdresse)} avec adresse`}
             />
-            <Tuile libelle="Liste d'attente" valeur={nombre(m.listeAttente.total)} detail={`${nombre(m.listeAttente.confirmees)} confirmées · +${nombre(m.listeAttente.j7)} en 7 jours`} />
           </div>
           <p className="admin__meta">
             {nombre(m.comptes.deuxRoles)} comptes ont les deux rôles, {nombre(m.comptes.sansRole)} n'ont pas encore choisi.{" "}
