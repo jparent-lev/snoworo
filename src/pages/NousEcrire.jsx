@@ -109,7 +109,7 @@ export default function NousEcrire() {
             />
           </label>
 
-          {/* Honeypot anti-spam, même technique que WaitlistForm. */}
+          {/* Honeypot anti-spam : champ invisible, seul un robot le remplit. */}
           <label className="nous-ecrire__honeypot" aria-hidden="true">
             Site web
             <input

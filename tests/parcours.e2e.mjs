@@ -508,20 +508,9 @@ async function connexion(cle, largeur = 1280) {
     const vtt = await p.evaluate(() => fetch("/videos/snowro-la-confiance.fr.vtt").then((r) => r.text()));
     assert.ok(vtt.startsWith("WEBVTT") && vtt.includes("Paiement sécurisé"));
   });
-  await test("liste d'attente : le lien du courriel confirme l'inscription ; un lien faux est refusé", async () => {
-    const jeton = "c".repeat(48);
-    await db.doc("listeAttente/zoe-liste@test.ca").set({
-      nom: "Zoé Liste", courriel: "zoe-liste@test.ca", ville: "Québec", confirmee: false,
-      jetonConfirmation: jeton, jetonExpireAt: ts(24 * H), createdAt: ts(0),
-    });
-    await p.goto(`http://localhost:4190/liste/confirmer?c=${encodeURIComponent("zoe-liste@test.ca")}&j=${jeton}`);
-    await p.getByRole("heading", { name: "Merci Zoé, c'est confirmé" }).waitFor();
-    assert.equal((await db.doc("listeAttente/zoe-liste@test.ca").get()).data().confirmee, true);
-    await p.goto(`http://localhost:4190/liste/confirmer?c=${encodeURIComponent("zoe-liste@test.ca")}&j=${"d".repeat(48)}`);
-    await p.getByRole("heading", { name: "Merci Zoé, c'est confirmé" }).waitFor();
-    await p.getByText("Votre inscription était déjà confirmée.").waitFor();
-    await p.goto("http://localhost:4190/liste/confirmer?c=inconnu%40test.ca&j=" + "e".repeat(48));
-    await p.getByRole("heading", { name: "Ce lien ne fonctionne pas" }).waitFor();
+  await test("liste d'attente fermée : un vieux lien de confirmation mène à l'accueil", async () => {
+    await p.goto(`http://localhost:4190/liste/confirmer?c=${encodeURIComponent("zoe-liste@test.ca")}&j=${"c".repeat(48)}`);
+    await p.waitForURL("http://localhost:4190/");
   });
   await ctx.close();
 }
