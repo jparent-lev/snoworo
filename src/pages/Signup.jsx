@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
 import { useNavigate, Link } from "react-router-dom";
 import { doc, setDoc } from "firebase/firestore";
@@ -9,17 +9,32 @@ import { mesurer } from "../lib/mesure";
 import { envoyerConfirmationCourriel } from "../lib/courriel";
 import { JEUNES_PILOTE } from "../lib/jeunes";
 
+const DELAI_MINIMAL_MS = 2500;
+
 export default function Signup() {
   const [displayName, setDisplayName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [erreur, setErreur] = useState(null);
   const [enCours, setEnCours] = useState(false);
+  // Anti-robot : un champ invisible qu'un humain laisse vide, et un délai
+  // minimal entre l'affichage du formulaire et l'envoi (un humain met
+  // plusieurs secondes à remplir nom, courriel et mot de passe).
+  const [siteWeb, setSiteWeb] = useState("");
+  const afficheA = useRef(0);
+  useEffect(() => {
+    afficheA.current = Date.now();
+  }, []);
   const navigate = useNavigate();
 
   async function onSubmit(e) {
     e.preventDefault();
     setErreur(null);
+    if (siteWeb || Date.now() - afficheA.current < DELAI_MINIMAL_MS) {
+      // Robot probable : aucun compte créé, aucune piste donnée.
+      navigate("/");
+      return;
+    }
     setEnCours(true);
     try {
       const { user } = await createUserWithEmailAndPassword(auth, email, password);
@@ -62,6 +77,11 @@ export default function Signup() {
             minLength={6}
             required
           />
+        </label>
+        {/* Champ piège : invisible, seul un robot le remplit. */}
+        <label className="auth-form__piege" aria-hidden="true">
+          Site web
+          <input type="text" name="siteWeb" tabIndex={-1} autoComplete="off" value={siteWeb} onChange={(e) => setSiteWeb(e.target.value)} />
         </label>
         {erreur && <p className="message-erreur" role="alert">{erreur}</p>}
         <p className="auth-form__mention">

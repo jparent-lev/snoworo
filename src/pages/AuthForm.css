@@ -200,3 +200,13 @@ a.auth-form__bouton {
 }
 .jeunes__securite ul { margin: 6px 0 0; padding-left: 18px; }
 .jeunes__securite li { margin-bottom: 2px; }
+
+/* Champ piège de l'inscription (anti-robot) : hors de la vue et du clavier. */
+.auth-form__piege {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}

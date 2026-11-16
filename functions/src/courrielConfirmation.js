@@ -4,6 +4,7 @@ import { FieldValue } from "firebase-admin/firestore";
 import { db } from "./admin.js";
 import { RESEND_API_KEY, echapperHtml, envoyerCourriel, gabaritCourriel } from "./courriels.js";
 import { URL_SITE } from "./paiements.js";
+import { nomRobot } from "./robots.js";
 
 // Confirmation de l'adresse courriel du compte. Le lien est produit par
 // Firebase Auth (generateEmailVerificationLink), mais envoyé par nos soins
@@ -51,6 +52,15 @@ export const envoyerConfirmationCourriel = onCall({ region: REGION, secrets: [RE
   const dernier = fiche.confirmationCourriel?.envoyeAt?.toMillis?.() ?? 0;
   if (Date.now() - dernier < DELAI_RENVOI_MS) {
     throw new HttpsError("resource-exhausted", "Un lien vient d'être envoyé. Attendez une minute avant d'en demander un autre.");
+  }
+
+  // Inscription automatisée : aucun courriel vers une adresse que le robot a
+  // sans doute prise à quelqu'un d'autre. Réponse identique à un envoi.
+  const raison = nomRobot(compte.displayName ?? fiche.displayName);
+  if (raison) {
+    await ref.set({ suspect: { raison, at: FieldValue.serverTimestamp() }, confirmationCourriel: { envoyeAt: FieldValue.serverTimestamp() } }, { merge: true });
+    console.warn(`Confirmation de courriel retenue (${raison}) pour ${uid}.`);
+    return { envoye: true };
   }
 
   const lien = lienSnowro(await getAuth().generateEmailVerificationLink(compte.email), URL_SITE.value());

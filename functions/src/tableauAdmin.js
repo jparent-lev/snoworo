@@ -2,6 +2,7 @@ import { onCall, HttpsError } from "firebase-functions/v2/https";
 import { defineString } from "firebase-functions/params";
 import { getAuth } from "firebase-admin/auth";
 import { db } from "./admin.js";
+import { nomRobot } from "./robots.js";
 
 // Tableau de bord admin (page /admin) : métriques d'acquisition et
 // d'utilisation, AGRÉGÉES seulement (aucun nom, courriel, adresse ni
@@ -56,8 +57,15 @@ export function calculerMetriques({ users, demandes }, maintenant = Date.now()) 
     total: 0, j1: 0, j7: 0, j30: 0,
     clients: 0, deneigeurs: 0, deuxRoles: 0, sansRole: 0,
     deneigeursAdresse: 0, deneigeursVersementActif: 0, cartes: 0, cellulaires: 0, smsConsentis: 0,
+    suspects: 0,
   };
   for (const u of users) {
+    // Inscriptions automatisées : comptées à part, hors de tous les chiffres.
+    // Un compte qui a choisi un rôle a été utilisé par quelqu'un : jamais suspect.
+    if (!(u.role ?? []).length && (u.suspect || nomRobot(u.displayName))) {
+      comptes.suspects++;
+      continue;
+    }
     const roles = u.role ?? [];
     const client = roles.includes("donneur_ouvrage");
     const deneigeur = roles.includes("deneigeur_x");
@@ -153,7 +161,7 @@ export const metriquesAdmin = onCall({ region: REGION }, async (request) => {
   }
   // Seulement les champs utiles (select) : rien d'identifiant n'est lu.
   const [users, demandes] = await Promise.all([
-    db.collection("users").select("role", "createdAt", "villeGeoId", "ville", "connectStatus", "carte", "telephoneVerifie", "consents").get(),
+    db.collection("users").select("role", "displayName", "suspect", "createdAt", "villeGeoId", "ville", "connectStatus", "carte", "telephoneVerifie", "consents").get(),
     db.collection("demandes").select("statut", "createdAt", "matchedAt", "faiteAt", "confirmeeAt", "paiement", "ville", "annulation", "signalement").get(),
   ]);
   const donnees = (s) => s.docs.map((x) => x.data());
