@@ -36,6 +36,7 @@ export { envoyerConfirmationCourriel } from "./courrielConfirmation.js";
 export { demanderLienCompte } from "./liensCompte.js";
 export { ajouterAdresse, supprimerAdresse } from "./carnet.js";
 export { purgerConservation } from "./conservation.js";
+export { relancerComptes, desabonnerRelances } from "./relancesSerie.js";
 export { fermerCompte } from "./compte.js";
 export { avertirDeneigeursNouvelleDemande } from "./alertesDemandes.js";
 export { envoyerCodeTelephone, verifierCodeTelephone, retirerTelephone } from "./telephone.js";

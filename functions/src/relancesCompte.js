@@ -1,7 +1,7 @@
 import { echapperHtml, gabaritCourriel } from "./courriels.js";
 
-// Gabarits des courriels de relance (comptes incomplets). Purs et testables :
-// la série elle-même (qui envoie quoi, quand) viendra s'appuyer dessus.
+// Gabarits des courriels de relance (comptes incomplets), purs et testables.
+// La série (qui reçoit quoi, quand) est dans relancesSerie.js.
 // Trois courriels au plus par personne, seulement l'étape qui manque.
 
 export const ETAPES = {

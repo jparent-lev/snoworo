@@ -31,10 +31,13 @@ service cloud.firestore {
       // parentId, jeune, jeunes : liaison parent et jeune déneigeur et règles
       // du parent (functions/src/jeunes.js) ; le rôle d'un jeune est aussi géré
       // par le serveur (voir plus bas).
+      // suspect : inscription automatisée repérée (functions/src/robots.js).
+      // relancesCompte : courriels de relance envoyés et jeton de désabonnement
+      // (functions/src/relancesSerie.js).
       return ['consents', 'proSubscription', 'ville', 'villeGeoId', 'stripeConnectAccountId', 'connectStatus', 'tentativeCompteStripe',
               'ratingAvg', 'ratingCount', 'ratingCriteres', 'nbJobsCompletees', 'stripeCustomerId', 'carte', 'carteMiseAJourAt',
               'telephoneVerifie', 'telephoneVerifieAt', 'stripeMode', 'confirmationCourriel',
-              'parentId', 'jeune', 'jeunes'];
+              'parentId', 'jeune', 'jeunes', 'suspect', 'relancesCompte'];
     }
 
     function abonneProActif() {

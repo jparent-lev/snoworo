@@ -11,6 +11,7 @@ import Confidentialite from "./pages/Confidentialite";
 import Conditions from "./pages/Conditions";
 import Medias, { PlancheLogos } from "./pages/Medias";
 import Admin from "./pages/Admin";
+import DesabonnerRelances from "./pages/DesabonnerRelances";
 import ConfirmerCourriel from "./pages/ConfirmerCourriel";
 import RejoindreJeune from "./pages/RejoindreJeune";
 import { JEUNES_PILOTE } from "./lib/jeunes";
@@ -43,6 +44,7 @@ export default function App() {
         {/* Liste d'attente fermée : les vieux liens de confirmation mènent à l'accueil. */}
         <Route path="/liste/confirmer" element={<Navigate to="/" replace />} />
         <Route path="/courriel/confirmer" element={<ConfirmerCourriel />} />
+        <Route path="/courriels/desabonner" element={<DesabonnerRelances />} />
         {JEUNES_PILOTE && <Route path="/jeune/rejoindre" element={<RejoindreJeune />} />}
         {/* Sur le test seulement (VITE_PAGE_CREDIT_IMPOT, .env.test) ; ailleurs, retour à l'accueil. */}
         <Route path="/credit-impot" element={PAGE_CREDIT_IMPOT ? <CreditImpot /> : <Navigate to="/" replace />} />
