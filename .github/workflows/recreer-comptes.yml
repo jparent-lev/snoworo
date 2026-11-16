@@ -1,0 +1,38 @@
+# Recrée le compte de connexion des fiches orphelines (compte Auth supprimé
+# par erreur). Lancement manuel ; simulation sauf recreer=oui.
+name: Recréer des comptes de connexion
+
+on:
+  workflow_dispatch:
+    inputs:
+      recreer:
+        description: "Taper « oui » pour recréer (sinon : simulation)"
+        required: false
+        default: "non"
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  recreer:
+    if: github.ref_name == 'main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+      - name: Installer les dépendances des fonctions
+        working-directory: functions
+        run: npm ci
+      - uses: google-github-actions/auth@v3
+        with:
+          workload_identity_provider: ${{ vars.GCP_WIF_PROVIDER }}
+          service_account: ${{ vars.GCP_SA_DEPLOIEMENT }}
+      - name: Recréer
+        env:
+          GCLOUD_PROJECT: snowro-app
+          RECREER: ${{ inputs.recreer }}
+        run: node scripts/recreer-comptes.mjs
