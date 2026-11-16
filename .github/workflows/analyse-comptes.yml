@@ -1,0 +1,32 @@
+# Analyse en lecture seule des comptes de production (inscriptions
+# automatisées). Lancement manuel. Journaux : aucune donnée personnelle.
+name: Analyse des comptes
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  analyser:
+    if: github.ref_name == 'main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+      - name: Installer les dépendances des fonctions
+        working-directory: functions
+        run: npm ci
+      - uses: google-github-actions/auth@v3
+        with:
+          workload_identity_provider: ${{ vars.GCP_WIF_PROVIDER }}
+          service_account: ${{ vars.GCP_SA_DEPLOIEMENT }}
+      - name: Analyser
+        env:
+          GCLOUD_PROJECT: snowro-app
+        run: node scripts/analyse-comptes.mjs
