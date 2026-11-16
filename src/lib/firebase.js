@@ -1,4 +1,5 @@
 import { initializeApp } from "firebase/app";
+import { ReCaptchaEnterpriseProvider, initializeAppCheck } from "firebase/app-check";
 import { connectAuthEmulator, getAuth } from "firebase/auth";
 import { connectFirestoreEmulator, getFirestore } from "firebase/firestore";
 import { connectFunctionsEmulator, getFunctions } from "firebase/functions";
@@ -13,6 +14,17 @@ const firebaseConfig = {
 };
 
 export const app = initializeApp(firebaseConfig);
+
+// App Check (reCAPTCHA Enterprise, invisible) : prouve à Firebase que chaque
+// appel vient du vrai site, pas d'un robot qui appelle les API directement.
+// Inactif tant que VITE_RECAPTCHA_CLE est vide, et toujours sur les émulateurs.
+// La clé de site est publique (elle est servie dans la page).
+if (import.meta.env.VITE_RECAPTCHA_CLE && import.meta.env.VITE_UTILISER_EMULATEURS !== "1") {
+  initializeAppCheck(app, {
+    provider: new ReCaptchaEnterpriseProvider(import.meta.env.VITE_RECAPTCHA_CLE),
+    isTokenAutoRefreshEnabled: true,
+  });
+}
 export const auth = getAuth(app);
 export const db = getFirestore(app);
 export const functions = getFunctions(app, "northamerica-northeast1");
