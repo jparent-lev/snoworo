@@ -5,7 +5,10 @@
 // les domaines de courriel rares sont regroupés sous « autre ».
 import { createRequire } from "node:module";
 
-const { getAuth } = createRequire(new URL("../functions/package.json", import.meta.url))("firebase-admin/auth");
+const exiger = createRequire(new URL("../functions/package.json", import.meta.url));
+const { getAuth } = exiger("firebase-admin/auth");
+const { initializeApp } = exiger("firebase-admin/app");
+const { GoogleAuth } = exiger("google-auth-library");
 
 if (process.env.GCLOUD_PROJECT !== "snowro-app") throw new Error("Production seulement (snowro-app).");
 // Même contournement que l'annonce d'ouverture : firebase-admin 12 ne lit pas
@@ -23,10 +26,30 @@ const voyelles = (s) => (String(s).match(/[aeiouyàâéèêëîïôùûü]/gi) ?
 const majusculesInternes = (s) => /\p{Ll}\p{Lu}/u.test(String(s));
 
 // Comptes Auth (date de création, dernière connexion, courriel vérifié).
+// Firebase Auth passe par les identifiants de l'app : on lui fournit un jeton
+// obtenu par google-auth-library, qui sait lire ceux de la fédération GitHub.
+// Sur l'émulateur, l'app par défaut suffit.
+let appAuth;
+if (!process.env.FIREBASE_AUTH_EMULATOR_HOST) {
+  const google = new GoogleAuth({ scopes: ["https://www.googleapis.com/auth/cloud-platform"] });
+  const client = await google.getClient();
+  appAuth = initializeApp(
+    {
+      projectId: "snowro-app",
+      credential: {
+        getAccessToken: async () => {
+          const { token } = await client.getAccessToken();
+          return { access_token: token, expires_in: 3000 };
+        },
+      },
+    },
+    "analyse",
+  );
+}
 const auth = new Map();
 let page;
 do {
-  const r = await getAuth().listUsers(1000, page);
+  const r = await getAuth(appAuth).listUsers(1000, page);
   r.users.forEach((u) => auth.set(u.uid, u));
   page = r.pageToken;
 } while (page);
