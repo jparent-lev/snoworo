@@ -1,0 +1,36 @@
+# Envoie un exemple de chaque courriel de relance, marqué [TEST], au compte
+# admin (ADMIN_UIDS). Lancement manuel.
+name: Aperçu des courriels de relance
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  envoyer:
+    if: github.ref_name == 'main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+      - name: Installer les dépendances des fonctions
+        working-directory: functions
+        run: npm ci
+      - uses: google-github-actions/auth@v3
+        with:
+          workload_identity_provider: ${{ vars.GCP_WIF_PROVIDER }}
+          service_account: ${{ vars.GCP_SA_DEPLOIEMENT }}
+      - name: Envoyer
+        env:
+          GCLOUD_PROJECT: snowro-app
+        run: |
+          RESEND_API_KEY="$(gcloud secrets versions access latest --secret=RESEND_API_KEY --project snowro-app)"
+          echo "::add-mask::$RESEND_API_KEY"
+          export RESEND_API_KEY
+          node scripts/apercu-relances.mjs
