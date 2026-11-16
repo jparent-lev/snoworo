@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import { Icone } from "./Decors";
 import "./JeunesDeneigeurs.css";
 
 // Accueil, projet pilote des jeunes déneigeurs (14 à 17 ans), affiché
@@ -7,21 +8,25 @@ import "./JeunesDeneigeurs.css";
 // (docs/jeunes.md). Rien ici ne promet plus que ce que l'app fait vraiment.
 const MECANISMES = [
   {
+    icone: "invitation",
     titre: "Vous l'invitez",
     texte:
       "Depuis vos paramètres, vous inscrivez son prénom, son année de naissance et son courriel. Il reçoit un lien pour créer son propre accès, rattaché à votre compte.",
   },
   {
+    icone: "regles",
     titre: "Vous fixez ses règles",
     texte:
       "Heures permises, distance maximale de la maison et nombre de demandes par jour. Il ne voit que les demandes qui les respectent, et vous les modifiez en tout temps.",
   },
   {
+    icone: "avis",
     titre: "Vous êtes avisé",
     texte:
-      "Un courriel et un texto à chaque demande qu'il accepte, pour savoir où il est et quand. Comme pour tout déneigeur, une demande acceptée est un engagement envers le client.",
+      "Vous recevez un avis par courriel, et par texto si vous le souhaitez, pour chaque demande qu'il accepte : vous savez où il est et quand. Comme pour tout déneigeur, une demande acceptée est un engagement envers le client.",
   },
   {
+    icone: "bouclier",
     titre: "Vous gardez la main",
     texte:
       "Les paiements arrivent dans votre compte de versement. En cas de signalement, vous recevez l'avis et les messages échangés. Une pause ou un retrait se fait en un clic.",
@@ -77,9 +82,9 @@ export default function JeunesDeneigeurs() {
       </div>
 
       <div className="jeunes-accueil__grille">
-        {MECANISMES.map((m, i) => (
+        {MECANISMES.map((m) => (
           <div key={m.titre} className="jeunes-accueil__carte">
-            <span className="jeunes-accueil__numero">{i + 1}</span>
+            <Icone nom={m.icone} />
             <h3 className="jeunes-accueil__carte-titre">{m.titre}</h3>
             <p className="landing__p">{m.texte}</p>
           </div>

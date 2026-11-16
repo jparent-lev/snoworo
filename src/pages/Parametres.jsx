@@ -28,6 +28,7 @@ import { JEUNES_PILOTE, resumeRegles } from "../lib/jeunes";
 import LieuAdresse from "../components/LieuAdresse";
 import { LIEU_VIDE, ajouterAdresse, ecouterCarnet, erreurLieu, libelleLien, supprimerAdresse } from "../lib/carnet";
 import "./Parametres.css";
+import Pastille from "../components/Pastille";
 import { messageServeur } from "../lib/erreurs";
 
 // Les consentements liés à Snowro Pro (zonesAgregees, offresCiblees) sont
@@ -700,20 +701,6 @@ function SectionCarnet({ uid }) {
         </Modale>
       )}
     </>
-  );
-}
-
-// Pastille d'état, la même partout dans les paramètres : ✓ vert quand c'est
-// en place, ○ neutre sinon (ton : ok | neutre | attente | alerte).
-function Pastille({ ton, children }) {
-  const icone = { ok: "✓", attente: "…", alerte: "!", neutre: "○" }[ton];
-  return (
-    <span className={`statut-connect statut-connect--${ton}`}>
-      <span className="statut-connect__icone" aria-hidden="true">
-        {icone}
-      </span>
-      {children}
-    </span>
   );
 }
 

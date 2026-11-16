@@ -133,18 +133,6 @@
   gap: 8px;
 }
 
-.jeunes-accueil__numero {
-  width: 30px;
-  height: 30px;
-  border-radius: 50%;
-  display: grid;
-  place-items: center;
-  background: var(--color-ardoise);
-  color: var(--color-texte-sur-sombre);
-  font-weight: 700;
-  font-size: 14px;
-}
-
 .jeunes-accueil__carte-titre {
   font-size: 19px;
   margin: 4px 0 0;

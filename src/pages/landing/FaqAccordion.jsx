@@ -97,7 +97,7 @@ const THEMES = [
         ? [
             {
               q: "Mon ado de 14 à 17 ans peut-il déneiger avec Snowro ?",
-              r: "Oui, dans le cadre d'un projet pilote et avec votre accord. Vous créez votre compte, puis vous l'invitez depuis vos paramètres (section Jeune déneigeur). Vous fixez ses règles une fois : heures permises, distance de la maison et nombre de demandes par jour. Il ne voit que les demandes qui les respectent. Vous êtes avisé par courriel et texto à chaque demande qu'il accepte. Comme pour tout déneigeur, une demande acceptée ne s'annule pas : vous ajustez ses règles ou le mettez en pause pour les prochaines. Les paiements arrivent dans votre compte de versement, et en cas de signalement vous recevez l'avis et les messages échangés.",
+              r: "Oui, dans le cadre d'un projet pilote et avec votre accord. Vous créez votre compte, puis vous l'invitez depuis vos paramètres (section Jeune déneigeur). Vous fixez ses règles une fois : heures permises, distance de la maison et nombre de demandes par jour. Il ne voit que les demandes qui les respectent. Vous êtes avisé par courriel, et par texto si vous le souhaitez, à chaque demande qu'il accepte. Comme pour tout déneigeur, une demande acceptée ne s'annule pas : vous ajustez ses règles ou le mettez en pause pour les prochaines. Les paiements arrivent dans votre compte de versement, et en cas de signalement vous recevez l'avis et les messages échangés.",
             },
           ]
         : []),
