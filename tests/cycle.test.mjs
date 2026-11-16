@@ -533,6 +533,62 @@ await test("fermer son compte : profil, connexion, adresses, photos, et messages
 });
 
 process.env.URL_SITE = "https://snowro.com";
+console.log("Relances de compte");
+await test("relances : étapes manquantes, bordée de demain, choix du courriel (au plus 3, un par jour)", async () => {
+  const rs = await import(`${REPO}functions/src/relancesSerie.js`);
+  const den = { role: ["deneigeur_x"], displayName: "Marc Roy" };
+  assert.deepEqual(rs.etapesManquantes(den, { paiement: true }), ["adresseService", "versement"]);
+  assert.deepEqual(rs.etapesManquantes({ role: ["donneur_ouvrage"] }, { courrielConfirme: false, nbAdresses: 0, paiement: true }), ["courriel", "adresseClient", "carte"]);
+  assert.deepEqual(rs.etapesManquantes({ role: ["donneur_ouvrage"], carte: {} }, { courrielConfirme: true, nbAdresses: 1, paiement: true }), []);
+  const lundi = Date.UTC(2026, 10, 16, 15); // lundi 16 novembre, 10 h à Québec
+  const meteo = { periodes: [{ nom: "Ce soir et cette nuit", cm: null }, { nom: "Mardi", cm: { min: 10, max: 15 } }, { nom: "Mardi soir et nuit", cm: { min: 2, max: 4 } }] };
+  assert.deepEqual(rs.bordeeDeDemain(meteo, lundi), { jour: "mardi", cm: 19 });
+  assert.equal(rs.bordeeDeDemain({ periodes: [{ nom: "Mardi", cm: { min: 2, max: 5 } }] }, lundi), null, "sous 10 cm");
+  const H = 3600e3;
+  const choix = (profil, o = {}) => rs.prochaineRelance({ profil, manquantes: o.manquantes ?? ["versement"], bordee: o.bordee ?? null, maintenant: lundi });
+  assert.equal(choix({ ...den, createdAt: lundi - 2 * H }), null, "trop tôt");
+  assert.equal(choix({ ...den, createdAt: lundi - 21 * H }), "etapes");
+  assert.equal(choix({ ...den, createdAt: lundi - 2 * H }, { bordee: { jour: "mardi", cm: 19 } }), "bordee", "la bordée passe en premier");
+  const apres1 = { ...den, createdAt: lundi - 5 * 24 * H, relancesCompte: { envois: [{ type: "etapes", at: lundi - 4 * 24 * H }] } };
+  assert.equal(choix(apres1), "versement");
+  assert.equal(choix({ ...apres1, relancesCompte: { envois: [{ type: "etapes", at: lundi - 2 * H }] } }), null, "un par jour au plus");
+  assert.equal(choix({ ...den, createdAt: 0, relancesCompte: { envois: [{ type: "etapes", at: 0 }, { type: "versement", at: 0 }, { type: "bordee", at: 0 }] } }), null, "trois au plus");
+  assert.equal(choix({ ...den, createdAt: 0, rappelsCompteCourriel: false }), null, "désabonné");
+  assert.equal(choix({ role: [], displayName: "Marc", createdAt: 0 }), null, "sans rôle");
+  assert.equal(choix({ ...den, displayName: "aAAaaAaAaAaAAaaAAA", createdAt: 0 }), null, "robot");
+  assert.equal(choix({ ...den, createdAt: 0 }, { manquantes: ["carte"] }), null, "il ne manque que la carte, facultative");
+});
+await test("relances : envoi quotidien réel (une fois), puis désabonnement en un clic", async () => {
+  const rs = await import(`${REPO}functions/src/relancesSerie.js`);
+  const { getAuth: authAdmin } = createRequire(`${REPO}functions/package.json`)("firebase-admin/auth");
+  const u = await authAdmin().createUser({ email: "relance@exemple.ca", password: "motdepasse", displayName: "Rémi Relance" });
+  const { Timestamp: T } = await import(`${REPO}functions/node_modules/firebase-admin/lib/firestore/index.js`);
+  await db.doc(`users/${u.uid}`).set({ displayName: "Rémi Relance", role: ["deneigeur_x"], createdAt: T.fromMillis(Date.now() - 2 * 24 * 3600e3) });
+  const envoisR = [];
+  const fetchAvant = globalThis.fetch;
+  globalThis.fetch = async (url, o) => {
+    if (String(url).includes("resend")) { envoisR.push(JSON.parse(o.body)); return { ok: true, json: async () => ({ id: "r1" }) }; }
+    return fetchAvant(url, o);
+  };
+  try {
+    await rs.relancerComptesMaintenant();
+    await rs.relancerComptesMaintenant();
+  } finally {
+    globalThis.fetch = fetchAvant;
+  }
+  const miens = envoisR.filter((e) => e.to[0] === "relance@exemple.ca");
+  assert.equal(miens.length, 1, "un seul courriel malgré deux passages");
+  assert.match(miens[0].subject, /Il vous reste 1 étape pour être prêt avec Snowro/);
+  assert.match(miens[0].html, /Bonjour Rémi,/);
+  const fiche = (await db.doc(`users/${u.uid}`).get()).data();
+  assert.equal(fiche.relancesCompte.envois[0].type, "etapes");
+  const jeton = fiche.relancesCompte.jeton;
+  assert.ok(miens[0].html.includes(`/courriels/desabonner?u=${u.uid}&amp;j=${jeton}`));
+  assert.deepEqual(await rs.desabonnerRelances.run({ data: { u: u.uid, j: "0".repeat(32) } }), { ok: true }, "faux jeton : même réponse");
+  assert.equal((await db.doc(`users/${u.uid}`).get()).data().rappelsCompteCourriel, undefined);
+  await rs.desabonnerRelances.run({ data: { u: u.uid, j: jeton } });
+  assert.equal((await db.doc(`users/${u.uid}`).get()).data().rappelsCompteCourriel, false);
+});
 console.log("Avis de nouvelles demandes aux déneigeurs");
 const al = await import(`${REPO}functions/src/alertesDemandes.js`);
 await test("nouvelle demande : courriel aux déneigeurs de la ville seulement, sans adresse, au plus un par 20 minutes", async () => {
