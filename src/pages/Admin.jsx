@@ -248,6 +248,7 @@ export default function Admin() {
           </div>
           <p className="admin__meta">
             {nombre(m.comptes.deuxRoles)} comptes ont les deux rôles, {nombre(m.comptes.sansRole)} n'ont pas encore choisi.{" "}
+            {m.comptes.suspects ? `${nombre(m.comptes.suspects)} inscriptions automatisées écartées de ces chiffres. ` : ""}
             {nombre(m.comptes.cellulaires)} cellulaires vérifiés, {nombre(m.comptes.smsConsentis)} consentements aux textos.
           </p>
           <BarresParJour titre="Nouveaux comptes par jour" serie={m.parJour} cle="comptes" />

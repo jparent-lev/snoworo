@@ -526,11 +526,28 @@ async function connexion(cle, largeur = 1280) {
     assert.equal(await p.getByRole("link", { name: "politique de confidentialité" }).getAttribute("href"), "/confidentialite");
     assert.equal(await p.getByRole("link", { name: "conditions d'utilisation" }).getAttribute("href"), "/conditions");
   });
+  await test("inscription : un robot (champ piège rempli ou envoi immédiat) ne crée aucun compte", async () => {
+    for (const piege of [true, false]) {
+      await p.goto("http://localhost:4190/inscription");
+      await p.getByLabel("Nom").fill("XkQzWvRtPlMnBvCx");
+      await p.getByLabel("Courriel").fill(`robot-${piege}@test.ca`);
+      await p.getByLabel("Mot de passe").fill("motdepasse");
+      if (piege) {
+        await p.waitForTimeout(2600);
+        await p.locator('input[name="siteWeb"]').fill("https://pourriel.example", { force: true });
+      }
+      await p.getByRole("button", { name: "Créer mon compte" }).click();
+      await p.waitForURL("http://localhost:4190/");
+      await assert.rejects(auth.getUserByEmail(`robot-${piege}@test.ca`), /no user record|not found/i);
+    }
+    await p.goto("http://localhost:4190/inscription");
+  });
   await test("inscription simple : aucun choix de rôle, le tableau de bord le demande à la première visite", async () => {
     assert.equal(await p.getByText("Je veux…").count(), 0);
     await p.getByLabel("Nom").fill("Léo Neuf");
     await p.getByLabel("Courriel").fill("leo@test.ca");
     await p.getByLabel("Mot de passe").fill("motdepasse");
+    await p.waitForTimeout(2600); // un humain prend quelques secondes
     await p.getByRole("button", { name: "Créer mon compte" }).click();
     await p.getByRole("heading", { name: "Comment souhaitez-vous utiliser Snowro ?" }).waitFor();
     await p.getByRole("checkbox", { name: /Je veux déneiger/ }).click();

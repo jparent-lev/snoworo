@@ -153,6 +153,27 @@ await test("courriel non confirmé : publier et accepter refusés ; lien Snowro 
   assert.match(c.texte, /https:\/\/snowro\.com\/courriel\/confirmer\?code=x&y=1/);
   assert.doesNotMatch(c.html + c.texte, /—/, "pas de tiret cadratin");
 });
+await test("robots : nom repéré, aucun courriel de confirmation, compte écarté des chiffres admin", async () => {
+  const rb = await import(`${REPO}functions/src/robots.js`);
+  for (const n of ["aAAaaAaAaAaAAaaAAA", "AAAaAaaAaAaaaAaA", "XkQzWvRtPlMnBvCx"]) assert.ok(rb.nomRobot(n), `robot : « ${n} »`);
+  for (const n of ["", "Marc", "Jean-Philippe Tremblay", "MacDonald", "Marie-Ève", "Léo Neuf", "Christophersonne"]) assert.equal(rb.nomRobot(n), null, `humain : « ${n} »`);
+  const { getAuth: authAdmin } = createRequire(`${REPO}functions/package.json`)("firebase-admin/auth");
+  const robot = await authAdmin().createUser({ email: "robot-conf@exemple.ca", password: "motdepasse", displayName: "aAAaaAaAaAaAAaaAAA" });
+  const cc = await import(`${REPO}functions/src/courrielConfirmation.js`);
+  const appels = [];
+  const fetchAvant = globalThis.fetch;
+  globalThis.fetch = async (url, o) => { appels.push(String(url)); return fetchAvant(url, o); };
+  try {
+    assert.deepEqual(await cc.envoyerConfirmationCourriel.run({ auth: { uid: robot.uid } }), { envoye: true }, "même réponse qu'un envoi");
+  } finally {
+    globalThis.fetch = fetchAvant;
+  }
+  assert.equal(appels.filter((u) => u.includes("resend")).length, 0, "aucun courriel");
+  assert.equal((await db.doc(`users/${robot.uid}`).get()).data().suspect.raison, "majuscules aléatoires");
+  const ta = await import(`${REPO}functions/src/tableauAdmin.js`);
+  const m = ta.calculerMetriques({ users: [{ role: [], displayName: "aAAaaAaAaAaAAaaAAA" }, { role: ["donneur_ouvrage"], displayName: "Marc" }, { role: [], suspect: { raison: "x" } }], demandes: [] });
+  assert.deepEqual({ t: m.comptes.total, s: m.comptes.suspects }, { t: 1, s: 2 });
+});
 await test("liens de compte : même réponse sans compte, rien envoyé ; liens Snowro ; courriels en français", async () => {
   const lc = await import(`${REPO}functions/src/liensCompte.js`);
   const appels = [];
