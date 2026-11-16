@@ -294,6 +294,28 @@ export default function Parametres() {
         </>
       )}
 
+      {roles.length > 0 && (
+        <div className="parametres__item" id="courriels">
+          <div className="parametres__item-texte">
+            <h3>Rappels pour compléter mon compte</h3>
+            <p>
+              Au plus trois courriels, seulement tant qu'il manque une étape à votre compte. Les avis liés à vos demandes
+              ne sont pas touchés.
+            </p>
+          </div>
+          <button
+            type="button"
+            className={`parametres__toggle ${profile.rappelsCompteCourriel !== false ? "parametres__toggle--actif" : ""}`}
+            onClick={() => setDoc(doc(db, "users", user.uid), { rappelsCompteCourriel: profile.rappelsCompteCourriel === false }, { merge: true })}
+            role="switch"
+            aria-checked={profile.rappelsCompteCourriel !== false}
+            aria-label="Rappels pour compléter mon compte"
+          >
+            <span className="parametres__toggle-pastille" />
+          </button>
+        </div>
+      )}
+
       {CONSENTS.length > 0 && (
         <>
           <h1>Vos consentements</h1>

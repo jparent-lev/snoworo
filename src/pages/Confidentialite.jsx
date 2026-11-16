@@ -45,7 +45,9 @@ export default function Confidentialite() {
       <ul>
         <li>
           <strong>Identité et contact :</strong> votre nom ou prénom d'affichage, votre courriel et, si vous le
-          fournissez, votre numéro de cellulaire (vérifié par un code reçu par texto).
+          fournissez, votre numéro de cellulaire (vérifié par un code reçu par texto). Tant qu'il manque une étape à
+          votre compte, votre courriel sert aussi à vous le rappeler : trois courriels au plus, que vous pouvez
+          désactiver d'un clic ou dans vos paramètres.
         </li>
         <li>
           <strong>Adresses et localisation :</strong> l'adresse à déneiger d'une demande (avec le numéro
@@ -158,7 +160,7 @@ export default function Confidentialite() {
         </li>
         <li>
           <strong>Resend :</strong> envoi des courriels de Snowro (confirmation d'inscription, avis liés à vos
-          demandes).
+          demandes, rappels pour compléter votre compte).
         </li>
         <li>
           <strong>Twilio :</strong> envoi des textos, seulement si vous avez accordé le consentement « Notifications

@@ -508,6 +508,10 @@ async function connexion(cle, largeur = 1280) {
     const vtt = await p.evaluate(() => fetch("/videos/snowro-la-confiance.fr.vtt").then((r) => r.text()));
     assert.ok(vtt.startsWith("WEBVTT") && vtt.includes("Paiement sécurisé"));
   });
+  await test("rappels de compte : un lien de désabonnement incomplet est refusé, sans connexion", async () => {
+    await p.goto("http://localhost:4190/courriels/desabonner?u=x");
+    await p.getByRole("heading", { name: "Ce lien ne fonctionne pas" }).waitFor();
+  });
   await test("liste d'attente fermée : un vieux lien de confirmation mène à l'accueil", async () => {
     await p.goto(`http://localhost:4190/liste/confirmer?c=${encodeURIComponent("zoe-liste@test.ca")}&j=${"c".repeat(48)}`);
     await p.waitForURL("http://localhost:4190/");
