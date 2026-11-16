@@ -1,4 +1,5 @@
 import { onSchedule } from "firebase-functions/v2/scheduler";
+import { defineBoolean } from "firebase-functions/params";
 import { onCall, HttpsError } from "firebase-functions/v2/https";
 import { logger } from "firebase-functions/v2";
 import { getAuth } from "firebase-admin/auth";
@@ -16,6 +17,9 @@ import { nomRobot } from "./robots.js";
 // ---------------------------------------------------------------------------
 
 const REGION = "northamerica-northeast1";
+// Interrupteur de la série : true sur test (functions/.env.snowro-test), false
+// en production tant que la série n'est pas validée (functions/.env.snowro-app).
+export const RELANCES_ACTIVES = defineBoolean("RELANCES_ACTIVES", { default: false });
 const FUSEAU = "America/Toronto";
 const ROLE_CLIENT = "donneur_ouvrage";
 const ROLE_DENEIGEUR = "deneigeur_x";
@@ -114,7 +118,7 @@ export async function relancerComptesMaintenant({ maintenant = Date.now() } = {}
 // Tous les jours à 10 h 17 : la veille d'une bordée, il reste le temps d'agir.
 export const relancerComptes = onSchedule(
   { schedule: "every day 10:17", timeZone: FUSEAU, region: REGION, secrets: [RESEND_API_KEY] },
-  () => relancerComptesMaintenant(),
+  () => (RELANCES_ACTIVES.value() ? relancerComptesMaintenant() : null),
 );
 
 // Lien « Ne plus recevoir ces rappels » : sans connexion, avec le jeton du
