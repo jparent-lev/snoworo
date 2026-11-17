@@ -393,6 +393,9 @@ function SectionPaiement({ profile, deneigeur }) {
   const [enCours, setEnCours] = useState(false);
   const [erreur, setErreur] = useState(null);
   const [info, setInfo] = useState(null);
+  // Avant le formulaire de Stripe : il parle d'« entreprise », ce qui laisse
+  // croire qu'il en faut une (retour d'un déneigeur, novembre 2026).
+  const [avantStripe, setAvantStripe] = useState(false);
   const carte = carteAjoutee ?? profilStripe(profile).carte;
   const statut = profilStripe(profile).connectStatus ?? "non_demarre";
   const infoStatut = STATUTS_CONNECT[statut] ?? STATUTS_CONNECT.en_attente;
@@ -483,12 +486,47 @@ function SectionPaiement({ profile, deneigeur }) {
               {info && <p className="champ-adresse__ok" role="status">{info}</p>}
               {erreur && <p className="message-erreur" role="alert">{erreur}</p>}
             </div>
-            <button type="button" className="auth-form__bouton" style={{ flex: "none" }} disabled={enCours} onClick={ouvrirStripe}>
+            <button
+              type="button"
+              className="auth-form__bouton"
+              style={{ flex: "none" }}
+              disabled={enCours}
+              onClick={() => (statut === "actif" ? ouvrirStripe() : setAvantStripe(true))}
+            >
               {enCours ? "Ouverture…" : statut === "actif" ? "Voir mes versements" : statut === "non_demarre" ? "Configurer" : "Continuer"}
             </button>
           </div>
         )}
       </div>
+      {avantStripe && (
+        <Modale titre="Avant de passer chez Stripe" onFermer={() => setAvantStripe(false)}>
+          <p>
+            Stripe, notre fournisseur de paiement, va vous poser quelques questions sur votre « entreprise ». Comme déneigeur
+            de quartier, c'est simplement vous, comme travailleur autonome : <strong>aucune entreprise n'est requise.</strong>
+          </p>
+          <ul className="parametres__liste-fermeture">
+            <li>Le site Web (snowro.com) et la description sont déjà remplis pour vous : vous pouvez les laisser tels quels.</li>
+            <li>Pour le secteur d'activité, choisissez celui qui ressemble le plus au déneigement ou à l'entretien.</li>
+            <li>Entrez ensuite votre identité et votre compte bancaire, une seule fois.</li>
+          </ul>
+          <div className="modale__actions">
+            <button type="button" className="btn btn--fantome" onClick={() => setAvantStripe(false)}>
+              Plus tard
+            </button>
+            <button
+              type="button"
+              className="btn btn--principal"
+              data-autofocus
+              onClick={() => {
+                setAvantStripe(false);
+                ouvrirStripe();
+              }}
+            >
+              Continuer vers Stripe
+            </button>
+          </div>
+        </Modale>
+      )}
     </>
   );
 }
