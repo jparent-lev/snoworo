@@ -316,7 +316,9 @@ function identiteParticulier(profil) {
 function profilActivite() {
   return {
     business_url: URL_SITE.value(),
-    product_description: "Déneigement résidentiel ponctuel (entrées, balcons, stationnements) offert par l'entremise de Snowro",
+    // À la première personne : le déneigeur lit ce texte dans le formulaire de
+    // Stripe et doit s'y reconnaître (pas l'impression d'un compte de Snowro).
+    product_description: "Je déneige des entrées, balcons et stationnements dans mon quartier, à la demande, par la plateforme Snowro (snowro.com).",
   };
 }
 
