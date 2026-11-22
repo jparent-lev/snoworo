@@ -129,12 +129,20 @@ async function connexion(cle, largeur = 1280) {
     await p.selectOption(".rangee__tri select", "proches");
   });
   await p.screenshot({ path: `${D}/e2e-marc-1280.png`, fullPage: true });
-  await test("Ordinateur : liens d'aide au pied ; « Me déconnecter » caché dans Paramètres (déjà dans l'en-tête)", async () => {
+  await test("Ordinateur : liens d'aide au pied ; menu de profil (Paramètres, Se déconnecter) ; plus de déconnexion dans Paramètres", async () => {
     const aide = p.getByRole("navigation", { name: "Aide" });
     assert.equal(await aide.getByRole("link", { name: "Nous écrire" }).getAttribute("href"), "/nous-ecrire");
-    await p.getByRole("link", { name: "Paramètres" }).click();
+    await p.getByRole("button", { name: "Mon compte", exact: true }).click();
+    const menu = p.getByRole("menu", { name: "Mon compte" });
+    await menu.getByRole("menuitem", { name: "Se déconnecter" }).waitFor();
+    await p.screenshot({ path: `${D}/e2e-menu-profil-1280.png` });
+    await p.keyboard.press("Escape");
+    assert.equal(await menu.count(), 0, "Échap ferme le menu");
+    await p.getByRole("button", { name: "Mon compte", exact: true }).click();
+    await menu.getByRole("menuitem", { name: "Paramètres" }).click();
     await p.getByRole("heading", { name: "Votre adresse de service" }).waitFor();
-    assert.equal(await p.getByRole("button", { name: "Me déconnecter" }).isVisible(), false);
+    assert.equal(await menu.count(), 0, "le menu se ferme en changeant de page");
+    assert.equal(await p.getByRole("button", { name: /déconnecter/i }).count(), 0, "pas de déconnexion à côté de « Fermer mon compte »");
     await p.goBack();
     await p.getByRole("heading", { name: "Demandes près de chez vous" }).waitFor();
   });
@@ -366,8 +374,11 @@ async function connexion(cle, largeur = 1280) {
     await p.getByText("✓ Adresse reconnue : 155 Rue des Saules Est, Québec, QC, Canada").waitFor();
     assert.equal(await p.evaluate(() => document.documentElement.scrollWidth), 390);
     await p.screenshot({ path: `${D}/e2e-adresse-service-390.png`, fullPage: true });
-    // Mobile : « Me déconnecter » dans Paramètres (l'en-tête le cache) ; liens d'aide au pied.
-    assert.equal(await p.getByRole("button", { name: "Me déconnecter" }).isVisible(), true);
+    // Mobile : la déconnexion est dans le menu de profil ; liens d'aide au pied.
+    await p.getByRole("button", { name: "Mon compte", exact: true }).click();
+    await p.getByRole("menu", { name: "Mon compte" }).getByRole("menuitem", { name: "Se déconnecter" }).waitFor();
+    await p.screenshot({ path: `${D}/e2e-menu-profil-390.png` });
+    await p.keyboard.press("Escape");
     assert.equal(await p.getByRole("navigation", { name: "Aide" }).getByRole("link", { name: "Aide" }).getAttribute("href"), "/#faq");
     await p.getByRole("button", { name: "Utiliser cette adresse" }).click();
     await p.getByText("✓ Mise à jour à partir de : 155 Rue des Saules Est, Québec, QC, Canada").waitFor();

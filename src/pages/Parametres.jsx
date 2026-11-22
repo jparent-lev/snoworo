@@ -375,11 +375,6 @@ export default function Parametres() {
         </>
       )}
 
-      {/* Sur ordinateur, « Déconnexion » est déjà dans l'en-tête ; il y est caché sous 700 px. */}
-      <button type="button" className="btn btn--fantome parametres__deconnexion" onClick={() => signOut(auth)}>
-        Me déconnecter
-      </button>
-
       <SectionFermeture />
     </div>
   );
