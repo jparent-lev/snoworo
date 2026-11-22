@@ -399,6 +399,60 @@
   flex-direction: column;
   gap: 14px;
   box-shadow: 0 24px 60px -24px rgba(59, 42, 31, 0.6);
+  /* Contenu plus haut que l'écran : la fenêtre défile, jamais coupée. */
+  max-height: calc(100dvh - 32px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+/* Titre et X restent en haut, boutons d'action en bas, pendant le défilement. */
+.modale > .modale__entete {
+  position: sticky;
+  top: -24px;
+  z-index: 1;
+  margin: -24px -24px 0;
+  padding: 24px 24px 10px;
+  background: var(--color-surface-carte);
+}
+
+.modale .modale__actions {
+  position: sticky;
+  bottom: -24px;
+  z-index: 1;
+  margin: 0 -24px -24px;
+  padding: 12px 24px calc(24px + env(safe-area-inset-bottom));
+  background: var(--color-surface-carte);
+  border-top: 1px solid var(--color-bordure);
+}
+
+/* Téléphone : plein écran. */
+@media (max-width: 600px) {
+  .modale__fond {
+    padding: 0;
+    place-items: stretch;
+  }
+
+  .modale {
+    max-width: none;
+    height: 100dvh;
+    max-height: 100dvh;
+    border-radius: 0;
+    padding-top: calc(24px + env(safe-area-inset-top));
+  }
+
+  .modale > .modale__entete {
+    top: calc(-24px - env(safe-area-inset-top));
+    margin-top: calc(-24px - env(safe-area-inset-top));
+    padding-top: calc(24px + env(safe-area-inset-top));
+  }
+
+  .modale .modale__actions {
+    margin-top: auto;
+  }
+
+  .modale--conversation {
+    height: 100dvh;
+  }
 }
 
 .modale h2 {
