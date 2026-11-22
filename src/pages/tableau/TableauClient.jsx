@@ -177,6 +177,10 @@ function RangHistorique({ demande: d, evaluable }) {
 function CarteDemandeClient({ demande: d, nouveau, conversationOuverte, onConversationFermee }) {
   // "augmenter" | "annuler" | "signaler" | "messages" | "confirmer" | "photo" | "carte"
   const [modale, setModale] = useState(conversationOuverte && d.deneigeurId ? "messages" : null);
+  // Lien du menu de profil alors que le tableau de bord est déjà ouvert.
+  useEffect(() => {
+    if (conversationOuverte && d.deneigeurId) setModale("messages");
+  }, [conversationOuverte, d.deneigeurId]);
   const [erreur, setErreur] = useState(null);
   const [adresse, setAdresse] = useState(null);
 

@@ -29,21 +29,6 @@
   color: var(--color-argile);
 }
 
-.layout__deconnexion {
-  background: none;
-  border: none;
-  color: var(--color-texte-secondaire);
-  font-family: var(--font-corps);
-  font-weight: 700;
-  font-size: 14px;
-  cursor: pointer;
-  padding: 0;
-}
-
-.layout__deconnexion:hover {
-  color: var(--color-argile);
-}
-
 .layout {
   min-height: 100svh;
   display: flex;
@@ -125,11 +110,6 @@
     display: inline-flex;
   }
 
-  /* Déconnexion reste accessible dans Paramètres. */
-  .layout__deconnexion {
-    display: none;
-  }
-
   .layout__entete {
     padding: 10px 16px;
     gap: 10px;
@@ -144,25 +124,4 @@
     padding: 6px 10px;
     font-size: 13px;
   }
-}
-
-/* Lien « Paramètres » : pastille du nombre d'étapes de démarrage à faire. */
-.layout__parametres {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.layout__pastille {
-  min-width: 20px;
-  height: 20px;
-  padding: 0 6px;
-  border-radius: 999px;
-  display: inline-grid;
-  place-items: center;
-  font-size: 12px;
-  font-weight: 700;
-  line-height: 1;
-  background: var(--color-argile);
-  color: var(--color-surface-carte);
 }

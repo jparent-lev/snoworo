@@ -2,21 +2,19 @@ import { useEffect, useState } from "react";
 import { Link, Outlet } from "react-router-dom";
 import { onIdTokenChanged } from "firebase/auth";
 import LienTemoins from "./LienTemoins";
-import { signOut } from "firebase/auth";
 import { auth } from "../lib/firebase";
 import { useAuth } from "../context/AuthContext";
 import { useMode } from "../lib/mode";
 import SnowroLockup from "./brand/SnowroLockup";
 import SnowroSymbol from "./brand/SnowroSymbol";
 import VersionFooter from "./VersionFooter";
-import { etapesRequisesManquantes } from "../lib/etapes";
+import MenuProfil from "./MenuProfil";
 import BandeauCourriel from "./BandeauCourriel";
 import "./Layout.css";
 
 export default function Layout() {
   const { user, profile } = useAuth();
   const { mode, changerMode, deuxRoles } = useMode(user?.uid, profile?.role ?? []);
-  const etapesAFaire = etapesRequisesManquantes(profile);
   // Lien « Admin » : revendication posée par le serveur (metriquesAdmin) ;
   // l'accès lui-même est revérifié par le serveur à chaque appel.
   const [admin, setAdmin] = useState(false);
@@ -66,22 +64,7 @@ export default function Layout() {
                 ))}
               </div>
             )}
-            {admin && (
-              <Link to="/admin" className="layout__parametres">
-                Admin
-              </Link>
-            )}
-            <Link to="/parametres" className="layout__parametres">
-              Paramètres
-              {etapesAFaire > 0 && (
-                <span className="layout__pastille" aria-label={`${etapesAFaire} étape${etapesAFaire > 1 ? "s" : ""} à faire`}>
-                  {etapesAFaire}
-                </span>
-              )}
-            </Link>
-            <button type="button" onClick={() => signOut(auth)} className="layout__deconnexion">
-              Déconnexion
-            </button>
+            <MenuProfil user={user} profile={profile} admin={admin} />
           </nav>
         )}
       </header>
