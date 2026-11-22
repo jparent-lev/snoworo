@@ -201,9 +201,14 @@ async function connexion(cle, largeur = 1280) {
 // Paul (client de D1) : le message de Marc l'attend
 {
   const { p, ctx } = await connexion("paul");
-  await test("Paul : « Nouveau message » sur la demande de Marc, puis réponse ; la pastille disparaît", async () => {
+  await test("Paul : le menu de profil signale le message de Marc et ouvre la conversation ; réponse ; les pastilles disparaissent", async () => {
     const carte = p.locator(".carte-job", { hasText: "Entrée double + balcon" });
-    await carte.getByRole("button", { name: /Nouveau message/ }).click();
+    await carte.getByRole("button", { name: /Nouveau message/ }).waitFor();
+    const bouton = p.getByRole("button", { name: "Mon compte", exact: true });
+    await bouton.getByLabel("1 message non lu").waitFor();
+    await bouton.click();
+    await p.screenshot({ path: `${D}/e2e-menu-message-1280.png` });
+    await p.getByRole("menu", { name: "Mon compte" }).getByRole("menuitem", { name: /Marc vous a écrit/ }).click();
     const dlg = p.getByRole("dialog", { name: "Conversation avec Marc" });
     await dlg.locator(".bulle:not(.bulle--moi)", { hasText: "J'arrive vers 7 h 30" }).waitFor();
     await dlg.getByRole("textbox").fill("Parfait, merci Marc !");
@@ -211,6 +216,7 @@ async function connexion(cle, largeur = 1280) {
     await dlg.locator(".bulle--moi", { hasText: "Parfait, merci Marc" }).waitFor();
     await p.keyboard.press("Escape");
     await carte.getByRole("button", { name: "Écrire à Marc" }).waitFor();
+    await p.getByRole("button", { name: "Mon compte", exact: true }).locator(".menu-profil__pastille").waitFor({ state: "detached" });
   });
   await test("Paul : « Voir les 2 photos » affiche les photos de Marc", async () => {
     await p.locator(".carte-job", { hasText: "Entrée double + balcon" }).getByRole("button", { name: "Voir les 2 photos" }).click();

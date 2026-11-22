@@ -138,3 +138,33 @@
   border-top: 1px solid var(--color-bordure);
   margin: 6px 0;
 }
+
+.menu-profil__item--message::before {
+  content: "";
+  width: 8px;
+  height: 8px;
+  flex: none;
+  border-radius: 999px;
+  background: var(--color-argile);
+  margin-right: 10px;
+}
+
+.menu-profil__item--message {
+  padding-top: 6px;
+  padding-bottom: 6px;
+}
+
+.menu-profil__item--message span {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.menu-profil__item--message small {
+  font-weight: 400;
+  font-size: 13px;
+  color: var(--color-texte-secondaire);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}

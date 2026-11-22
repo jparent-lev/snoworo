@@ -234,6 +234,10 @@ function CarteJob({ job: j, nouveau, conversationOuverte, onConversationFermee }
   const [adresse, setAdresse] = useState(null);
   const [surPlace, setSurPlace] = useState("");
   const [modale, setModale] = useState(conversationOuverte ? "messages" : null); // "faite" | "signaler" | "messages"
+  // Lien du menu de profil alors que le tableau de bord est déjà ouvert.
+  useEffect(() => {
+    if (conversationOuverte) setModale("messages");
+  }, [conversationOuverte]);
   const [enCours, setEnCours] = useState(false);
   const [erreur, setErreur] = useState(null);
 
