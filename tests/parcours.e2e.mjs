@@ -265,6 +265,18 @@ async function connexion(cle, largeur = 1280) {
     }
     await dlg.getByRole("textbox").fill("Impeccable, merci Marc !");
     await p.screenshot({ path: `${D}/e2e-evaluation-1280.png` });
+    // Téléphone : fenêtre plein écran, X en haut et bouton d'action visibles
+    // sans défiler (ils restent collés en haut et en bas).
+    const taille = p.viewportSize();
+    await p.setViewportSize({ width: 390, height: 700 });
+    const dans = async (loc) => {
+      const b = await loc.boundingBox();
+      return b && b.y >= 0 && b.y + b.height <= 700;
+    };
+    assert.ok(await dans(dlg.getByRole("button", { name: "Fermer" })), "X visible");
+    assert.ok(await dans(dlg.getByRole("button", { name: "Confirmer et verser le paiement" })), "bouton d'action visible");
+    await p.screenshot({ path: `${D}/e2e-evaluation-390.png` });
+    await p.setViewportSize(taille);
     await dlg.getByRole("button", { name: "Confirmer et verser le paiement" }).click();
     await p.waitForFunction(() => document.querySelectorAll(".historique__rang").length === 2, null, { timeout: 15000 });
     const d = (await db.doc("demandes/M3").get()).data();
