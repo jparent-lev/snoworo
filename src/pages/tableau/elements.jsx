@@ -60,8 +60,21 @@ export function Personne({ prenom, note, texte }) {
   );
 }
 
-export function Modale({ titre, onFermer, children, classe = "", fermer = false }) {
+// Fenêtre par-dessus la page. Toujours un X en haut ; sur téléphone, elle
+// prend tout l'écran et défile, avec le titre en haut et les boutons d'action
+// toujours visibles en bas (des boutons hors de l'écran, impossibles à
+// atteindre : retour d'utilisateur, novembre 2026).
+// eslint-disable-next-line no-unused-vars
+export function Modale({ titre, onFermer, children, classe = "", fermer }) {
   const boite = useRef(null);
+  useEffect(() => {
+    // La page derrière ne défile plus pendant que la fenêtre est ouverte.
+    const debordement = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = debordement;
+    };
+  }, []);
   useEffect(() => {
     const precedent = document.activeElement;
     const b = boite.current;
@@ -77,16 +90,12 @@ export function Modale({ titre, onFermer, children, classe = "", fermer = false 
   return (
     <div className="modale__fond" onClick={(e) => e.target === e.currentTarget && onFermer()}>
       <div className={`modale ${classe}`} role="dialog" aria-modal="true" aria-label={titre} ref={boite}>
-        {fermer ? (
-          <div className="modale__entete">
-            <h2>{titre}</h2>
-            <button type="button" className="modale__fermer" onClick={onFermer} aria-label="Fermer">
-              ×
-            </button>
-          </div>
-        ) : (
+        <div className="modale__entete">
           <h2>{titre}</h2>
-        )}
+          <button type="button" className="modale__fermer" onClick={onFermer} aria-label="Fermer">
+            ×
+          </button>
+        </div>
         {children}
       </div>
     </div>
