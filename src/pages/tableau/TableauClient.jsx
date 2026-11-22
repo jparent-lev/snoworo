@@ -265,49 +265,57 @@ function CarteDemandeClient({ demande: d, nouveau, conversationOuverte, onConver
       )}
       {erreur && <p className="message-erreur" role="alert">{erreur}</p>}
 
+      {/* Une action principale, des raccourcis légers, les actions rares en lien discret. */}
       <div className="carte-job__actions">
         {d.statut === "paiement_refuse" && (
-          <button type="button" className="btn btn--principal btn--petit" onClick={() => setModale("carte")}>
+          <button type="button" className="btn btn--principal carte-job__principal" onClick={() => setModale("carte")}>
             Mettre ma carte à jour
           </button>
         )}
         {d.statut === "ouverte" && (
-          <>
-            <button type="button" className="btn btn--ardoise btn--petit" onClick={() => setModale("augmenter")}>
-              Augmenter l'offre
-            </button>
-            <button type="button" className="btn btn--fantome btn--petit" onClick={() => setModale("annuler")}>
-              Annuler
-            </button>
-          </>
+          <button type="button" className="btn btn--ardoise carte-job__principal" onClick={() => setModale("augmenter")}>
+            Augmenter l'offre
+          </button>
         )}
         {d.statut === "faite" && (
-          <>
-            <button type="button" className="btn btn--principal btn--petit" onClick={() => setModale("confirmer")}>
-              Confirmer
-            </button>
-            {d.photo && (
-              <button type="button" className="btn btn--fantome btn--petit" onClick={() => setModale("photo")}>
-                {d.nbPhotos > 1 ? `Voir les ${d.nbPhotos} photos` : "Voir la photo"}
-              </button>
-            )}
-            <button type="button" className="btn btn--fantome btn--petit" onClick={() => setModale("signaler")}>
-              Signaler un problème
-            </button>
-          </>
+          <button type="button" className="btn btn--principal carte-job__principal" onClick={() => setModale("confirmer")}>
+            Confirmer
+          </button>
         )}
         {retard && (
-          <button type="button" className="btn btn--principal btn--petit" onClick={() => setModale("annulerRetard")}>
+          <button type="button" className="btn btn--principal carte-job__principal" onClick={() => setModale("annulerRetard")}>
             Annuler et être remboursé
           </button>
         )}
-        {d.statut === "matchee" && (
-          <button type="button" className="btn btn--lien" onClick={() => setModale("signaler")}>
-            Signaler un problème
-          </button>
+        {(d.deneigeurId || (d.statut === "faite" && d.photo)) && (
+          <div className="carte-job__raccourcis">
+            {d.deneigeurId && <BoutonMessages prenom={d.deneigeurPrenom} nouveau={nouveau} onClick={() => setModale("messages")} />}
+            {d.statut === "faite" && d.photo && (
+              <button
+                type="button"
+                className="btn--raccourci"
+                onClick={() => setModale("photo")}
+                aria-label={d.nbPhotos > 1 ? `Voir les ${d.nbPhotos} photos` : "Voir la photo"}
+              >
+                <span aria-hidden="true">🖼</span>
+                {d.nbPhotos > 1 ? `Photos (${d.nbPhotos})` : "Photo"}
+              </button>
+            )}
+          </div>
         )}
-        {d.deneigeurId && (
-          <BoutonMessages prenom={d.deneigeurPrenom} nouveau={nouveau} onClick={() => setModale("messages")} />
+        {(d.statut === "ouverte" || d.statut === "faite" || d.statut === "matchee") && (
+          <div className="carte-job__secondaires">
+            {d.statut === "ouverte" && (
+              <button type="button" className="btn btn--lien" onClick={() => setModale("annuler")}>
+                Annuler la demande
+              </button>
+            )}
+            {(d.statut === "faite" || d.statut === "matchee") && (
+              <button type="button" className="btn btn--lien" onClick={() => setModale("signaler")}>
+                Signaler un problème
+              </button>
+            )}
+          </div>
         )}
       </div>
 

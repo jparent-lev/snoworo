@@ -337,16 +337,20 @@ function CarteJob({ job: j, nouveau, conversationOuverte, onConversationFermee }
       {(j.statut === "matchee" || j.statut === "faite" || j.statut === "signalee" || j.dernierMessage) && (
         <div className="carte-job__actions">
           {j.statut === "matchee" && (
-            <>
-              <button type="button" className="btn btn--principal btn--petit" disabled={enCours} onClick={() => setModale("faite")}>
-                {enCours ? "Envoi…" : "C'est fait"}
-              </button>
+            <button type="button" className="btn btn--principal carte-job__principal" disabled={enCours} onClick={() => setModale("faite")}>
+              {enCours ? "Envoi…" : "C'est fait"}
+            </button>
+          )}
+          <div className="carte-job__raccourcis">
+            <BoutonMessages prenom={j.donneurPrenom} nouveau={nouveau} onClick={() => setModale("messages")} />
+          </div>
+          {j.statut === "matchee" && (
+            <div className="carte-job__secondaires">
               <button type="button" className="btn btn--lien" onClick={() => setModale("signaler")}>
                 Signaler un problème
               </button>
-            </>
+            </div>
           )}
-          <BoutonMessages prenom={j.donneurPrenom} nouveau={nouveau} onClick={() => setModale("messages")} />
         </div>
       )}
 
@@ -521,7 +525,7 @@ function CarteDemandeOuverte({ demande: d, frais, compteActif }) {
       {erreur && <p className="message-erreur" role="alert">{erreur}</p>}
       <button
         type="button"
-        className="btn btn--principal btn--petit"
+        className="btn btn--principal carte-job__principal"
         disabled={etat === "envoi" || etat === "prise" || !compteActif}
         title={compteActif ? undefined : "Configurez votre compte de versement dans vos paramètres"}
         onClick={() => setEngagement(true)}

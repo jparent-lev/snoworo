@@ -7,11 +7,17 @@ import { Modale } from "./elements";
 // Bouton « Écrire à Marc » d'une carte de demande, avec pastille si un message
 // non lu attend.
 export function BoutonMessages({ prenom, nouveau, onClick }) {
+  // Libellé court à l'écran (« Messages ») ; nom complet pour les lecteurs d'écran.
   return (
-    <button type="button" className="btn btn--ardoise btn--petit bouton-messages" onClick={onClick}>
+    <button
+      type="button"
+      className={`btn--raccourci bouton-messages${nouveau ? " bouton-messages--nouveau" : ""}`}
+      onClick={onClick}
+      aria-label={nouveau ? `Nouveau message de ${prenom}` : `Écrire à ${prenom}`}
+    >
+      <span aria-hidden="true">💬</span>
+      Messages
       {nouveau && <span className="bouton-messages__pastille" aria-hidden="true" />}
-      {nouveau ? "Nouveau message" : `Écrire à ${prenom}`}
-      {nouveau && <span className="sr-only"> de {prenom}</span>}
     </button>
   );
 }

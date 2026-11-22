@@ -165,11 +165,59 @@
   flex-wrap: wrap;
 }
 
+/* Actions d'une carte, en trois niveaux : l'action principale (pleine
+   largeur), des raccourcis légers (messages, photos), puis les actions rares
+   ou délicates en lien discret. */
 .carte-job__actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.carte-job__principal {
+  width: 100%;
+}
+
+.carte-job__raccourcis {
   display: flex;
   gap: 8px;
   flex-wrap: wrap;
+}
+
+.btn--raccourci {
+  display: inline-flex;
   align-items: center;
+  gap: 6px;
+  min-height: 36px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  border: 1.5px solid var(--color-bordure);
+  background: transparent;
+  color: var(--color-terre);
+  font-family: var(--font-corps);
+  font-weight: 700;
+  font-size: 13.5px;
+  cursor: pointer;
+}
+
+.btn--raccourci:hover {
+  border-color: var(--color-argile);
+}
+
+.bouton-messages--nouveau {
+  border-color: var(--color-ocre);
+  background: color-mix(in srgb, var(--color-ocre) 14%, transparent);
+}
+
+.carte-job__secondaires {
+  display: flex;
+  gap: 18px;
+  flex-wrap: wrap;
+}
+
+.carte-job__secondaires .btn--lien {
+  color: var(--color-texte-secondaire);
+  font-weight: 600;
 }
 
 .carte-job__note {
