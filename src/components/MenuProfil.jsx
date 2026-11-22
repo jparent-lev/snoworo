@@ -3,6 +3,7 @@ import { Link, useLocation } from "react-router-dom";
 import { signOut } from "firebase/auth";
 import { auth } from "../lib/firebase";
 import { etapesDemarrage } from "../lib/etapes";
+import { useMessagesNonLus } from "../lib/messagesNonLus";
 import { ROLE_CLIENT, ROLE_DENEIGEUR } from "../lib/mode";
 import { PAIEMENT_REEL } from "../lib/paiements";
 import "./MenuProfil.css";
@@ -27,6 +28,14 @@ export default function MenuProfil({ user, profile, admin }) {
   const roles = profile?.role ?? [];
   const etapes = etapesDemarrage(profile).filter((e) => e.requis && !e.fait);
   const nom = profile?.displayName || user?.displayName || "";
+  const messages = useMessagesNonLus(user?.uid, roles);
+  const total = etapes.length + messages.length;
+  const libellePastille = [
+    messages.length && `${messages.length} message${messages.length > 1 ? "s" : ""} non lu${messages.length > 1 ? "s" : ""}`,
+    etapes.length && `${etapes.length} étape${etapes.length > 1 ? "s" : ""} à faire`,
+  ]
+    .filter(Boolean)
+    .join(" et ");
 
   // Ferme le menu en changeant de page, au clic ailleurs et avec Échap.
   useEffect(() => setOuvert(false), [pathname, hash]);
@@ -67,9 +76,9 @@ export default function MenuProfil({ user, profile, admin }) {
         onClick={() => setOuvert((o) => !o)}
       >
         <span aria-hidden="true">{initiales(nom)}</span>
-        {etapes.length > 0 && (
-          <span className="menu-profil__pastille" aria-label={`${etapes.length} étape${etapes.length > 1 ? "s" : ""} à faire`}>
-            {etapes.length}
+        {total > 0 && (
+          <span className="menu-profil__pastille" aria-label={libellePastille}>
+            {total}
           </span>
         )}
       </button>
@@ -79,6 +88,19 @@ export default function MenuProfil({ user, profile, admin }) {
             <strong>{nom || "Mon compte"}</strong>
             {user?.email && <span>{user.email}</span>}
           </div>
+          {messages.length > 0 && (
+            <div className="menu-profil__etapes">
+              <span className="menu-profil__titre">Nouveaux messages</span>
+              {messages.map((m) => (
+                <Link key={`${m.mode}-${m.id}`} to={m.lien} role="menuitem" className="menu-profil__item menu-profil__item--message">
+                  <span>
+                    {m.prenom} vous a écrit
+                    {m.titre && <small>{m.titre}</small>}
+                  </span>
+                </Link>
+              ))}
+            </div>
+          )}
           {etapes.length > 0 && (
             <div className="menu-profil__etapes">
               <span className="menu-profil__titre">À faire</span>
