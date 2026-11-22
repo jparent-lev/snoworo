@@ -303,23 +303,26 @@ function CarteDemandeClient({ demande: d, nouveau, conversationOuverte, onConver
             )}
           </div>
         )}
-        {(d.statut === "ouverte" || d.statut === "faite" || d.statut === "matchee") && (
-          <div className="carte-job__secondaires">
-            {d.statut === "ouverte" && (
-              <button type="button" className="btn btn--lien" onClick={() => setModale("annuler")}>
-                Annuler la demande
-              </button>
-            )}
-            {(d.statut === "faite" || d.statut === "matchee") && (
-              <button type="button" className="btn btn--lien" onClick={() => setModale("signaler")}>
-                Signaler un problème
-              </button>
-            )}
-          </div>
-        )}
       </div>
 
       <Etapes demande={d} />
+
+      {/* Actions rares, séparées des actions courantes par la barre d'étapes
+          (évite un mauvais clic) ; chacune ouvre une fenêtre de confirmation. */}
+      {d.statut === "ouverte" && (
+        <div className="carte-job__aide">
+          <button type="button" className="btn btn--lien" onClick={() => setModale("annuler")}>
+            Annuler la demande
+          </button>
+        </div>
+      )}
+      {(d.statut === "faite" || d.statut === "matchee") && (
+        <div className="carte-job__aide">
+          <button type="button" className="btn btn--lien" onClick={() => setModale("signaler")} aria-label="Signaler un problème">
+            Un problème ? Signaler
+          </button>
+        </div>
+      )}
 
       {modale === "augmenter" && (
         <ModaleAugmenter demande={d} onFermer={() => setModale(null)} />

@@ -209,15 +209,19 @@
   background: color-mix(in srgb, var(--color-ocre) 14%, transparent);
 }
 
-.carte-job__secondaires {
+/* Actions rares au bas de la carte, sous la barre d'étapes : petites,
+   alignées à droite, séparées des actions courantes. */
+.carte-job__aide {
   display: flex;
-  gap: 18px;
-  flex-wrap: wrap;
+  justify-content: flex-end;
+  padding-top: 10px;
+  border-top: 1px dashed var(--color-bordure);
 }
 
-.carte-job__secondaires .btn--lien {
+.carte-job__aide .btn--lien {
   color: var(--color-texte-secondaire);
   font-weight: 600;
+  font-size: 12.5px;
 }
 
 .carte-job__note {

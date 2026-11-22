@@ -344,13 +344,14 @@ function CarteJob({ job: j, nouveau, conversationOuverte, onConversationFermee }
           <div className="carte-job__raccourcis">
             <BoutonMessages prenom={j.donneurPrenom} nouveau={nouveau} onClick={() => setModale("messages")} />
           </div>
-          {j.statut === "matchee" && (
-            <div className="carte-job__secondaires">
-              <button type="button" className="btn btn--lien" onClick={() => setModale("signaler")}>
-                Signaler un problème
-              </button>
-            </div>
-          )}
+        </div>
+      )}
+      {/* Action rare, à l'écart des actions courantes (évite un mauvais clic). */}
+      {j.statut === "matchee" && (
+        <div className="carte-job__aide">
+          <button type="button" className="btn btn--lien" onClick={() => setModale("signaler")} aria-label="Signaler un problème">
+            Un problème ? Signaler
+          </button>
         </div>
       )}
 
