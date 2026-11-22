@@ -1,0 +1,140 @@
+.menu-profil {
+  position: relative;
+}
+
+.menu-profil__bouton {
+  position: relative;
+  width: 40px;
+  height: 40px;
+  border-radius: 999px;
+  border: 1.5px solid var(--color-bordure);
+  background: var(--color-terre);
+  color: var(--color-surface-carte);
+  font-family: var(--font-corps);
+  font-weight: 700;
+  font-size: 14px;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+}
+
+.menu-profil__bouton:hover,
+.menu-profil__bouton[aria-expanded="true"] {
+  background: var(--color-argile);
+}
+
+.menu-profil__pastille {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 4px;
+  border-radius: 999px;
+  background: var(--color-argile);
+  color: var(--color-surface-carte);
+  border: 2px solid var(--color-surface-carte);
+  font-size: 11px;
+  line-height: 14px;
+  text-align: center;
+}
+
+.menu-profil__menu {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 8px);
+  z-index: 40;
+  width: min(280px, calc(100vw - 32px));
+  background: var(--color-surface-carte);
+  border: 1px solid var(--color-bordure);
+  border-radius: 16px;
+  box-shadow: 0 24px 48px -24px rgba(59, 42, 31, 0.55);
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+}
+
+.menu-profil__identite {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 8px 10px 10px;
+  border-bottom: 1px solid var(--color-bordure);
+  margin-bottom: 6px;
+  min-width: 0;
+}
+
+.menu-profil__identite strong {
+  font-size: 15px;
+  color: var(--color-terre);
+}
+
+.menu-profil__identite span {
+  font-size: 13px;
+  color: var(--color-texte-secondaire);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.menu-profil__titre {
+  display: block;
+  padding: 4px 10px;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--color-argile);
+}
+
+.menu-profil__etapes {
+  display: flex;
+  flex-direction: column;
+  padding-bottom: 6px;
+  margin-bottom: 6px;
+  border-bottom: 1px solid var(--color-bordure);
+}
+
+.menu-profil__item {
+  display: flex;
+  align-items: center;
+  min-height: 40px;
+  padding: 0 10px;
+  border-radius: 10px;
+  border: none;
+  background: none;
+  font-family: var(--font-corps);
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--color-terre);
+  text-decoration: none;
+  text-align: left;
+  cursor: pointer;
+}
+
+.menu-profil__item:hover,
+.menu-profil__item:focus-visible {
+  background: var(--color-surface-secondaire);
+  outline: none;
+}
+
+.menu-profil__item--etape::before {
+  content: "";
+  width: 8px;
+  height: 8px;
+  flex: none;
+  border-radius: 999px;
+  background: var(--color-argile);
+  margin-right: 10px;
+}
+
+.menu-profil__item--sortie {
+  color: var(--color-argile);
+}
+
+.menu-profil__separateur {
+  border: none;
+  border-top: 1px solid var(--color-bordure);
+  margin: 6px 0;
+}
