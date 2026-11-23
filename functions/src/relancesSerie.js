@@ -17,8 +17,9 @@ import { nomRobot } from "./robots.js";
 // ---------------------------------------------------------------------------
 
 const REGION = "northamerica-northeast1";
-// Interrupteur de la série : true sur test (functions/.env.snowro-test), false
-// et en production depuis le 23 novembre 2026.
+// Interrupteur de la série (false par défaut) : true sur test
+// (functions/.env.snowro-test) et en production depuis le 23 novembre 2026
+// (functions/.env.snowro-app).
 export const RELANCES_ACTIVES = defineBoolean("RELANCES_ACTIVES", { default: false });
 const FUSEAU = "America/Toronto";
 const ROLE_CLIENT = "donneur_ouvrage";
