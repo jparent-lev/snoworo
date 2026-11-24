@@ -22,6 +22,19 @@ body{font-family:Karla,sans-serif;color:#3B2A1F;background:#F7F1E6}
 .sombre .texte{color:#E4D7C0}
 .sombre .sur{color:#D9A544}
 .sombre .pied-note{color:#E4D7C0}
+.tel{position:absolute;left:556px;top:330px;width:490px;height:820px;background:#3B2A1F;border-radius:64px;padding:16px;box-shadow:0 40px 80px -30px rgba(59,42,31,.75)}
+.tel::before{content:'';position:absolute;inset:16px;background:#F7F1E6;border-radius:50px}
+.tel>*{position:relative}
+.tel__ile{width:130px;height:34px;background:#3B2A1F;border-radius:20px;margin:16px auto 0}
+.tel__tete{display:flex;align-items:center;gap:10px;margin:26px 26px 0}
+.tel__tete img{width:34px;height:34px}.tel__tete span{font-family:Fraunces,serif;font-weight:900;font-size:26px}
+.tel__carte{margin:20px 18px 0;background:#FFFDF8;border:2px solid #E4D7C0;border-radius:24px;padding:22px 20px;box-shadow:0 14px 30px -20px rgba(59,42,31,.5)}
+.tel__pas{font-weight:700;font-size:19px;padding:7px 14px;border-radius:10px;background:#EDE0CC}
+.tel__pas--ok{background:#DCE6E8;color:#4F6B72;letter-spacing:.08em;text-transform:uppercase}
+.tel__qui{display:flex;align-items:center;gap:14px;margin:22px 26px 0}
+.tel__av{width:52px;height:52px;border-radius:50%;background:#D9A544;color:#3B2A1F;display:grid;place-items:center;font-weight:700;font-size:24px}
+.tel__bulle{margin:14px 26px 0 92px;background:#FFFDF8;border:2px solid #E4D7C0;border-radius:20px 20px 20px 6px;padding:14px 18px;font-size:21px;line-height:1.35}
+.tel__ecrire{margin:22px 18px 0;border:2px solid #E4D7C0;border-radius:999px;padding:14px 22px;font-size:20px;color:#6B5445;background:#FFFDF8}
 .carte{background:#FFFDF8;border:2px solid #E4D7C0;border-radius:28px;box-shadow:0 30px 60px -36px rgba(59,42,31,.55)}
 `;
 const page = (corps, w, h) => `<!doctype html><html><head><meta charset="utf-8">${POLICES}<style>${CSS}</style></head><body><div class="cadre" style="width:${w}px;height:${h}px">${corps}</div></body></html>`;
@@ -53,7 +66,34 @@ const visuels = {
       <p class="texte" style="font-size:26px">Ou déneigez près de chez vous<br>et soyez rémunéré.</p>
     </div>
     <div style="position:absolute;right:270px;top:147px"><div style="border-radius:28px;overflow:hidden;box-shadow:0 30px 60px -30px rgba(59,42,31,.6)"><img src="${img('video-bref.jpg')}" style="display:block;height:330px"></div></div>`, 1640, 624), 1640, 624],
-  '01-lancement': [pub({ sur: "C'est ouvert", titre: 'Trouvez un déneigeur<br>de quartier.', taille: 70, visuel: video('video-bref.jpg', 400) })],
+  '01-lancement': [`
+    <div class="flocons"></div>
+    <div style="position:absolute;left:0;right:0;top:360px;bottom:0;background:url('${img('video-bref.jpg')}') -240px 0/1280px 720px no-repeat"></div>
+    <div style="position:absolute;left:0;right:0;top:355px;height:170px;background:linear-gradient(#F7F1E6 10%,rgba(247,241,230,0))"></div>
+    <div style="position:absolute;left:80px;top:72px;right:80px">
+      <div class="logo"><img src="${img('symbole.png')}"><span>snowro</span></div>
+      <div style="margin-top:34px"><span class="sur">C'est ouvert</span></div>
+      <h1 class="titre" style="font-size:70px;margin-top:12px">Trouvez un déneigeur<br>de quartier.</h1>
+    </div>
+    <div class="tel">
+      <div class="tel__ile"></div>
+      <div class="tel__tete"><img src="${img('symbole.png')}"><span>snowro</span></div>
+      <div class="tel__carte">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start">
+          <div><div class="f" style="font-weight:700;font-size:29px;white-space:nowrap">Entrée + balcon</div><div style="font-size:22px;color:#6B5445;margin-top:4px">Limoilou, à 400 m</div></div>
+          <div style="text-align:right"><div class="f" style="font-weight:900;font-size:42px;line-height:1">45 $</div><div style="font-size:19px;color:#6B5445;margin-top:6px;white-space:nowrap">39,40 $ pour vous</div></div>
+        </div>
+        <div style="display:flex;gap:10px;margin-top:18px"><span class="tel__pas">Avant 9 h</span><span class="tel__pas tel__pas--ok">Acceptée</span></div>
+      </div>
+      <div class="tel__qui">
+        <div class="tel__av">J</div>
+        <div style="flex:1"><div style="font-weight:700;font-size:23px">Julie, votre voisine</div><div style="font-size:19px;color:#6B5445">a publié la demande</div></div>
+      </div>
+      <div class="tel__bulle">Merci ! L'entrée est du côté gauche.</div>
+      <div class="tel__ecrire">Écrire à Julie…</div>
+    </div>
+    <div style="position:absolute;left:80px;bottom:64px"><span class="pastille" style="box-shadow:0 14px 30px -14px rgba(59,42,31,.7)">snowro.com</span></div>
+  `],
   '02a-comment-1': [pub({ sur: 'Comment ça marche · 1 sur 3', titre: 'Vous publiez votre demande.', visuel: `<img src="${img('etape1.png')}" style="height:600px">` })],
   '02b-comment-2': [pub({ sur: 'Comment ça marche · 2 sur 3', titre: 'Un voisin accepte.', visuel: `<img src="${img('etape2.png')}" style="height:600px">` })],
   '02c-comment-3': [pub({ sur: 'Comment ça marche · 3 sur 3', titre: "C'est pelleté, c'est payé.", visuel: `<img src="${img('etape3.png')}" style="height:600px">` })],
