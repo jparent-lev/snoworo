@@ -72,7 +72,7 @@ const visuels = {
     <div style="position:absolute;left:0;right:0;top:355px;height:170px;background:linear-gradient(#F7F1E6 10%,rgba(247,241,230,0))"></div>
     <div style="position:absolute;left:80px;top:72px;right:80px">
       <div class="logo"><img src="${img('symbole.png')}"><span>snowro</span></div>
-      <div style="margin-top:34px"><span class="sur">C'est ouvert</span></div>
+      <div style="margin-top:34px"><span class="sur">Inscrivez-vous</span></div>
       <h1 class="titre" style="font-size:70px;margin-top:12px">Trouvez un déneigeur<br>de quartier.</h1>
     </div>
     <div class="tel">
