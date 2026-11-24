@@ -49,8 +49,8 @@ const visuels = {
   'couverture': [page(`<div class="flocons"></div>
     <div style="position:absolute;left:290px;top:0;bottom:0;width:470px;display:flex;flex-direction:column;justify-content:center;gap:20px">
       <div class="logo"><img src="${img('symbole.png')}"><span>snowro</span></div>
-      <h1 class="titre" style="font-size:50px">Trouvez un déneigeur de quartier en quelques minutes.</h1>
-      <p class="texte" style="font-size:24px">Ou déneigez près de chez vous et soyez payé.</p>
+      <h1 class="titre" style="font-size:64px;line-height:1.02">Trouvez<br>un déneigeur<br>de quartier.</h1>
+      <p class="texte" style="font-size:26px">Ou déneigez près de chez vous<br>et soyez payé.</p>
     </div>
     <div style="position:absolute;right:270px;top:147px"><div style="border-radius:28px;overflow:hidden;box-shadow:0 30px 60px -30px rgba(59,42,31,.6)"><img src="${img('video-bref.jpg')}" style="display:block;height:330px"></div></div>`, 1640, 624), 1640, 624],
   '01-lancement': [pub({ sur: "C'est ouvert", titre: 'Trouvez un déneigeur de quartier en quelques minutes.', taille: 70, visuel: video('video-bref.jpg', 400) })],
