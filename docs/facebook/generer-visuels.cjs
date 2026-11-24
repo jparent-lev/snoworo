@@ -50,10 +50,10 @@ const visuels = {
     <div style="position:absolute;left:290px;top:0;bottom:0;width:470px;display:flex;flex-direction:column;justify-content:center;gap:20px">
       <div class="logo"><img src="${img('symbole.png')}"><span>snowro</span></div>
       <h1 class="titre" style="font-size:64px;line-height:1.02">Trouvez<br>un déneigeur<br>de quartier.</h1>
-      <p class="texte" style="font-size:26px">Ou déneigez près de chez vous<br>et soyez payé.</p>
+      <p class="texte" style="font-size:26px">Ou déneigez près de chez vous<br>et soyez rémunéré.</p>
     </div>
     <div style="position:absolute;right:270px;top:147px"><div style="border-radius:28px;overflow:hidden;box-shadow:0 30px 60px -30px rgba(59,42,31,.6)"><img src="${img('video-bref.jpg')}" style="display:block;height:330px"></div></div>`, 1640, 624), 1640, 624],
-  '01-lancement': [pub({ sur: "C'est ouvert", titre: 'Trouvez un déneigeur de quartier en quelques minutes.', taille: 70, visuel: video('video-bref.jpg', 400) })],
+  '01-lancement': [pub({ sur: "C'est ouvert", titre: 'Trouvez un déneigeur<br>de quartier.', taille: 70, visuel: video('video-bref.jpg', 400) })],
   '02a-comment-1': [pub({ sur: 'Comment ça marche · 1 sur 3', titre: 'Vous publiez votre demande.', visuel: `<img src="${img('etape1.png')}" style="height:600px">` })],
   '02b-comment-2': [pub({ sur: 'Comment ça marche · 2 sur 3', titre: 'Un voisin accepte.', visuel: `<img src="${img('etape2.png')}" style="height:600px">` })],
   '02c-comment-3': [pub({ sur: 'Comment ça marche · 3 sur 3', titre: "C'est pelleté, c'est payé.", visuel: `<img src="${img('etape3.png')}" style="height:600px">` })],
