@@ -81,6 +81,33 @@ const glace = () => {
   <div style="position:absolute;left:0;right:0;top:150px;height:420px;background:linear-gradient(rgba(46,66,72,0),rgba(46,66,72,.55) 45%,rgba(46,66,72,.55) 70%,rgba(46,66,72,0))"></div>`;
 };
 
+
+// Carrousel « Comment ça marche » : titre en haut, téléphone de l'application au centre.
+const etape = ({ n, titre, texte, ecran }) => `
+  <div class="flocons"></div>
+  <div style="position:absolute;left:80px;top:72px;right:80px">
+    <div class="logo"><img src="${img('symbole.png')}"><span>snowro</span></div>
+    <div style="margin-top:34px"><span class="sur">Comment ça marche · ${n} sur 3</span></div>
+    <h1 class="titre" style="font-size:72px;margin-top:12px">${titre}</h1>
+    <p class="texte" style="margin-top:14px;font-size:30px;color:#3B2A1F">${texte}</p>
+  </div>
+  <div class="tel" style="left:295px;top:440px;width:490px">
+    <div class="tel__ile"></div>
+    <div class="tel__tete"><img src="${img('symbole.png')}"><span>snowro</span></div>
+    ${ecran}
+  </div>
+  <div style="position:absolute;left:80px;bottom:64px"><span class="pastille">snowro.com</span></div>
+  <div style="position:absolute;right:80px;bottom:80px;display:flex;gap:12px">${[1,2,3].map(i => `<span style="width:16px;height:16px;border-radius:50%;background:${i === n ? '#C1652F' : '#E4D7C0'}"></span>`).join('')}</div>`;
+const champ = (l, v) => `<div style="margin:16px 26px 0"><div style="font-size:18px;font-weight:700;color:#6B5445;letter-spacing:.06em;text-transform:uppercase">${l}</div><div style="margin-top:8px">${v}</div></div>`;
+const puce = (t, on) => `<span style="display:inline-block;font-size:19px;font-weight:700;padding:8px 14px;border-radius:999px;margin:0 4px 0 0;${on ? 'background:#C1652F;color:#FFFDF8' : 'background:#FFFDF8;border:2px solid #E4D7C0'}">${t}</span>`;
+const boite = (t) => `<div style="background:#FFFDF8;border:2px solid #E4D7C0;border-radius:14px;padding:12px 18px;font-size:22px">${t}</div>`;
+const carteDemande = (etat) => `<div class="tel__carte">
+  <div style="display:flex;justify-content:space-between;align-items:flex-start">
+    <div><div class="f" style="font-weight:700;font-size:29px;white-space:nowrap">Entrée + balcon</div><div style="font-size:22px;color:#6B5445;margin-top:4px">Limoilou · avant 9 h</div></div>
+    <div class="f" style="font-weight:900;font-size:42px;line-height:1">45 $</div>
+  </div>
+  <div style="margin-top:16px"><span class="tel__pas tel__pas--ok">${etat}</span></div></div>`;
+
 const visuels = {
   'profil': [page(`<div style="position:absolute;inset:0;background:#EDE0CC;display:grid;place-items:center"><img src="${img('symbole.png')}" style="width:620px"></div>`, 720, 720), 720, 720],
   'couverture': [page(`<div class="flocons"></div>
@@ -118,9 +145,24 @@ const visuels = {
     </div>
     <div style="position:absolute;left:80px;bottom:64px"><span class="pastille" style="box-shadow:0 14px 30px -14px rgba(59,42,31,.7)">snowro.com</span></div>
   `],
-  '02a-comment-1': [pub({ sur: 'Comment ça marche · 1 sur 3', titre: 'Vous publiez votre demande.', visuel: `<img src="${img('etape1.png')}" style="height:600px">` })],
-  '02b-comment-2': [pub({ sur: 'Comment ça marche · 2 sur 3', titre: 'Un voisin accepte.', visuel: `<img src="${img('etape2.png')}" style="height:600px">` })],
-  '02c-comment-3': [pub({ sur: 'Comment ça marche · 3 sur 3', titre: "C'est pelleté, c'est payé.", visuel: `<img src="${img('etape3.png')}" style="height:600px">` })],
+  '02a-comment-1': [etape({ n: 1, titre: 'Vous publiez votre demande.', texte: 'Ce qu’il y a à pelleter, l’heure et le montant offert. Deux minutes suffisent.',
+    ecran: `<div class="f" style="margin:18px 26px 0;font-weight:700;font-size:30px">Nouvelle demande</div>
+      ${champ('Quoi', puce('Entrée') + puce('Entrée + balcon', true) + puce('Autre'))}
+      ${champ('Quand', boite('Demain, avant 9 h'))}
+      ${champ('Montant offert', boite('<b>45 $</b>'))}
+      <div style="margin:22px 26px 0;background:#C1652F;color:#FFFDF8;font-weight:700;font-size:24px;text-align:center;padding:16px;border-radius:999px">Publier la demande</div>` })],
+  '02b-comment-2': [etape({ n: 2, titre: 'Un voisin accepte.', texte: 'Les déneigeurs de votre secteur sont avisés en même temps. Le premier qui accepte s’en occupe.',
+    ecran: `<div style="margin:18px 18px 0;background:#3B2A1F;color:#FFFDF8;border-radius:20px;padding:16px 20px;display:flex;gap:14px;align-items:center;box-shadow:0 16px 30px -16px rgba(59,42,31,.7)">
+        <img src="${img('symbole.png')}" style="width:40px;height:40px;border-radius:10px"><div><div style="font-weight:700;font-size:21px">Votre demande est acceptée</div><div style="font-size:19px;opacity:.85">Marc arrive avant 9 h.</div></div></div>
+      ${carteDemande('Acceptée')}
+      <div class="tel__qui"><div class="tel__av" style="background:#4F6B72;color:#FFFDF8">M</div>
+        <div><div style="font-weight:700;font-size:23px">Marc, déneigeur de quartier</div><div style="font-size:19px;color:#6B5445">à 400 m de chez vous</div></div></div>` })],
+  '02c-comment-3': [etape({ n: 3, titre: 'C’est pelleté, c’est payé.', texte: 'Photos à l’appui. Votre paiement est retenu jusqu’à ce que le travail soit fait.',
+    ecran: `<div class="tel__carte">
+        <div class="f" style="font-weight:700;font-size:28px">Marc dit que c’est fait</div>
+        <div style="display:flex;gap:10px;margin-top:14px">${['4% 88%', '30% 96%'].map(pos => `<div style="flex:1;height:150px;border-radius:14px;background:url('${img('video-bref.jpg')}') ${pos}/420% auto"></div>`).join('')}</div>
+        <div style="margin-top:16px;background:#C1652F;color:#FFFDF8;font-weight:700;font-size:23px;text-align:center;padding:14px;border-radius:999px">Confirmer</div>
+        <div style="margin-top:10px;text-align:center;font-size:19px;color:#6B5445">Un problème ? Signaler</div></div>` })],
   '03-deneiger': [pub({ sur: 'Vous avez une pelle et du temps ?', titre: "Gagnez de l'argent avec la tempête.", texte: 'Vos heures, vos demandes. Aucune entreprise requise.', visuel: `<img src="${img('revenus.png')}" style="height:390px">`, fond: '<div style="position:absolute;inset:0;background:#3B2A1F"></div>', sombre: true })],
   '04-combien-offrir': [pub({ sur: 'Autour de Québec', titre: 'Combien offrir pour un déneigement ?', visuel: `<div style="display:flex;gap:28px">${prix('Entrée simple', '25 à 35 $')}${prix('Double + balcon', '45 à 60 $')}</div>`, texte: "C'est vous qui décidez. Personne n'accepte ? Augmentez votre offre en tout temps." })],
   '05-confiance': [pub({ sur: 'Mieux que le groupe du quartier', titre: 'Vous savez avec qui vous traitez.', taille: 66, visuel: `<div style="display:flex;flex-direction:column;gap:10px">${[1,2,3].map(i => `<img src="${img(`protection${i}.png`)}" style="height:196px">`).join('')}</div>` })],
