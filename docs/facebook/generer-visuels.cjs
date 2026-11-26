@@ -57,6 +57,29 @@ ${fond ?? '<div class="flocons"></div>'}
 const prix = (l, p) => `<div class="carte" style="padding:34px 40px;width:410px"><div style="font-weight:700;font-size:26px;color:#4F6B72;letter-spacing:.1em;text-transform:uppercase">${l}</div><div class="f" style="font-weight:900;font-size:76px;margin-top:10px">${p}</div></div>`;
 const video = (f, h = 430) => `<div style="position:relative;border-radius:28px;overflow:hidden;box-shadow:0 30px 60px -30px rgba(59,42,31,.6)"><img src="${img(f)}" style="display:block;height:${h}px"><div style="position:absolute;inset:0;display:grid;place-items:center"><div style="width:120px;height:120px;border-radius:50%;background:rgba(255,253,248,.92);display:grid;place-items:center"><div style="width:0;height:0;border-left:40px solid #C1652F;border-top:25px solid transparent;border-bottom:25px solid transparent;margin-left:10px"></div></div></div></div>`;
 
+
+// Fond de glace : facettes translucides (grille irrégulière) et glaçons en haut.
+const glace = () => {
+  let g = 7; const r = () => { g = (g * 16807) % 2147483647; return g / 2147483647; };
+  const n = 7, c = 1080 / (n - 1), P = [];
+  for (let y = 0; y < n; y++) { P.push([]); for (let x = 0; x < n; x++) {
+    const bord = x === 0 || y === 0 || x === n - 1 || y === n - 1;
+    P[y].push([x * c + (bord ? 0 : (r() - .5) * c * .7), y * c + (bord ? 0 : (r() - .5) * c * .7)]); } }
+  let f = '';
+  for (let y = 0; y < n - 1; y++) for (let x = 0; x < n - 1; x++) {
+    const [a, b, d, e] = [P[y][x], P[y][x + 1], P[y + 1][x + 1], P[y + 1][x]];
+    const tris = r() > .5 ? [[a, b, d], [a, d, e]] : [[a, b, e], [b, d, e]];
+    for (const t of tris) f += `<polygon points="${t.map(p => p.join(',')).join(' ')}" fill="#EAF4F6" fill-opacity="${(.02 + r() * .11).toFixed(3)}" stroke="#F4FAFB" stroke-opacity=".13" stroke-width="1.2"/>`;
+  }
+  let gl = '', x = 0;
+  while (x < 1080) { const w = 26 + r() * 40, h = r() > .7 ? 60 + r() * 50 : 14 + r() * 30; gl += `<path d="M${x},0 L${x + w},0 L${x + w * (.4 + r() * .2)},${h} Z" fill="#E4F0F2" fill-opacity=".9"/>`; x += w - 2; }
+  return `<div style="position:absolute;inset:0;background:linear-gradient(160deg,#6E8D94 0%,#4F6B72 55%,#3E565C 100%)"></div>
+  <svg style="position:absolute;inset:0" width="1080" height="1080" viewBox="0 0 1080 1080">${f}
+    <path d="M140,1080 L260,860 L230,760 L340,640" stroke="#FFFFFF" stroke-opacity=".35" stroke-width="2" fill="none"/>
+    <path d="M1080,300 L930,420 L960,520 L860,610" stroke="#FFFFFF" stroke-opacity=".3" stroke-width="2" fill="none"/>
+    <rect width="1080" height="10" fill="#E4F0F2" fill-opacity=".9"/>${gl}</svg>`;
+};
+
 const visuels = {
   'profil': [page(`<div style="position:absolute;inset:0;background:#EDE0CC;display:grid;place-items:center"><img src="${img('symbole.png')}" style="width:620px"></div>`, 720, 720), 720, 720],
   'couverture': [page(`<div class="flocons"></div>
@@ -111,7 +134,7 @@ const visuels = {
       <div style="margin-top:20px;font-size:27px;line-height:1.4;color:#3B2A1F;background:#F7F1E6;border-radius:16px;padding:16px 20px">« Casser la glace dans les marches et étendre l’abrasif. Le sac est sur le balcon. »</div>
       <div style="display:flex;gap:12px;margin-top:20px"><span class="tel__pas" style="font-size:22px;color:#3B2A1F">Avant 8 h</span><span class="tel__pas" style="font-size:22px;background:#DCE6E8;color:#4F6B72;letter-spacing:.08em;text-transform:uppercase">Acceptée</span></div>
     </div>`,
-    fond: '<div style="position:absolute;inset:0;background:#4F6B72"></div><div style="position:absolute;inset:0;opacity:.18;background:repeating-linear-gradient(105deg,transparent 0 46px,#FFFDF8 46px 48px,transparent 48px 120px);background-size:100% 100%"></div><div style="position:absolute;left:0;right:0;bottom:0;height:150px;background:linear-gradient(rgba(220,230,232,0),rgba(220,230,232,.18))"></div>',
+    fond: glace(),
     sombre: true })],
   '07-bordee': [pub({ sur: 'Bordée annoncée', titre: 'Publiez votre demande dès ce soir.', taille: 88, texte: 'Les déneigeurs de quartier la voient tout de suite et la prennent avant la tempête.', visuel: `<div style="display:flex;gap:40px;align-items:flex-end">${[150,220,150].map(t => `<div style="font-size:${t}px;line-height:1;color:#FFFDF8;font-family:Fraunces,serif">❄</div>`).join('')}</div>`, fond: '<div style="position:absolute;inset:0;background:#4F6B72"></div><div class="flocons" style="opacity:.25"></div>', sombre: true })],
   '08-proche': [pub({ sur: 'Pour un proche', titre: "Vos parents ont du mal avec l'escalier cet hiver ?", taille: 70, texte: "Publiez une demande pour l'adresse d'un proche et suivez tout depuis votre téléphone.", visuel: `<div style="border-radius:28px;overflow:hidden;box-shadow:0 30px 60px -30px rgba(59,42,31,.6)"><img src="${img('video-faire.jpg')}" style="display:block;height:330px"></div>` })],
