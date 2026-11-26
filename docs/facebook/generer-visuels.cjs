@@ -77,7 +77,8 @@ const glace = () => {
   <svg style="position:absolute;inset:0" width="1080" height="1080" viewBox="0 0 1080 1080">${f}
     <path d="M140,1080 L260,860 L230,760 L340,640" stroke="#FFFFFF" stroke-opacity=".35" stroke-width="2" fill="none"/>
     <path d="M1080,300 L930,420 L960,520 L860,610" stroke="#FFFFFF" stroke-opacity=".3" stroke-width="2" fill="none"/>
-    <rect width="1080" height="10" fill="#E4F0F2" fill-opacity=".9"/>${gl}</svg>`;
+    <rect width="1080" height="10" fill="#E4F0F2" fill-opacity=".9"/>${gl}</svg>
+  <div style="position:absolute;left:0;right:0;top:150px;height:420px;background:linear-gradient(rgba(46,66,72,0),rgba(46,66,72,.55) 45%,rgba(46,66,72,.55) 70%,rgba(46,66,72,0))"></div>`;
 };
 
 const visuels = {
@@ -125,7 +126,7 @@ const visuels = {
   '05-confiance': [pub({ sur: 'Mieux que le groupe du quartier', titre: 'Vous savez avec qui vous traitez.', taille: 66, visuel: `<div style="display:flex;flex-direction:column;gap:10px">${[1,2,3].map(i => `<img src="${img(`protection${i}.png`)}" style="height:196px">`).join('')}</div>` })],
   '06-photos': [pub({ sur: 'Fini les doutes', titre: "C'est fait ? Les photos le prouvent.", taille: 60, visuel: `<div style="display:flex;align-items:center;gap:36px"><img src="${img('carte.png')}" style="height:540px;border-radius:24px"><p class="texte" style="width:360px">De 1 à 3 photos du travail terminé. Vous avez <b style="color:#3B2A1F">12 heures</b> pour confirmer ou signaler un problème.</p></div>` })],
   '11-deglacage': [pub({ sur: 'Pluie verglaçante annoncée', titre: 'Snowro, c’est aussi<br>pour la glace.', taille: 84,
-    texte: 'Marches glacées, entrée en patinoire ? Publiez une demande et précisez dans la description qu’il faut déglacer.',
+    texte: '<span style="color:#FFFDF8;font-weight:500;text-shadow:0 1px 8px rgba(30,44,48,.6)">Marches glacées, entrée en patinoire ? Publiez une demande et précisez dans la description qu’il faut déglacer.</span>',
     visuel: `<div class="tel__carte" style="margin:0;width:760px;padding:34px 38px;border:none;box-shadow:0 30px 60px -24px rgba(20,30,34,.7)">
       <div style="display:flex;justify-content:space-between;align-items:flex-start">
         <div><div class="f" style="font-weight:700;font-size:42px;color:#3B2A1F">Entrée + balcon</div><div style="font-size:26px;color:#6B5445;margin-top:4px">Limoilou, à 300 m</div></div>
